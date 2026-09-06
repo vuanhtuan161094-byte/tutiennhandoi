@@ -998,44 +998,6 @@ function setCooldown(root,index,seconds=1.4){
   const tick=()=>{if(!btn.isConnected)return;const remain=Math.max(0,duration-(performance.now()-started)/1000);cd.style.setProperty('--cd',String(remain/duration));if(txt)txt.textContent=remain>0?String(Math.max(1,Math.ceil(remain))):'';if(remain>0)requestAnimationFrame(tick);else{btn.classList.remove('casting','cooldown');btn.classList.add('ready');cd.style.setProperty('--cd','0');if(txt)txt.textContent='';}};tick();
 }
 
-function playSkill(root,skill,index,damage,enemyCounter=false){
-  if(!skill)return;
-  const kind=skillKind(skill),ultimate=isUltimateSkill(skill);
-  const profile=applyPresentationTheme(root,skill,String(q(root,'#huntV2Stage')?.dataset?.playerDao||''));
-  const stage=q(root,'#huntV2Stage');if(stage){stage.classList.remove('tier-normal','tier-heavy','tier-support','tier-ultimate');stage.classList.add(`tier-${profile.tier}`);}
-  presentationFocus(root,'player',ultimate?1000:profile.focus);if(ultimate)cinematicUltimate(root,1450);
-  setCooldown(root,index,Number(skill?.cooldown||1.4));
-  pulseActor(root,'player',actorMotionState(profile,'cast',ultimate),ultimate?860:Math.max(460,profile.focus));
-  if(ultimate)setCaption(root,skill?.name||'Tuyệt Kỹ',presentationCaption(skill,'player',String(q(root,'#huntV2Stage')?.dataset?.playerDao||'')),1900);
-  if(!(skill?.runtimeV117?.slotClass==='basic'||String(skill?.id||'').endsWith('.basic')))showSkillCallout(root,skill,'player',ultimate);
-  spawnSkillFx(root,skill,'player','cast');
-
-  pushLog(root,`Thi triển ${skill?.name||'Thần Thông'}.`);
-  huntTransientTimeoutV129(root,()=>{
-    spawnSkillFx(root,skill,'player','travel');
-    pulseActor(root,'player',actorMotionState(profile,'travel',ultimate),ultimate?760:520);
-
-    if(kind==='sword'){pulseActor(root,'player',profile.motion==='dash'?'dash':'sword',ultimate?760:620);swordArc(root,'player',skill,profile);}
-    else if(kind==='lightning'){projectile(root,'lightning','player',skill,profile);huntTransientTimeoutV129(root,()=>lightning(root,'enemy',skill,profile),fxDelay(170));}
-    else projectile(root,kind,'player',skill,profile);
-  },fxDelay(ultimate?220:160));
-  huntTransientTimeoutV129(root,()=>{
-    presentationFocus(root,'impact',ultimate?760:480);pulseActor(root,'enemy','hit',ultimate?620:440);spawnSkillFx(root,skill,'player','impact');impact(root,'enemy',ultimate,profile,skill);
-    if(damage)damageNumber(root,'enemy',damage,ultimate);
-  },fxDelay(kind==='sword'?(ultimate?430:350):(ultimate?600:500)));
-  if(enemyCounter)huntTransientTimeoutV129(root,()=>playEnemyCounter(root),fxDelay(ultimate?1450:980));
-}
-
-
-function playEnemyCounter(root){
-  const enemySkill={name:'Yêu khí phản phệ',tags:['Arcane']};
-  pulseActor(root,'enemy','cast',450);spawnSkillFx(root,enemySkill,'enemy','cast');setBossState(root,'cast',{entityId:String(q(root,'#huntV2Stage')?.dataset?.monsterId||''),holdMs:450});showSkillCallout(root,enemySkill,'enemy',false);pushLog(root,'Yêu thú phản kích.');
-  huntTransientTimeoutV129(root,()=>{spawnSkillFx(root,enemySkill,'enemy','travel');projectile(root,'arcane','enemy',enemySkill,{});pulseActor(root,'enemy','attack',500);setBossState(root,'attack',{entityId:String(q(root,'#huntV2Stage')?.dataset?.monsterId||''),holdMs:500})},fxDelay(170));
-  huntTransientTimeoutV129(root,()=>{pulseActor(root,'player','hit',440);spawnSkillFx(root,enemySkill,'enemy','impact');impact(root,'player')},fxDelay(510));
-}
-
-
-
 function ambientPulse(root,kind='cast',side='player'){
   const stage=q(root,'#huntV2Stage'); if(!stage)return;
   const cls=`combat-${kind}-${side}`; stage.classList.remove(cls); stage.classList.add(cls);
