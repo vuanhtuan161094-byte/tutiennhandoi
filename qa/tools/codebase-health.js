@@ -128,5 +128,14 @@ const outDir=path.join(ROOT,'docs','generated');
 fs.mkdirSync(outDir,{recursive:true});
 fs.writeFileSync(path.join(outDir,'CODEBASE_HEALTH.json'),JSON.stringify(result,null,2)+'\n');
 fs.writeFileSync(path.join(outDir,'CODEBASE_HEALTH.md'),md.join('\n')+'\n');
-console.log(JSON.stringify({scannedFiles:result.scannedFiles,largeFiles:large.length,unresolved:unresolved.length,versioned:versioned.length,versionFamilies:versionFamilies.length,largest:rows[0]||null},null,2));
+console.log(JSON.stringify({
+  scannedFiles:result.scannedFiles,
+  totalBytes:result.totalBytes,
+  largeFiles:large,
+  unresolvedRelativeImports:unresolved,
+  riskyPatterns:risky,
+  versioned:versioned.length,
+  versionFamilies,
+  topFiles:rows.slice(0,15)
+},null,2));
 if(unresolved.length)process.exitCode=2;
