@@ -1,0 +1,49 @@
+name: V141 Full Closure
+
+on:
+  push:
+    branches:
+      - 'refactor/v141-codebase-optimization'
+    paths:
+      - '.v141-full-closure-trigger'
+
+permissions:
+  contents: read
+
+jobs:
+  full-closure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Syntax hotspots
+        run: |
+          node --check app.js
+          node --check dist/core/session.js
+          node --check dist/core/session-save-migrations.js
+          node --check dist/core/session-restore.js
+          node --check dist/core/gameplay.js
+          node --check dist/core/combat.js
+          node --check modules/hunt-combat-v2.js
+
+      - name: Codebase health scan
+        run: node qa/tools/codebase-health.js
+
+      - name: Canonical cultivation gates
+        run: |
+          node qa/tests/v140-cultivation-core-test.js
+          node qa/tests/v140-cultivation-transport-test.js
+          node qa/tests/v140-zero-legacy-test.js
+
+      - name: Backend full closure
+        run: node qa/runners/v140-backend-gates.js closure
+
+      - name: Frontend full closure
+        run: node qa/runners/v140-frontend-gates.js closure
