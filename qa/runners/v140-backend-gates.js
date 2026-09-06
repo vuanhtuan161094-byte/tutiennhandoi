@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { runGateFiles } from './gate-runner.js';
 const here=path.dirname(fileURLToPath(import.meta.url));
 const testsDir=path.resolve(here,'../tests');
 const repoRoot=path.resolve(here,'../..');
@@ -12,6 +12,4 @@ const closure=()=>fs.readdirSync(testsDir).filter(n=>n.endsWith('test.js')&&!exc
 const tests=mode==='fast'?FAST:mode==='closure'?closure():null;
 if(!tests)throw new Error('Use fast | closure');
 for(const n of tests)if(!fs.existsSync(path.join(testsDir,n)))throw new Error(`Missing gate ${n}`);
-let pass=0;const fail=[];console.log(`V140 BACKEND GATES · ${mode} · ${tests.length}`);
-for(const n of tests){const r=spawnSync(process.execPath,[path.join(testsDir,n)],{cwd:repoRoot,encoding:'utf8',maxBuffer:32*1024*1024,timeout:120000});if(r.status===0&&!r.error){pass++;console.log(`✓ ${n}`)}else{fail.push(n);console.error(`✗ ${n}`);console.error(`${r.stdout??''}\n${r.stderr??''}`.split(/\r?\n/).slice(-60).join('\n'));}}
-console.log(`V140 BACKEND ${mode.toUpperCase()}: ${pass}/${tests.length} PASS`);if(fail.length)process.exitCode=1;
+await runGateFiles({ label:`V140 BACKEND ${mode.toUpperCase()}`, tests, testsDir, repoRoot });
