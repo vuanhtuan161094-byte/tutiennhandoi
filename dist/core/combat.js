@@ -1,18 +1,19 @@
 import { SeededRng } from './rng.js';
-import { adjustedCastTime, adjustedRecoveryTime, critLayers, critMultiplier, effectiveStats, evadeChancePct } from './stats.js';
-import { chooseSkill } from './ai.js';
+import { adjustedRecoveryTime, critLayers, critMultiplier, effectiveStats, evadeChancePct } from './stats.js';
+import './ai.js';
 import { tacticalIdentity } from './combat-roles.js';
-import { addResourceV117, createFiveElementCombatStateV117, finishSkillActionRuntimeV117, onMitigationEventV117, prepareSkillActionRuntimeV117, rootUnlockedV117, setMechanicV117, skillCastTimeMultiplierFromRuntimeV117, skillSpiritCostMultiplierFromRuntimeV117, updateElementTimersV117, } from './five-element-combat-v117.js';
-import { skillDomainsV117, skillRuntimeV117, skillSlotClassV117 } from './skill-runtime-v117.js';
-import { adjustDaoDotV118, adjustDaoMarkStacksV118, createBattleDaoCombatStateV118, daoCastTimeMultiplierV118, daoMarkCapV118, daoRecoveryMultiplierForTargetV118, daoSpiritCostMultiplierV118, effectiveSkillRootV118, finishBattleDaoActionV118, onBattleDaoInterruptedV120, onMitigationEventV118, formationFieldGuardV133, prepareBattleDaoActionV118, updateBattleDaoTimersV120, } from './battle-dao-combat-v118.js';
+import { addResourceV117, createFiveElementCombatStateV117, finishSkillActionRuntimeV117, onMitigationEventV117, rootUnlockedV117, setMechanicV117, updateElementTimersV117 } from './five-element-combat-v117.js';
+import { skillRuntimeV117 } from './skill-runtime-v117.js';
+import { adjustDaoDotV118, adjustDaoMarkStacksV118, createBattleDaoCombatStateV118, daoMarkCapV118, daoRecoveryMultiplierForTargetV118, effectiveSkillRootV118, finishBattleDaoActionV118, onBattleDaoInterruptedV120, onMitigationEventV118, formationFieldGuardV133, updateBattleDaoTimersV120 } from './battle-dao-combat-v118.js';
 import { skillPracticeProfileFromTierV125 } from './specialization-skill-progression-v125.js';
 import { elementSealDamageCoefficientV133 } from './element-seal-v133.js';
 import { battleDaoSkillGrowthProfileV126 } from './battle-dao-skill-growth-v126.js';
-import { skillProgressEffectBonusFromRuntimeV12317, skillSecondaryEffectBonusPctV12317 } from './skill-heart-method-v12317.js';
-import { addPoisonSeedStageV2, battleDaoV2BreakMultiplier, battleDaoV2Enabled, battleDaoV2HealShieldMultiplier, battleDaoV2IncomingDamageMultiplier, battleDaoV2OutgoingMultiplier, battleDaoV2SpiritCostMultiplier, consumePoisonSeedStageV2, createBattleDaoRuntimeStateV2, createRootActionV2, claimDamagingFollowUpV2, finishRemainingDaoActionV2, onBattleDaoV2HpDamageTaken, onBattleDaoV2Mitigation, prepareRemainingDaoCoreActionV2, v2ResourceProjection, prepareSwordCoreActionV2, recordDamageOutcomeV2, resolveSwordIntentAfterRootV2, swordIntentBonusesV2, swordQiGenerateAfterActionV2, swordQiSpendBeforeActionV2, swordV2ActionTuning, swordV2ChannelProfile, swordV2CritHeartBonusPct, swordV2DirectDamageMultiplier, swordV2EffectsForSkill, syncBattleDaoV2Timers, } from './battle-dao-v2-runtime.js';
-import { cloneTechniqueCombatRuntimeV119, initializeTechniqueCombatStateV119, techniqueBloodSacrificeCapPctV119, techniqueBreakLimitExtraPctV119, techniqueBurnBloodEfficiencyV119, techniqueCastMultiplierV119, techniqueCooldownReductionPctV119, techniqueCooldownReturnInternalSecondsV119, techniqueCooldownReturnPctV119, techniqueCooldownReturnSpiritCostPctV119, techniqueDamageReductionAdjustmentPctV119, techniqueDeferredDamagePctV119, techniqueEquippedMasteryV119, techniqueGuidingReturnInternalSecondsV119, techniqueGuidingReturnRestoreStandardPctV119, techniqueHealingReceivedMultiplierV119, techniqueInterruptResistPctV119, techniqueRecoveryMultiplierV119, techniqueShieldConsumeEffectBonusPctV119, techniqueShieldConsumePctV119, techniqueSpiritCostMultiplierV119, techniqueSpiritOverflowToGaugePctV119, techniqueSpiritRegenMultiplierV119 } from './technique-runtime-v119.js';
-import { bossDangerMetaV81 } from './boss-gameplay-v2.js';
-import { COMBAT_RULES, actionSpeedMultiplier, combatMaxHp, combatSpiritStandard, combineBoundedPct, combinedHeartCritMultiplier, controlDurationReductionPct, cooldownProfile, critLayerName, critProfile, defenseFactor, dodgeProfile, effectiveControlDuration, elementAffinity, elementResistanceMultiplier, fiveElementBreakMultiplier, fiveElementCounter, fiveElementDamageMultiplier, heartProfile, rawElementalDamage, skillTrueEssenceCost, totalDamageReductionPct, } from './combat-rules.js';
+import './skill-heart-method-v12317.js';
+import { addPoisonSeedStageV2, battleDaoV2BreakMultiplier, battleDaoV2Enabled, battleDaoV2HealShieldMultiplier, battleDaoV2IncomingDamageMultiplier, battleDaoV2OutgoingMultiplier, consumePoisonSeedStageV2, createBattleDaoRuntimeStateV2, claimDamagingFollowUpV2, finishRemainingDaoActionV2, onBattleDaoV2HpDamageTaken, onBattleDaoV2Mitigation, v2ResourceProjection, recordDamageOutcomeV2, resolveSwordIntentAfterRootV2, swordIntentBonusesV2, swordQiGenerateAfterActionV2, swordV2ChannelProfile, swordV2CritHeartBonusPct, swordV2DirectDamageMultiplier, swordV2EffectsForSkill, syncBattleDaoV2Timers } from './battle-dao-v2-runtime.js';
+import { cloneTechniqueCombatRuntimeV119, initializeTechniqueCombatStateV119, techniqueCooldownReductionPctV119, techniqueDamageReductionAdjustmentPctV119, techniqueDeferredDamagePctV119, techniqueHealingReceivedMultiplierV119, techniqueInterruptResistPctV119, techniqueRecoveryMultiplierV119, techniqueSpiritOverflowToGaugePctV119, techniqueSpiritRegenMultiplierV119 } from './technique-runtime-v119.js';
+import './boss-gameplay-v2.js';
+import { COMBAT_RULES, actionSpeedMultiplier, combatMaxHp, combatSpiritStandard, combineBoundedPct, combinedHeartCritMultiplier, controlDurationReductionPct, cooldownProfile, critLayerName, critProfile, defenseFactor, dodgeProfile, effectiveControlDuration, elementAffinity, elementResistanceMultiplier, fiveElementBreakMultiplier, fiveElementCounter, fiveElementDamageMultiplier, heartProfile, rawElementalDamage, totalDamageReductionPct } from './combat-rules.js';
+import { handleCombatDecisionV141 } from './combat-decision.js';
 function simpleSetParamV12318(entity, mechanic, key) {
     return setMechanicV117(entity, mechanic)?.params[key] ?? 0;
 }
@@ -245,220 +246,7 @@ export class CombatEngine {
         return cooldownProfile(skill, effectiveReduction, cooldownIncrease, allowsOvercap);
     }
     handleDecision(actor, target, now) {
-        if (actor.casting || actor.channeling)
-            return;
-        const skill = chooseSkill(actor, target, this.registry, now);
-        if (!skill) {
-            this.schedule({ time: now + 0.25, kind: 'decide', actorId: actor.id, targetId: target.id });
-            return;
-        }
-        const stats = effectiveStats(actor, this.registry, now);
-        const spiritPctBefore = actor.spirit / Math.max(1, actor.baseStats.maxSpirit) * 100;
-        const practiceTier = actor.combatBuildV117?.skillPracticeTierV125?.[skill.id] ?? 0;
-        const practice = skillPracticeProfileFromTierV125(practiceTier);
-        const authoredGrowth = battleDaoSkillGrowthProfileV126(skill, practiceTier);
-        const rawRuntimeSpiritMultiplier = skillSpiritCostMultiplierFromRuntimeV117(actor, skill, now) * daoSpiritCostMultiplierV118(actor, skill) * battleDaoV2SpiritCostMultiplier(actor, skill, now) * techniqueSpiritCostMultiplierV119(actor, skill, now) * (1 - practice.spiritCostReductionPct / 100) * (1 - (authoredGrowth?.spiritCostReductionPct ?? 0) / 100);
-        // Công Pháp V1: ordinary build reductions may not push a skill below 60% of its authored Chân Nguyên cost.
-        const runtimeSpiritMultiplier = Math.max(.60, rawRuntimeSpiritMultiplier);
-        let spiritCost = skillTrueEssenceCost(skill, stats, this.activeSpiritCostMultiplier(actor, now) * runtimeSpiritMultiplier);
-        let techniquePreEffectBonusPct = 0;
-        let techniquePreRecoveryMultiplier = 1;
-        // Phá Cực Nhiên Nguyên: an equipped high-cost rule deliberately spends extra Chân Nguyên for a narrow payoff.
-        const breakLimitPct = skillRuntimeV117(skill).costClass === 'high' ? techniqueBreakLimitExtraPctV119(actor) : 0;
-        if (breakLimitPct > 0 && spiritCost > 0 && actor.spirit > spiritCost) {
-            const maxExtra = spiritCost * breakLimitPct / 100;
-            const paidExtra = Math.min(maxExtra, Math.max(0, actor.spirit - spiritCost));
-            if (paidExtra > 0) {
-                const actualPct = paidExtra / spiritCost * 100;
-                spiritCost += paidExtra;
-                techniquePreEffectBonusPct += actualPct * .70;
-                techniquePreRecoveryMultiplier *= 1 + actualPct * .50 / 100;
-                this.log(now, 'resource', `${actor.name} vận Phá Cực, tiêu thêm ${paidExtra.toFixed(0)} Chân Nguyên.`, actor.id, actor.id, skill.id, { extraSpirit: paidExtra, effectBonusPct: actualPct * .70 });
-            }
-        }
-        // Bí Thuật may fund an otherwise unaffordable action, but the transaction is atomic: no HP is lost if it still cannot pay.
-        if (actor.spirit + 1e-9 < spiritCost) {
-            const missing = spiritCost - actor.spirit;
-            const standard = Math.max(1, combatSpiritStandard(stats));
-            const maxHp = Math.max(1, combatMaxHp(actor.baseStats));
-            const sacrificeCap = techniqueBloodSacrificeCapPctV119(actor);
-            if (sacrificeCap > 0) {
-                const maxSacrifice = Math.min(Math.max(0, actor.hp - 1), actor.hp * sacrificeCap / 100);
-                const hpNeeded = maxHp * (missing / standard);
-                if (hpNeeded <= maxSacrifice + 1e-9) {
-                    actor.hp -= hpNeeded;
-                    actor.spirit += missing;
-                    this.log(now, 'resource', `${actor.name} Huyết Tế ${hpNeeded.toFixed(0)} Sinh Mệnh đổi lấy ${missing.toFixed(0)} Chân Nguyên.`, actor.id, actor.id, skill.id, { healthCost: hpNeeded, spiritRestored: missing });
-                }
-            }
-            else {
-                const burnEfficiency = techniqueBurnBloodEfficiencyV119(actor);
-                if (burnEfficiency > 0) {
-                    const hpNeeded = maxHp * (missing / standard) / burnEfficiency;
-                    if (hpNeeded <= Math.max(0, actor.hp - 1) + 1e-9) {
-                        actor.hp -= hpNeeded;
-                        actor.spirit += missing;
-                        if (techniqueEquippedMasteryV119(actor, 'technique.v119.secret.burn_blood_qi') >= 100)
-                            actor.pendingSetFlagsV117['techniqueBurnBloodHealPenaltyUntil'] = now + 4;
-                        this.log(now, 'resource', `${actor.name} Thiêu Huyết bù ${missing.toFixed(0)} Chân Nguyên, hao ${hpNeeded.toFixed(0)} Sinh Mệnh.`, actor.id, actor.id, skill.id, { healthCost: hpNeeded, spiritFunded: missing });
-                    }
-                }
-            }
-        }
-        if (actor.spirit + 1e-9 < spiritCost) {
-            this.schedule({ time: now + 0.25, kind: 'decide', actorId: actor.id, targetId: target.id });
-            return;
-        }
-        actor.spirit = Math.max(0, actor.spirit - spiritCost);
-        // Quy Nguyên Chân Ý: crossing below 20% after paying a real skill cost grants one bounded emergency pulse.
-        const guidingRestorePct = techniqueGuidingReturnRestoreStandardPctV119(actor);
-        if (guidingRestorePct > 0 && spiritCost > 0 && spiritPctBefore >= 20 && actor.spirit / Math.max(1, actor.baseStats.maxSpirit) * 100 < 20) {
-            const readyAt = actor.pendingSetFlagsV117['techniqueGuidingReturnReadyAt'] ?? 0;
-            if (readyAt <= now) {
-                const restored = Math.min(actor.baseStats.maxSpirit - actor.spirit, combatSpiritStandard(stats) * guidingRestorePct / 100);
-                if (restored > 0) {
-                    actor.spirit += restored;
-                    actor.pendingSetFlagsV117['techniqueGuidingReturnReadyAt'] = now + techniqueGuidingReturnInternalSecondsV119(actor);
-                    this.log(now, 'resource', `${actor.name} vận Quy Nguyên Chân Ý, hồi ${restored.toFixed(0)} Chân Nguyên khi gần cạn.`, actor.id, actor.id, skill.id, { spiritRestored: restored, internalCooldown: techniqueGuidingReturnInternalSecondsV119(actor) });
-                }
-            }
-        }
-        // Phản Bản Quy Nguyên Cấm Pháp uses the already-existing Basic slot as its explicit trigger: no hidden extra skill slot.
-        if (skillSlotClassV117(skill) === 'basic') {
-            const pct = techniqueCooldownReturnPctV119(actor);
-            const readyAt = actor.pendingSetFlagsV117['techniqueCooldownReturnReadyAt'] ?? 0;
-            if (pct > 0 && readyAt <= now) {
-                let chosenId;
-                let chosenUntil = now;
-                for (const [id, until] of Object.entries(actor.cooldownUntil)) {
-                    if (until <= chosenUntil + 1e-9)
-                        continue;
-                    let other;
-                    try {
-                        other = this.registry.skill(id);
-                    }
-                    catch {
-                        continue;
-                    }
-                    const slot = skillSlotClassV117(other);
-                    if (slot === 'basic' || slot === 'ultimate')
-                        continue;
-                    chosenId = id;
-                    chosenUntil = until;
-                }
-                if (chosenId) {
-                    const extraCost = combatSpiritStandard(stats) * techniqueCooldownReturnSpiritCostPctV119(actor) / 100;
-                    if (actor.spirit + 1e-9 >= extraCost) {
-                        actor.spirit -= extraCost;
-                        const remaining = Math.max(0, chosenUntil - now);
-                        const reduced = remaining * pct / 100;
-                        actor.cooldownUntil[chosenId] = Math.max(now + .1, chosenUntil - reduced);
-                        actor.pendingSetFlagsV117['techniqueCooldownReturnReadyAt'] = now + techniqueCooldownReturnInternalSecondsV119(actor);
-                        this.log(now, 'resource', `${actor.name} vận Phản Bản Quy Nguyên, tiêu ${extraCost.toFixed(0)} Chân Nguyên rút ${reduced.toFixed(2)}s Hồi Chiêu của ${this.registry.skill(chosenId).name}.`, actor.id, actor.id, skill.id, { spiritCost: extraCost, cooldownReducedSeconds: reduced, internalCooldown: techniqueCooldownReturnInternalSecondsV119(actor) });
-                    }
-                }
-            }
-        }
-        if (actor.combatModel === 'locked-v1') {
-            const maxHp = combatMaxHp(actor.baseStats);
-            const healthCost = actor.hp * Math.max(0, skill.healthCostCurrentPct ?? 0) / 100
-                + maxHp * Math.max(0, skill.healthCostMaxPct ?? 0) / 100;
-            if (healthCost > 0) {
-                const paid = Math.min(Math.max(0, actor.hp - 1), healthCost);
-                actor.hp -= paid;
-                this.log(now, 'resource', `${actor.name} tiêu hao ${paid.toFixed(0)} Sinh Mệnh để vận công.`, actor.id, actor.id, skill.id, { healthCost: paid });
-            }
-        }
-        const prepared = prepareSkillActionRuntimeV117(actor, skill, now);
-        const skillLevelV12317 = Math.max(1, Math.floor(actor.combatBuildV117?.skillLevelsV12317?.[skill.id] ?? 1));
-        const skillGradeV12317 = actor.combatBuildV117?.skillGradesV12317?.[skill.id] ?? 'mundane';
-        const skillProgressBonusV12317 = skillProgressEffectBonusFromRuntimeV12317(skillLevelV12317, skillGradeV12317);
-        const secondaryScalingBonusV12317 = skillSecondaryEffectBonusPctV12317(stats, skill);
-        prepared.action.effectBonusPct += techniquePreEffectBonusPct + practice.effectBonusPct + (authoredGrowth?.effectBonusPct ?? 0) + skillProgressBonusV12317 + secondaryScalingBonusV12317;
-        prepared.action.breakBonusPct += Math.max(0, actor.combatBuildV117?.daoNatureBreakBonusPctV125 ?? 0) + (authoredGrowth?.breakBonusPct ?? 0);
-        prepared.action.castTimeMultiplier *= Math.max(.4, 1 - (authoredGrowth?.castTimeReductionPct ?? 0) / 100);
-        prepared.action.recoveryMultiplier *= techniquePreRecoveryMultiplier * Math.max(.4, 1 - (authoredGrowth?.recoveryReductionPct ?? 0) / 100);
-        if (techniqueEquippedMasteryV119(actor, 'technique.v119.secret.reverse_breath') >= 100 && spiritPctBefore < 30)
-            prepared.action.suppressGaugeGenerate = true;
-        // Phệ Thuẫn consumes pre-existing shield before this action resolves, so a shield created by this same skill can never feed itself.
-        const shieldConsumePct = techniqueShieldConsumePctV119(actor);
-        const domains = new Set(skillDomainsV117(skill));
-        if (shieldConsumePct > 0 && domains.has('Damage') && skillSlotClassV117(skill) !== 'basic') {
-            const totalBefore = this.totalShield(actor, now);
-            const requested = totalBefore * shieldConsumePct / 100;
-            let left = requested;
-            for (const shield of actor.shields) {
-                if (left <= 0)
-                    break;
-                if (shield.expiresAt <= now || shield.capacity <= 0)
-                    continue;
-                const used = Math.min(shield.capacity, left);
-                shield.capacity -= used;
-                left -= used;
-            }
-            const consumed = requested - left;
-            if (consumed > 0) {
-                prepared.action.effectBonusPct += techniqueShieldConsumeEffectBonusPctV119(actor);
-                this.log(now, 'resource', `${actor.name} Phệ Thuẫn ${consumed.toFixed(0)} Khiên để cường hóa ${skill.name}.`, actor.id, actor.id, skill.id, { shieldConsumed: consumed, effectBonusPct: techniqueShieldConsumeEffectBonusPctV119(actor) });
-            }
-        }
-        for (const notice of prepared.notices)
-            this.log(now, 'resource', notice.message, actor.id, actor.id, skill.id, notice.data);
-        for (const notice of prepareBattleDaoActionV118(actor, target, skill, prepared.action, now))
-            this.log(now, 'resource', notice.message, actor.id, actor.id, skill.id, notice.data);
-        if (battleDaoV2Enabled(actor)) {
-            prepared.action.battleDaoV2 = createRootActionV2(actor, skill, this.castToken + 1);
-            prepareSwordCoreActionV2(actor, skill, prepared.action, now);
-            const swordSpent = swordQiSpendBeforeActionV2(actor, skill, target, now);
-            if (swordSpent > 0) {
-                prepared.action.battleDaoV2.swordQiSpent = swordSpent;
-                this.log(now, 'resource', `${actor.name} vận ${skill.name}, tiêu ${swordSpent} Kiếm Khí.`, actor.id, actor.id, skill.id, { swordQiSpent: swordSpent, swordQi: actor.battleDaoStateV2?.sword?.core?.swordQi ?? 0, swordQiCap: actor.battleDaoStateV2?.sword?.core?.swordQiCap ?? 5 });
-            }
-            const swordTuning = swordV2ActionTuning(actor, skill);
-            prepared.action.effectBonusPct += swordTuning.extraEffectBonusPct;
-            prepared.action.breakBonusPct += swordTuning.extraBreakBonusPct;
-            prepared.action.castTimeMultiplier *= swordTuning.castMultiplier;
-            prepared.action.recoveryMultiplier *= swordTuning.recoveryMultiplier;
-            prepareRemainingDaoCoreActionV2(actor, target, skill, prepared.action, now);
-        }
-        const spentElement = Object.values(prepared.action.spentResources ?? {}).reduce((sum, value) => sum + Math.max(0, Number(value ?? 0)), 0);
-        if (spentElement > 0 && (techniqueEquippedMasteryV119(actor, 'technique.v119.secret.steal_heaven') >= 40 || techniqueEquippedMasteryV119(actor, 'technique.v119.secret.hidden_edge') >= 40))
-            actor.pendingSetFlagsV117['techniqueAfterDaoSpendUntil'] = Math.max(actor.pendingSetFlagsV117['techniqueAfterDaoSpendUntil'] ?? 0, now + 4);
-        const cooldown = this.cooldownFor(actor, skill, now);
-        const swordTuningForCooldown = swordV2ActionTuning(actor, skill);
-        if (swordTuningForCooldown.cooldownOverride !== undefined)
-            cooldown.actualCooldown = Math.max(skill.minimumCooldown ?? 0, swordTuningForCooldown.cooldownOverride);
-        // Locked: cooldown begins when the skill starts, not when channel/recovery ends.
-        actor.cooldownUntil[skill.id] = now + cooldown.actualCooldown;
-        const castTime = adjustedCastTime(skill.castTime * skillCastTimeMultiplierFromRuntimeV117(actor, skill) * daoCastTimeMultiplierV118(actor, skill) * techniqueCastMultiplierV119(actor, skill, now) * prepared.action.castTimeMultiplier, stats.actionSpeed);
-        const token = ++this.castToken;
-        actor.casting = {
-            skillId: skill.id,
-            startedAt: now,
-            resolvesAt: now + castTime,
-            token,
-            cooldownDamageBonusPct: cooldown.overflowSkillDamagePct,
-            runtimeV117: prepared.action,
-        };
-        const bossTelegraph = bossDangerMetaV81(actor, skill, castTime);
-        this.log(now, 'castStart', `${actor.name} vận chiêu ${skill.name}.`, actor.id, target.id, skill.id, {
-            castTime,
-            spiritCost,
-            cooldown: cooldown.actualCooldown,
-            cooldownReductionPct: cooldown.appliedReductionPct,
-            cooldownOverflowDamagePct: cooldown.overflowSkillDamagePct,
-            runtimeSpiritCostMultiplier: runtimeSpiritMultiplier,
-            ultimateGauge: actor.ultimateGaugeV117,
-            ...(bossTelegraph ?? {}),
-        });
-        this.schedule({
-            time: now + castTime,
-            kind: 'resolveSkill',
-            actorId: actor.id,
-            targetId: target.id,
-            skillId: skill.id,
-            castToken: token,
-        });
+        return handleCombatDecisionV141.call(this, actor, target, now);
     }
     handleSkillResolve(actor, target, skillId, castToken, now) {
         if (!actor.casting || actor.casting.token !== castToken)
