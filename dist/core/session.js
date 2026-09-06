@@ -43,7 +43,7 @@ import { lootDungeonIdsForRealmV122 } from './loot-economy-v122.js';
 import { V125_DAO_NATURE_DUNGEON_ID, V125_DAO_NATURE_TIER_RESOURCE_IDS } from '../content/dungeons.js';
 import { ALCHEMY_BUFF_DURATION_REAL_MINUTES, ALCHEMY_BUFF_PILL_DAILY_CAP, ALCHEMY_CULTIVATION_PILL_CAP_PER_MAJOR_REALM, ALCHEMY_DAO_SUY_PILL_CAP_PER_MAJOR_REALM, ALCHEMY_LIFESPAN_PILL_CAP_PCT, ALCHEMY_RANK_NAMES, ALCHEMY_TEMP_STAT_PILL_CAP_PER_TIER, ALCHEMY_TURN_NAMES, activeAlchemyBuff, alchemyCombatBuffEffect, alchemyCraftSnapshot, alchemyCultivationPillPct, alchemyDaoSuyPillRelief, alchemyForbiddenPillCost, alchemyGardenHerbResourceIdV85, alchemyGardenPlotStatusV85, alchemyGardenSlotCountV85, alchemyInjuryPillHeal, alchemyTurnExpRequirement, alchemyFurnaceCount, alchemyIngredientAvailability, alchemyLifespanPillPct, alchemyPillName, alchemyPillRealmEfficiency, alchemyPillResourceId, alchemyQualityWeights, alchemyVietnamDayKey, alchemyPermanentStatGain, alchemyPromotionRequirements, alchemyRecipeCatalogue, alchemyRecipeDefinition, alchemyRecipeResearchCost, alchemyTemporaryStatGain, applyAlchemyStatBonuses, archiveAlchemyLegacy, cloneAlchemyLegacy, cloneAlchemyV112State, createAlchemyV112State, daoPillStat, emptyAlchemyAllocation, ensureAlchemyV112State, harvestAlchemyGardenV85, isAlchemyBuffFamily, learnAlchemyRecipeV85, lifePillStat, parseAlchemyPillResourceId, permanentPillCap, plantAlchemyGardenV85, promoteAlchemyRank, startAlchemyCraft, syncAlchemyBuffDailyQuota, syncAlchemyV112, } from './alchemy-v112.js';
 import { PILL_QUALITY_MULTIPLIER, applyNaturalInjuryRecovery, rollPillQuality } from './recovery.js';
-import { cloneGuidanceState, normalizeGuidanceAutomationPolicy, planGuidance, recordGuidanceDecision, recommendGuidanceWorkerAssignments } from './guidance.js';
+import { cloneGuidanceState, normalizeGuidanceAutomationPolicy, planGuidance } from './guidance.js';
 import { clonePlayerFlowState, completeFirstLifeBeat, createPlayerFlowState, hasFirstLifeBeat } from './player-flow.js';
 import { inspectContentEventChoice, isContentEventAvailable, scaleContentEventEffectByTalents } from './content-event-director.js';
 import { V127_SIX_DAO_CLONES, cloneProgressionProfileV128, cloneSoulState, createSoulClone as createSoulCloneState, dismissSoulClone as dismissSoulCloneState, nourishSoul as nourishSoulState, recordSoulCloneYears, setSoulCloneProtectorV127 as setSoulCloneProtectorStateV127, soulCloneAuthorityCapacityV127, soulCloneAuthorityProfileV127, soulPressureMultiplier, soulProtectorCultivationBonusPctV127, syncSoulDungeonWorkers, synchronizeSoulForRealm, totalSoulLoad, trainSoulCloneDaoHanhV128 as trainSoulCloneDaoHanhStateV128, upgradeSoulCloneSealV128 as upgradeSoulCloneSealStateV128 } from './soul.js';
@@ -86,6 +86,7 @@ import { RESOURCE_PVE_DUNGEONS_V12329, grantResourcePveRewardsV12329, isResource
 import { buyEconomyOfferV89, economyActivitySummaryV89, recordBoundJadeSpendV89, recordEconomyActivityV89, recordFirstClearBoundJadeV89, recordProgressionBoundJadeV89, recordPvpWinBoundJadeV91, recordPvpSeasonBoundJadeV94 } from './economy-activity-v89.js';
 import { buildEconomyProductionV111 } from './economy-production-v111.js';
 import { REINCARNATION_TREE_TIER_INVESTMENT, availableTreePoints, buildTrialResult, cloneReincarnationProgressStateV1102, corePotentialDefinitions, depthInfoForRealmOrder, ensureLifePotentialForRealm, nodeModifierValue, permanentPotentialConversionPctV127, previewReincarnationV2Reward, rankCost, rechargeReincarnationEnergy, reincarnationEnergyCostReductionPctV127, reincarnationTreeRuntimeModifierV136, resetReincarnationTreeRanks, spendLifeCorePotential, spendPermanentCorePotential, spendReincarnationTreeRank, starterReincarnationTreeNodes, syncReincarnationTreeRuntimeOriginsV136, totalTreeMaxCostV127, totalTreeSpentPoints } from './reincarnation-progression-v1102.js';
+import { runSessionGuidanceV141 } from './session-guidance.js';
 function manualTreeModifiersV127(tree) {
     return {
         cultivationGainPct: nodeModifierValue(tree, 'manual.cultivationGainPct'),
@@ -1871,179 +1872,7 @@ export class SimulationSession {
         return planGuidance(this.stateValue, this.stateValue.guidance, this.world, this.registry, this.currentLifeValue.lifeId, requiredTuVi);
     }
     runGuidance(maxWorldYears = 20, maxDecisions = 20) {
-        if (!this.stateValue.alive)
-            throw new Error('Current life has ended');
-        if (!this.stateValue.guidance.enabled)
-            throw new Error('Định Hướng AI chưa được bật');
-        const startYear = this.stateValue.worldTimeYears;
-        const horizon = Math.max(0, maxWorldYears);
-        const stepCap = Math.max(1, Math.floor(maxDecisions));
-        const steps = [];
-        const workerAssignments = [];
-        const automation = normalizeGuidanceAutomationPolicy(this.stateValue.guidance.automationPolicy);
-        let lastActionSignature = '';
-        let consecutiveSameAction = 0;
-        const initialMajorEvent = this.availableContentEvents(1)[0];
-        if (automation.wakeOnContentEvent && initialMajorEvent && initialMajorEvent.priority >= 90) {
-            return { elapsedYears: 0, decisions: 0, wakeReason: 'majorEvent', workerAssignments: [], steps: [], state: this.state };
-        }
-        for (const recommendation of recommendGuidanceWorkerAssignments(this.stateValue, this.stateValue.guidance, this.world)) {
-            try {
-                this.assignDungeon(recommendation.workerId, recommendation.dungeonId, recommendation.floor);
-                const dungeon = this.world.dungeons[recommendation.dungeonId];
-                const summary = `${recommendation.workerId} → ${dungeon.name} tầng ${recommendation.floor}`;
-                workerAssignments.push(summary);
-                recordGuidanceDecision(this.stateValue.guidance, this.stateValue.worldTimeYears, {
-                    action: { type: 'activity', request: { type: 'dungeon', dungeonId: recommendation.dungeonId, floor: recommendation.floor, durationYears: 0 } },
-                    score: recommendation.score,
-                    summary: `Phân công ${summary}.`,
-                    reasons: [recommendation.reason], blockers: [],
-                });
-            }
-            catch {
-                // Assignment recommendation can become stale only if state was modified externally between preview and run.
-            }
-        }
-        let wakeReason = 'maxDecisions';
-        for (let index = 0; index < stepCap; index++) {
-            if (!this.stateValue.alive) {
-                wakeReason = 'lifeEnd';
-                break;
-            }
-            const elapsed = this.stateValue.worldTimeYears - startYear;
-            if (elapsed >= horizon - 1e-9) {
-                wakeReason = 'horizonComplete';
-                break;
-            }
-            const decision = this.previewGuidance();
-            const chosen = decision.chosen;
-            const signature = JSON.stringify(chosen.action);
-            if (signature === lastActionSignature)
-                consecutiveSameAction += 1;
-            else {
-                lastActionSignature = signature;
-                consecutiveSameAction = 1;
-            }
-            if (consecutiveSameAction > automation.maxConsecutiveSameAction) {
-                wakeReason = 'policyStop';
-                break;
-            }
-            const beforeAvailableIds = new Set(this.availableContentEvents(6).filter(event => event.priority >= 80).map(event => event.id));
-            const beforeYear = this.stateValue.worldTimeYears;
-            const beforeHistoryCount = this.historyValue.size();
-            let resultSummary = '';
-            let forcedWake;
-            if (chosen.blockers.length > 0) {
-                resultSummary = `AI dừng: ${chosen.blockers.join(' ')}`;
-                recordGuidanceDecision(this.stateValue.guidance, this.stateValue.worldTimeYears, chosen);
-                steps.push({ index, worldYearBefore: beforeYear, worldYearAfter: beforeYear, decision, resultSummary, significantEvents: [] });
-                wakeReason = chosen.blockers.includes('automationSafety') ? 'policyStop' : 'blocked';
-                break;
-            }
-            if (chosen.action.type === 'none') {
-                resultSummary = chosen.summary;
-                recordGuidanceDecision(this.stateValue.guidance, this.stateValue.worldTimeYears, chosen);
-                steps.push({ index, worldYearBefore: beforeYear, worldYearAfter: beforeYear, decision, resultSummary, significantEvents: [] });
-                wakeReason = 'noAction';
-                break;
-            }
-            try {
-                const remainingHorizon = Math.max(0, horizon - (this.stateValue.worldTimeYears - startYear));
-                switch (chosen.action.type) {
-                    case 'activity': {
-                        const request = { ...chosen.action.request, durationYears: Math.min(chosen.action.request.durationYears, remainingHorizon) };
-                        if (request.durationYears <= 1e-9) {
-                            forcedWake = 'horizonComplete';
-                            resultSummary = 'Đã chạm giới hạn thời gian Định Hướng.';
-                            break;
-                        }
-                        const report = this.execute(request);
-                        resultSummary = report.summaryLines.join(' ');
-                        if (report.stopReason === 'combatDefeat')
-                            forcedWake = 'combatDefeat';
-                        if (!this.stateValue.alive)
-                            forcedWake = 'lifeEnd';
-                        break;
-                    }
-                    case 'retreat': {
-                        const report = this.instantRetreatV140(chosen.action.realHours ?? 3);
-                        resultSummary = report.event?.message ?? `Bế Quan · Tu Vi +${report.gained.toFixed(0)}.`;
-                        break;
-                    }
-                    case 'ascendRealm': {
-                        const report = this.ascendRealmV140();
-                        resultSummary = report.event?.message ?? 'Thăng Cảnh thành công.';
-                        forcedWake = 'ascension';
-                        break;
-                    }
-                    case 'tribulation': {
-                        const report = this.attemptHeavenlyTribulation();
-                        resultSummary = report?.event?.message ?? 'Thiên Kiếp đã được xử lý.';
-                        forcedWake = 'tribulation';
-                        break;
-                    }
-                    case 'challengeDungeon': {
-                        const report = this.challengeDungeonFloor(chosen.action.dungeonId, chosen.action.floor);
-                        resultSummary = `${report.guardianName}: ${report.won ? 'thắng' : 'thua'} sau ${report.battleDuration.toFixed(1)}s${report.firstClear ? ' · FIRST CLEAR' : ''}.`;
-                        if (!report.won)
-                            forcedWake = 'combatDefeat';
-                        else if (report.firstClear)
-                            forcedWake = 'majorEvent';
-                        break;
-                    }
-                    case 'craft': {
-                        const report = this.craftProfession(chosen.action.recipeId, chosen.action.quantity);
-                        resultSummary = `${this.registry.professionRecipe(chosen.action.recipeId).name}: ${report.result.successes}/${report.result.attempts} thành công.`;
-                        if (report.result.unlockedRecipeIds.length > 0)
-                            forcedWake = 'majorEvent';
-                        break;
-                    }
-                    case 'marketSell': {
-                        const report = this.sellMarketResource(chosen.action.marketId, chosen.action.resourceId, chosen.action.quantity);
-                        resultSummary = `Bán ${report.transaction.quantity} đơn vị, nhận ${report.transaction.totalSpiritStones} Linh Thạch.`;
-                        break;
-                    }
-                    case 'marketBuy': {
-                        const report = this.buyMarketResource(chosen.action.marketId, chosen.action.resourceId, chosen.action.quantity);
-                        resultSummary = `Mua ${report.transaction.quantity} đơn vị, tiêu ${report.transaction.totalSpiritStones} Linh Thạch.`;
-                        break;
-                    }
-                    case 'factionContribute': {
-                        const report = this.contributeToFaction(chosen.action.resourceId, chosen.action.quantity);
-                        resultSummary = `Cống hiến ${report.quantity} ${report.resourceId}; công đức +${report.meritGained.toFixed(0)}.`;
-                        break;
-                    }
-                }
-            }
-            catch (error) {
-                resultSummary = `AI dừng vì action không còn hợp lệ: ${error instanceof Error ? error.message : String(error)}`;
-                forcedWake = 'blocked';
-            }
-            recordGuidanceDecision(this.stateValue.guidance, beforeYear, chosen);
-            const newHistory = this.historyValue.sliceFrom(beforeHistoryCount);
-            const significantEvents = newHistory.filter(event => event.significance >= 20).map(event => event.message).slice(0, 5);
-            if (!forcedWake && automation.wakeOnContentEvent) {
-                const newly = this.availableContentEvents(6).find(event => event.priority >= 80 && !beforeAvailableIds.has(event.id));
-                if (newly) {
-                    significantEvents.unshift(`Cơ duyên mới: ${newly.title}`);
-                    forcedWake = 'majorEvent';
-                }
-            }
-            steps.push({ index, worldYearBefore: beforeYear, worldYearAfter: this.stateValue.worldTimeYears, decision, resultSummary, significantEvents });
-            if (!forcedWake && this.stateValue.guidance.stopOnMajorEvent && newHistory.some(event => event.significance >= 30))
-                forcedWake = 'majorEvent';
-            if (forcedWake) {
-                wakeReason = forcedWake;
-                break;
-            }
-            if (this.stateValue.worldTimeYears - startYear >= horizon - 1e-9) {
-                wakeReason = 'horizonComplete';
-                break;
-            }
-        }
-        if (steps.length >= stepCap && wakeReason === 'maxDecisions')
-            wakeReason = 'maxDecisions';
-        return { elapsedYears: this.stateValue.worldTimeYears - startYear, decisions: steps.length, wakeReason, workerAssignments, steps, state: this.state };
+        return runSessionGuidanceV141.call(this, maxWorldYears, maxDecisions);
     }
     npcState(npcId) {
         const npc = this.stateValue.worldSimulation.npcs[npcId];
