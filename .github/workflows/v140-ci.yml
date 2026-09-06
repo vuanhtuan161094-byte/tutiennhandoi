@@ -27,6 +27,9 @@ jobs:
           node-version: '22'
           cache: ''
 
+      - name: Codebase health scan
+        run: node qa/tools/codebase-health.js
+
       - name: V140 cultivation core
         run: node qa/tests/v140-cultivation-core-test.js
 
