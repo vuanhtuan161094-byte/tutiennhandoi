@@ -1864,16 +1864,6 @@ function v13820DeltaText(value,key=''){
   const pct=/(Pct|Chance|Reduction|Efficiency)/i.test(key), speed=key==='actionSpeed';
   const digits=speed?3:pct?1:2; return `${value>0?'+':''}${num(value,digits)}${pct?'%':''}`;
 }
-function v13820BuildHints(selected,equipped){
-  if(!selected)return [];
-  const d=Object.fromEntries(v13820StatDelta(selected,equipped).map(x=>[x.key,x.value]));
-  const hints=[];
-  const offense=Number(d.attack||0)+Number(d.critChancePct||0)*2+Number(d.heartChancePct||0)*2+Number(d.armorPenPct||0)*2;
-  const survival=Number(d.maxHp||0)*.04+Number(d.defense||0)*2+Number(d.damageReductionPct||0)*3+Number(d.controlDurationReductionPct||0)*1.5;
-  if(offense>0.01)hints.push(['up','Tấn công sơ bộ ↑','Chỉ dựa trên delta stat trực tiếp']); else if(offense<-.01)hints.push(['down','Tấn công sơ bộ ↓','Chỉ dựa trên delta stat trực tiếp']);
-  if(survival>0.01)hints.push(['up','Sinh tồn sơ bộ ↑','HP/Phòng Ngự/kháng trực tiếp tốt hơn']); else if(survival<-.01)hints.push(['down','Sinh tồn sơ bộ ↓','Mất một phần chỉ số chống chịu trực tiếp']);
-  return hints.slice(0,2);
-}
 
 function v13820AffixHtml(x){
   const lines=x?.affixes||[];
@@ -1892,22 +1882,6 @@ function v13822BuildIdentity(intel){
   for(const x of (b.primaryRoots||[]))chips.push(`<span class="root">${esc(x.label)} Hành</span>`);
   for(const x of (b.markNames||[]).slice(0,3))chips.push(`<span class="mark">Ấn: ${esc(x)}</span>`);
   return chips.length?`<div class="v13822-build-chips">${chips.join('')}</div>`:'<div class="v13822-build-chips"><span>Chuỗi kỹ năng hiện tại chưa nghiêng rõ về một Đạo/Hành/Ấn cụ thể.</span></div>';
-}
-function v13822IntelPanel(selected){
-  if(!selected)return '';
-  if(selected.equipped)return `<section class="v13822-intel current"><div class="v13822-intel-head"><div><span>Phân tích thực chiến</span><strong>Đang dùng trong lối chơi hiện tại</strong></div><b>ĐANG MẶC</b></div><p>Chọn một món khác cùng vị trí để xem nó thay đổi sát thương, sinh tồn và nhịp dùng kỹ năng ra sao.</p></section>`;
-  const state=equipmentIntel?.itemId===selected.id?equipmentIntel:{itemId:selected.id,loading:false,data:null,error:''};
-  if(state.loading)return `<section class="v13822-intel loading" aria-busy="true" aria-live="polite"><div class="v13822-intel-head"><div><span>So sánh trước / sau</span><strong>Đang mô phỏng thực chiến…</strong></div><b>ĐANG CHẠY</b></div><div class="v13822-loader"><i></i><span>Đang so lối chơi hiện tại với phương án mặc ${esc(selected.name)}.</span></div></section>`;
-  if(state.error)return `<section class="v13822-intel error"><div class="v13822-intel-head"><div><span>Phân tích thực chiến</span><strong>Phân tích chưa hoàn tất</strong></div><b>!</b></div><p>${esc(state.error)}</p><button class="v13822-run" data-build-intel="${esc(selected.id)}">Thử lại</button></section>`;
-  const intel=state.data;
-  if(!intel||intel.schema!=='equipment-build-intelligence.v1')return `<section class="v13822-intel ready"><div class="v13822-intel-head"><div><span>Phân tích thực chiến</span><strong>Xem ảnh hưởng khi thay món</strong></div><b>SO SÁNH</b></div><p>Các con số phía trên chỉ cho thấy thuộc tính trực tiếp. Phân tích thực chiến sẽ kiểm tra thêm DPS, sống sót, Phá Thế, Chân Nguyên và hiệu ứng Set.</p><button class="v13822-run" data-build-intel="${esc(selected.id)}">Phân tích thực chiến</button><small>Chỉ phân tích món đang chọn để giữ game mượt.</small></section>`;
-  const m=intel.metrics||{};
-  const metrics=[['DPS',m.dps],['Sống sót',m.survival],['Phá Thế',m.breakPressure],['Khống chế',m.controlPressure]].map(([label,x])=>{const d=Number(x?.deltaPct||0),tone=v13822MetricTone(d);return `<div class="v13822-metric ${tone}"><span>${label}</span><strong>${v13822SignedPct(d)}</strong><small>${num(x?.before||0,2)} → ${num(x?.after||0,2)}</small></div>`;}).join('');
-  const spirit=m.spiritSustain||{}; const sp=Number(spirit.deltaPoints||0),spTone=v13822MetricTone(sp);
-  const verdicts=(intel.verdicts||[]).map(v=>`<div class="v13822-verdict ${esc(v.tone||'neutral')}"><i>${v.tone==='up'?'↑':v.tone==='down'?'↓':v.tone==='synergy'?'✦':'·'}</i><span><b>${esc(v.label)}</b><small>${esc(v.detail)}</small></span></div>`).join('');
-  const matched=new Set(intel.matchedSetChanges||[]);
-  const setChanges=(intel.setChanges||[]).map(x=>`<div class="v13822-set-change ${esc(x.type)} ${matched.has(x.mechanicId)?'matched':''}"><span>${x.type==='activated'?'KÍCH':x.type==='deactivated'?'MẤT':'ĐỔI'}${matched.has(x.mechanicId)?' · HỢP BUILD':''}</span><b>${esc(x.setName)} ${num(x.pieces)} món · ${esc(x.name)}</b><small>${esc(x.summary)}</small></div>`).join('');
-  return `<section class="v13822-intel done"><div class="v13822-intel-head"><div><span>${esc(intel.benchmark?.engine||'CombatEngine')} · ${num(intel.benchmark?.durationSeconds||45)}s × 2</span><strong>Kết quả khi thay món</strong></div><b>KẾT QUẢ</b></div><div class="v13822-metrics">${metrics}<div class="v13822-metric ${spTone}"><span>Chân Nguyên</span><strong>${sp>0?'+':''}${num(sp,1)}đ</strong><small>${num(spirit.beforePct||0,1)}% → ${num(spirit.afterPct||0,1)}%</small></div></div>${v13822BuildIdentity(intel)}<div class="v13822-verdicts">${verdicts}</div>${setChanges?`<div class="v13822-set-changes"><strong>Hiệu ứng Set thay đổi</strong>${setChanges}</div>`:''}<div class="v13822-survival-note">Áp lực sống sót: ${num(m.survivalDetail?.beforeSeconds||0,1)}s → ${num(m.survivalDetail?.afterSeconds||0,1)}s · HP cuối ${num(m.survivalDetail?.beforeHpPct||0,0)}% → ${num(m.survivalDetail?.afterHpPct||0,0)}%</div><p class="v13822-caveat">${esc(intel.benchmark?.note||'Mô phỏng dùng cùng một điều kiện để so sánh; kết quả thực tế có thể khác tùy đối thủ.')}</p><button class="v13822-rerun" data-build-intel="${esc(selected.id)}">Chạy lại</button></section>`;
 }
 
 function v138239StatValue(item,key){
@@ -1943,16 +1917,6 @@ function v138239AcquisitionPanel(x,setEntry,sys){
   const accessory=x?.slotGroup==='jewelry'?(sys?.sourceGuide?.accessoryDungeon||{name:'Linh Bội Bảo Khố',description:'Nguồn nhắm đích cho 4 ô phụ kiện thường; phụ kiện không có Set riêng.'}):null;
   const targetHtml=target?`<div class="v138239-source-row target"><span>Farm đúng Set Ngũ Hành</span><b>${esc(target.location)} · Tầng ${num(target.floor)}</b><small>First-clear mở đường Luyện Khí đúng Set; tái chiến tiếp tục có thể rơi mảnh đúng bộ của tầng.</small></div>`:accessory?`<div class="v138239-source-row target"><span>Farm phụ kiện</span><b>${esc(accessory.name)}</b><small>${esc(accessory.description||'Phụ kiện không có Set riêng; so phẩm, affix và Cường Hóa để chọn món.')}</small></div>`:`<div class="v138239-source-row"><span>Nguồn rộng</span><b>Săn Yêu / phó bản theo loot table</b><small>Săn Yêu là nguồn loot rộng cho nâng cấp chung. Chỉ Trang Phục Ngũ Hành có dungeon Set nhắm đích.</small></div>`;
   return `<section class="v138239-source"><div class="v138239-source-title"><span>⌖</span><div><small>NGUỒN TRANG BỊ</small><strong>Kiếm món này ở đâu?</strong></div></div><div class="v138239-source-row"><span>Nguồn món hiện tại</span><b>${esc(actual)}</b></div>${targetHtml}</section>`;
-}
-function v138239GearSourcesSheet(sys){
-  const setCount=(sys?.setCatalog||[]).length||0;
-  const guide=sys?.sourceGuide||{};
-  const broad=guide.broadLoot||{name:'Săn Yêu',description:'Loot rộng · chạy online/offline · phù hợp tìm món nâng cấp chung, phẩm/cấp cao hơn và tài nguyên.'};
-  const setDungeons=Array.isArray(guide.setDungeons)&&guide.setDungeons.length?guide.setDungeons:[{name:'Ngũ Hành Đạo Khố',description:'5 tầng · mỗi tầng ứng đúng một bộ Trang Phục Kim/Mộc/Thủy/Hỏa/Thổ.'}];
-  const accessory=guide.accessoryDungeon||{name:'Linh Bội Bảo Khố',description:'4 tầng · nguồn nhắm đích cho Ngọc Bội, Nhẫn, Vòng và Hộ Phù thường.'};
-  const manual=guide.manualTrial||{name:'Bát Đạo Chân Điện',description:'Thử luyện Bản Đạo; Bí Tịch Trấn Phái không phải đồ và tiến sâu bằng Đạo Hạnh chiến đấu.'};
-  const forge=guide.forgeDungeon||{name:'Thiên Công Luyện Vực',description:'8 tầng Phàm→Phá · farm vật liệu Luyện Đồ.'};
-  return v106Sheet('gear-sources','Nguồn Trang Bị',`<div class="v138239-source-guide"><header><small>ĐỪNG FARM MÙ</small><strong>Chọn nguồn theo mục tiêu</strong><p>Một hệ Set duy nhất: Ngũ Hành. Phụ kiện là đồ thường; Bí Tịch Trấn Phái là truyền thừa Chủ Đạo, không nằm trong kho đồ.</p></header><article><i>⚔</i><div><strong>${esc(broad.name)}</strong><span>${esc(broad.description)}</span></div><button data-tab-jump="hunt">Đi Săn Yêu</button></article>${setDungeons.map(d=>`<article><i>◇</i><div><strong>${esc(d.name)}</strong><span>${esc(d.description)}</span></div></article>`).join('')}<article><i>◈</i><div><strong>${esc(accessory.name)}</strong><span>${esc(accessory.description)}</span></div></article><article><i>📖</i><div><strong>${esc(manual.name)}</strong><span>${esc(manual.description)}</span></div><button data-tab-jump="path">Xem Bản Đạo</button></article><article><i>⚒</i><div><strong>${esc(forge.name)}</strong><span>${esc(forge.description)}</span></div><button data-inventory-view="forge">Mở Luyện Đồ</button></article><footer><span>Set trang bị đang live</span><b>${num(setCount)} Ngũ Hành</b><button data-inventory-view="sets">Xem Set Ngũ Hành</button></footer></div>`);
 }
 function v138244DetailStatCards(x){
   const stats=x?.effectiveStats||x?.stats||{};
@@ -2335,21 +2299,6 @@ function v1074AppearanceSheet(){
 /* v1.09 cleanup: removed superseded v1.07.4 header renderer */
 /* v1.09 cleanup: removed superseded v1.07.4 character renderer */
 /* v1.07.4 character sheet polish r1 — compact, game-like, backend-bound panels. */
-function v1075OriginCards(c){
-  const b=c.birth||{};
-  const raw=(b.originLines||[]).slice(0,6);
-  const fallback=[
-    ['Linh Căn',c.root||'Không rõ'],
-    ['Huyết Mạch',(c.originProgression?.bloodline?.name)||'Vô Huyết Mạch'],
-    ['Thể Chất',(c.originProgression?.physique?.name)||'Phàm Thể'],
-    ['Thiên Phú',(b.talents||[])[0]?.name||'Vô Thiên Phú'],
-    ['Mệnh Cách',b.fate||'Không rõ'],
-    ['Xuất Thân',b.family||'Không rõ']
-  ];
-  const rows=raw.length?raw.map((line,i)=>{const parts=String(line).split(':');return [parts.shift()?.trim()||fallback[i][0],parts.join(':').trim()||fallback[i][1]];}):fallback;
-  const icons=['◇','◈','⬡','✦','◎','⌂'];
-  return `<div class="v1075-origin-grid">${rows.map((x,i)=>`<div class="v1075-origin-card"><i>${icons[i]||'◇'}</i><div><span>${esc(x[0])}</span><strong>${esc(x[1])}</strong></div></div>`).join('')}</div>`;
-}
 
 
 
@@ -2501,10 +2450,6 @@ function v1078StatsSheet(c,o){
 function v13819AffinityValue(v){
   if(v&&typeof v==='object')return Number(v.pct??v.value??v.multiplier??0);
   const n=Number(v||0);return Math.abs(n)<=1?n*100:n;
-}
-function v13819TopElement(obj={}){
-  const rows=Object.entries(obj).map(([k,v])=>[k,v13819AffinityValue(v)]).filter(([,v])=>Number.isFinite(v)&&Math.abs(v)>.0001).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]));
-  if(!rows.length)return null; const [key,value]=rows[0];return {key,label:(V1077_ELEMENT_META[key]||[localizeUiTerm(key)])[0],value};
 }
 function v13819BreakSummary(c={},sys={}){
   const text=x=>`${x?.description||''} ${Array.isArray(x?.mechanics)?x.mechanics.join(' '):String(x?.mechanics||'')} ${(x?.tags||[]).join(' ')}`.toLowerCase();

@@ -88,9 +88,6 @@ function availableReforgeFamiliesV13821(item, index) {
     const maxBuild = item.setId?.startsWith('set.v116.') ? 2 : 3;
     return LIVE_EQUIPMENT_AFFIX_FAMILIES_V13821.filter(family => EQUIPMENT_AFFIX_DEFINITIONS_V114.some(def => def.live && def.family === family && def.id !== current.id && !usedGroups.has(def.exclusiveGroup) && (!def.buildAffix || buildCount < maxBuild)));
 }
-function pct(value) {
-    return Math.max(0, Math.min(100, value));
-}
 export class GameplayFacade {
     session;
     registry;

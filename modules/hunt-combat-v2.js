@@ -56,10 +56,6 @@ function skillRole(skill={}){
   return {key:'active',label:'CHỦ ĐỘNG'};
 }
 
-function mmss(seconds){
-  const s=Math.max(0,Math.floor(Number(seconds)||0));
-  return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
-}
 
 function skillKind(skill={}){
   const haystack=[skill.name,skill.description,...(skill.tags||[])].join(' ').toLowerCase();
@@ -547,7 +543,6 @@ export function renderHuntCombatV2(ctx){
 function q(root,selector){return root.querySelector(selector)}
 function qa(root,selector){return [...root.querySelectorAll(selector)]}
 function syncCombatPixiEnemyAsset(src=''){return syncCombatPresentationEnemyAsset(src);}
-function combatPixiFxActive(){return combatPresentationActive();}
 function playCombatPixiFx(event={}){return playCombatPresentationFx(event);}
 function syncCombatPixiFxState(){return setCombatPresentationFxState({paused:fxPaused,speed:COMBAT_PRESENTATION_SPEED,quality:combatFxQuality});}
 function syncCombatPixiSwordQi(value=0,max=5){return setCombatPresentationSwordQi({value:Number(value)||0,max:Math.max(1,Number(max)||5)});}
@@ -1305,13 +1300,6 @@ function playBackendCombatEvents(root,events=[],skills=[]){
   return {played:true,ms:totalMs};
 }
 
-function idleSequence(root,skills,model,auto){
-  if(!root.isConnected)return;
-  const authored=skills.filter(Boolean); const usable=authored.length?authored:[{name:'Kiếm Khí',tags:['Sword'],cooldown:1.2},{name:'Ngự Khí Quyết',tags:['Spell'],cooldown:1.5}];
-  const skill=usable[sequenceIndex%usable.length]; const index=sequenceIndex%Math.max(1,usable.length); sequenceIndex++;
-  playSkill(root,skill,index,null,sequenceIndex%3===0);
-  if(!auto&&sequenceIndex%2===0)setCaption(root,'Đối thủ thăm dò','Hai bên khóa khí cơ, chờ một nhịp bộc phát.');
-}
 
 function virtualFarmAttackCadenceV77(gapMs){return Math.max(900,Math.min(2400,gapMs/5));}
 function playVirtualFarmHitV77(root,skills=[],farm={},progress=.25){

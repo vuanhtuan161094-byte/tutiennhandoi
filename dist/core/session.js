@@ -107,7 +107,6 @@ function manualTreeModifiersV127(tree) {
 function offlineRewardPctV127(state) {
     return Math.max(0, Math.min(50, reincarnationTreeRuntimeModifierV136(state?.inheritedOrigins ?? {}, 'cultivation.offlineRewardPct')));
 }
-function offlineRewardMultiplierV127(state) { return 1 + offlineRewardPctV127(state) / 100; }
 function offlineSpecialOpportunityFactorV127(state) {
     const progress = offlineRewardPctV127(state) / 50;
     return HUNT_OFFLINE_SPECIAL_OPPORTUNITY_FACTOR_V135 + (1 - HUNT_OFFLINE_SPECIAL_OPPORTUNITY_FACTOR_V135) * Math.max(0, Math.min(1, progress));
