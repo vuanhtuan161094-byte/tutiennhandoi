@@ -25,13 +25,16 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Apply session migration extraction
-        run: node qa/tools/v141-refactor-session-migrations.js
+      - name: Apply session extractions
+        run: |
+          node qa/tools/v141-refactor-session-migrations.js
+          node qa/tools/v141-refactor-session-restore.js
 
       - name: Syntax check
         run: |
           node --check dist/core/session.js
           node --check dist/core/session-save-migrations.js
+          node --check dist/core/session-restore.js
 
       - name: Fast canonical gates
         run: |
@@ -46,6 +49,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dist/core/session.js dist/core/session-save-migrations.js
-          git commit -m "refactor: extract session save migrations"
+          git add dist/core/session.js dist/core/session-save-migrations.js dist/core/session-restore.js
+          git commit -m "refactor: extract session save compatibility modules"
           git push origin HEAD:refactor/v141-codebase-optimization
