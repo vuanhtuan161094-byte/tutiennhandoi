@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#071a29" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/assets/app-icon-192.png" />
+  <title>Tu Tiên Nhàn Rỗi · v1.40.0-alpha.24.0 · Tiên hiệp kỳ ảo</title>
+  <link rel="stylesheet" href="/styles.css?v=1.40.0-alpha.24.0-cultivation-v140-20260906" />
+  <link rel="stylesheet" href="/combat-v2.css?v=1.40.0-alpha.24.0-cultivation-v140-20260906" />
+</head>
+<body>
+  <div id="app" class="game-shell">
+    <header class="topbar">
+      <div id="playerHeader" class="player-header"></div>
+      <div class="topbar-actions">
+        <span id="saveState" class="save-state" role="status" aria-live="polite">Đang kết nối…</span>
+        <details class="system-menu">
+          <summary aria-label="Mở thiết lập">☰</summary>
+          <div class="system-menu-panel">
+            <div id="systemQuickMenu" class="system-quick-menu" aria-label="Tiện ích nhanh"></div>
+            <div class="system-menu-divider"></div>
+            <button id="exportSave" class="menu-action">Xuất save</button>
+            <button id="restoreBackup" class="menu-action" disabled>Khôi phục backup gần nhất</button>
+            <label class="menu-action file-button">Nhập save<input id="importSave" type="file" accept="application/json,.json" /></label>
+            <button id="newGame" class="menu-action danger">Nhân vật mới</button>
+          </div>
+        </details>
+      </div>
+    </header>
+
+    <div class="viewport-shell">
+      <aside id="quickNav" class="quick-nav" aria-label="Điều hướng phụ"></aside>
+      <main class="main">
+        <div id="notice" class="notice hidden"></div>
+        <section id="content" class="content" aria-live="off"></section>
+      </main>
+    </div>
+
+    <nav id="nav" class="bottom-nav" aria-label="Điều hướng chính"></nav>
+  </div>
+
+  <dialog id="confirmDialog">
+    <form method="dialog">
+      <h3 id="confirmTitle">Xác nhận</h3>
+      <p id="confirmText"></p>
+      <div class="dialog-actions">
+        <button value="cancel" class="button ghost">Hủy</button>
+        <button value="ok" class="button danger">Xác nhận</button>
+      </div>
+    </form>
+  </dialog>
+  <script type="module" src="/standalone-entry.js?v=v140-cultivation-clean-20260906"></script>
+  <script src="/pwa-register.js?v=v140-cultivation-clean-20260906" defer></script>
+</body>
+</html>

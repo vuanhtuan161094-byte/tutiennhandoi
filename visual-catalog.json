@@ -1,0 +1,179 @@
+{
+  "skins": [
+    {
+      "id": "skin.white_immortal",
+      "name": "Bạch Y Tiên Khách",
+      "asset": "/assets/runtime/v138/characters/immortal_swordsman_01/idle.webp",
+      "avatar": "/assets/runtime/v138/characters/immortal_swordsman_01/portrait.webp",
+      "unlocked": true,
+      "layout": {
+        "widthPct": 84,
+        "heightPct": 99,
+        "xPct": 50,
+        "yPct": 0
+      }
+    },
+    {
+      "id": "skin.white_mist",
+      "name": "Bạch Y Vân Ảnh",
+      "asset": "/assets/v1074/skin-white-mist.png",
+      "avatar": "/assets/v1073/avatar.webp",
+      "unlocked": false,
+      "layout": {
+        "widthPct": 82,
+        "heightPct": 99,
+        "xPct": 50,
+        "yPct": 0
+      }
+    }
+  ],
+  "backgrounds": [
+    {
+      "id": "bg.ink_mountain",
+      "name": "Tiên Sơn Lam Cảnh",
+      "asset": "/assets/v1074/bg-blue-valley.webp",
+      "unlocked": true,
+      "layout": {
+        "positionX": 50,
+        "positionY": 45,
+        "scale": 1.05
+      }
+    },
+    {
+      "id": "bg.ivory_mountain",
+      "name": "Vân Sơn Nhã Cảnh",
+      "asset": "/assets/v1074/bg-ivory-mountain.webp",
+      "unlocked": true,
+      "layout": {
+        "positionX": 50,
+        "positionY": 45,
+        "scale": 1.02
+      }
+    },
+    {
+      "id": "bg.minimal_ink",
+      "name": "Mặc Sơn Tĩnh Cảnh",
+      "asset": "/assets/v1074/bg-ink-mountain.webp",
+      "unlocked": true,
+      "layout": {
+        "positionX": 50,
+        "positionY": 50,
+        "scale": 1.0
+      }
+    }
+  ],
+  "expressions": [
+    {
+      "id": "neutral",
+      "name": "Bình tĩnh",
+      "symbol": "—",
+      "description": "Điềm tĩnh, mặc định.",
+      "unlocked": true
+    },
+    {
+      "id": "happy",
+      "name": "Vui vẻ",
+      "symbol": "⌒‿⌒",
+      "description": "Vui vẻ, thân thiện.",
+      "unlocked": true
+    },
+    {
+      "id": "smile",
+      "name": "Cười mỉm",
+      "symbol": "˘‿˘",
+      "description": "Nhẹ nhàng, kín đáo.",
+      "unlocked": true
+    },
+    {
+      "id": "confident",
+      "name": "Tự tin",
+      "symbol": "¬‿¬",
+      "description": "Tự tin, ung dung.",
+      "unlocked": true
+    },
+    {
+      "id": "cold",
+      "name": "Lạnh lùng",
+      "symbol": "—_—",
+      "description": "Lạnh và xa cách.",
+      "unlocked": true
+    },
+    {
+      "id": "angry",
+      "name": "Tức giận",
+      "symbol": "ಠ_ಠ",
+      "description": "Bực tức rõ rệt.",
+      "unlocked": true
+    },
+    {
+      "id": "bloodlust",
+      "name": "Sát khí",
+      "symbol": "◉_◉",
+      "description": "Sát khí, mắt đỏ.",
+      "unlocked": true
+    },
+    {
+      "id": "contempt",
+      "name": "Khinh thường",
+      "symbol": "¬_¬",
+      "description": "Khinh thường, hờ hững.",
+      "unlocked": true
+    },
+    {
+      "id": "confused",
+      "name": "Ngơ ngác",
+      "symbol": "⊙_⊙",
+      "description": "Ngơ ngác, khó hiểu.",
+      "unlocked": true
+    },
+    {
+      "id": "panic",
+      "name": "Hoảng hốt",
+      "symbol": "O_O",
+      "description": "Bất ngờ, hoảng hốt.",
+      "unlocked": true
+    },
+    {
+      "id": "sad",
+      "name": "Buồn",
+      "symbol": "︶_︶",
+      "description": "Buồn và trầm xuống.",
+      "unlocked": true
+    },
+    {
+      "id": "crying",
+      "name": "Khóc",
+      "symbol": "T_T",
+      "description": "Nước mắt rõ ràng.",
+      "unlocked": true
+    },
+    {
+      "id": "shy",
+      "name": "Ngại ngùng",
+      "symbol": ">///<",
+      "description": "Má đỏ, ngượng ngùng.",
+      "unlocked": true
+    },
+    {
+      "id": "excited",
+      "name": "Phấn khích",
+      "symbol": "✦‿✦",
+      "description": "Hưng phấn, háo hức.",
+      "unlocked": true
+    },
+    {
+      "id": "tired",
+      "name": "Mệt mỏi",
+      "symbol": "=_=",
+      "description": "Mệt mỏi, thiếu sức.",
+      "unlocked": true
+    },
+    {
+      "id": "berserk",
+      "name": "Cuồng nộ",
+      "symbol": "╬>_<╬",
+      "description": "Cuồng nộ, áp lực mạnh.",
+      "unlocked": true
+    }
+  ]
+}

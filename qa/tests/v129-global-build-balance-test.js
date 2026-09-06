@@ -1,0 +1,86 @@
+import fs from 'node:fs';
+import { buildRegistry } from '../../dist/content/registry.js';
+import { thanhHaWorld } from '../../dist/content/world.js';
+import { adventureEnemies } from '../../dist/content/entities.js';
+import { createPlayableAdventureState, playablePlayerProfile } from '../../dist/content/adventure.js';
+import { SimulationSession } from '../../dist/core/session.js';
+import { runCombatKernelV2 } from '../../dist/core/combat-kernel-v2.js';
+import { buildBalanceEntityV120, evaluateBuildV120, potentialGridV120, thematicAttireSetIdV120 } from '../simulations/balance-lab-v120.js';
+import { LIVE_EQUIPMENT_SET_CATALOG_V12310 } from '../../dist/core/equipment-set-v116.js';
+import { applyCorePotentialStats, corePotentialDefinitions } from '../../dist/core/reincarnation-progression-v1102.js';
+import { BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_MID, BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_ENDGAME, BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V108, BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V82, battleDaoV2MainDamageTuningV129 } from '../../dist/core/battle-dao-v2-runtime.js';
+import { GLOBAL_BUILD_BALANCE_POLICY_V108, globalBuildBalanceSummaryV108 } from '../../dist/core/global-build-balance-v108.js';
+import { SPIRIT_BEAST_SPECIES_V86, SPIRIT_BEAST_COMBAT_TUNING_V108 } from '../../dist/core/spirit-beast-v86.js';
+import { CONFIDANTS_V87, CONFIDANT_COMBAT_TUNING_V108 } from '../../dist/core/confidant-v87.js';
+import { ARTIFACTS_V88 } from '../../dist/core/artifact-v88.js';
+
+let pass=0; const check=(v,m)=>{if(!v)throw new Error(m);pass++;console.log(`✓ ${m}`)};
+const daoIds=['sword','fist','body','spell','poison','artifact','formation','mind'];
+const balance=globalBuildBalanceSummaryV108();
+check(balance.schema==='global-build-balance.v108'&&balance.revision==='alpha.23.58','V108 exposes one canonical global-build-balance contract');
+check(Object.keys(BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_MID).length===8&&Object.keys(BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_ENDGAME).length===8&&daoIds.every(id=>Number(BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_MID[id])>0&&Number(BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_ENDGAME[id])>0),'V129 owns positive shared mid/endgame damage calibration for all 8 Main Dao');
+check(BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V108===BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_MID&&BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V82===BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V108,'V108/V82 exports remain compatibility aliases while runtime ownership is V129');
+check(Math.abs(battleDaoV2MainDamageTuningV129({combatBuildV117:{daoHanhCurrentV129:{sword:70}}},'sword')-BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_MID.sword)<1e-9&&Math.abs(battleDaoV2MainDamageTuningV129({combatBuildV117:{daoHanhCurrentV129:{sword:100}}},'sword')-BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_ENDGAME.sword)<1e-9,'V129 calibration resolves from real Dao Hanh rather than one fixed coefficient');
+const runtimeSource=fs.readFileSync('./dist/core/battle-dao-v2-runtime.js','utf8');
+check(runtimeSource.includes('battleDaoV2MainDamageTuningV129(entity, main)')&&!/pvp.*MAIN_DAMAGE_TUNING|boss.*MAIN_DAMAGE_TUNING/i.test(runtimeSource),'V129 Dao tuning is consumed once in shared CombatKernel runtime, not by PvP/Boss-specific tables');
+check(potentialGridV120(10).length===66&&GLOBAL_BUILD_BALANCE_POLICY_V108.potentialGridBuilds===66,'V108 keeps the canonical 66 three-axis Potential allocations at 10% steps');
+check(corePotentialDefinitions.find(x=>x.id==='defense')?.perPoint?.includes('Phòng Ngự +3'),'V108 preserves canonical Potential Defense = +3 defense per point; no extra buff added');
+const potApplied=applyCorePotentialStats({attack:100,defense:100,physique:100,maxHp:2000},{life:{unspent:0,lifetimeEarned:10,allocations:{power:0,body:0,defense:10},awardedMilestones:[]},permanent:{power:0,body:0,defense:0}});
+check(potApplied.defense===130&&potApplied.attack===100,'V108 Defense Potential modifies canonical combat defense and does not leak into attack');
+check(LIVE_EQUIPMENT_SET_CATALOG_V12310.length===5&&LIVE_EQUIPMENT_SET_CATALOG_V12310.reduce((n,x)=>n+x.mechanics.length,0)===15,'V108 balance matrix covers exactly 5 live elemental Sets / 15 live 2-4-6 mechanics');
+
+// Role-aware Set envelope: same Dao/root/potential/resources, only the 6-piece elemental Set changes.
+const setMeans={};
+for(const set of LIVE_EQUIPMENT_SET_CATALOG_V12310){
+  const rows=daoIds.map(dao=>evaluateBuildV120({dao,root:'metal',totalPotential:1000,potential:{power:.3,body:.3,defense:.4},daoHanh:70,attireSetId:set.id,attirePieces:6,grade:'immortal'},0).balancedScore);
+  setMeans[set.id]=rows.reduce((a,b)=>a+b,0)/rows.length;
+}
+const setSpread=Math.max(...Object.values(setMeans))/Math.min(...Object.values(setMeans));
+check(setSpread<=1.15,`V108 5-Set aggregate role envelope stays within 15% (actual ${((setSpread-1)*100).toFixed(2)}%)`);
+check(Object.entries(setMeans).every(([,v])=>Number.isFinite(v)&&v>0),'V108 all five Sets execute through real CombatKernel benchmarks');
+
+// Representative Potential role check: defense is a real survival choice rather than the old dead axis.
+const formationBase={dao:'formation',root:'metal',totalPotential:1000,daoHanh:70,attireSetId:'set.v116.attire.hautho_trannhac',attirePieces:6,grade:'immortal'};
+const purePower=evaluateBuildV120({...formationBase,potential:{power:1,body:0,defense:0}},0);
+const pureDefense=evaluateBuildV120({...formationBase,potential:{power:0,body:0,defense:1}},0);
+const balancedDefense=evaluateBuildV120({...formationBase,potential:{power:.3,body:.3,defense:.4}},0);
+check(pureDefense.survivalScore>purePower.survivalScore&&balancedDefense.survivalScore>purePower.survivalScore,'V108 Defense investment produces measurable survival gain in actual CombatKernel pressure');
+
+// V129 representative midgame round-robin. Do not tune the shared runtime against the obsolete V108 hand-picked build table.
+// The canonical V129 progression gate owns multi-stage (mid/endgame) balance; this global gate keeps one independent midgame sanity pass.
+const V129_ROOT={sword:'metal',fist:'fire',body:'earth',spell:'water',poison:'wood',artifact:'metal',formation:'earth',mind:'water'};
+const V129_MID_POT={
+  sword:{power:.6,body:.2,defense:.2}, fist:{power:.9,body:.1,defense:0}, body:{power:1,body:0,defense:0}, spell:{power:.8,body:.2,defense:0},
+  poison:{power:.9,body:.1,defense:0}, artifact:{power:.7,body:0,defense:.3}, formation:{power:1,body:0,defense:0}, mind:{power:.9,body:.1,defense:0},
+};
+const registry=buildRegistry(); const score=Object.fromEntries(daoIds.map(id=>[id,{w:0,l:0,d:0}]));
+const spec=(dao)=>{const root=V129_ROOT[dao];return{dao,root,totalPotential:1000,potential:V129_MID_POT[dao],daoHanh:70,attireSetId:thematicAttireSetIdV120(dao,root),attirePieces:4,grade:'immortal'};};
+for(let i=0;i<daoIds.length;i++)for(let j=i+1;j<daoIds.length;j++)for(let seed=0;seed<12;seed++){
+  const a={...buildBalanceEntityV120(spec(daoIds[i])),id:'A'},b={...buildBalanceEntityV120(spec(daoIds[j])),id:'B'};
+  const battle=runCombatKernelV2({registry,seed:1500000+seed*431+i*809+j*59,entities:seed%2?[b,a]:[a,b],maxDuration:60,mode:'simulation'}).battle;
+  if(battle.winnerId==='A'){score[daoIds[i]].w++;score[daoIds[j]].l++;}else if(battle.winnerId==='B'){score[daoIds[j]].w++;score[daoIds[i]].l++;}else{score[daoIds[i]].d++;score[daoIds[j]].d++;}
+}
+const matchPointPct={};
+for(const dao of daoIds){const x=score[dao],n=x.w+x.l+x.d;matchPointPct[dao]=(x.w+.5*x.d)/n*100;}
+check(Math.min(...Object.values(matchPointPct))>=35&&Math.max(...Object.values(matchPointPct))<=65,`V129 representative Dao Hanh 70 / 4p round robin stays inside 35–65% (${Object.entries(matchPointPct).map(([d,v])=>`${d}:${v.toFixed(1)}`).join(' · ')})`);
+check(daoIds.every(id=>score[id].w>0&&score[id].l>0),'V129 representative midgame has no universal auto-win/auto-lose Main Dao');
+
+// Collection axes: balance tuning is only allowed on active combat triggers; ownership-wide Bond/Fortune stays untouched.
+const st=createPlayableAdventureState(); st.realm.maxRealmOrder=22;
+const session=new SimulationSession(registry,thanhHaWorld,adventureEnemies,playablePlayerProfile,10858,st); session.devCollectionGrantV12326();
+const collection=session.stateValue.collectionV12316;
+check(SPIRIT_BEAST_SPECIES_V86.length===8&&Object.keys(SPIRIT_BEAST_COMBAT_TUNING_V108).length===8,'V108 covers all 8 Spirit Beasts with active-combat-only tuning');
+check(Object.values(SPIRIT_BEAST_COMBAT_TUNING_V108).every(x=>x.powerScale>=.75&&x.powerScale<=1.35&&x.cooldownScale>=.75&&x.cooldownScale<=1.25),'V108 Spirit Beast calibration stays bounded and preserves authored roles');
+for(const pet of SPIRIT_BEAST_SPECIES_V86){collection.activePetId=pet.id;check((session.personalCombatEntity().triggers||[]).filter(x=>x.id.startsWith('spirit-beast.v86.')).length===3,`V108 ${pet.name} keeps all three canonical combat actives live`);}
+collection.activePetId=undefined;
+check(CONFIDANTS_V87.length===8&&Object.keys(CONFIDANT_COMBAT_TUNING_V108).length===8,'V108 covers all 8 Confidants without touching Fortune/specialty progression');
+check(Object.values(CONFIDANT_COMBAT_TUNING_V108).every(x=>x>=.65&&x<=1.35),'V108 Confidant active-combat calibration stays bounded');
+for(const c of CONFIDANTS_V87){collection.activeCompanionId=c.id;check((session.personalCombatEntity().triggers||[]).filter(x=>x.id.startsWith('confidant.v87.')).length===3,`V108 ${c.name} keeps Assist + Guard + Harmony runtime live at max progression`);}
+collection.activeCompanionId=undefined;
+for(const a of ARTIFACTS_V88){collection.activeArtifactIds=[a.id];const e=session.personalCombatEntity();check(e.combatBuildV117?.artifactV88?.equippedCount===1&&(e.triggers||[]).some(x=>x.runtimeV88?.itemId===a.id),`V108 ${a.name} remains on canonical V88 Bao Qi trigger runtime`);}
+
+const xp=new (await import('../../dist/core/gameplay.js')).GameplayFacade(session,registry,thanhHaWorld).playerExperienceV105();
+check(xp.v108?.schema==='global-build-balance.v108'&&xp.revision==='alpha.23.75','V108 player-facing Build Guide receives the read-only balance contract');
+const app=fs.readFileSync('./app.js','utf8');
+check(app.includes('V108 · GLOBAL BUILD BALANCE')&&app.includes('không có hệ số PvP riêng'),'V108 Build UI explains shared-kernel balance instead of hiding a mode-specific modifier');
+console.log(`\nV129 GLOBAL BUILD & BALANCE: ${pass}/${pass} PASS`);

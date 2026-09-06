@@ -1,0 +1,11 @@
+V127 MANUAL GACHA ECONOMY STRESS
+Reference: x10=100 pulls · x100=1000 pulls · canonical 9-manual realm pool + orientation
+
+Phàm Nhân           100 pulls · unique 5/9 · target fragments 476/7888 · affordable milestones 3/10 · featured 17
+Phàm Nhân          1000 pulls · unique 8/9 · target fragments 4088/7888 · affordable milestones 8/10 · featured 146
+Chân Tiên           100 pulls · unique 7/9 · target fragments 420/14849 · affordable milestones 2/10 · featured 15
+Chân Tiên          1000 pulls · unique 8/9 · target fragments 3668/14849 · affordable milestones 6/10 · featured 131
+Sáng Thế Chủ        100 pulls · unique 5/9 · target fragments 280/23657 · affordable milestones 1/10 · featured 10
+Sáng Thế Chủ       1000 pulls · unique 8/9 · target fragments 4200/23657 · affordable milestones 5/10 · featured 150
+
+PASS: no cross-realm leak; even x100 economy does not instantly fund all 10 specific-fragment milestones.

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 800">
+  <defs>
+    <linearGradient id="robe" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#303331"/>
+      <stop offset="22%" stop-color="#ede3c7"/>
+      <stop offset="48%" stop-color="#bfa25a"/>
+      <stop offset="74%" stop-color="#eee4c8"/>
+      <stop offset="100%" stop-color="#2e312f"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="250" cy="680" rx="150" ry="34" fill="#000" opacity="0.12"/>
+  <ellipse cx="250" cy="230" rx="140" ry="150" fill="#d2b267" opacity="0.16"/>
+  <path d="M230 108 C244 94 266 94 280 108 C296 123 300 149 296 168 C292 188 272 204 252 206 C229 208 209 192 204 171 C198 149 206 121 230 108 Z" fill="#efe4cf" stroke="#292826" stroke-width="7"/>
+  <path d="M190 82 C230 26 320 44 342 116 C352 149 348 184 316 218 C302 187 296 173 276 154 C256 135 225 131 199 150 C176 166 163 190 157 219 C130 183 131 124 190 82 Z" fill="#222322"/>
+  <path d="M196 208 L304 208 L380 344 L435 616 L319 560 L272 724 L224 560 L85 630 L128 346 Z" fill="url(#robe)"/>
+  <path d="M122 346 C62 432 32 507 40 620 C115 602 167 550 195 495 Z" fill="#dfd1af" opacity="0.9"/>
+  <path d="M378 344 C440 425 466 503 458 616 C390 599 333 552 307 492 Z" fill="#dfd1af" opacity="0.9"/>
+  <path d="M168 408 L338 394 L327 468 L153 483 Z" fill="#252624"/>
+  <path d="M132 420 L114 765 L129 769 L147 425 Z" fill="#42413e"/>
+  <path d="M108 408 L177 420 L178 434 L106 421 Z" fill="#342d27"/>
+</svg>

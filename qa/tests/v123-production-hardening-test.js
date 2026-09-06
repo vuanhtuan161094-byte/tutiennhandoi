@@ -1,0 +1,16 @@
+import { buildRegistry } from '../../dist/content/registry.js';
+import { thanhHaWorld } from '../../dist/content/world.js';
+import { adventureEnemies } from '../../dist/content/entities.js';
+import { createPlayableAdventureState, playablePlayerProfile } from '../../dist/content/adventure.js';
+import { SimulationSession, SIMULATION_SAVE_VERSION } from '../../dist/core/session.js';
+import { GameplayFacade } from '../../dist/core/gameplay.js';
+let pass=0;const ok=(v,m)=>{if(!v)throw new Error(m);pass++;console.log(`✓ ${m}`)};const r=buildRegistry();
+const st=createPlayableAdventureState();const realm=[...r.realms.values()].find(x=>x.order===46);st.realm.realmId=realm.id;st.realm.maxRealmOrder=46;st.dungeons.highestClearedFloor['dungeon.immortal_spirit_pool']=2;st.inventory['resource.immortal_qi']=12;
+const ss=new SimulationSession(r,thanhHaWorld,adventureEnemies,playablePlayerProfile,123000,st);const api=new GameplayFacade(ss,r,thanhHaWorld);api.playerExperienceV105();const before=JSON.stringify(ss.state);const xp=api.playerExperienceV105();const after=JSON.stringify(ss.state);const snap=ss.snapshot();
+ok(before===after,'V123 V113–V122 guidance is idempotent after canonical lazy-state synchronization');
+ok(snap.schemaVersion===SIMULATION_SAVE_VERSION&&SIMULATION_SAVE_VERSION===45,'V123 behavior remains compatible after canonical V127 save-schema 45 bump');
+const restored=SimulationSession.restore(r,thanhHaWorld,adventureEnemies,playablePlayerProfile,structuredClone(snap));ok(restored.state.realm.realmId===ss.state.realm.realmId&&restored.state.dungeons.highestClearedFloor['dungeon.immortal_spirit_pool']===2,'V123 save/load preserves late-game realm and dungeon progression');
+const xp2=new GameplayFacade(restored,r,thanhHaWorld).playerExperienceV105();ok(JSON.stringify(xp.v114)===JSON.stringify(xp2.v114)&&JSON.stringify(xp.v116)===JSON.stringify(xp2.v116),'V123 late-game gate/economy guidance is deterministic across save/load');
+const legacy=structuredClone(snap);legacy.schemaVersion=42;delete legacy.state.immortal?.creationEpochAuthority;const migrated=SimulationSession.restore(r,thanhHaWorld,adventureEnemies,playablePlayerProfile,legacy);ok(migrated.snapshot().schemaVersion===SIMULATION_SAVE_VERSION&&migrated.state.realm.maxRealmOrder===46,'V123 previous-schema restore still migrates into current schema');
+ok(xp.v118?.engine==='CombatKernel V2'&&xp.v119?.engine==='CombatKernel V2','V123 hardening preserves one combat engine for PvE/PvP surfaces');
+console.log(`V123 PRODUCTION HARDENING: ${pass}/${pass} PASS`);

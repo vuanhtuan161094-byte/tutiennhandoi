@@ -1,0 +1,119 @@
+﻿id,name,order,majorRealmIndex,majorRealmName,stageIndex,baseTuViPer15s,targetSeconds,requiredTuVi,retreat3hProgressPct,nextRealmId
+realm.mortal,Phàm Nhân,0,0,Phàm Nhân,0,10,300,200,0,realm.qi.1
+realm.qi.1,Luyện Khí tầng một,1,1,Luyện Khí,0,12,1714,1371,2,realm.qi.2
+realm.qi.2,Luyện Khí tầng hai,2,1,Luyện Khí,1,13,1886,1634,2,realm.qi.3
+realm.qi.3,Luyện Khí tầng ba,3,1,Luyện Khí,2,14,2057,1920,2,realm.qi.4
+realm.qi.4,Luyện Khí tầng bốn,4,1,Luyện Khí,3,15,2229,2229,2,realm.qi.5
+realm.qi.5,Luyện Khí tầng năm,5,1,Luyện Khí,4,16,2400,2560,2,realm.qi.6
+realm.qi.6,Luyện Khí tầng sáu,6,1,Luyện Khí,5,17,2571,2914,2,realm.qi.7
+realm.qi.7,Luyện Khí tầng bảy,7,1,Luyện Khí,6,18,2743,3291,2,realm.qi.8
+realm.qi.8,Luyện Khí tầng tám,8,1,Luyện Khí,7,19,2914,3691,2,realm.qi.9
+realm.qi.9,Luyện Khí tầng chín,9,1,Luyện Khí,8,20,3086,4114,2,realm.foundation.early
+realm.foundation.early,Trúc Cơ sơ kỳ,10,2,Trúc Cơ,0,24,9720,15552,3,realm.foundation.mid
+realm.foundation.mid,Trúc Cơ trung kỳ,11,2,Trúc Cơ,1,26,12960,22464,3,realm.foundation.late
+realm.foundation.late,Trúc Cơ hậu kỳ,12,2,Trúc Cơ,2,28,17496,32659,3,realm.foundation.perfect
+realm.foundation.perfect,Trúc Cơ viên mãn,13,2,Trúc Cơ,3,30,24624,49248,3,realm.purple_palace.early
+realm.purple_palace.early,Tử Phủ sơ kỳ,14,3,Tử Phủ,0,40,25920,69120,4,realm.purple_palace.mid
+realm.purple_palace.mid,Tử Phủ trung kỳ,15,3,Tử Phủ,1,43,34560,99072,4,realm.purple_palace.late
+realm.purple_palace.late,Tử Phủ hậu kỳ,16,3,Tử Phủ,2,46,46656,143078,4,realm.purple_palace.perfect
+realm.purple_palace.perfect,Tử Phủ viên mãn,17,3,Tử Phủ,3,50,65664,218880,4,realm.golden_core.early
+realm.golden_core.early,Kim Đan sơ kỳ,18,4,Kim Đan,0,64,51840,221184,5,realm.golden_core.mid
+realm.golden_core.mid,Kim Đan trung kỳ,19,4,Kim Đan,1,69,69120,317952,5,realm.golden_core.late
+realm.golden_core.late,Kim Đan hậu kỳ,20,4,Kim Đan,2,74,93312,460339,5,realm.golden_core.perfect
+realm.golden_core.perfect,Kim Đan viên mãn,21,4,Kim Đan,3,80,131328,700416,5,realm.nascent_soul.early
+realm.nascent_soul.early,Nguyên Anh sơ kỳ,22,5,Nguyên Anh,0,100,77760,518400,5,realm.nascent_soul.mid
+realm.nascent_soul.mid,Nguyên Anh trung kỳ,23,5,Nguyên Anh,1,108,103680,746496,5,realm.nascent_soul.late
+realm.nascent_soul.late,Nguyên Anh hậu kỳ,24,5,Nguyên Anh,2,116,139968,1082419,5,realm.nascent_soul.perfect
+realm.nascent_soul.perfect,Nguyên Anh viên mãn,25,5,Nguyên Anh,3,125,196992,1641600,5,realm.spirit_transformation.early
+realm.spirit_transformation.early,Hóa Thần sơ kỳ,26,6,Hóa Thần,0,155,116640,1205280,5,realm.spirit_transformation.mid
+realm.spirit_transformation.mid,Hóa Thần trung kỳ,27,6,Hóa Thần,1,167,155520,1731456,5,realm.spirit_transformation.late
+realm.spirit_transformation.late,Hóa Thần hậu kỳ,28,6,Hóa Thần,2,180,209952,2519424,5,realm.spirit_transformation.perfect
+realm.spirit_transformation.perfect,Hóa Thần viên mãn,29,6,Hóa Thần,3,194,295488,3821645,5,realm.void_refinement.early
+realm.void_refinement.early,Luyện Hư sơ kỳ,30,7,Luyện Hư,0,245,168480,2751840,4.5,realm.void_refinement.mid
+realm.void_refinement.mid,Luyện Hư trung kỳ,31,7,Luyện Hư,1,265,224640,3968640,4.5,realm.void_refinement.late
+realm.void_refinement.late,Luyện Hư hậu kỳ,32,7,Luyện Hư,2,284,303264,5741798,4.5,realm.void_refinement.perfect
+realm.void_refinement.perfect,Luyện Hư viên mãn,33,7,Luyện Hư,3,306,426816,8707046,4.5,realm.integration.early
+realm.integration.early,Hợp Thể sơ kỳ,34,8,Hợp Thể,0,395,233280,6143040,4.5,realm.integration.mid
+realm.integration.mid,Hợp Thể trung kỳ,35,8,Hợp Thể,1,427,311040,8854272,4.5,realm.integration.late
+realm.integration.late,Hợp Thể hậu kỳ,36,8,Hợp Thể,2,458,419904,12821069,4.5,realm.integration.perfect
+realm.integration.perfect,Hợp Thể viên mãn,37,8,Hợp Thể,3,494,590976,19462810,4.5,realm.great_vehicle.early
+realm.great_vehicle.early,Đại Thừa sơ kỳ,38,9,Đại Thừa,0,650,311040,13478400,4,realm.great_vehicle.mid
+realm.great_vehicle.mid,Đại Thừa trung kỳ,39,9,Đại Thừa,1,702,414720,19408896,4,realm.great_vehicle.late
+realm.great_vehicle.late,Đại Thừa hậu kỳ,40,9,Đại Thừa,2,754,559872,28142899,4,realm.great_vehicle.perfect
+realm.great_vehicle.perfect,Đại Thừa viên mãn,41,9,Đại Thừa,3,812,787968,42655334,4,realm.tribulation.early
+realm.tribulation.early,Độ Kiếp sơ kỳ,42,10,Độ Kiếp,0,1050,388800,27216000,4,realm.tribulation.mid
+realm.tribulation.mid,Độ Kiếp trung kỳ,43,10,Độ Kiếp,1,1134,518400,39191040,4,realm.tribulation.late
+realm.tribulation.late,Độ Kiếp hậu kỳ,44,10,Độ Kiếp,2,1218,699840,56827008,4,realm.tribulation.perfect
+realm.tribulation.perfect,Độ Kiếp viên mãn,45,10,Độ Kiếp,3,1312,984960,86151168,4,realm.human_immortal.early
+realm.human_immortal.early,Nhân Tiên sơ kỳ,46,11,Nhân Tiên,0,1700,414720,47001600,3.5,realm.human_immortal.mid
+realm.human_immortal.mid,Nhân Tiên trung kỳ,47,11,Nhân Tiên,1,1836,552960,67682304,3.5,realm.human_immortal.late
+realm.human_immortal.late,Nhân Tiên hậu kỳ,48,11,Nhân Tiên,2,1972,746496,98139341,3.5,realm.human_immortal.perfect
+realm.human_immortal.perfect,Nhân Tiên viên mãn,49,11,Nhân Tiên,3,2125,1050624,148838400,3.5,realm.earth_immortal.early
+realm.earth_immortal.early,Địa Tiên sơ kỳ,50,12,Địa Tiên,0,2210,466560,68739840,3.5,realm.earth_immortal.mid
+realm.earth_immortal.mid,Địa Tiên trung kỳ,51,12,Địa Tiên,1,2387,622080,98993664,3.5,realm.earth_immortal.late
+realm.earth_immortal.late,Địa Tiên hậu kỳ,52,12,Địa Tiên,2,2564,839808,143551181,3.5,realm.earth_immortal.perfect
+realm.earth_immortal.perfect,Địa Tiên viên mãn,53,12,Địa Tiên,3,2762,1181952,217636762,3.5,realm.heaven_immortal.early
+realm.heaven_immortal.early,Thiên Tiên sơ kỳ,54,13,Thiên Tiên,0,2870,518400,99187200,3.5,realm.heaven_immortal.mid
+realm.heaven_immortal.mid,Thiên Tiên trung kỳ,55,13,Thiên Tiên,1,3100,691200,142848000,3.5,realm.heaven_immortal.late
+realm.heaven_immortal.late,Thiên Tiên hậu kỳ,56,13,Thiên Tiên,2,3329,933120,207090432,3.5,realm.heaven_immortal.perfect
+realm.heaven_immortal.perfect,Thiên Tiên viên mãn,57,13,Thiên Tiên,3,3588,1313280,314136576,3.5,realm.true_immortal.early
+realm.true_immortal.early,Chân Tiên sơ kỳ,58,14,Chân Tiên,0,3740,570240,142179840,3.5,realm.true_immortal.mid
+realm.true_immortal.mid,Chân Tiên trung kỳ,59,14,Chân Tiên,1,4039,760320,204728832,3.5,realm.true_immortal.late
+realm.true_immortal.late,Chân Tiên hậu kỳ,60,14,Chân Tiên,2,4338,1026432,296844134,3.5,realm.true_immortal.perfect
+realm.true_immortal.perfect,Chân Tiên viên mãn,61,14,Chân Tiên,3,4675,1444608,450236160,3.5,realm.mystic_immortal.early
+realm.mystic_immortal.early,Huyền Tiên sơ kỳ,62,15,Huyền Tiên,0,4860,622080,201553920,3.5,realm.mystic_immortal.mid
+realm.mystic_immortal.mid,Huyền Tiên trung kỳ,63,15,Huyền Tiên,1,5249,829440,290248704,3.5,realm.mystic_immortal.late
+realm.mystic_immortal.late,Huyền Tiên hậu kỳ,64,15,Huyền Tiên,2,5638,1119744,420874445,3.5,realm.mystic_immortal.perfect
+realm.mystic_immortal.perfect,Huyền Tiên viên mãn,65,15,Huyền Tiên,3,6075,1575936,638254080,3.5,realm.golden_immortal.early
+realm.golden_immortal.early,Kim Tiên sơ kỳ,66,16,Kim Tiên,0,6310,673920,283495680,3.5,realm.golden_immortal.mid
+realm.golden_immortal.mid,Kim Tiên trung kỳ,67,16,Kim Tiên,1,6815,898560,408245760,3.5,realm.golden_immortal.late
+realm.golden_immortal.late,Kim Tiên hậu kỳ,68,16,Kim Tiên,2,7320,1213056,591971328,3.5,realm.golden_immortal.perfect
+realm.golden_immortal.perfect,Kim Tiên viên mãn,69,16,Kim Tiên,3,7888,1707264,897793229,3.5,realm.taiyi_immortal.early
+realm.taiyi_immortal.early,Thái Ất Tiên sơ kỳ,70,17,Thái Ất Tiên,0,8210,725760,397232640,3,realm.taiyi_immortal.mid
+realm.taiyi_immortal.mid,Thái Ất Tiên trung kỳ,71,17,Thái Ất Tiên,1,8867,967680,572027904,3,realm.taiyi_immortal.late
+realm.taiyi_immortal.late,Thái Ất Tiên hậu kỳ,72,17,Thái Ất Tiên,2,9524,1306368,829456589,3,realm.taiyi_immortal.perfect
+realm.taiyi_immortal.perfect,Thái Ất Tiên viên mãn,73,17,Thái Ất Tiên,3,10262,1838592,1257842074,3,realm.grand_luo.early
+realm.grand_luo.early,Đại La Kim Tiên sơ kỳ,74,18,Đại La Kim Tiên,0,10670,777600,553132800,3,realm.grand_luo.mid
+realm.grand_luo.mid,Đại La Kim Tiên trung kỳ,75,18,Đại La Kim Tiên,1,11524,1036800,796538880,3,realm.grand_luo.late
+realm.grand_luo.late,Đại La Kim Tiên hậu kỳ,76,18,Đại La Kim Tiên,2,12377,1399680,1154922624,3,realm.grand_luo.perfect
+realm.grand_luo.perfect,Đại La Kim Tiên viên mãn,77,18,Đại La Kim Tiên,3,13338,1969920,1751652864,3,realm.immortal_king.early
+realm.immortal_king.early,Tiên Vương sơ kỳ,78,19,Tiên Vương,0,13870,829440,766955520,3,realm.immortal_king.mid
+realm.immortal_king.mid,Tiên Vương trung kỳ,79,19,Tiên Vương,1,14980,1105920,1104445440,3,realm.immortal_king.late
+realm.immortal_king.late,Tiên Vương hậu kỳ,80,19,Tiên Vương,2,16089,1492992,1601383219,3,realm.immortal_king.perfect
+realm.immortal_king.perfect,Tiên Vương viên mãn,81,19,Tiên Vương,3,17338,2101248,2428762522,3,realm.immortal_emperor.early
+realm.immortal_emperor.early,Tiên Đế sơ kỳ,82,20,Tiên Đế,0,18030,881280,1059298560,3,realm.immortal_emperor.mid
+realm.immortal_emperor.mid,Tiên Đế trung kỳ,83,20,Tiên Đế,1,19472,1175040,1525358592,3,realm.immortal_emperor.late
+realm.immortal_emperor.late,Tiên Đế hậu kỳ,84,20,Tiên Đế,2,20915,1586304,2211836544,3,realm.immortal_emperor.perfect
+realm.immortal_emperor.perfect,Tiên Đế viên mãn,85,20,Tiên Đế,3,22538,2232576,3354519859,3,realm.extremity.threshold
+realm.extremity.threshold,Cực Hạn · Khuy Môn,86,21,Cực Hạn,0,23440,933120,1458155520,2.5,realm.extremity.breaking
+realm.extremity.breaking,Cực Hạn · Phá Giới,87,21,Cực Hạn,1,25315,1244160,2099727360,2.5,realm.extremity.limitless
+realm.extremity.limitless,Cực Hạn · Vô Cực,88,21,Cực Hạn,2,27190,1679616,3044583936,2.5,realm.extremity.boundary
+realm.extremity.boundary,Cực Hạn · Biên Giới,89,21,Cực Hạn,3,29300,2363904,4617492480,2.5,realm.supreme_dao.early
+realm.supreme_dao.early,Cực Đạo Chân Cảnh sơ kỳ,90,22,Cực Đạo Chân Cảnh,0,30470,984960,2000782080,2.5,realm.supreme_dao.mid
+realm.supreme_dao.mid,Cực Đạo Chân Cảnh trung kỳ,91,22,Cực Đạo Chân Cảnh,1,32908,1313280,2881161216,2.5,realm.supreme_dao.late
+realm.supreme_dao.late,Cực Đạo Chân Cảnh hậu kỳ,92,22,Cực Đạo Chân Cảnh,2,35345,1772928,4177609344,2.5,realm.supreme_dao.perfect
+realm.supreme_dao.perfect,Cực Đạo Chân Cảnh viên mãn,93,22,Cực Đạo Chân Cảnh,3,38088,2495232,6335893094,2.5,realm.chaos.early
+realm.chaos.early,Hỗn Độn Cảnh sơ kỳ,94,23,Hỗn Độn Cảnh,0,39610,1036800,2737843200,2.5,realm.chaos.mid
+realm.chaos.mid,Hỗn Độn Cảnh trung kỳ,95,23,Hỗn Độn Cảnh,1,42779,1382400,3942512640,2.5,realm.chaos.late
+realm.chaos.late,Hỗn Độn Cảnh hậu kỳ,96,23,Hỗn Độn Cảnh,2,45948,1866240,5716666368,2.5,realm.chaos.perfect
+realm.chaos.perfect,Hỗn Độn Cảnh viên mãn,97,23,Hỗn Độn Cảnh,3,49512,2626560,8669749248,2.5,realm.hongmeng.early
+realm.hongmeng.early,Hồng Mông Cảnh sơ kỳ,98,24,Hồng Mông Cảnh,0,51500,1088640,3737664000,2,realm.hongmeng.mid
+realm.hongmeng.mid,Hồng Mông Cảnh trung kỳ,99,24,Hồng Mông Cảnh,1,55620,1451520,5382236160,2,realm.hongmeng.late
+realm.hongmeng.late,Hồng Mông Cảnh hậu kỳ,100,24,Hồng Mông Cảnh,2,59740,1959552,7804242432,2,realm.hongmeng.perfect
+realm.hongmeng.perfect,Hồng Mông Cảnh viên mãn,101,24,Hồng Mông Cảnh,3,64375,2757888,11835936000,2,realm.heaven_opening.early
+realm.heaven_opening.early,Khai Thiên Cảnh sơ kỳ,102,25,Khai Thiên Cảnh,0,66950,1140480,5090342400,2,realm.heaven_opening.mid
+realm.heaven_opening.mid,Khai Thiên Cảnh trung kỳ,103,25,Khai Thiên Cảnh,1,72306,1520640,7330093056,2,realm.heaven_opening.late
+realm.heaven_opening.late,Khai Thiên Cảnh hậu kỳ,104,25,Khai Thiên Cảnh,2,77662,2052864,10628634931,2,realm.heaven_opening.perfect
+realm.heaven_opening.perfect,Khai Thiên Cảnh viên mãn,105,25,Khai Thiên Cảnh,3,83688,2889216,16119513907,2,realm.world_lord.early
+realm.world_lord.early,Thế Giới Chủ sơ kỳ,106,26,Thế Giới Chủ,0,87030,1192320,6917840640,2,realm.world_lord.mid
+realm.world_lord.mid,Thế Giới Chủ trung kỳ,107,26,Thế Giới Chủ,1,93992,1589760,9961648128,2,realm.world_lord.late
+realm.world_lord.late,Thế Giới Chủ hậu kỳ,108,26,Thế Giới Chủ,2,100955,2146176,14444479872,2,realm.world_lord.perfect
+realm.world_lord.perfect,Thế Giới Chủ viên mãn,109,26,Thế Giới Chủ,3,108788,3020544,21906596045,2,realm.eternity.early
+realm.eternity.early,Vĩnh Sinh Cảnh sơ kỳ,110,27,Vĩnh Sinh Cảnh,0,113140,1244160,9384284160,2,realm.eternity.mid
+realm.eternity.mid,Vĩnh Sinh Cảnh trung kỳ,111,27,Vĩnh Sinh Cảnh,1,122191,1658880,13513347072,2,realm.eternity.late
+realm.eternity.late,Vĩnh Sinh Cảnh hậu kỳ,112,27,Vĩnh Sinh Cảnh,2,131242,2239488,19594325606,2,realm.eternity.perfect
+realm.eternity.perfect,Vĩnh Sinh Cảnh viên mãn,113,27,Vĩnh Sinh Cảnh,3,141425,3151872,29716899840,2,realm.creation_lord.early
+realm.creation_lord.early,Sáng Thế Chủ sơ kỳ,114,28,Sáng Thế Chủ,0,147080,2332800,22873881600,2,realm.creation_lord.mid
+realm.creation_lord.mid,Sáng Thế Chủ trung kỳ,115,28,Sáng Thế Chủ,1,158846,2985984,31620774298,2,realm.creation_lord.late
+realm.creation_lord.late,Sáng Thế Chủ hậu kỳ,116,28,Sáng Thế Chủ,2,170613,4012416,45638022067,2,realm.creation_lord.perfect
+realm.creation_lord.perfect,Sáng Thế Chủ viên mãn,117,28,Sáng Thế Chủ,3,183850,0,0,2,

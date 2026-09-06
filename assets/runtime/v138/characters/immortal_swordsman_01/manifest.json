@@ -1,0 +1,100 @@
+{
+  "characterId": "character.production.immortal_swordsman_01",
+  "displayName": "Bạch Lam Kiếm Tu",
+  "version": "1.38.0-alpha.7.6",
+  "assetState": "production",
+  "sourcePolicy": "direct_transparent_render_no_sheet_crop",
+  "canvas": {
+    "width": 1024,
+    "height": 1024
+  },
+  "combat": {
+    "poses": {
+      "idle": "/assets/runtime/v138/characters/immortal_swordsman_01/idle.webp",
+      "cast": "/assets/runtime/v138/characters/immortal_swordsman_01/cast.webp",
+      "attack": "/assets/runtime/v138/characters/immortal_swordsman_01/attack.webp",
+      "hit": "/assets/runtime/v138/characters/immortal_swordsman_01/hit.webp",
+      "ultimate": "/assets/runtime/v138/characters/immortal_swordsman_01/ultimate.webp",
+      "defeat": "/assets/runtime/v138/characters/immortal_swordsman_01/defeat.webp"
+    },
+    "portrait": "/assets/runtime/v138/characters/immortal_swordsman_01/portrait.webp",
+    "geometry": {
+      "visualBounds": {
+        "x": 0.01,
+        "y": 0.0,
+        "w": 0.98,
+        "h": 0.99
+      },
+      "baseline": {
+        "x": 0.5,
+        "y": 0.985
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.86
+      },
+      "combatScale": 1.0,
+      "offset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "impactAnchor": {
+        "x": 0.72,
+        "y": 0.43
+      }
+    },
+    "facingPolicy": {
+      "defaultAuthoredFacing": "left",
+      "leftSlotFaces": "right",
+      "rightSlotFaces": "left",
+      "mirrorSafe": true
+    }
+  },
+  "expressionPolicy": {
+    "combat": "pose_authored_fixed",
+    "profile": "reusable_face_expression_rig_v1",
+    "selectedExpressionKey": "selectedExpression",
+    "presetCount": 16,
+    "hairIndependent": true,
+    "outfitIndependent": true
+  },
+  "template": {
+    "reuseKey": "character-production-template-v1",
+    "requiredCombatPoses": [
+      "idle",
+      "cast",
+      "attack",
+      "hit",
+      "ultimate",
+      "defeat"
+    ],
+    "optionalCombatPoses": [
+      "meditate"
+    ],
+    "notes": "New characters must be rendered directly with transparent alpha. Required combat pack: idle/cast/attack/hit/ultimate/defeat. Runtime may downscale quality-preserving to the 1024 production canvas. Never crop a design sheet into runtime art."
+  },
+  "portraitRig": {
+    "schema": "character-face-rig.v1",
+    "mode": "flat-base-expression-overlay",
+    "flatBase": "/assets/runtime/v138/characters/immortal_swordsman_01/portrait.webp",
+    "faceAnchor": {
+      "xPct": 20.6,
+      "yPct": 38.0,
+      "widthPct": 37.0,
+      "heightPct": 29.0
+    },
+    "layers": {
+      "headBase": "",
+      "hairBack": "",
+      "hairFront": "",
+      "accessory": ""
+    },
+    "futureSlots": [
+      "hairBack",
+      "headBase",
+      "hairFront",
+      "accessory"
+    ],
+    "notes": "Expression SVG overlay is independent from hair/outfit. Populate modular layer paths later without changing save/UI."
+  }
+}

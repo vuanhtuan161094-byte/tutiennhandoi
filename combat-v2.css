@@ -1,0 +1,1146 @@
+/*
+ * Combat UI Stability Polish + True Production Character — v1.38.0-alpha.7
+ * One canonical stylesheet. No historical patch stacking.
+ * Backend owns combat outcome; this file owns presentation only.
+ */
+
+.huntv2-screen{
+  --hunt-gold:#e8c26c;
+  --hunt-gold-soft:#b89148;
+  --hunt-ink:#06111b;
+  --hunt-panel:rgba(4,15,25,.88);
+  --hunt-panel-strong:rgba(3,11,19,.96);
+  --hunt-line:rgba(232,194,108,.24);
+  --hunt-text:#f2e7d2;
+  --hunt-muted:#aeb9bc;
+  --hunt-cyan:#55c8ea;
+  --hunt-red:#e35e5e;
+  --hunt-green:#73d19d;
+  position:relative;
+  width:100%;height:100%;min-height:0;
+  overflow:hidden;
+  color:var(--hunt-text);
+  background:#06131f;
+  font-family:Inter,"Segoe UI",Arial,sans-serif;
+}
+.huntv2-screen *{box-sizing:border-box}
+.huntv2-screen button{font:inherit}
+.huntv2-body{position:relative;width:100%;height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden;background:#06131f}
+
+/* =========================
+   Battlefield shell
+   ========================= */
+.huntv2-stage{
+  position:relative;flex:1 1 auto;min-height:0;overflow:hidden;isolation:isolate;
+  background:#071827;border-bottom:1px solid var(--hunt-line);
+}
+.huntv2-bg{position:absolute;z-index:0;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 48%;filter:saturate(.78) brightness(.64) contrast(1.06)}
+.huntv2-env-overlay{position:absolute;z-index:1;inset:0;background:linear-gradient(180deg,rgba(3,11,18,.28),rgba(3,11,18,.02) 34%,rgba(3,11,18,.12) 65%,rgba(2,8,13,.72));pointer-events:none}
+.huntv2-vignette{position:absolute;z-index:2;inset:0;box-shadow:inset 0 0 70px rgba(0,0,0,.48);pointer-events:none}
+.huntv2-atmosphere,.huntv2-element-weather,.huntv2-mist{position:absolute;z-index:3;inset:0;pointer-events:none;overflow:hidden}
+.huntv2-atmosphere i{position:absolute;width:3px;height:3px;border-radius:50%;background:rgba(237,207,133,.28);filter:blur(.2px);animation:huntDust 5.5s linear infinite}
+.huntv2-atmosphere i:nth-child(1){left:12%;top:40%;animation-delay:-1s}.huntv2-atmosphere i:nth-child(2){left:28%;top:58%;animation-delay:-3s}.huntv2-atmosphere i:nth-child(3){left:52%;top:34%;animation-delay:-2s}.huntv2-atmosphere i:nth-child(4){left:70%;top:62%;animation-delay:-4s}.huntv2-atmosphere i:nth-child(5){left:86%;top:44%;animation-delay:-.5s}
+.huntv2-element-weather i{position:absolute;width:2px;height:16px;opacity:.10;background:linear-gradient(180deg,transparent,rgba(140,210,240,.7),transparent);transform:rotate(18deg)}
+.huntv2-element-weather i:nth-child(1){left:7%;top:18%}.huntv2-element-weather i:nth-child(2){left:16%;top:42%}.huntv2-element-weather i:nth-child(3){left:25%;top:27%}.huntv2-element-weather i:nth-child(4){left:34%;top:56%}.huntv2-element-weather i:nth-child(5){left:43%;top:33%}.huntv2-element-weather i:nth-child(6){left:52%;top:61%}.huntv2-element-weather i:nth-child(7){left:61%;top:24%}.huntv2-element-weather i:nth-child(8){left:70%;top:49%}.huntv2-element-weather i:nth-child(9){left:79%;top:30%}.huntv2-element-weather i:nth-child(10){left:88%;top:58%}
+.huntv2-mist{z-index:4;height:28%;top:auto;bottom:5%;background:radial-gradient(ellipse at center,rgba(141,177,181,.12),transparent 65%);opacity:.42}.huntv2-mist.mist-b{bottom:18%;left:34%;opacity:.25}
+@keyframes huntDust{0%{transform:translateY(18px);opacity:0}20%{opacity:.35}100%{transform:translateY(-44px);opacity:0}}
+
+/* =========================
+   Resources + meta
+   ========================= */
+.huntv2-resource-row{position:absolute;z-index:30;top:6px;right:9px;display:flex;gap:4px;height:24px}
+.huntv2-resource-row>span{min-width:54px;height:24px;padding:2px 6px;display:flex;align-items:center;justify-content:center;gap:4px;border:1px solid rgba(233,198,112,.28);border-radius:12px;background:rgba(3,13,22,.78);box-shadow:0 4px 12px rgba(0,0,0,.18);}
+.huntv2-resource-row img{width:15px;height:15px;object-fit:contain}.huntv2-resource-row b{font-size:9.5px;color:#f5e8c7}.huntv2-resource-row .potential i{font-style:normal;color:#8be3c2;font-size:11px}
+.huntv2-meta-strip{position:absolute;z-index:29;top:122px;left:9px;transform:none;height:22px;max-width:54%;padding:0 9px;display:flex;align-items:center;gap:4px;border:1px solid rgba(232,194,108,.20);border-radius:11px;background:rgba(4,15,24,.86);color:#d5dcda;box-shadow:0 5px 14px rgba(0,0,0,.18);white-space:nowrap}
+.huntv2-meta-strip strong{font:800 8.5px Georgia,serif;color:#f1cf7b}.huntv2-meta-strip span,.huntv2-meta-strip em{font-size:7px;font-style:normal}.huntv2-meta-strip i{font-style:normal;color:#9ce7c9}
+.huntv2-map-compact{position:absolute;z-index:36;right:9px;top:122px;width:22px;height:22px;border-radius:50%;border:1px solid var(--hunt-line);background:rgba(4,15,24,.78);color:#ead18e;font-size:10px}
+
+/* =========================
+   Player HUD / Enemy HUD
+   ========================= */
+.huntv2-player-hud,.huntv2-enemy-hud{position:absolute;z-index:35;top:34px;height:84px;background:linear-gradient(180deg,rgba(4,15,25,.94),rgba(3,11,19,.88));border:1px solid rgba(232,194,108,.20);box-shadow:0 7px 18px rgba(0,0,0,.25),inset 0 1px rgba(255,255,255,.035),inset 0 0 0 1px rgba(232,194,108,.035);}
+.huntv2-player-hud{left:8px;width:calc(50% - 10px);border-radius:38px 13px 13px 38px;padding:7px 8px 6px 72px}
+.huntv2-player-portrait{position:absolute;left:-2px;top:5px;width:68px;height:68px;border-radius:50%;overflow:hidden;border:1px solid rgba(238,204,117,.56);background:#081724;box-shadow:0 0 0 2px rgba(5,16,24,.92),0 6px 14px rgba(0,0,0,.30)}
+.huntv2-player-portrait img{width:100%;height:100%;object-fit:cover;object-position:50% 26%;transform:scale(1.18)}.huntv2-player-portrait i{position:absolute;right:1px;bottom:1px;min-width:15px;height:15px;border-radius:8px;display:grid;place-items:center;background:#8e6427;color:#fff3c6;font:800 7.5px Georgia,serif;font-style:normal}
+.huntv2-player-hud-core{height:100%;display:grid;grid-template-rows:16px 14px 14px 14px;gap:1px;min-width:0}.huntv2-player-heading{display:flex;align-items:baseline;gap:4px;min-width:0}.huntv2-player-heading strong{font:800 14px/1 Georgia,serif;color:#fff0cc;white-space:nowrap;max-width:76%;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}.huntv2-player-heading span{font-size:7.7px;color:#aeb8bb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.huntv2-vital-row{display:grid;grid-template-columns:18px minmax(0,1fr) 31px;align-items:center;gap:3px}.huntv2-vital-row>b{font-size:8px;color:#c8c1b0}.huntv2-vital-row>small{font-size:7.2px;text-align:right;color:#dac58d}.huntv2-vital{position:relative;height:11px;border-radius:5px;overflow:hidden;background:#02070c;border:1px solid rgba(255,255,255,.08)}.huntv2-vital>u,.huntv2-vital>i{position:absolute;inset:0 auto 0 0;display:block;text-decoration:none;transition:width .25s ease}.huntv2-vital.hp>u{background:#7e2929}.huntv2-vital.hp>i{background:linear-gradient(90deg,#c94545,#ef6b58)}.huntv2-vital.spirit>i{background:linear-gradient(90deg,#157ca1,#39b5da)}.huntv2-vital>em{position:absolute;inset:0;display:grid;place-items:center;font-style:normal;font-size:7.2px;font-weight:800;color:white;text-shadow:0 1px 2px #000}
+.huntv2-player-meta{display:flex;align-items:center;gap:3px;overflow:hidden}.huntv2-player-meta span{min-width:0;padding:1px 4px;border-radius:6px;background:rgba(255,255,255,.04);font-size:6.6px;color:#b9c2c1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.huntv2-player-meta span:nth-child(n+5){display:none}
+.huntv2-status-tray{display:flex;gap:2px;align-items:center}.huntv2-status-tray.player{position:absolute;left:72px;top:64px;z-index:40}.huntv2-status-tray.enemy{min-height:16px}.huntv2-status-tray .huntv2-status-chip{width:16px;height:16px;border-radius:5px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.14);background:rgba(5,15,24,.88);font-size:6.5px}
+
+.huntv2-enemy-hud{right:8px;width:calc(50% - 10px);padding:7px 68px 6px 9px;border-radius:13px 38px 38px 13px}.huntv2-enemy-hud .huntv2-portrait{position:absolute;right:-2px;top:5px;width:68px;height:68px;border-radius:50%;overflow:hidden;border:1px solid rgba(204,91,119,.52);background:#081724;box-shadow:0 0 0 2px rgba(5,16,24,.92),0 6px 14px rgba(0,0,0,.30)}.huntv2-enemy-hud .huntv2-portrait img{width:100%;height:100%;object-fit:cover}
+.huntv2-hud-main{height:100%;display:grid;grid-template-rows:26px 10px 7px 10px 14px;gap:1px;min-width:0}.huntv2-hud-main>div:first-child{min-width:0;align-self:start}.huntv2-hud-main strong{display:-webkit-box;font:800 13.5px/1.02 Georgia,serif;color:#f07b78;max-height:28px;overflow:hidden;overflow-wrap:break-word;word-break:normal;-webkit-line-clamp:2;-webkit-box-orient:vertical}.huntv2-hud-main>div:first-child span{display:block;margin-top:1px;font-size:7.7px;color:#b4bdc0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.huntv2-hp{position:relative;height:11px;border-radius:5px;overflow:hidden;background:#02070c;border:1px solid rgba(255,255,255,.08)}.huntv2-hp>u,.huntv2-hp>i{position:absolute;inset:0 auto 0 0;text-decoration:none;transition:width .25s ease}.huntv2-hp>u{background:#7f2c31}.huntv2-hp>i{background:linear-gradient(90deg,#bd3846,#e06757)}.huntv2-hp>b{position:absolute;inset:0;display:grid;place-items:center;font-size:7.5px;color:white;text-shadow:0 1px 2px #000}
+.huntv2-status-line{display:flex;align-items:center;justify-content:space-between;gap:3px}.huntv2-element-icons{display:flex;gap:2px}.huntv2-element-icons i{width:15px;height:15px;border-radius:5px;display:grid;place-items:center;font-style:normal;font:800 6.5px Georgia,serif;color:#baddec;background:#10283a;border:1px solid rgba(124,205,238,.20)}
+.huntv2-poise-row{display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:4px;min-width:0;cursor:help;border-radius:6px;outline:none;transition:background .15s ease,box-shadow .15s ease}.huntv2-poise-row:hover,.huntv2-poise-row:focus-visible{background:rgba(82,173,203,.055);box-shadow:0 0 0 1px rgba(105,198,226,.12)}.huntv2-poise-row>b{font-size:6.1px;letter-spacing:.04em;color:#8ecfe1;white-space:nowrap}.huntv2-poise{position:relative;height:9px;border-radius:5px;overflow:hidden;background:rgba(1,7,12,.94);border:1px solid rgba(95,181,205,.18);box-shadow:inset 0 0 5px rgba(0,0,0,.45)}.huntv2-poise>i{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,#46b8d8 0%,#e1c15f 64%,#e46f42 100%);box-shadow:0 0 8px rgba(226,174,65,.18);transition:width .22s ease}.huntv2-poise>em{position:absolute;inset:0;display:grid;place-items:center;font-style:normal;font-size:5.8px;font-weight:900;color:#e7edf0;text-shadow:0 1px 2px #000}.huntv2-poise-row.broken>b{color:#ffd36b}.huntv2-poise-row.broken .huntv2-poise{border-color:rgba(255,190,62,.5);box-shadow:0 0 10px rgba(241,169,42,.17),inset 0 0 5px rgba(0,0,0,.45)}.huntv2-poise-row.broken .huntv2-poise>i{width:100%!important;background:linear-gradient(90deg,#f0a936,#ffda6e);animation:huntv2PoiseBroken .72s ease-in-out infinite alternate}.huntv2-poise-row.poise-recovering>b{color:#aab5b8}.huntv2-poise-row.poise-recovering .huntv2-poise{border-color:rgba(160,174,178,.22)}.huntv2-poise-row.poise-recovering .huntv2-poise>i{background:#66747b;opacity:.55}.huntv2-poise-row.poise-recovering .huntv2-poise>em{color:#c5ced0}@keyframes huntv2PoiseBroken{from{filter:brightness(.9)}to{filter:brightness(1.35)}}
+.huntv2-boss-mechanic-chip{position:absolute;z-index:35;right:37px;top:122px;max-width:34%;height:22px;padding:0 7px;display:flex;align-items:center;gap:4px;border:1px solid rgba(236,179,89,.28);border-radius:11px;background:rgba(34,22,9,.76);color:#d9c08b}.huntv2-boss-mechanic-chip i{font-style:normal;color:#eecb72}.huntv2-boss-mechanic-chip span{font-size:7.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.huntv2-boss-mechanic-chip b{font-size:6.6px}
+
+/* =========================
+   Right control rail
+   ========================= */
+.huntv2-quick-controls{position:absolute;z-index:42;right:9px;top:158px;width:44px;display:grid;gap:5px;transition:opacity .18s ease,transform .18s ease}.huntv2-rail-btn{height:42px;padding:3px 1px;border-radius:13px;border:1px solid rgba(235,198,103,.20);background:rgba(3,13,22,.78);color:#b9c2c3;display:grid;place-items:center;gap:0;box-shadow:0 4px 11px rgba(0,0,0,.21);}.huntv2-rail-btn i{font-style:normal;font:800 11px Georgia,serif;color:#d8bd75}.huntv2-rail-btn span{font-size:6.8px;line-height:1;font-weight:700}.huntv2-rail-btn.active{border-color:rgba(103,211,164,.38);box-shadow:0 0 14px rgba(64,174,127,.10),0 6px 14px rgba(0,0,0,.23)}.huntv2-rail-btn.active::after{content:"";position:absolute;margin-left:32px;margin-top:-30px;width:5px;height:5px;border-radius:50%;background:#71d69e;box-shadow:0 0 7px #71d69e}
+.huntv2-stage.presentation-active .huntv2-quick-controls{opacity:.48;transform:translateX(3px)}.huntv2-stage.presentation-active .huntv2-quick-controls .huntv2-rail-btn span{opacity:.28}.huntv2-stage.presentation-active .huntv2-quick-controls:hover,.huntv2-stage.presentation-active .huntv2-quick-controls:focus-within{opacity:1;transform:none}.huntv2-stage.presentation-active .huntv2-quick-controls:hover .huntv2-rail-btn span,.huntv2-stage.presentation-active .huntv2-quick-controls:focus-within .huntv2-rail-btn span{opacity:1}.huntv2-rail-btn span{transition:opacity .18s ease}
+.huntv2-auto-card{position:absolute;z-index:31;right:57px;top:158px;height:20px;padding:0 6px;border-radius:12px;background:rgba(4,15,24,.70);border:1px solid rgba(103,211,164,.20);display:flex;align-items:center;gap:4px;color:#a9cabc}.huntv2-auto-card i{font-style:normal}.huntv2-auto-card span,.huntv2-auto-card b{font-size:6.5px}
+
+/* =========================
+   Arena + actors
+   ========================= */
+.huntv2-arena{position:absolute;z-index:10;left:0;right:0;top:132px;bottom:38px;overflow:hidden;pointer-events:none}
+.huntv2-back-seal{position:absolute;z-index:1;left:50%;top:47%;width:186px;height:186px;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(145,184,206,.10);box-shadow:0 0 0 24px rgba(146,185,206,.015),0 0 45px rgba(76,130,164,.05)}
+.huntv2-actor{position:absolute;z-index:10;bottom:2%;transform-origin:50% 94%;will-change:transform,opacity}.huntv2-actor.player{left:1%;width:min(47%,210px);height:min(66%,270px)}.huntv2-actor.enemy{right:1%;width:min(45%,205px);height:min(64%,265px)}.huntv2-actor.enemy.boss{right:-1%;width:min(50%,225px);height:min(70%,290px)}
+.huntv2-shadow{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center}.huntv2-player-art,.huntv2-beast-art{display:block;width:100%;height:100%;object-fit:contain;object-position:50% 100%;user-select:none;-webkit-user-drag:none}.huntv2-player-art{transform-origin:50% 100%;filter:drop-shadow(0 17px 15px rgba(0,0,0,.52)) drop-shadow(0 0 9px rgba(255,203,85,.15))}.huntv2-beast-art{filter:drop-shadow(0 15px 14px rgba(0,0,0,.56)) drop-shadow(0 0 8px rgba(97,110,214,.12))}.huntv2-beast-wrap{width:100%;height:100%;display:flex;align-items:flex-end;justify-content:center}
+.huntv2-ground-seal{position:absolute;z-index:-1;left:50%;bottom:0;width:66%;height:15%;transform:translateX(-50%);border-radius:50%;border:1px solid rgba(231,194,104,.22);box-shadow:0 0 18px rgba(224,173,58,.10),inset 0 0 18px rgba(109,188,219,.08);opacity:.54}.huntv2-actor.enemy .huntv2-ground-seal{border-color:rgba(116,101,229,.22);box-shadow:0 0 18px rgba(89,81,203,.12)}
+.huntv2-aura{position:absolute;z-index:-2;left:50%;top:50%;width:72%;height:72%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(99,192,236,.08),transparent 67%);opacity:.46}.huntv2-actor.player .huntv2-aura{background:radial-gradient(circle,rgba(246,201,88,.10),rgba(88,182,230,.05) 42%,transparent 68%)}
+.huntv2-status-fx-layer{position:absolute;z-index:13;inset:0;pointer-events:none}.huntv2-cast-ring{position:absolute;z-index:12;left:50%;bottom:4%;width:66%;aspect-ratio:1;transform:translateX(-50%) scale(.4);border-radius:50%;border:2px solid rgba(129,217,255,.7);box-shadow:0 0 20px rgba(80,184,231,.35),inset 0 0 18px rgba(80,184,231,.18);opacity:0}.huntv2-hit-flash{position:absolute;z-index:14;inset:8%;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.85),rgba(255,178,82,.15) 26%,transparent 66%);opacity:0}
+.huntv2-sword-sweep{position:absolute;z-index:12;inset:0;opacity:0}.huntv2-sword-sweep i{position:absolute;left:28%;top:44%;width:64%;height:5px;border-radius:50%;background:linear-gradient(90deg,transparent,#9feaff,#f7f2d0,transparent);transform:rotate(-18deg);filter:blur(.2px);box-shadow:0 0 10px rgba(93,204,244,.7)}.huntv2-sword-sweep i:nth-child(2){transform:rotate(14deg);top:49%;opacity:.65}.huntv2-sword-sweep em{position:absolute;left:47%;top:48%;width:12px;height:12px;border-radius:50%;background:white;box-shadow:0 0 18px #79d9ff}
+
+/* Actor state animations operate on one clean full-body image. */
+.huntv2-actor.state-cast .huntv2-cast-ring,.huntv2-actor.state-heal .huntv2-cast-ring{animation:huntCastRing .58s ease-out}.huntv2-actor.state-attack,.huntv2-actor.state-sword{animation:huntPlayerAttack .45s cubic-bezier(.2,.8,.25,1)}.huntv2-actor.enemy.state-attack{animation:huntEnemyAttack .48s cubic-bezier(.2,.8,.25,1)}.huntv2-actor.state-sword .huntv2-sword-sweep{animation:huntSweep .45s ease-out}.huntv2-actor.state-hit{animation:huntHit .34s ease-out}.huntv2-actor.state-hit .huntv2-hit-flash{animation:huntHitFlash .30s ease-out}.huntv2-actor.state-dodge{animation:huntDodge .40s ease-out}.huntv2-actor.state-ultimate{animation:huntUltimatePose .82s ease-out}.huntv2-actor.state-dead{animation:huntDefeat .85s ease forwards}.huntv2-actor.state-heal{filter:drop-shadow(0 0 12px rgba(95,230,158,.35))}
+@keyframes huntCastRing{0%{opacity:0;transform:translateX(-50%) scale(.35)}30%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(1.15)}}
+@keyframes huntPlayerAttack{0%{transform:translateX(0) scale(1)}45%{transform:translateX(28px) translateY(-2px) scale(1.035)}100%{transform:translateX(0) scale(1)}}
+@keyframes huntEnemyAttack{0%{transform:translateX(0)}45%{transform:translateX(-24px) scale(1.03)}100%{transform:translateX(0)}}
+@keyframes huntSweep{0%{opacity:0;transform:scale(.7)}35%{opacity:1}100%{opacity:0;transform:scale(1.15)}}
+@keyframes huntHit{0%{transform:translateX(0)}30%{transform:translateX(7px) rotate(1.5deg)}55%{transform:translateX(-5px) rotate(-1deg)}100%{transform:translateX(0)}}
+@keyframes huntHitFlash{0%{opacity:0}25%{opacity:1}100%{opacity:0}}
+@keyframes huntDodge{0%{transform:translateX(0);opacity:1}50%{transform:translateX(-18px);opacity:.55}100%{transform:translateX(0);opacity:1}}
+@keyframes huntUltimatePose{0%{transform:scale(1)}35%{transform:scale(1.06);filter:brightness(1.18)}100%{transform:scale(1)}}
+@keyframes huntDefeat{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:.42;transform:translateY(14px) rotate(4deg)}}
+
+/* =========================
+   Core combat motion helpers (projectile / arc / impact)
+   ========================= */
+.huntv2-vfx-layer,.huntv2-phase-fx{position:absolute;z-index:20;inset:0;pointer-events:none}
+.huntv2-projectile{position:absolute;z-index:24;left:35%;top:49%;width:74px;height:12px;opacity:0;pointer-events:none}.huntv2-projectile i{position:absolute;inset:4px 0;background:linear-gradient(90deg,transparent,#80ddff,#fff);border-radius:50%;box-shadow:0 0 9px #72d8ff}.huntv2-projectile em{position:absolute;right:0;top:0;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 13px #78dcff}.huntv2-projectile.show{animation:huntProjectile .58s ease-in both}.huntv2-projectile.from-enemy{left:62%;transform:scaleX(-1)}
+@keyframes huntProjectile{0%{opacity:0;transform:translateX(-18px)}12%{opacity:1}100%{opacity:0;transform:translateX(105px)}}
+.huntv2-sword-arc{position:absolute;z-index:23;left:27%;top:37%;width:54%;height:42%;border-radius:50%;border-top:4px solid rgba(174,235,255,.9);transform:rotate(-18deg) scale(.5);filter:drop-shadow(0 0 8px #73d9ff);opacity:0}.huntv2-sword-arc.show{animation:huntArc .48s ease-out}.huntv2-sword-arc.from-enemy{transform:rotate(162deg) scale(.5)}
+@keyframes huntArc{0%{opacity:0;transform:rotate(-18deg) scale(.4)}30%{opacity:1}100%{opacity:0;transform:rotate(-18deg) scale(1.15)}}
+.huntv2-lightning{position:absolute;z-index:25;inset:0;opacity:0}.huntv2-lightning i{position:absolute;width:3px;height:42%;top:20%;background:linear-gradient(180deg,transparent,#d8f6ff 15%,#7eb9ff 55%,transparent);clip-path:polygon(40% 0,100% 0,60% 43%,92% 43%,23% 100%,45% 54%,11% 54%);filter:drop-shadow(0 0 7px #82c7ff)}.huntv2-lightning i:nth-child(1){left:67%}.huntv2-lightning i:nth-child(2){left:74%;height:34%;top:28%}.huntv2-lightning i:nth-child(3){left:80%;height:30%;top:33%}.huntv2-lightning.target-player i:nth-child(1){left:22%}.huntv2-lightning.target-player i:nth-child(2){left:29%}.huntv2-lightning.target-player i:nth-child(3){left:36%}.huntv2-lightning.show{animation:huntLightning .58s ease-out}
+@keyframes huntLightning{0%,100%{opacity:0}15%,25%,45%{opacity:1}20%,35%{opacity:.35}}
+.huntv2-impact{position:absolute;z-index:27;left:73%;top:48%;width:54px;height:54px;transform:translate(-50%,-50%) scale(.2);border-radius:50%;opacity:0;background:radial-gradient(circle,#fff 0 6%,#ffd46f 8%,rgba(112,209,255,.55) 20%,transparent 67%)}.huntv2-impact.player{left:27%}.huntv2-impact.show{animation:huntImpact .44s ease-out}.huntv2-impact.strong{width:78px;height:78px}.huntv2-screen-flash{position:absolute;z-index:28;inset:0;background:white;opacity:0;pointer-events:none}.huntv2-screen-flash.show{animation:huntScreenFlash .12s linear}.huntv2-screen-flash.strong{animation-duration:.18s}
+@keyframes huntImpact{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}25%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.45)}}
+@keyframes huntScreenFlash{0%{opacity:0}25%{opacity:.22}100%{opacity:0}}
+.huntv2-stage.shake{animation:huntShake .22s linear}.huntv2-stage.shake-strong{animation:huntShakeStrong .32s linear}.huntv2-stage.hit-stop .huntv2-arena{filter:brightness(1.05)}
+@keyframes huntShake{0%,100%{transform:none}25%{transform:translateX(-2px)}55%{transform:translateX(2px)}75%{transform:translateY(-1px)}}
+@keyframes huntShakeStrong{0%,100%{transform:none}18%{transform:translate(-3px,1px)}38%{transform:translate(3px,-1px)}58%{transform:translate(-2px,-1px)}78%{transform:translate(2px,1px)}}
+
+/* Cinematic/focus modifies contrast, not asset geometry. */
+.huntv2-stage.focus-player .huntv2-actor.enemy{filter:brightness(.72) saturate(.72)}.huntv2-stage.focus-enemy .huntv2-actor.player{filter:brightness(.72) saturate(.72)}.huntv2-stage.focus-impact .huntv2-actor{filter:brightness(.88)}.huntv2-stage.cinematic-ultimate::after{content:"";position:absolute;z-index:18;inset:0;background:radial-gradient(circle at 48% 48%,transparent 26%,rgba(0,0,0,.38) 88%);pointer-events:none}.huntv2-stage.cinematic-ultimate .huntv2-quick-controls,.huntv2-stage.cinematic-ultimate .huntv2-meta-strip{opacity:.42}
+.huntv2-phase-fx.show{display:block;background:radial-gradient(circle at 73% 50%,rgba(91,127,255,.18),transparent 28%);animation:huntPhase .9s ease-out}.huntv2-phase-fx.phase-3{background:radial-gradient(circle at 73% 50%,rgba(176,65,234,.22),transparent 30%)}@keyframes huntPhase{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+
+/* =========================
+   Damage / callout / log
+   ========================= */
+.huntv2-float-layer{position:absolute;z-index:50;inset:0;pointer-events:none}.huntv2-float{position:absolute;top:45%;min-width:86px;text-align:center;font:900 21px/1 Georgia,serif;color:#ffd26d;text-shadow:0 2px 3px rgba(0,0,0,.9),0 0 8px currentColor;pointer-events:none}.huntv2-float.enemy{right:13%}.huntv2-float.player{left:11%;color:#88e7ae}.huntv2-float.lane-1{transform:translateY(-8px)}.huntv2-float.lane-2{transform:translateY(7px)}.huntv2-float.damage-main span{display:block;margin-bottom:1px;font:800 10px/1 Georgia,serif;color:#ff9a55;letter-spacing:.05em}.huntv2-float.damage-main strong{font:900 24px/1 Georgia,serif}.huntv2-float.damage-main small{display:none;margin-top:1px;font-size:9px}.huntv2-float.damage-main small.show{display:block}.huntv2-float.crit strong{font-size:28px;color:#ffd26d}.huntv2-float.show{animation:huntFloat .9s ease-out both}.huntv2-float.crit.show{animation-duration:1.1s}.huntv2-float.bump{animation:huntBump .18s ease-out}
+@keyframes huntFloat{0%{opacity:0;translate:0 10px;scale:.75}18%{opacity:1;translate:0 0;scale:1.06}70%{opacity:1}100%{opacity:0;translate:0 -38px;scale:.94}}@keyframes huntBump{50%{scale:1.12}}
+.huntv2-result-pop{position:absolute;z-index:52;left:50%;top:50%;transform:translate(-50%,-50%);min-width:150px;padding:8px 14px;border-radius:12px;border:1px solid rgba(236,198,105,.28);background:rgba(3,13,22,.90);text-align:center;opacity:0}.huntv2-result-pop b{display:block;font:900 14px Georgia,serif;color:#f2ce77}.huntv2-result-pop span{display:block;margin-top:2px;font-size:7px;color:#c0c7c7}.huntv2-result-pop.show{animation:huntResult 1.2s ease both}.huntv2-result-pop.defeat b{color:#ed877f}@keyframes huntResult{0%{opacity:0;scale:.8}15%,75%{opacity:1;scale:1}100%{opacity:0;translate:0 -15px}}
+.huntv2-skill-callout{position:absolute;z-index:47;left:16px;top:43%;max-width:62%;padding:5px 11px 6px 14px;background:linear-gradient(90deg,rgba(5,14,23,.95),rgba(27,19,10,.83),transparent);border-left:2px solid #e7c36d;opacity:0;transform:translateX(-15px);pointer-events:none}.huntv2-skill-callout small{display:block;font-size:6px;letter-spacing:.15em;color:#d6bf83}.huntv2-skill-callout strong{display:block;font:italic 800 15px Georgia,serif;color:#ffe6a4;text-shadow:0 0 12px rgba(234,191,76,.28)}.huntv2-skill-callout.enemy{left:auto;right:52px;text-align:right;border-left:0;border-right:2px solid #db7976;background:linear-gradient(270deg,rgba(5,14,23,.95),rgba(40,15,17,.80),transparent)}.huntv2-skill-callout.enemy strong{color:#ff9c98}.huntv2-skill-callout.ultimate strong{font-size:18px}.huntv2-skill-callout.show{animation:huntCallout 1.05s ease both}@keyframes huntCallout{0%{opacity:0;transform:translateX(-15px)}14%,78%{opacity:1;transform:none}100%{opacity:0;transform:translateX(8px)}}
+.huntv2-combat-caption{position:absolute;z-index:43;left:50%;bottom:40px;transform:translateX(-50%);width:min(66%,250px);padding:4px 8px;border:1px solid rgba(232,194,108,.14);border-radius:10px;background:rgba(3,12,20,.58);;text-align:center;opacity:0}.huntv2-combat-caption strong{display:block;font:800 9px Georgia,serif;color:#f0d28c}.huntv2-combat-caption span{display:block;margin-top:1px;font-size:6px;color:#aeb8ba}.huntv2-combat-caption.show{animation:huntCaption 1.3s ease both}@keyframes huntCaption{0%,100%{opacity:0;translate:0 4px}18%,76%{opacity:1;translate:0 0}}
+.huntv2-log{position:absolute;z-index:45;left:8px;right:64px;bottom:48px;max-height:128px;border:1px solid rgba(232,194,108,.20);border-radius:12px;background:rgba(3,12,20,.90);box-shadow:0 12px 28px rgba(0,0,0,.34);backdrop-filter:blur(8px);overflow:hidden;transition:opacity .18s ease,transform .18s ease}.huntv2-log.hidden{opacity:0;transform:translateY(8px);pointer-events:none}.huntv2-log-head{width:100%;height:31px;padding:0 10px;display:flex;align-items:center;justify-content:space-between;border:0;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.025);color:#eed7a0}.huntv2-log-head span{font:800 10px Georgia,serif}.huntv2-log-head i{font-style:normal;color:#69c7dc}.huntv2-log-body{padding:5px 9px 7px;display:grid;gap:3px;max-height:96px;overflow-y:auto;overscroll-behavior:contain}.huntv2-log-row{font-size:9px;line-height:1.25;color:#c3c9c8}.huntv2-log-row.boss{color:#e98c8a}.huntv2-log-row.system{color:#8e9da1}.huntv2-log-row.player{color:#e7d297}
+
+/* =========================
+   Stage footer
+   ========================= */
+.huntv2-stage-bottom{position:absolute;z-index:33;left:0;right:0;bottom:0;height:36px;padding:4px 8px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:end;background:linear-gradient(180deg,rgba(3,11,18,.03),rgba(3,11,18,.86) 44%,rgba(3,11,18,.97));border-top:1px solid rgba(232,194,108,.10)}
+.huntv2-floor{display:grid;grid-template-columns:1fr auto;gap:1px 5px;align-items:center}.huntv2-floor span,.huntv2-floor b{font-size:8px;color:#b8c1c0}.huntv2-floor b{color:#e6cc83}.huntv2-floor>i{grid-column:1/-1;height:5px;border-radius:5px;background:#030c13;border:1px solid rgba(232,194,108,.08);overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.55)}.huntv2-floor>i>em{display:block;height:100%;background:linear-gradient(90deg,#6e55b9,#bc78cf 45%,#e0b75b);box-shadow:0 0 7px rgba(202,137,219,.22);transition:width .28s ease}
+.huntv2-stage-tools{display:flex;gap:4px}.huntv2-stage-tools button{width:25px;height:25px;border-radius:8px;border:1px solid rgba(232,194,108,.16);background:rgba(6,19,30,.86);color:#cbb886}.huntv2-lock{position:absolute;z-index:80;inset:145px 14px 48px;display:grid;place-items:center;align-content:center;gap:5px;text-align:center;background:rgba(2,9,15,.78);backdrop-filter:blur(5px)}.huntv2-lock i{font-size:28px;color:#e0ba65}.huntv2-lock strong{font:800 14px Georgia,serif}.huntv2-lock span{font-size:8px;color:#b4bec0}
+
+/* =========================
+   Skill dock + action deck
+   ========================= */
+.huntv2-console{position:relative;z-index:60;flex:0 0 170px;min-height:170px;padding:7px 7px 7px;background:linear-gradient(180deg,#061622,#030b12);border-top:1px solid rgba(232,194,108,.16);box-shadow:0 -10px 24px rgba(0,0,0,.28)}
+.huntv2-skills{height:116px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr)) 1.25fr;gap:3px;align-items:start}
+.huntv2-skill{min-width:0;height:114px;padding:0;border:0;background:transparent;color:#c9c0ab;display:flex;flex-direction:column;align-items:center;overflow:visible;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:pointer}
+.huntv2-skill-art{position:relative;flex:0 0 auto;width:58px;height:58px;border-radius:50%;overflow:hidden;border:1.5px solid rgba(166,194,209,.38);background:radial-gradient(circle at 50% 35%,#17364f,#071522 72%);box-shadow:0 5px 12px rgba(0,0,0,.36),inset 0 0 0 1px rgba(255,255,255,.05);transition:transform .12s ease,box-shadow .15s ease,border-color .15s ease}
+.huntv2-skill-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transform:scale(.98)}
+.huntv2-skill-art>i{position:absolute;inset:0;display:grid;place-items:center;font-style:normal;font:700 18px Georgia,serif;color:#8edcff}
+.huntv2-skill.ready .huntv2-skill-art{border-color:rgba(241,197,90,.76);box-shadow:0 0 0 1px rgba(255,219,113,.10),0 0 11px rgba(240,183,54,.18),0 5px 12px rgba(0,0,0,.36)}
+.huntv2-skill.holding .huntv2-skill-art{transform:scale(.94);border-color:#f3c75f;box-shadow:0 0 0 3px rgba(242,194,74,.16),0 0 18px rgba(242,194,74,.35)}
+.huntv2-skill.held .huntv2-skill-art{transform:scale(1.04)}
+.huntv2-cooldown{position:absolute;z-index:6;inset:0;border-radius:inherit;background:rgba(2,7,12,.68);opacity:calc(var(--cd,0));transition:opacity .15s;display:grid;place-items:center;text-decoration:none}
+.huntv2-cooldown::before{content:"";position:absolute;inset:2px;border-radius:inherit;background:conic-gradient(rgba(54,174,229,.82) calc((1 - var(--cd,0))*360deg),rgba(3,9,14,.30) 0);mask:radial-gradient(circle,transparent 61%,#000 63%);-webkit-mask:radial-gradient(circle,transparent 61%,#000 63%)}
+.huntv2-cooldown>b{position:relative;z-index:2;font:900 15px/1 ui-sans-serif,system-ui;color:#dff5ff;text-shadow:0 1px 5px #00131f}
+.huntv2-skill-lock,.huntv2-cn-low{display:none;position:absolute;z-index:7;pointer-events:none}
+.huntv2-cn-low{right:2px;bottom:2px;width:16px;height:16px;border-radius:50%;place-items:center;background:#671d20;border:1px solid #e26b59;color:#ffbb7f;font-size:8px;box-shadow:0 0 8px rgba(229,67,48,.42)}
+.huntv2-skill.low-cn .huntv2-cn-low{display:grid}.huntv2-skill.low-cn .huntv2-skill-art{border-color:rgba(225,80,66,.76);box-shadow:0 0 0 1px rgba(219,58,49,.16),0 0 12px rgba(220,48,42,.20)}.huntv2-skill.low-cn .huntv2-skill-art img{filter:saturate(.76) brightness(.78)}
+.huntv2-skill small{width:100%;margin-top:4px;padding:0 1px;font-size:8px;line-height:1.05;color:#d2c8b5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;max-height:10px}
+.huntv2-skill-meta{display:flex;gap:3px;margin-top:3px;line-height:1}.huntv2-skill-meta b,.huntv2-skill-meta em{font-size:6.8px;font-style:normal;font-weight:800;color:#72c9e9}.huntv2-skill-meta em{color:#a7b2b5}.huntv2-skill.empty{opacity:.58;cursor:default}.huntv2-skill.casting .huntv2-skill-art{box-shadow:0 0 0 2px rgba(239,203,108,.28),0 0 20px rgba(229,178,55,.40)}
+.huntv2-skill.ultimate .huntv2-skill-art{width:68px;height:68px;border-radius:13px;border:2px solid rgba(235,196,92,.78);box-shadow:0 0 0 2px rgba(232,194,108,.10),0 0 18px rgba(225,171,49,.22),inset 0 0 0 1px rgba(255,255,255,.08)}
+.huntv2-skill.ultimate .huntv2-skill-art::after{content:"✦";position:absolute;z-index:5;right:-1px;top:-2px;width:16px;height:16px;display:grid;place-items:center;border-radius:3px;background:linear-gradient(145deg,#f4d477,#8b5a1e);color:#09111a;font-size:9px;box-shadow:0 0 7px rgba(241,194,68,.42)}
+.huntv2-skill.ultimate small{font:800 8px/1.05 Georgia,serif;color:#e6cc88;white-space:nowrap;max-height:10px}.huntv2-skill.ultimate .huntv2-skill-meta{display:none}
+.huntv2-skill.sealed{opacity:.70}.huntv2-skill.sealed .huntv2-skill-art{border-style:solid;border-color:rgba(126,142,150,.34);filter:saturate(.35);background:radial-gradient(circle at 50% 35%,#132838,#07131d 72%)}
+.huntv2-skill.sealed .huntv2-skill-art::before{content:"";position:absolute;z-index:7;left:50%;top:21px;width:16px;height:14px;transform:translateX(-50%);border:2px solid #aab2b5;border-bottom:0;border-radius:9px 9px 0 0}
+.huntv2-skill.sealed .huntv2-skill-art::after{content:"";position:absolute;z-index:8;left:50%;top:31px;width:24px;height:19px;transform:translateX(-50%);border-radius:5px;background:#26343b;border:1px solid #93a0a5;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.huntv2-skill.sealed .huntv2-skill-art>i{color:#92aab4;font-size:16px;opacity:.2}.huntv2-skill.sealed small{color:#9eabad;font-weight:700}.huntv2-skill.sealed .huntv2-skill-meta b{color:#a28a5b}.huntv2-skill.empty:not(.sealed){opacity:.58}.huntv2-skill.empty:not(.sealed) .huntv2-skill-art{border-style:dashed;border-color:rgba(118,157,178,.22)}.huntv2-skill.empty:not(.sealed) small{color:#9cacb0;font-weight:700}
+.huntv2-action-deck{height:41px;margin-top:3px;display:grid;grid-template-columns:.92fr 1.08fr;gap:6px}.huntv2-fight,.huntv2-context-button{min-width:0;height:41px;border-radius:11px;display:flex;align-items:center;gap:7px;padding:4px 7px;text-align:left}.huntv2-fight{border:1px solid rgba(232,194,108,.34);background:linear-gradient(180deg,rgba(64,42,15,.76),rgba(23,15,7,.84));color:#f2d894}.huntv2-fight>i,.huntv2-context-button>i{flex:0 0 24px;width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-style:normal;background:rgba(255,255,255,.04)}.huntv2-fight strong,.huntv2-context-button strong{display:block;font:800 10.5px/1.05 Georgia,serif}.huntv2-fight span,.huntv2-context-button span{display:block;margin-top:2px;font-size:7.7px;color:#b9ae99;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.huntv2-context-button{border:1px solid rgba(126,183,205,.14);background:linear-gradient(180deg,rgba(12,35,50,.74),rgba(5,20,30,.82));color:#c6d5d8}.huntv2-context-button>i{color:#82d1e8}.huntv2-context-button.dao{border-color:rgba(224,180,77,.20);background:linear-gradient(180deg,rgba(44,32,13,.56),rgba(15,15,13,.76));color:#e1ca8c}.huntv2-context-button.dao>i{color:#e8c66f}.huntv2-fight:disabled{opacity:.62;filter:saturate(.72)}.huntv2-skill.sealed{opacity:.76}.huntv2-skill.sealed .huntv2-skill-art{border-style:dashed;border-color:rgba(197,168,100,.30);filter:saturate(.65);background:radial-gradient(circle at 50% 35%,#132838,#07131d 72%)}.huntv2-skill.sealed .huntv2-skill-art>i{color:#92aab4;font-size:16px}.huntv2-skill.sealed small{color:#a8b5b7;font-weight:700}.huntv2-skill.sealed .huntv2-skill-meta b{color:#c19d59}.huntv2-skill.empty:not(.sealed){opacity:.72}.huntv2-skill.empty:not(.sealed) .huntv2-skill-art{border-style:dashed;border-color:rgba(118,157,178,.22)}.huntv2-skill.empty:not(.sealed) small{color:#9cacb0;font-weight:700}
+
+/* =========================
+   Sheets / detail widgets
+   ========================= */
+.huntv2-sheet-skill{display:flex;gap:10px;align-items:center}.huntv2-sheet-skill img{width:58px;height:58px;border-radius:13px;object-fit:cover}.huntv2-sheet-skill strong{display:block;font:800 13px Georgia,serif}.huntv2-sheet-skill span{display:block;margin-top:3px;font-size:8px;color:#aeb8ba}.huntv2-boss-mechanic{display:grid;gap:4px;padding:8px;margin-top:8px;border-radius:10px;background:rgba(126,54,58,.12);border:1px solid rgba(215,102,106,.18)}.huntv2-boss-mechanic small{color:#d69292}.huntv2-boss-mechanic strong{color:#f0c1b7}.huntv2-boss-mechanic span,.huntv2-boss-mechanic em{font-size:8px;color:#b9c1c0}.huntv2-boss-mechanic b{font-size:8px;color:#e7c676}
+.huntv2-floor-sheet{display:grid;gap:10px}.huntv2-floor-sheet-head{display:flex;align-items:center;justify-content:space-between}.huntv2-floor-select-row{display:grid;grid-template-columns:1fr auto;gap:8px}.huntv2-floor-quick-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}.huntv2-floor-quick{height:34px;border-radius:9px;border:1px solid rgba(232,194,108,.14);background:rgba(255,255,255,.04);color:#ddd4c2}.huntv2-farm-stats,.huntv2-reward-efficiency{display:grid;gap:5px}.huntv2-farm-suggest{padding:8px;border-radius:9px;background:rgba(255,255,255,.04)}
+
+/* =========================
+   Status callouts
+   ========================= */
+.huntv2-status-callout{position:absolute;z-index:55;top:35%;padding:4px 7px;border-radius:10px;background:rgba(4,14,22,.88);border:1px solid rgba(232,194,108,.20);font-size:8.5px;color:#e7d5aa;animation:huntStatusCallout .9s ease both}.huntv2-status-callout.player{left:6%}.huntv2-status-callout.enemy{right:8%}@keyframes huntStatusCallout{0%{opacity:0;translate:0 5px}15%,70%{opacity:1;translate:0 0}100%{opacity:0;translate:0 -12px}}
+.huntv2-actor-status-fx{position:absolute;z-index:16;inset:12%;border-radius:50%;pointer-events:none}.huntv2-actor-status-fx.buff{box-shadow:0 0 22px rgba(91,223,157,.22),inset 0 0 18px rgba(91,223,157,.10)}.huntv2-actor-status-fx.debuff{box-shadow:0 0 22px rgba(189,92,217,.22),inset 0 0 18px rgba(189,92,217,.10)}.huntv2-actor-status-fx.control{box-shadow:0 0 22px rgba(233,94,73,.28),inset 0 0 18px rgba(233,94,73,.12)}
+
+/* =========================
+   Responsive normalization
+   ========================= */
+/* Readability lock: no viewport breakpoint is allowed to shrink HUD, actors, skill icons, or text.
+   On very narrow screens the game keeps the same visual minimums and the shell may crop/letterbox instead of making text unreadable. */
+/* Desktop review uses the exact same 430px combat geometry as mobile. */
+@media(min-width:700px){
+  body[data-game-screen="hunt"] .huntv2-screen{width:100%;height:100%}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .huntv2-screen *, .huntv2-screen *::before,.huntv2-screen *::after{transition-duration:.001ms!important}
+  .huntv2-atmosphere i,.huntv2-mist,.huntv2-element-weather i,.huntv2-player-pose-set,.huntv2-beast-art{animation:none!important}
+  .huntv2-skill-callout.show{animation:huntReducedVisible 1.05s ease both!important}
+  .huntv2-combat-caption.show{animation:huntReducedVisible 1.25s ease both!important}
+  .huntv2-float.show{animation:huntReducedVisible .9s ease both!important}
+  .huntv2-float.crit.show{animation-duration:1.05s!important}
+  .huntv2-result-pop.show{animation:huntReducedVisible 1.2s ease both!important}
+  .huntv2-status-callout{animation:huntReducedVisible .95s ease both!important}
+}
+@keyframes huntReducedVisible{0%,100%{opacity:0}12%,82%{opacity:1}}
+
+/* =========================
+   v1.38.0-alpha.7 — True Production Character
+   Direct transparent pose renders. No sheet crops, no fake modular layers.
+   ========================= */
+.huntv2-player-pose-set{position:absolute;inset:0;transform-origin:var(--pc-origin-x,50%) var(--pc-origin-y,98.5%);transform:translate(var(--pc-offset-x,0),var(--pc-offset-y,0)) scale(var(--pc-scale,1));will-change:transform}.huntv2-player-pose-set[data-facing="right"]{transform:translate(var(--pc-offset-x,0),var(--pc-offset-y,0)) scale(var(--pc-scale,1)) scaleX(-1)}
+.huntv2-player-pose{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 100%;display:none;pointer-events:none;filter:drop-shadow(0 14px 12px rgba(0,0,0,.42));transition:none}.huntv2-actor.player .pose-idle{display:block}
+.huntv2-actor.player:is(.state-cast,.state-heal,.state-ultimate,.state-attack,.state-sword,.state-dash,.state-hit,.state-dead) .huntv2-player-pose{display:none}
+.huntv2-actor.player:is(.state-cast,.state-heal) .pose-cast{display:block}
+.huntv2-actor.player:is(.state-attack,.state-sword,.state-dash) .pose-attack{display:block}
+.huntv2-actor.player.state-hit .pose-hit{display:block}
+.huntv2-actor[class~="player"].state-ultimate .pose-ultimate{display:block}
+.huntv2-actor[class~="player"].state-dead .pose-defeat{display:block}
+.huntv2-actor[class~="player"].state-dead .huntv2-player-pose-set{transform:translate(calc(var(--pc-offset-x,0) - 2%),calc(var(--pc-offset-y,0) + 3%)) scale(calc(var(--pc-scale,1) * .98)) rotate(-2deg);filter:saturate(.8) brightness(.88)}
+.huntv2-actor[class~="player"].state-dead .huntv2-player-pose-set[data-facing="right"]{transform:translate(calc(var(--pc-offset-x,0) - 2%),calc(var(--pc-offset-y,0) + 3%)) scale(calc(var(--pc-scale,1) * .98)) scaleX(-1) rotate(-2deg)}
+.huntv2-player-portrait img{object-position:50% 26%}
+/* Player art geometry is driven by PLAYER_COMBAT_VISUAL. Layout scale remains locked by alpha.6.2. */
+
+
+/* =========================
+   v1.38.0-alpha.7.1 — Dev Combat Sandbox
+   ?dev=1 only. Overlay is intentionally outside production layout flow.
+   ========================= */
+body[data-dev-sandbox="1"]::before{display:none}
+.huntv2-dev-sandbox{position:absolute;right:8px;top:44px;z-index:9500;width:min(280px,calc(100% - 16px));color:#eaf8ff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;pointer-events:none}.huntv2-dev-sandbox:not(.open){width:54px}.huntv2-dev-tab{pointer-events:auto;position:absolute;right:0;top:0;transform:translateY(-34px);min-width:42px;width:42px;height:25px;padding:0 5px;border:1px solid rgba(87,221,255,.36);border-radius:9px;background:rgba(5,25,36,.90);color:#8fe9ff;font-size:8px;font-weight:900;letter-spacing:.06em;box-shadow:0 6px 18px rgba(0,0,0,.28);opacity:.66;transition:opacity .15s ease,filter .15s ease}.huntv2-dev-sandbox.open .huntv2-dev-tab,.huntv2-dev-tab:hover{opacity:1}
+.huntv2-dev-panel{pointer-events:auto;display:none;max-height:min(58vh,520px);overflow:auto;overscroll-behavior:contain;padding:12px;border:1px solid rgba(105,209,238,.42);border-radius:14px;background:linear-gradient(180deg,rgba(7,26,38,.97),rgba(3,15,24,.98));box-shadow:0 16px 45px rgba(0,0,0,.50),inset 0 1px rgba(255,255,255,.04)}.huntv2-dev-sandbox.open .huntv2-dev-panel{display:block}.huntv2-dev-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}.huntv2-dev-head b{display:block;font-size:14px}.huntv2-dev-head small{display:block;margin-top:3px;color:#7ecfe1;font-size:9px}.huntv2-dev-head>span{padding:3px 6px;border-radius:7px;background:#12364a;color:#8fe9ff;font-size:9px;font-weight:800}
+.huntv2-dev-panel label{display:grid;grid-template-columns:72px 1fr;align-items:center;gap:8px;margin:8px 0}.huntv2-dev-panel label>span{font-size:11px;color:#9cc4cf}.huntv2-dev-panel select{width:100%;min-width:0;height:34px;padding:0 8px;border:1px solid rgba(122,190,209,.25);border-radius:9px;background:#081c29;color:#eaf8ff;font-size:11px}.huntv2-dev-panel .huntv2-dev-check{grid-template-columns:18px 1fr}.huntv2-dev-check input{accent-color:#56d8ff}.huntv2-dev-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}.huntv2-dev-actions>button{min-width:0;height:36px;border:1px solid rgba(93,224,255,.30);border-radius:10px;background:linear-gradient(180deg,#16465c,#0b2e40);color:#eafcff;font-weight:800;font-size:9px}.huntv2-dev-primary,.huntv2-dev-panel button[data-dev-sequence]{width:100%;height:36px;margin-top:7px;border:1px solid rgba(93,224,255,.42);border-radius:10px;background:linear-gradient(180deg,#16465c,#0b2e40);color:#eafcff;font-weight:800;font-size:11px}.huntv2-dev-primary{margin-top:0!important;background:linear-gradient(180deg,#a17a2c,#6b4b16);border-color:#d8b45e;color:#fff4cd}
+.huntv2-dev-section{margin-top:12px;padding-top:10px;border-top:1px solid rgba(130,193,210,.16)}.huntv2-dev-section>strong{display:block;margin-bottom:7px;color:#a9dbe7;font-size:10px;text-transform:uppercase;letter-spacing:.08em}.huntv2-dev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.huntv2-dev-grid.two{grid-template-columns:1fr 1fr}.huntv2-dev-grid button{height:32px;padding:0 5px;border:1px solid rgba(120,185,202,.24);border-radius:8px;background:#0a2330;color:#dff6fc;font-size:10px;font-weight:700}.huntv2-dev-grid button:hover,.huntv2-dev-panel button:hover{filter:brightness(1.16)}.huntv2-dev-panel p{margin:10px 0 0;color:#7298a4;font-size:9px;line-height:1.45}
+@media(max-height:740px){.huntv2-dev-sandbox{top:40px;width:min(272px,calc(100% - 12px));right:6px}.huntv2-dev-sandbox:not(.open){width:54px}}
+
+
+/* v1.38.0-alpha.7.2 — Performance lock */
+.huntv2-screen{contain:layout paint style}
+.huntv2-player-pose-set,.huntv2-actor,.huntv2-quick-controls,.huntv2-player-hud,.huntv2-enemy-hud{backface-visibility:hidden}
+.huntv2-player-hud,.huntv2-enemy-hud,.huntv2-resource-row>span,.huntv2-rail-btn{backdrop-filter:none!important}
+.huntv2-mist{filter:none!important}
+
+
+/* v1.38.0-alpha.7.3 — compact Hunt skill detail; never obscure the whole combat screen. */
+.huntv2-root .huntv2-skill-sheet,
+.huntv2-screen .huntv2-skill-sheet{
+  position:absolute!important;
+  inset:auto 10px 178px 10px!important;
+  z-index:180!important;
+  display:block!important;
+  max-height:none!important;
+  background:transparent!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .14s ease,transform .14s ease!important;
+  transform:translateY(8px);
+}
+.huntv2-screen .huntv2-skill-sheet.open{opacity:1!important;visibility:visible!important;pointer-events:auto!important;transform:none!important}
+.huntv2-screen .huntv2-skill-sheet::before{display:none!important}
+.huntv2-screen .huntv2-skill-sheet .v106-sheet-head,
+.huntv2-screen .huntv2-skill-sheet .v106-sheet-body{
+  width:100%!important;
+  box-sizing:border-box!important;
+  color:#f2e6cf!important;
+  border-color:rgba(231,189,98,.28)!important;
+  background:linear-gradient(180deg,rgba(13,38,58,.985),rgba(6,21,34,.99))!important;
+  box-shadow:none!important;
+}
+.huntv2-screen .huntv2-skill-sheet .v106-sheet-head{
+  min-height:48px!important;
+  padding:8px 10px 7px!important;
+  border:1px solid rgba(231,189,98,.28)!important;
+  border-bottom:0!important;
+  border-radius:14px 14px 0 0!important;
+}
+.huntv2-screen .huntv2-skill-sheet .v106-sheet-head .eyebrow{font-size:7px!important;color:#9ba9ae!important}
+.huntv2-screen .huntv2-skill-sheet .v106-sheet-head h2{
+  margin:2px 0 0!important;
+  font:800 14px/1.1 Georgia,serif!important;
+  color:#f2d58d!important;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.huntv2-screen .huntv2-skill-sheet .v106-close{
+  width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important;
+  background:#102b40!important;color:#f0cd79!important;border-color:rgba(231,189,98,.32)!important;
+  font-size:18px!important;
+}
+.huntv2-screen .huntv2-skill-sheet .v106-sheet-body{
+  max-height:168px!important;
+  overflow:auto!important;
+  padding:9px 10px 10px!important;
+  border:1px solid rgba(231,189,98,.28)!important;
+  border-top:1px solid rgba(255,255,255,.05)!important;
+  border-radius:0 0 14px 14px!important;
+}
+.huntv2-screen .huntv2-skill-sheet .huntv2-sheet-skill{display:grid;grid-template-columns:54px minmax(0,1fr);gap:9px;align-items:center;margin:0 0 7px}
+.huntv2-screen .huntv2-skill-sheet .huntv2-sheet-skill img{width:54px;height:54px;border-radius:50%;object-fit:cover;border:1px solid rgba(232,194,108,.45)}
+.huntv2-screen .huntv2-skill-sheet .huntv2-sheet-skill div{min-width:0}
+.huntv2-screen .huntv2-skill-sheet .huntv2-sheet-skill strong{display:block;font-size:12px;color:#f1d590;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.huntv2-screen .huntv2-skill-sheet .huntv2-sheet-skill span{display:block;margin-top:3px;font-size:8px;color:#99aab0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.huntv2-screen .huntv2-skill-sheet .v106-sheet-body>p{margin:5px 0 8px;font-size:9px;line-height:1.42;color:#d8d6cf}
+.huntv2-screen .huntv2-skill-sheet .huntv2-skill-detail-metrics{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.huntv2-screen .huntv2-skill-sheet .metric-row{min-height:30px!important;padding:5px 7px!important;margin:0!important;border:1px solid rgba(255,255,255,.07)!important;border-radius:8px!important;background:rgba(255,255,255,.025)!important}
+.huntv2-screen .huntv2-skill-sheet .metric-row span{font-size:8px!important;color:#9faeb2!important}.huntv2-screen .huntv2-skill-sheet .metric-row strong{font-size:9px!important;color:#f1dfba!important}
+body[data-dev-sandbox="1"] .huntv2-screen .huntv2-skill-sheet{right:10px!important}
+@media(max-width:700px){.huntv2-screen .huntv2-skill-sheet{inset:auto 8px 178px 8px!important}.huntv2-screen .huntv2-skill-sheet .v106-sheet-body{max-height:168px!important}}
+
+/* v1.38.0-alpha.7.4 — complete production character pack */
+.huntv2-actor[class~="player"].state-ultimate .pose-ultimate{filter:drop-shadow(0 15px 14px rgba(0,0,0,.48)) drop-shadow(0 0 12px rgba(92,188,255,.36))}
+
+/* alpha.7.6 — reusable face rig on HUD portrait only; body combat remains authored. */
+.huntv2-player-portrait.v138-face-rig{display:block;isolation:isolate}
+.huntv2-player-portrait.v138-face-rig .v138-face-rig-layer{object-position:50% 26%;transform:scale(1.18);transform-origin:50% 24%}
+.huntv2-player-portrait.v138-face-rig .v138-face-rig-expression{transform:scale(1.18);transform-origin:50% 24%}
+.huntv2-player-portrait.v138-face-rig .v138-face-rig-badge{z-index:8;right:0;bottom:0;min-width:15px;height:15px;font-size:7.5px;background:#8e6427;color:#fff3c6}
+
+/* =========================
+   v1.38.0-alpha.8.0 — Simple Boss State Runtime
+   One base image; state is presentation only. No extra boss pose assets.
+   ========================= */
+.huntv2-boss-visual .huntv2-beast-wrap{position:relative;transform-origin:52% 88%;transition:transform .18s ease,filter .18s ease,opacity .18s ease}
+.huntv2-boss-visual .huntv2-beast-wrap::before,.huntv2-boss-visual .huntv2-beast-wrap::after{content:"";position:absolute;pointer-events:none;opacity:0;transition:opacity .16s ease}
+.huntv2-boss-visual .huntv2-beast-wrap::before{inset:8% 6% 8% 6%;border-radius:50%;border:2px solid rgba(104,189,255,.8);box-shadow:0 0 16px rgba(66,155,255,.55),inset 0 0 18px rgba(113,205,255,.22)}
+.huntv2-boss-visual .huntv2-beast-wrap::after{left:50%;top:48%;width:62%;aspect-ratio:1;transform:translate(-50%,-50%) scale(.72);border-radius:50%;border:2px solid rgba(174,120,255,.8);box-shadow:0 0 22px rgba(147,86,255,.6)}
+.huntv2-boss-visual.boss-state-idle .huntv2-beast-wrap{transform:translate3d(0,0,0)}
+.huntv2-boss-visual.boss-state-attack .huntv2-beast-wrap{animation:huntBossAttack .52s cubic-bezier(.2,.82,.25,1)}
+.huntv2-boss-visual.boss-state-cast .huntv2-beast-wrap{animation:huntBossCast .68s ease-out;filter:brightness(1.08) saturate(1.1)}
+.huntv2-boss-visual.boss-state-cast .huntv2-beast-wrap::after{opacity:.72;animation:huntBossShockwave .68s ease-out}
+.huntv2-boss-visual.boss-state-hit .huntv2-beast-wrap{animation:huntBossHit .36s ease-out;filter:brightness(1.25)}
+.huntv2-boss-visual.boss-state-phase2 .huntv2-beast-wrap{filter:drop-shadow(0 0 10px rgba(83,174,255,.58)) saturate(1.08);animation:huntBossPhase2 1.35s ease-in-out infinite alternate}
+.huntv2-boss-visual.boss-state-phase2 .huntv2-beast-wrap::before{opacity:.72;animation:huntBossShield 1.4s ease-in-out infinite alternate}
+.huntv2-boss-visual.boss-state-phase3 .huntv2-beast-wrap{filter:drop-shadow(0 0 12px rgba(167,79,255,.7)) saturate(1.18) contrast(1.04);animation:huntBossPhase3 .72s ease-in-out infinite alternate}
+.huntv2-boss-visual.boss-state-phase3 .huntv2-beast-wrap::after{opacity:.72;animation:huntBossRage .72s ease-in-out infinite alternate}
+.huntv2-boss-visual.boss-state-defeat .huntv2-beast-wrap{animation:huntBossDefeat .82s ease forwards}
+@keyframes huntBossAttack{0%{transform:translate3d(0,0,0) scale(1)}45%{transform:translate3d(-5%,-1%,0) scale(1.045) rotate(-1.4deg)}100%{transform:translate3d(0,0,0) scale(1)}}
+@keyframes huntBossCast{0%{transform:scale(1)}46%{transform:scale(1.055) translateY(-1.5%)}100%{transform:scale(1)}}
+@keyframes huntBossShockwave{0%{transform:translate(-50%,-50%) scale(.55);opacity:.75}100%{transform:translate(-50%,-50%) scale(1.18);opacity:0}}
+@keyframes huntBossHit{0%{transform:translateX(0)}38%{transform:translateX(3%) rotate(1deg)}100%{transform:translateX(0)}}
+@keyframes huntBossPhase2{from{transform:translateY(0)}to{transform:translateY(-.8%)}}
+@keyframes huntBossShield{from{transform:scale(.985);opacity:.46}to{transform:scale(1.025);opacity:.82}}
+@keyframes huntBossPhase3{from{transform:translateX(-.25%) scale(1.01)}to{transform:translateX(.25%) scale(1.025)}}
+@keyframes huntBossRage{from{transform:translate(-50%,-50%) scale(.72);opacity:.35}to{transform:translate(-50%,-50%) scale(.88);opacity:.8}}
+@keyframes huntBossDefeat{0%{transform:translate3d(0,0,0) rotate(0);opacity:1;filter:saturate(1)}100%{transform:translate3d(2%,8%,0) rotate(5deg) scale(.96);opacity:.32;filter:saturate(.35) brightness(.65)}}
+@media(prefers-reduced-motion:reduce){.huntv2-boss-visual .huntv2-beast-wrap,.huntv2-boss-visual .huntv2-beast-wrap::before,.huntv2-boss-visual .huntv2-beast-wrap::after{animation:none!important;transition:none!important}}
+
+/* =========================
+   v1.38.0-alpha.9.0 — Production FX Runtime
+   Five reusable CSS primitives, themed by the 8 Dao families.
+   No per-skill raster FX atlas; no sheet crops.
+   ========================= */
+.huntv2-fx-primitive{--fx-main:#78cfff;--fx-hot:#fff;--fx-soft:#6b5cff;position:absolute;z-index:26;inset:0;pointer-events:none;contain:layout paint;transform:translateZ(0)}
+.huntv2-fx-primitive i{position:absolute;display:block;pointer-events:none;will-change:transform,opacity}
+.huntv2-fx-primitive.from-enemy{transform:scaleX(-1)}
+.huntv2-fx-primitive.fx-dao-sword{--fx-main:#79d7ff;--fx-hot:#f7fbff;--fx-soft:#2f7dff}
+.huntv2-fx-primitive.fx-dao-fist{--fx-main:#ffb95f;--fx-hot:#fff2c7;--fx-soft:#e05d2f}
+.huntv2-fx-primitive.fx-dao-body{--fx-main:#f2d27a;--fx-hot:#fff8d8;--fx-soft:#8b7440}
+.huntv2-fx-primitive.fx-dao-spell{--fx-main:#78cfff;--fx-hot:#e8fbff;--fx-soft:#6b5cff}
+.huntv2-fx-primitive.fx-dao-poison{--fx-main:#77e47b;--fx-hot:#d9ff9f;--fx-soft:#7e3bc9}
+.huntv2-fx-primitive.fx-dao-artifact{--fx-main:#8fdcff;--fx-hot:#fff4c2;--fx-soft:#b27cff}
+.huntv2-fx-primitive.fx-dao-formation{--fx-main:#e8c66d;--fx-hot:#fff5c8;--fx-soft:#67a6ff}
+.huntv2-fx-primitive.fx-dao-mind{--fx-main:#d18cff;--fx-hot:#fff1ff;--fx-soft:#7357ff}
+
+.huntv2-fx-primitive .fx-ring{left:28%;top:49%;width:72px;height:22px;border:2px solid color-mix(in srgb,var(--fx-main) 78%,transparent);border-radius:50%;box-shadow:0 0 12px color-mix(in srgb,var(--fx-main) 42%,transparent);transform:translate(-50%,-50%) scale(.45);opacity:0}
+.huntv2-fx-primitive .fx-core{left:29%;top:47%;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle,var(--fx-hot) 0 18%,var(--fx-main) 24%,transparent 68%);box-shadow:0 0 12px var(--fx-main);opacity:0}
+.huntv2-fx-primitive .fx-line{left:30%;top:47%;width:42%;height:4px;border-radius:999px;background:linear-gradient(90deg,transparent,var(--fx-main),var(--fx-hot),transparent);box-shadow:0 0 10px var(--fx-main);transform:rotate(-9deg) scaleX(.15);transform-origin:left center;opacity:0}
+.huntv2-fx-primitive .fx-burst{left:73%;top:48%;width:58px;height:58px;border-radius:50%;background:radial-gradient(circle,var(--fx-hot) 0 7%,var(--fx-main) 10%,color-mix(in srgb,var(--fx-soft) 55%,transparent) 28%,transparent 68%);transform:translate(-50%,-50%) scale(.18);opacity:0}
+.huntv2-fx-primitive .fx-particle{width:6px;height:6px;border-radius:50%;background:var(--fx-hot);box-shadow:0 0 8px var(--fx-main);opacity:0}
+.huntv2-fx-primitive .p1{left:39%;top:39%}.huntv2-fx-primitive .p2{left:49%;top:54%}.huntv2-fx-primitive .p3{left:61%;top:42%}.huntv2-fx-primitive .p4{left:68%;top:57%}
+
+.huntv2-fx-primitive.fx-type-cast .fx-ring{animation:huntFx9Ring .64s ease-out both}.huntv2-fx-primitive.fx-type-cast .fx-core{animation:huntFx9Core .56s ease-out both}.huntv2-fx-primitive.fx-type-cast .fx-particle{animation:huntFx9Particle .68s ease-out both}
+.huntv2-fx-primitive.fx-type-travel .fx-line{animation:huntFx9Travel .62s cubic-bezier(.16,.78,.28,1) both}.huntv2-fx-primitive.fx-type-travel .fx-core{animation:huntFx9TravelCore .62s ease-out both}.huntv2-fx-primitive.fx-type-travel .fx-particle{animation:huntFx9Particle .58s ease-out both}
+.huntv2-fx-primitive.fx-type-impact .fx-burst{animation:huntFx9Impact .52s ease-out both}.huntv2-fx-primitive.fx-type-impact .fx-particle{left:73%;top:48%;animation:huntFx9ImpactParticle .54s ease-out both}.huntv2-fx-primitive.fx-type-impact .p1{--dx:-42px;--dy:-26px}.huntv2-fx-primitive.fx-type-impact .p2{--dx:38px;--dy:-20px}.huntv2-fx-primitive.fx-type-impact .p3{--dx:-30px;--dy:34px}.huntv2-fx-primitive.fx-type-impact .p4{--dx:44px;--dy:30px}
+.huntv2-fx-primitive.fx-type-field .fx-ring{left:50%;top:54%;width:66%;height:26%;animation:huntFx9Field 1.08s ease-out both}.huntv2-fx-primitive.fx-type-field .fx-core{left:50%;top:50%;animation:huntFx9FieldCore .92s ease-out both}.huntv2-fx-primitive.fx-type-field .fx-particle{animation:huntFx9FieldParticle 1.05s ease-out both}
+.huntv2-fx-primitive.fx-type-ultimate .fx-ring{left:50%;top:50%;width:82%;height:38%;animation:huntFx9UltimateRing 1.25s ease-out both}.huntv2-fx-primitive.fx-type-ultimate .fx-line{left:20%;top:48%;width:62%;height:5px;animation:huntFx9UltimateLine .9s ease-out both}.huntv2-fx-primitive.fx-type-ultimate .fx-burst{left:73%;top:48%;width:96px;height:96px;animation:huntFx9UltimateBurst 1.02s ease-out both}.huntv2-fx-primitive.fx-type-ultimate .fx-particle{animation:huntFx9UltimateParticle 1.12s ease-out both}
+
+.huntv2-fx-primitive.fx-dao-sword .fx-line{height:3px;transform:rotate(-16deg) scaleX(.15)}
+.huntv2-fx-primitive.fx-dao-fist .fx-burst{border:2px solid color-mix(in srgb,var(--fx-main) 58%,transparent);background:radial-gradient(circle,transparent 0 25%,color-mix(in srgb,var(--fx-main) 44%,transparent) 28%,transparent 64%)}
+.huntv2-fx-primitive.fx-dao-body .fx-ring{border-width:3px;box-shadow:0 0 10px color-mix(in srgb,var(--fx-main) 30%,transparent),inset 0 0 12px color-mix(in srgb,var(--fx-main) 22%,transparent)}
+.huntv2-fx-primitive.fx-dao-poison .fx-particle{width:9px;height:9px;background:color-mix(in srgb,var(--fx-main) 68%,transparent);border:1px solid var(--fx-hot)}
+.huntv2-fx-primitive.fx-dao-artifact .fx-particle{width:8px;height:8px;border:2px solid var(--fx-hot);background:var(--fx-soft)}
+.huntv2-fx-primitive.fx-dao-formation .fx-ring{border-style:double;border-width:4px}.huntv2-fx-primitive.fx-dao-formation .fx-core{border-radius:2px;transform:rotate(45deg)}
+.huntv2-fx-primitive.fx-dao-mind .fx-ring{border-style:dashed}.huntv2-fx-primitive.fx-dao-mind .fx-line{height:2px}
+
+@keyframes huntFx9Ring{0%{opacity:0;transform:translate(-50%,-50%) scale(.35)}35%{opacity:.88}100%{opacity:0;transform:translate(-50%,-50%) scale(1.18)}}
+@keyframes huntFx9Core{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}40%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.25)}}
+@keyframes huntFx9Travel{0%{opacity:0;transform:rotate(-9deg) scaleX(.08)}20%{opacity:1}82%{opacity:.95}100%{opacity:0;transform:translateX(16%) rotate(-9deg) scaleX(1.1)}}
+@keyframes huntFx9TravelCore{0%{opacity:0;transform:translate(0,0) scale(.45)}25%{opacity:1}100%{opacity:0;transform:translate(430%,12%) scale(.9)}}
+@keyframes huntFx9Impact{0%{opacity:0;transform:translate(-50%,-50%) scale(.12)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.35)}}
+@keyframes huntFx9Particle{0%{opacity:0;transform:translateY(10px) scale(.5)}30%{opacity:.9}100%{opacity:0;transform:translateY(-16px) scale(1)}}
+@keyframes huntFx9ImpactParticle{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}25%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.25)}}
+@keyframes huntFx9Field{0%{opacity:0;transform:translate(-50%,-50%) scale(.45)}26%{opacity:.82}100%{opacity:0;transform:translate(-50%,-50%) scale(1.04)}}
+@keyframes huntFx9FieldCore{0%{opacity:0;transform:translate(-50%,-50%) scale(.35)}40%{opacity:.8}100%{opacity:0;transform:translate(-50%,-50%) scale(1.8)}}
+@keyframes huntFx9FieldParticle{0%{opacity:0;transform:translateY(22px)}30%{opacity:.8}100%{opacity:0;transform:translateY(-28px)}}
+@keyframes huntFx9UltimateRing{0%{opacity:0;transform:translate(-50%,-50%) scale(.28)}22%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) scale(1.16)}}
+@keyframes huntFx9UltimateLine{0%{opacity:0;transform:rotate(-11deg) scaleX(.04)}24%{opacity:1}100%{opacity:0;transform:translateX(8%) rotate(-11deg) scaleX(1.18)}}
+@keyframes huntFx9UltimateBurst{0%,32%{opacity:0;transform:translate(-50%,-50%) scale(.2)}48%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.7)}}
+@keyframes huntFx9UltimateParticle{0%{opacity:0;transform:scale(.3)}35%{opacity:1}100%{opacity:0;transform:translateY(-38px) scale(1.1)}}
+
+/* v1.38.0-alpha.10.0 — Combat Presentation Final Pass
+   Visual contract: readable first, 1 skill callout + 1 caption + 1 impact beat, no tiny text. */
+.huntv2-stage{
+  --presentation-main:#78cfff;
+  --presentation-hot:#fff;
+  --presentation-soft:#6b5cff;
+}
+.huntv2-skill-callout{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  grid-template-rows:auto auto;
+  column-gap:8px;
+  align-items:center;
+  min-height:40px;
+  max-width:62%;
+  padding:6px 10px 7px 10px;
+  border-left-color:var(--presentation-main);
+  box-shadow:0 8px 20px rgba(0,0,0,.28),inset 0 0 18px color-mix(in srgb,var(--presentation-soft) 9%,transparent);
+}
+.huntv2-skill-callout img{
+  grid-row:1 / span 2;
+  width:31px;height:31px;object-fit:cover;border-radius:50%;
+  border:1px solid color-mix(in srgb,var(--presentation-hot) 70%,#aa8743);
+  box-shadow:0 0 10px color-mix(in srgb,var(--presentation-main) 34%,transparent);
+}
+.huntv2-skill-callout small{
+  grid-column:2;
+  font-size:8px;
+  line-height:1.05;
+  letter-spacing:.12em;
+  color:color-mix(in srgb,var(--presentation-hot) 72%,#d6bf83);
+}
+.huntv2-skill-callout strong{
+  grid-column:2;
+  font-size:15.5px;
+  line-height:1.05;
+  color:color-mix(in srgb,var(--presentation-hot) 82%,#ffe6a4);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.huntv2-skill-callout.enemy{border-right-color:var(--presentation-main)}
+.huntv2-skill-callout.enemy strong{color:color-mix(in srgb,var(--presentation-hot) 76%,#ff9c98)}
+.huntv2-skill-callout.tier-heavy{border-width:2px;filter:drop-shadow(0 0 8px color-mix(in srgb,var(--presentation-main) 18%,transparent))}
+.huntv2-skill-callout.tier-ultimate{max-width:78%;min-height:52px;padding-block:8px}
+.huntv2-skill-callout.tier-ultimate img{width:42px;height:42px}
+.huntv2-skill-callout.tier-ultimate strong{font-size:20px;text-shadow:0 0 13px color-mix(in srgb,var(--presentation-main) 40%,transparent)}
+
+.huntv2-combat-caption{
+  bottom:40px;
+  width:min(66%,250px);
+  padding:6px 10px 7px;
+  background:linear-gradient(180deg,rgba(3,12,20,.78),rgba(3,12,20,.58));
+  border-color:color-mix(in srgb,var(--presentation-main) 20%,rgba(232,194,108,.18));
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
+}
+.huntv2-combat-caption strong{font-size:11px;line-height:1.15;color:color-mix(in srgb,var(--presentation-hot) 65%,#f0d28c)}
+.huntv2-combat-caption span{margin-top:2px;font-size:8px;line-height:1.2;color:#c7d0d2}
+
+.huntv2-status-callout{font-size:8.5px;min-height:23px;display:flex;gap:4px;align-items:center;padding:4px 7px}
+.huntv2-status-callout i{font-style:normal;color:var(--presentation-main)}
+
+.huntv2-result-pop{min-width:168px;padding:9px 14px 10px;background:linear-gradient(180deg,rgba(3,13,22,.96),rgba(7,18,27,.90));box-shadow:0 12px 30px rgba(0,0,0,.36),0 0 20px color-mix(in srgb,var(--presentation-main) 14%,transparent)}
+.huntv2-result-pop b{font-size:17px;letter-spacing:.05em}
+.huntv2-result-pop span{margin-top:3px;font-size:8px;line-height:1.2}
+
+.huntv2-stage.tier-heavy .huntv2-impact.show,
+.huntv2-stage.tier-ultimate .huntv2-impact.show{filter:brightness(1.18) saturate(1.14)}
+.huntv2-stage.tier-ultimate.cinematic-ultimate::after{
+  background:radial-gradient(circle at 48% 47%,transparent 22%,rgba(0,0,0,.22) 52%,rgba(0,0,0,.55) 100%);
+  animation:huntUltimateVignette .9s ease both;
+}
+.huntv2-stage.tier-ultimate.cinematic-ultimate .huntv2-arena::after{
+  content:"";position:absolute;z-index:17;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 36% 48%,color-mix(in srgb,var(--presentation-main) 14%,transparent),transparent 42%);
+  animation:huntUltimateBloom 1.05s ease-out both;
+}
+@keyframes huntUltimateVignette{0%{opacity:0}18%,72%{opacity:1}100%{opacity:0}}
+@keyframes huntUltimateBloom{0%{opacity:0;transform:scale(.92)}22%,62%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.05)}}
+
+/* Keep normal hits calm; reserve stronger camera language for heavy/ultimate beats. */
+.huntv2-stage.tier-normal.shake{animation-duration:.16s}
+.huntv2-stage.tier-support.shake{animation:none}
+
+@media (max-width:430px){
+  .huntv2-skill-callout{max-width:74%;left:10px}
+  .huntv2-skill-callout.enemy{left:auto;right:48px}
+  .huntv2-skill-callout strong{font-size:16px}
+  .huntv2-combat-caption{width:min(72%,250px)}
+}
+
+
+/* v1.38.0-alpha.11.1 — Combat Layout & Readability Big Update
+   Canonical geometry was folded into the base selectors above: smaller actors/HUD,
+   single progress lane, compact controls, and more arena breathing room. */
+/* v1.38.0-alpha.10.3 — presentation replay gate hotfix; visual sizes unchanged. */
+
+/* v1.38.0-alpha.10.3 — replay visibility + compact DEV hotfix. */
+
+/* =========================
+   v1.38.0-alpha.10.3 — FX Visibility Hotfix
+   Video-verified fix: production FX must remain visible even when the OS/browser
+   requests reduced motion. Keep motion small, but never collapse FX to 0ms/none.
+   ========================= */
+.huntv2-vfx-layer{z-index:32}
+.huntv2-fx-primitive{filter:saturate(1.2) brightness(1.12)}
+.huntv2-fx-primitive .fx-ring{
+  width:88px;height:28px;border-width:3px;
+  box-shadow:0 0 18px color-mix(in srgb,var(--fx-main) 58%,transparent),inset 0 0 18px color-mix(in srgb,var(--fx-main) 22%,transparent)
+}
+.huntv2-fx-primitive .fx-core{width:21px;height:21px;box-shadow:0 0 18px var(--fx-main)}
+.huntv2-fx-primitive .fx-line{height:6px;box-shadow:0 0 15px var(--fx-main)}
+.huntv2-fx-primitive .fx-burst{width:78px;height:78px;filter:drop-shadow(0 0 10px var(--fx-main))}
+.huntv2-fx-primitive .fx-particle{width:8px;height:8px;box-shadow:0 0 11px var(--fx-main)}
+.huntv2-fx-primitive.fx-type-ultimate .fx-burst{width:108px;height:108px}
+
+/* Damage received by the player is damage, not healing. */
+.huntv2-float.damage-main.player,
+.huntv2-float.player.damage,
+.huntv2-float.player.break,
+.huntv2-float.player.death{color:#ff8f82}
+.huntv2-float.player.heal{color:#88e7ae}
+
+@media(prefers-reduced-motion:reduce){
+  .huntv2-fx-primitive i{animation:none!important;opacity:0}
+
+  .huntv2-fx-primitive.fx-type-cast .fx-ring{
+    transform:translate(-50%,-50%) scale(.95);
+    animation:huntFxReducedPulse .64s ease both!important
+  }
+  .huntv2-fx-primitive.fx-type-cast .fx-core{
+    transform:translate(-50%,-50%) scale(1);
+    animation:huntFxReducedPulse .58s ease both!important
+  }
+  .huntv2-fx-primitive.fx-type-cast .fx-particle{
+    animation:huntFxReducedPulse .64s ease both!important
+  }
+
+  .huntv2-fx-primitive.fx-type-travel .fx-line{
+    transform:rotate(-9deg) scaleX(1);
+    animation:huntFxReducedPulse .58s ease both!important
+  }
+  .huntv2-fx-primitive.fx-type-travel .fx-core{
+    transform:translate(320%,10%) scale(.9);
+    animation:huntFxReducedPulse .58s ease both!important
+  }
+
+  .huntv2-fx-primitive.fx-type-impact .fx-burst{
+    transform:translate(-50%,-50%) scale(1);
+    animation:huntFxReducedImpact .56s ease both!important
+  }
+  .huntv2-fx-primitive.fx-type-impact .fx-particle{
+    animation:huntFxReducedPulse .56s ease both!important
+  }
+
+  .huntv2-fx-primitive.fx-type-field .fx-ring{
+    transform:translate(-50%,-50%) scale(1);
+    animation:huntFxReducedField .9s ease both!important
+  }
+  .huntv2-fx-primitive.fx-type-field .fx-core{
+    transform:translate(-50%,-50%) scale(1.2);
+    animation:huntFxReducedPulse .82s ease both!important
+  }
+  .huntv2-fx-primitive.fx-type-field .fx-particle{
+    animation:huntFxReducedPulse .9s ease both!important
+  }
+
+  .huntv2-fx-primitive.fx-type-ultimate .fx-ring{
+    transform:translate(-50%,-50%) scale(1);
+    animation:huntFxReducedUltimate .98s ease both!important
+  }
+  .huntv2-fx-primitive.fx-type-ultimate .fx-line{
+    transform:rotate(-11deg) scaleX(1);
+    animation:huntFxReducedPulse .86s ease both!important
+  }
+  .huntv2-fx-primitive.fx-type-ultimate .fx-burst{
+    transform:translate(-50%,-50%) scale(1);
+    animation:huntFxReducedImpact .92s ease both!important
+  }
+  .huntv2-fx-primitive.fx-type-ultimate .fx-particle{
+    animation:huntFxReducedPulse .92s ease both!important
+  }
+}
+@keyframes huntFxReducedPulse{0%,100%{opacity:0}16%,76%{opacity:.95}}
+@keyframes huntFxReducedImpact{0%,100%{opacity:0}18%{opacity:1}68%{opacity:.72}}
+@keyframes huntFxReducedField{0%,100%{opacity:0}14%,78%{opacity:.78}}
+@keyframes huntFxReducedUltimate{0%,100%{opacity:0}12%,82%{opacity:1}}
+
+
+/* alpha.12 — Combat Truth / Boss Retry UX */
+.huntv2-player-meta .injury{color:#d9a2a2;background:rgba(111,28,34,.22);border:1px solid rgba(216,93,99,.16)}
+.huntv2-player-meta .injury.danger{color:#ff9b92;border-color:rgba(255,95,86,.38);background:rgba(126,23,28,.38)}
+.huntv2-enemy-hp-amount{display:block;margin-top:2px;font-size:6.3px;line-height:1;color:#aeb9bc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+.huntv2-boss-ready-chip{position:absolute;z-index:36;right:37px;top:122px;max-width:39%;height:22px;padding:0 8px;display:flex;align-items:center;gap:5px;border:1px solid rgba(239,195,92,.48);border-radius:11px;background:linear-gradient(180deg,rgba(81,54,14,.86),rgba(36,23,7,.88));color:#f1d487;box-shadow:0 0 18px rgba(235,187,66,.12)}
+.huntv2-boss-ready-chip i{font-style:normal;color:#ffd976}.huntv2-boss-ready-chip span{font-size:7.2px;font-weight:800;white-space:nowrap}.huntv2-boss-ready-chip b{font-size:6.5px;color:#fff0bd}
+.huntv2-floor.ready span,.huntv2-floor.ready b{color:#e7ca80}.huntv2-floor.ready>i>em{box-shadow:0 0 8px rgba(233,190,73,.45)}
+.huntv2-context-button.boss-ready{border-color:rgba(239,195,92,.42);background:linear-gradient(180deg,rgba(79,53,15,.82),rgba(32,21,7,.90));color:#f2d78d;box-shadow:inset 0 0 14px rgba(255,210,93,.05)}
+.huntv2-context-button.boss-ready>i{color:#ffd86e;background:rgba(255,210,93,.08)}
+.huntv2-mechanic-list{margin:9px 0;padding:8px;border:1px solid rgba(111,169,190,.15);border-radius:9px;background:rgba(4,17,26,.42)}
+.huntv2-mechanic-list>strong{display:block;margin-bottom:5px;color:#d9c184;font:700 9px Georgia,serif}
+.huntv2-mechanic-list>div{display:grid;grid-template-columns:10px 1fr;gap:4px;padding:3px 0;font-size:8px;line-height:1.35;color:#bcc8c9}
+.huntv2-mechanic-list>div i{font-style:normal;color:#d6b862;font-size:6px;padding-top:2px}
+.huntv2-status-tray .status{position:relative;min-width:18px;height:16px;padding:0 3px;border-radius:5px;display:flex;align-items:center;gap:2px;border:1px solid rgba(255,255,255,.14);background:rgba(5,15,24,.92);font-style:normal;color:#d8e0df;box-sizing:border-box}
+.huntv2-status-tray .status>b{font-size:7px}.huntv2-status-tray .status>em{max-width:29px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:5.6px;font-style:normal}.huntv2-status-tray .status>strong{font-size:5.8px;color:#f1d47e;margin-left:1px}
+.huntv2-status-tray .status.debuff{border-color:rgba(211,84,103,.24)}.huntv2-status-tray .status.buff{border-color:rgba(88,186,153,.23)}.huntv2-status-tray .status.mark{border-color:rgba(184,130,235,.36);background:rgba(42,22,65,.86)}
+.huntv2-status-tray .status-hidden{display:none!important}.huntv2-status-tray .status-more{height:16px;min-width:16px;padding:0 3px;display:grid;place-items:center;border-radius:5px;background:rgba(3,12,19,.9);font-size:6px;color:#b8c4c4}
+.huntv2-log-row.mark{color:#d7b9ff}.huntv2-log-row.resource{color:#8ecfe7}
+
+.huntv2-log-row.damage{color:#f1c46b}.huntv2-log-row.enemy{color:#ef9992}
+
+/* v1.38.0-alpha.13.0 — Combat Readability & Production Polish */
+.huntv2-player-hud.danger,.huntv2-enemy-hud.danger{border-color:rgba(227,94,94,.34)}
+.huntv2-skill-callout,.huntv2-combat-caption{text-shadow:0 2px 5px rgba(0,0,0,.72)}
+/* alpha.13 premium edge polish: visual depth only, no layout growth. */
+.huntv2-player-hud::after,.huntv2-enemy-hud::after{content:"";position:absolute;bottom:-1px;width:42%;height:1px;background:linear-gradient(90deg,transparent,rgba(232,194,108,.42),transparent);pointer-events:none}
+.huntv2-player-hud::after{left:23%}.huntv2-enemy-hud::after{right:23%}
+.huntv2-rail-btn{transition:border-color .15s ease,background .15s ease,box-shadow .15s ease,transform .12s ease}
+.huntv2-rail-btn:active{transform:scale(.96)}
+.huntv2-boss-ready-chip{animation:huntBossReadyGlow 1.8s ease-in-out infinite alternate}
+@keyframes huntBossReadyGlow{from{box-shadow:0 0 10px rgba(235,187,66,.07)}to{box-shadow:0 0 18px rgba(235,187,66,.18)}}
+
+/* =========================
+   v1.38.0-alpha.14.0 — Combat Intelligence HUD
+   ========================= */
+.huntv2-intel-lane{position:absolute;z-index:39;left:8px;right:62px;bottom:39px;height:25px;display:flex;align-items:center;gap:4px;pointer-events:none}
+.huntv2-intel-meter{pointer-events:auto;min-width:0;flex:1 1 0;height:23px;padding:2px 5px;display:grid;grid-template-columns:auto minmax(24px,1fr) auto;align-items:center;gap:4px;border:1px solid rgba(112,191,218,.16);border-radius:8px;background:linear-gradient(180deg,rgba(4,17,27,.88),rgba(2,10,17,.86));color:#cbd6d7;box-shadow:0 4px 10px rgba(0,0,0,.2);overflow:hidden}
+.huntv2-intel-meter span{font-size:6.4px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.huntv2-intel-meter>b{font-size:6.2px;color:#e5d18c;white-space:nowrap}.huntv2-intel-meter>i{position:relative;height:6px;overflow:hidden;border-radius:4px;background:#02080e;border:1px solid rgba(255,255,255,.06)}
+.huntv2-intel-meter>i>em{display:block;height:100%;width:0;background:linear-gradient(90deg,#338fb4,#65d4e6 62%,#e2c362);box-shadow:0 0 6px rgba(76,194,221,.26);transition:width .18s ease}.huntv2-intel-meter.ultimate{border-color:rgba(231,191,89,.20)}.huntv2-intel-meter.ultimate>i>em{background:linear-gradient(90deg,#7046b7,#b373e7 55%,#f0cd68)}.huntv2-intel-meter.full{border-color:rgba(239,200,91,.42);box-shadow:0 0 10px rgba(235,187,66,.10)}.huntv2-intel-meter.pulse{animation:huntIntelPulse .24s ease-out}
+@keyframes huntIntelPulse{50%{filter:brightness(1.24)}}
+.huntv2-combat-caption{bottom:70px}
+.huntv2-status-tray .status>small{font-size:5.3px;line-height:1;color:#91a4a8;white-space:nowrap;margin-left:1px}.huntv2-status-tray .status.mark>small{display:none}
+.huntv2-battle-summary{position:absolute;z-index:54;left:12px;right:56px;bottom:68px;padding:7px;border:1px solid rgba(232,194,108,.24);border-radius:12px;background:linear-gradient(180deg,rgba(4,15,25,.97),rgba(2,9,16,.94));box-shadow:0 12px 28px rgba(0,0,0,.38);opacity:0;transform:translateY(7px) scale(.98);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+.huntv2-battle-summary.show{opacity:1;transform:none}.huntv2-summary-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}.huntv2-summary-head strong{font:800 9px Georgia,serif;color:#f0d28b}.huntv2-summary-head span{font-size:5.7px;color:#6fbcd2;letter-spacing:.06em}.huntv2-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.huntv2-summary-grid>div{min-width:0;padding:4px 5px;border-radius:7px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.045)}.huntv2-summary-grid span{display:block;font-size:5.6px;color:#8fa0a4}.huntv2-summary-grid strong{display:block;margin-top:1px;font-size:7.2px;color:#e5e9e4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.huntv2-log-body{max-height:102px}.huntv2-log-row{font-variant-numeric:tabular-nums}
+.huntv2-float.damage-main.kind-dot span{color:#85d996}.huntv2-float.damage-main.kind-dot strong{color:#9ae5a6}.huntv2-float.damage-main.kind-markBurst span{color:#d8a4ff}.huntv2-float.damage-main.kind-markBurst strong{color:#e2b6ff;text-shadow:0 2px 3px rgba(0,0,0,.9),0 0 11px rgba(176,92,239,.7)}
+
+/* =========================
+   v1.38.0-alpha.15.0 — authored Skill FX Library
+   ========================= */
+.huntv2-fx-primitive .fx-authored,.huntv2-fx-primitive .fx-motif{position:absolute;z-index:3;display:block;pointer-events:none;user-select:none;mix-blend-mode:screen;will-change:transform,opacity;filter:drop-shadow(0 0 10px var(--fx-main)) saturate(1.22) brightness(1.08)}
+.huntv2-fx-primitive.has-authored .fx-ring,.huntv2-fx-primitive.has-authored .fx-core,.huntv2-fx-primitive.has-authored .fx-line,.huntv2-fx-primitive.has-authored .fx-burst{display:none}
+.huntv2-fx-primitive.has-authored .fx-particle{z-index:4;opacity:.55}
+.huntv2-fx-primitive.fx-type-cast .fx-authored{left:27%;top:49%;width:136px;max-height:150px;object-fit:contain;transform:translate(-50%,-50%) scale(.72);opacity:0;animation:huntAuthoredCast .72s ease-out both}
+.huntv2-fx-primitive.fx-type-travel .fx-authored{left:30%;top:47%;width:145px;max-height:110px;object-fit:contain;transform:translate(-50%,-50%) scale(.75) rotate(-8deg);opacity:0;animation:huntAuthoredTravel .72s cubic-bezier(.15,.76,.25,1) both}
+.huntv2-fx-primitive.fx-type-impact .fx-authored{left:73%;top:48%;width:150px;max-height:145px;object-fit:contain;transform:translate(-50%,-50%) scale(.45);opacity:0;animation:huntAuthoredImpact .62s ease-out both}
+.huntv2-fx-primitive.fx-type-field .fx-authored{left:50%;top:55%;width:250px;max-height:170px;object-fit:contain;transform:translate(-50%,-50%) scale(.72);opacity:0;animation:huntAuthoredField 1.1s ease-out both}
+.huntv2-fx-primitive.fx-type-ultimate .fx-authored{left:50%;top:50%;width:340px;max-width:88%;max-height:84%;object-fit:contain;transform:translate(-50%,-50%) scale(.82);opacity:0;animation:huntAuthoredUltimate 1.34s ease-out both;filter:drop-shadow(0 0 15px var(--fx-main)) saturate(1.2) brightness(1.08)}
+@keyframes huntAuthoredCast{0%{opacity:0;transform:translate(-50%,-50%) scale(.58) rotate(-5deg)}18%,68%{opacity:.96;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.14)}}
+@keyframes huntAuthoredTravel{0%{left:28%;opacity:0;transform:translate(-50%,-50%) scale(.65) rotate(-9deg)}14%{opacity:1}76%{opacity:1}100%{left:73%;opacity:0;transform:translate(-50%,-50%) scale(1.03) rotate(-3deg)}}
+@keyframes huntAuthoredImpact{0%{opacity:0;transform:translate(-50%,-50%) scale(.35)}16%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}68%{opacity:.88;transform:translate(-50%,-50%) scale(.96)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.22)}}
+@keyframes huntAuthoredField{0%,100%{opacity:0;transform:translate(-50%,-50%) scale(.68)}15%,72%{opacity:.88;transform:translate(-50%,-50%) scale(1)}}
+@keyframes huntAuthoredUltimate{0%{opacity:0;transform:translate(-50%,-50%) scale(.74)}15%{opacity:.96}65%{opacity:1;transform:translate(-50%,-50%) scale(1.02)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.08)}}
+.huntv2-fx-primitive .fx-motif{width:64px;height:64px;object-fit:cover;border-radius:50%;opacity:0;box-shadow:0 0 0 1px color-mix(in srgb,var(--fx-hot) 38%,transparent);mask-image:radial-gradient(circle,#000 54%,transparent 74%);-webkit-mask-image:radial-gradient(circle,#000 54%,transparent 74%)}
+.huntv2-fx-primitive.fx-type-cast .fx-motif{left:28%;top:48%;animation:huntMotifCast .65s ease-out both}.huntv2-fx-primitive.fx-type-travel .fx-motif{left:28%;top:47%;animation:huntMotifTravel .68s ease-in-out both}.huntv2-fx-primitive.fx-type-impact .fx-motif{left:73%;top:48%;animation:huntMotifImpact .58s ease-out both}.huntv2-fx-primitive.fx-type-field .fx-motif{left:50%;top:53%;width:90px;height:90px;animation:huntMotifField 1.05s ease-out both}.huntv2-fx-primitive.fx-type-ultimate .fx-motif{left:50%;top:50%;width:120px;height:120px;animation:huntMotifUltimate 1.25s ease-out both}
+@keyframes huntMotifCast{0%,100%{opacity:0;transform:translate(-50%,-50%) scale(.6) rotate(-10deg)}20%,68%{opacity:.55;transform:translate(-50%,-50%) scale(1)}}@keyframes huntMotifTravel{0%{opacity:0;left:27%;transform:translate(-50%,-50%) scale(.65)}18%,72%{opacity:.58}100%{opacity:0;left:73%;transform:translate(-50%,-50%) scale(.95)}}@keyframes huntMotifImpact{0%,100%{opacity:0;transform:translate(-50%,-50%) scale(.35)}18%{opacity:.65;transform:translate(-50%,-50%) scale(1.1)}65%{opacity:.45;transform:translate(-50%,-50%) scale(.92)}}@keyframes huntMotifField{0%,100%{opacity:0;transform:translate(-50%,-50%) scale(.7) rotate(-20deg)}18%,72%{opacity:.42;transform:translate(-50%,-50%) scale(1) rotate(8deg)}}@keyframes huntMotifUltimate{0%,100%{opacity:0;transform:translate(-50%,-50%) scale(.65)}16%,68%{opacity:.54;transform:translate(-50%,-50%) scale(1.04)}}
+.huntv2-fx-primitive.fx-pattern-slash .fx-line{transform:rotate(-18deg) scaleX(.15)}.huntv2-fx-primitive.fx-pattern-volley .fx-particle{border-radius:2px;transform:rotate(-25deg)}.huntv2-fx-primitive.fx-pattern-orbit .fx-ring{border-style:dashed}.huntv2-fx-primitive.fx-pattern-sigil .fx-ring{border-style:double;border-width:4px}.huntv2-fx-primitive.fx-pattern-wave .fx-line{height:2px}.huntv2-fx-primitive.fx-pattern-mist .fx-particle{width:10px;height:10px;filter:blur(1px)}
+
+/* =========================
+   v1.38.0-alpha.16.1 — Combat Feel Final
+   ========================= */
+.huntv2-stage.hit-stop{animation-duration:.045s}.huntv2-stage.melee-hitstop{animation-duration:.105s}.huntv2-stage.shake{animation-duration:.165s}.huntv2-stage.shake-strong{animation-duration:.26s}
+@media(prefers-reduced-motion:reduce){
+  .huntv2-fx-primitive .fx-authored,.huntv2-fx-primitive .fx-motif{animation:none!important;opacity:.72!important;transform:translate(-50%,-50%) scale(.96)!important}
+  .huntv2-fx-primitive.fx-type-travel .fx-authored,.huntv2-fx-primitive.fx-type-travel .fx-motif{left:52%!important}
+  .huntv2-stage.shake,.huntv2-stage.shake-strong,.huntv2-stage.hit-stop,.huntv2-stage.melee-hitstop{animation:none!important}
+}
+@media(max-width:430px){.huntv2-intel-lane{right:53px}.huntv2-intel-meter span{max-width:48px}.huntv2-battle-summary{right:50px}}
+
+/* =========================
+   v1.38.0-alpha.16.1 — Readability + FX Cleanup + 100% Zoom Lock
+   Canonical acceptance target: browser zoom 100%, 390–430 CSS px viewport.
+   ========================= */
+.huntv2-screen{--hunt-min-readable:8px}
+/* HUD: numeric values live inside the bars; no detached percentage/value duplicates. */
+.huntv2-player-hud,.huntv2-enemy-hud{height:86px}
+.huntv2-player-hud-core{grid-template-rows:17px 15px 15px 14px;gap:2px}
+.huntv2-player-heading strong{font-size:14.5px;max-width:70%}.huntv2-player-heading span{font-size:8.4px}
+.huntv2-vital-row{grid-template-columns:20px minmax(0,1fr);gap:4px}.huntv2-vital-row>b{font-size:8.8px}.huntv2-vital-row>small{display:none}
+.huntv2-vital{height:14px;border-radius:7px}.huntv2-vital>em{font-size:8.6px;letter-spacing:.01em;font-variant-numeric:tabular-nums}
+.huntv2-player-meta{gap:4px}.huntv2-player-meta span{padding:2px 5px;font-size:7.6px;line-height:1.05;background:rgba(255,255,255,.055)}
+.huntv2-player-meta span:nth-child(n+4){display:none}
+.huntv2-enemy-hud{height:86px}.huntv2-hud-main{grid-template-rows:28px 14px 16px 15px;gap:2px}.huntv2-hud-main strong{font-size:13.8px}.huntv2-hud-main>div:first-child span{font-size:8.1px}
+.huntv2-hp{height:14px;border-radius:7px}.huntv2-hp>b{font-size:8.5px;font-variant-numeric:tabular-nums}.huntv2-enemy-hp-amount{display:none!important}
+.huntv2-poise-row{grid-template-columns:49px minmax(0,1fr);gap:5px}.huntv2-poise-row>b{font-size:7.3px;letter-spacing:.05em}.huntv2-poise{height:13px;border-radius:7px}.huntv2-poise>em{font-size:7.4px}.huntv2-poise-row.broken>b::after{content:" · THẤT";color:#ffd36b}
+.huntv2-element-icons i{width:19px;height:19px;font-size:7.4px}
+
+/* A real status lane: readable buff/debuff chips instead of tiny marks hidden in the HUD. */
+.huntv2-status-lanes{position:absolute;z-index:41;left:9px;right:9px;top:123px;height:25px;display:grid;grid-template-columns:1fr 1fr;gap:18px;pointer-events:none}
+.huntv2-status-lanes .huntv2-status-tray{position:static!important;min-width:0;height:25px;display:flex;align-items:center;gap:3px;overflow:hidden;pointer-events:auto}
+.huntv2-status-lanes .huntv2-status-tray.enemy{justify-content:flex-end}
+.huntv2-status-tray .status{height:22px;min-width:22px;max-width:78px;padding:0 5px;gap:3px;border-radius:7px;background:rgba(3,13,22,.94);box-shadow:0 3px 9px rgba(0,0,0,.22)}
+.huntv2-status-tray .status>b{font-size:9px}.huntv2-status-tray .status>em{max-width:42px;font-size:7.2px}.huntv2-status-tray .status>strong{font-size:7.4px}.huntv2-status-tray .status>small{font-size:6.9px}.huntv2-status-tray .status-more{height:22px;min-width:22px;font-size:7.3px}
+.huntv2-status-tray .status.buff{border-color:rgba(91,211,157,.38);box-shadow:0 0 10px rgba(91,211,157,.07)}
+.huntv2-status-tray .status.debuff{border-color:rgba(228,97,105,.38);box-shadow:0 0 10px rgba(228,97,105,.08)}
+.huntv2-status-tray .status.mark{border-color:rgba(190,130,240,.5);box-shadow:0 0 10px rgba(182,111,235,.10)}
+
+/* Move secondary navigation below the readable status lane. */
+.huntv2-meta-strip,.huntv2-boss-mechanic-chip,.huntv2-boss-ready-chip{top:151px;height:24px}
+.huntv2-meta-strip{max-width:51%}.huntv2-meta-strip strong{font-size:9px}.huntv2-meta-strip span,.huntv2-meta-strip em{font-size:8px}
+.huntv2-map-compact{top:151px;width:24px;height:24px;font-size:11px}
+.huntv2-boss-mechanic-chip span,.huntv2-boss-ready-chip span{font-size:8px}.huntv2-boss-mechanic-chip b,.huntv2-boss-ready-chip b{font-size:7.5px}
+.huntv2-arena{top:158px}
+.huntv2-quick-controls{top:184px;width:44px}.huntv2-rail-btn{height:44px}.huntv2-rail-btn i{font-size:12px}.huntv2-rail-btn span{font-size:7.4px}.huntv2-auto-card{top:184px;height:22px}.huntv2-auto-card span,.huntv2-auto-card b{font-size:7.2px}
+
+/* Combat intelligence is a primary mechanic, not six-pixel metadata. */
+.huntv2-intel-lane{left:8px;right:60px;bottom:39px;height:35px;gap:5px}
+.huntv2-intel-meter{height:33px;padding:3px 7px;grid-template-columns:auto minmax(34px,1fr) auto;gap:5px;border-radius:10px;border-color:rgba(112,191,218,.25);background:linear-gradient(180deg,rgba(5,21,33,.96),rgba(2,11,19,.94));box-shadow:0 5px 13px rgba(0,0,0,.27)}
+.huntv2-intel-meter span{font-size:8.2px;max-width:76px}.huntv2-intel-meter>b{font-size:8.4px;font-variant-numeric:tabular-nums}.huntv2-intel-meter>i{height:9px;border-radius:5px}
+.huntv2-intel-meter.stack-meter>i{background:repeating-linear-gradient(90deg,#02080e 0,#02080e calc(10% - 1px),rgba(255,255,255,.14) calc(10% - 1px),rgba(255,255,255,.14) 10%)}
+.huntv2-intel-meter.ultimate{border-color:rgba(231,191,89,.32)}
+.huntv2-combat-caption{bottom:82px}.huntv2-battle-summary{bottom:81px}
+
+/* Damage must always beat FX in the visual stack. */
+.huntv2-float-layer{z-index:72}.huntv2-float{font-size:23px}.huntv2-float.damage-main strong{font-size:26px}.huntv2-float.crit strong{font-size:30px}.huntv2-float.damage-main span{font-size:10.5px}
+.huntv2-skill-callout{z-index:66}.huntv2-combat-caption{z-index:63}.huntv2-result-pop{z-index:74}
+
+/* Seven-slot dock: icon first, readable metadata, no micro typography. */
+.huntv2-console{flex-basis:170px;min-height:170px;padding:7px 7px 7px}.huntv2-skills{height:116px;grid-template-columns:repeat(6,minmax(0,1fr)) 1.15fr;gap:3px}.huntv2-skill{height:112px}
+.huntv2-skill-art{width:52px;height:52px}.huntv2-skill.ultimate .huntv2-skill-art{width:58px;height:58px}.huntv2-cooldown>b{font-size:16px}
+.huntv2-skill>small{max-width:100%;font-size:8.2px;line-height:1.05;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.huntv2-skill-meta{font-size:8px!important;line-height:1.05}.huntv2-skill-meta b,.huntv2-skill-meta em{font-size:8px!important}
+
+/* Authored FX are effects, never rectangular concept-card images. */
+.huntv2-fx-primitive .fx-authored{mix-blend-mode:screen!important;object-fit:contain!important;clip-path:ellipse(48% 46% at 50% 52%);mask-image:radial-gradient(ellipse at center,#000 0 54%,rgba(0,0,0,.92) 66%,transparent 88%);-webkit-mask-image:radial-gradient(ellipse at center,#000 0 54%,rgba(0,0,0,.92) 66%,transparent 88%)}
+.huntv2-fx-primitive.fx-type-cast .fx-authored{width:112px;max-height:120px}
+.huntv2-fx-primitive.fx-type-travel .fx-authored{width:118px;max-height:94px}
+.huntv2-fx-primitive.fx-type-impact .fx-authored{width:126px;max-height:126px}
+.huntv2-fx-primitive.fx-type-field .fx-authored{width:205px;max-height:132px;opacity:0}
+.huntv2-fx-primitive.fx-type-ultimate .fx-authored{width:265px;max-width:68%;max-height:55%;opacity:0;filter:drop-shadow(0 0 15px var(--fx-main)) saturate(1.28) brightness(1.18)}
+.huntv2-fx-primitive.fx-type-ultimate.has-authored::after{content:"";position:absolute;z-index:2;left:50%;top:53%;width:72%;height:36%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(ellipse,color-mix(in srgb,var(--fx-main) 14%,transparent),transparent 68%);animation:huntFxReducedUltimate 1.1s ease both}
+
+
+/* 100% zoom/mobile lock: never solve crowding by shrinking gameplay text below readable size. */
+@media(max-width:430px){
+  .huntv2-player-heading span{font-size:8px}.huntv2-player-meta span{font-size:7.2px}.huntv2-status-tray .status>em{max-width:34px}
+  .huntv2-intel-meter span{font-size:7.8px;max-width:58px}.huntv2-intel-meter>b{font-size:8px}
+  .huntv2-skill>small{font-size:7.8px}.huntv2-skill-meta b,.huntv2-skill-meta em{font-size:7.7px!important}
+}
+
+/* =========================
+   v1.38.0-alpha.17.0 — Skill Identity + Smooth Combat Choreography
+   Research-guided target: anticipation -> action/travel -> contact -> reaction -> recovery.
+   Auto-combat remains fast; heavy/ultimate alone receive stronger camera/hit-stop.
+   ========================= */
+.huntv2-stage{--hit-stop-ms:34ms}
+.huntv2-stage.hit-stop .huntv2-arena{animation:huntA17HitPulse var(--hit-stop-ms) steps(1,end) both}
+@keyframes huntA17HitPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.13) contrast(1.025)}}
+
+.huntv2-actor[class~="player"].state-dash{animation:huntA17DashPlayer .42s cubic-bezier(.16,.82,.24,1)}
+.huntv2-actor[class~="enemy"].state-dash{animation:huntA17DashEnemy .42s cubic-bezier(.16,.82,.24,1)}
+.huntv2-actor.state-channel{animation:huntA17Channel .64s ease-in-out}
+.huntv2-actor.state-brace{animation:huntA17Brace .52s ease-out}
+.huntv2-actor.state-summon{animation:huntA17Summon .58s ease-out}
+.huntv2-actor[class~="player"].state-counter{animation:huntA17CounterPlayer .46s cubic-bezier(.18,.78,.25,1)}
+.huntv2-actor[class~="enemy"].state-counter{animation:huntA17CounterEnemy .46s cubic-bezier(.18,.78,.25,1)}
+.huntv2-actor[class~="player"]:is(.state-channel,.state-brace,.state-summon,.state-counter) .huntv2-player-pose{display:none}
+.huntv2-actor[class~="player"]:is(.state-channel,.state-brace,.state-summon) .pose-cast{display:block}
+.huntv2-actor[class~="player"].state-counter .pose-attack{display:block}
+@keyframes huntA17DashPlayer{0%,100%{transform:translate3d(0,0,0)}22%{transform:translate3d(-4px,1px,0) scale(.99)}58%{transform:translate3d(18px,-2px,0) scale(1.025)}76%{transform:translate3d(12px,-1px,0)}}
+@keyframes huntA17DashEnemy{0%,100%{transform:translate3d(0,0,0)}22%{transform:translate3d(4px,1px,0) scale(.99)}58%{transform:translate3d(-16px,-2px,0) scale(1.025)}76%{transform:translate3d(-10px,-1px,0)}}
+@keyframes huntA17Channel{0%,100%{transform:translateY(0);filter:brightness(1)}40%{transform:translateY(-3px);filter:brightness(1.12) drop-shadow(0 0 8px var(--presentation-main,#78cfff))}72%{transform:translateY(-2px);filter:brightness(1.08)}}
+@keyframes huntA17Brace{0%,100%{transform:scale(1)}32%{transform:scale(.975)}62%{transform:scale(1.02);filter:brightness(1.1)}}
+@keyframes huntA17Summon{0%,100%{transform:translateY(0) scale(1)}35%{transform:translateY(-2px) scale(1.015);filter:drop-shadow(0 0 9px var(--presentation-main,#78cfff))}68%{transform:translateY(-1px) scale(1.008)}}
+@keyframes huntA17CounterPlayer{0%,100%{transform:translateX(0)}28%{transform:translateX(-9px)}62%{transform:translateX(13px)}}
+@keyframes huntA17CounterEnemy{0%,100%{transform:translateX(0)}28%{transform:translateX(8px)}62%{transform:translateX(-12px)}}
+
+/* Multi-copy FX: one skill icon/FX asset is reused as a short choreography, not as a static stamp. */
+.huntv2-fx-primitive .fx-copy.c2{animation-delay:45ms!important}
+.huntv2-fx-primitive .fx-copy.c3{animation-delay:90ms!important}
+.huntv2-fx-primitive .fx-copy.c4{animation-delay:135ms!important}
+.huntv2-fx-primitive .fx-copy.c5{animation-delay:180ms!important}
+.huntv2-fx-primitive.fx-type-travel .fx-copy.c2{top:42%}
+.huntv2-fx-primitive.fx-type-travel .fx-copy.c3{top:52%}
+.huntv2-fx-primitive.fx-type-travel .fx-copy.c4{top:38%}
+.huntv2-fx-primitive.fx-type-travel .fx-copy.c5{top:56%}
+.huntv2-fx-primitive.fx-type-impact .fx-copy.c2{left:70%;top:42%}
+.huntv2-fx-primitive.fx-type-impact .fx-copy.c3{left:76%;top:54%}
+.huntv2-fx-primitive.fx-type-impact .fx-copy.c4{left:77%;top:40%}
+.huntv2-fx-primitive.fx-type-impact .fx-copy.c5{left:69%;top:56%}
+.huntv2-fx-primitive.fx-type-field .fx-copy.c2{left:42%;top:51%}
+.huntv2-fx-primitive.fx-type-field .fx-copy.c3{left:58%;top:55%}
+.huntv2-fx-primitive.fx-type-field .fx-copy.c4{left:48%;top:59%}
+.huntv2-fx-primitive.fx-type-field .fx-copy.c5{left:63%;top:49%}
+.huntv2-fx-primitive.fx-type-ultimate .fx-copy{max-width:54%!important;max-height:46%!important}
+.huntv2-fx-primitive.fx-type-ultimate .fx-copy.c2{left:42%;top:48%;transform:translate(-50%,-50%) scale(.68)}
+.huntv2-fx-primitive.fx-type-ultimate .fx-copy.c3{left:58%;top:52%;transform:translate(-50%,-50%) scale(.68)}
+.huntv2-fx-primitive.fx-type-ultimate .fx-copy.c4{left:50%;top:42%;transform:translate(-50%,-50%) scale(.62)}
+.huntv2-fx-primitive.fx-type-ultimate .fx-copy.c5{left:50%;top:60%;transform:translate(-50%,-50%) scale(.62)}
+
+/* Pattern grammar: silhouettes differ even when the same reusable asset family is used. */
+.huntv2-fx-primitive:is(.fx-pattern-dash-slash,.fx-pattern-heavy-slash,.fx-pattern-finisher-slash,.fx-pattern-ultimate-slash) .fx-line{height:3px;transform:rotate(-19deg) scaleX(.18);filter:drop-shadow(0 0 5px var(--fx-hot))}
+.huntv2-fx-primitive.fx-pattern-combo-slash .fx-line{height:2px;box-shadow:0 -7px 0 color-mix(in srgb,var(--fx-main) 72%,transparent),0 7px 0 color-mix(in srgb,var(--fx-hot) 58%,transparent),0 0 12px var(--fx-main)}
+.huntv2-fx-primitive:is(.fx-pattern-heavy-slash,.fx-pattern-finisher-slash) .fx-burst,.huntv2-fx-primitive.fx-pattern-break-body .fx-burst{width:92px;height:92px}
+.huntv2-fx-primitive:is(.fx-pattern-punch,.fx-pattern-combo-punch,.fx-pattern-heavy-punch,.fx-pattern-finisher-punch,.fx-pattern-ultimate-punch,.fx-pattern-shockwave,.fx-pattern-pressure-wave) .fx-burst{background:radial-gradient(circle,transparent 0 21%,color-mix(in srgb,var(--fx-hot) 88%,transparent) 23% 27%,color-mix(in srgb,var(--fx-main) 48%,transparent) 30% 43%,transparent 68%);border:2px solid color-mix(in srgb,var(--fx-main) 62%,transparent)}
+.huntv2-fx-primitive:is(.fx-pattern-charge,.fx-pattern-channel-aura,.fx-pattern-fortress,.fx-pattern-ultimate-aura) .fx-ring{animation-duration:.86s!important;border-width:3px}
+.huntv2-fx-primitive:is(.fx-pattern-shield-aura,.fx-pattern-shield-sigil,.fx-pattern-mirror-shield,.fx-pattern-poison-shield,.fx-pattern-mind-shield,.fx-pattern-formation-shield) .fx-ring{width:104px;height:104px;top:48%;border-width:3px;box-shadow:0 0 16px color-mix(in srgb,var(--fx-main) 44%,transparent),inset 0 0 18px color-mix(in srgb,var(--fx-main) 20%,transparent)}
+.huntv2-fx-primitive:is(.fx-pattern-sigil,.fx-pattern-sigil-slash,.fx-pattern-poison-sigil,.fx-pattern-break-sigil,.fx-pattern-mind-mark,.fx-pattern-mind-chase,.fx-pattern-rune,.fx-pattern-formation-seal) .fx-ring{border-style:double;border-width:4px;animation-name:huntA17Sigil!important}
+@keyframes huntA17Sigil{0%{opacity:0;transform:translate(-50%,-50%) scale(.5) rotate(-22deg)}34%{opacity:.9}76%{opacity:.78;transform:translate(-50%,-50%) scale(1) rotate(10deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.08) rotate(18deg)}}
+
+.huntv2-fx-primitive:is(.fx-pattern-orb-volley,.fx-pattern-swarm,.fx-pattern-sword-rain,.fx-pattern-poison-rain,.fx-pattern-artifact-rain,.fx-pattern-mind-split) .fx-motif,
+.huntv2-fx-primitive:is(.fx-pattern-orb-volley,.fx-pattern-swarm,.fx-pattern-sword-rain,.fx-pattern-poison-rain,.fx-pattern-artifact-rain,.fx-pattern-mind-split) .fx-authored{width:52px;height:52px;max-height:60px}
+.huntv2-fx-primitive.fx-pattern-swarm .fx-copy{width:38px!important;height:38px!important;filter:drop-shadow(0 0 7px var(--fx-main)) saturate(1.3)}
+.huntv2-fx-primitive:is(.fx-pattern-sword-rain,.fx-pattern-poison-rain,.fx-pattern-artifact-rain) .fx-copy{animation:huntA17Rain .7s cubic-bezier(.2,.82,.25,1) both!important}
+@keyframes huntA17Rain{0%{opacity:0;top:18%;transform:translate(-50%,-50%) scale(.55) rotate(-18deg)}18%{opacity:.9}76%{opacity:.95}100%{opacity:0;top:52%;transform:translate(-50%,-50%) scale(.9) rotate(-8deg)}}
+
+.huntv2-fx-primitive.fx-pattern-return .fx-copy{animation:huntA17Return .68s cubic-bezier(.16,.78,.28,1) both!important}
+@keyframes huntA17Return{0%{left:73%;opacity:0;transform:translate(-50%,-50%) scale(.78) rotate(8deg)}16%,76%{opacity:.75}100%{left:28%;opacity:0;transform:translate(-50%,-50%) scale(.58) rotate(-8deg)}}
+.huntv2-fx-primitive:is(.fx-pattern-converge,.fx-pattern-formation-shift) .fx-copy{animation:huntA17Converge .72s cubic-bezier(.15,.76,.25,1) both!important}
+.huntv2-fx-primitive:is(.fx-pattern-converge,.fx-pattern-formation-shift) .c2{left:46%!important;top:38%!important}.huntv2-fx-primitive:is(.fx-pattern-converge,.fx-pattern-formation-shift) .c3{left:48%!important;top:59%!important}
+@keyframes huntA17Converge{0%{opacity:0;transform:translate(-50%,-50%) scale(.95)}18%,72%{opacity:.7}100%{left:29%;top:48%;opacity:0;transform:translate(-50%,-50%) scale(.45)}}
+.huntv2-fx-primitive.fx-pattern-orbit .fx-copy{animation:huntA17Orbit .76s ease-in-out both!important}
+@keyframes huntA17Orbit{0%,100%{opacity:0;transform:translate(-50%,-50%) rotate(-28deg) translateX(22px) scale(.58)}18%{opacity:.72}55%{opacity:.72;transform:translate(-50%,-50%) rotate(130deg) translateX(32px) scale(.74)}82%{opacity:.55;transform:translate(-50%,-50%) rotate(260deg) translateX(18px) scale(.62)}}
+.huntv2-fx-primitive:is(.fx-pattern-summon,.fx-pattern-split-summon,.fx-pattern-ultimate-summon) .fx-copy{animation:huntA17SummonFx .72s ease-out both!important}
+@keyframes huntA17SummonFx{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-18deg)}24%{opacity:.72;transform:translate(-50%,-50%) scale(1.02)}76%{opacity:.62}100%{opacity:0;transform:translate(-50%,-50%) scale(.88) rotate(12deg)}}
+
+.huntv2-fx-primitive:is(.fx-pattern-mist-field,.fx-pattern-ultimate-mist) .fx-copy{filter:blur(.45px) drop-shadow(0 0 12px var(--fx-main)) saturate(1.35);opacity:0}
+.huntv2-fx-primitive:is(.fx-pattern-consume,.fx-pattern-consume-burst) .fx-ring{animation:huntA17Consume .62s ease-in both!important}
+@keyframes huntA17Consume{0%{opacity:.1;transform:translate(-50%,-50%) scale(1.16)}48%{opacity:.85;transform:translate(-50%,-50%) scale(.55)}70%{opacity:1;transform:translate(-50%,-50%) scale(.34)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.24)}}
+.huntv2-fx-primitive:is(.fx-pattern-formation-deploy,.fx-pattern-formation-channel,.fx-pattern-ultimate-formation,.fx-pattern-mind-field,.fx-pattern-ultimate-field) .fx-ring{left:50%;top:58%;width:68%;height:24%;border-style:double;border-width:4px}
+.huntv2-fx-primitive:is(.fx-pattern-beam,.fx-pattern-artifact-dash,.fx-pattern-mind-interfere) .fx-line{height:5px;animation-duration:.42s!important}
+
+/* Damage stays above FX; multi-hit rolls into the existing xN aggregator rather than spamming the screen. */
+.huntv2-float-layer{z-index:78}.huntv2-float.damage-main{z-index:2}
+
+@media(max-width:430px){
+  .huntv2-actor[class~="player"].state-dash{animation-name:huntA17DashPlayerMobile}.huntv2-actor[class~="enemy"].state-dash{animation-name:huntA17DashEnemyMobile}
+  @keyframes huntA17DashPlayerMobile{0%,100%{transform:translate3d(0,0,0)}55%{transform:translate3d(12px,-1px,0) scale(1.018)}}
+  @keyframes huntA17DashEnemyMobile{0%,100%{transform:translate3d(0,0,0)}55%{transform:translate3d(-10px,-1px,0) scale(1.018)}}
+  .huntv2-fx-primitive.fx-type-ultimate .fx-copy{max-width:48%!important;max-height:42%!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .huntv2-actor.state-dash,.huntv2-actor.state-channel,.huntv2-actor.state-brace,.huntv2-actor.state-summon,.huntv2-actor.state-counter{animation:none!important}
+  .huntv2-fx-primitive .fx-copy{animation:none!important;opacity:.62!important}
+}
+
+/* Idle-RPG mobile simplification: icon-first dock. Full name stays in cast callout / long-press detail. */
+@media(max-width:430px){
+  .huntv2-skill>small{display:none!important}
+  .huntv2-skill-meta{margin-top:4px}
+}
+
+/* =========================
+   v1.38.0-alpha.23.13 — Combat Gameplay & Readability Final Pass
+   Goal: expose combat decisions (intent / break / role / ultimate) without
+   turning the arena into a dashboard. Production combat remains backend-auto.
+   ========================= */
+.huntv2-help-compact{position:absolute;z-index:46;right:40px;top:151px;width:24px;height:24px;border:1px solid rgba(116,196,218,.22);border-radius:8px;background:linear-gradient(180deg,rgba(11,35,49,.92),rgba(4,17,27,.94));color:#a6e3f2;font:900 11px/1 Georgia,serif;box-shadow:0 3px 9px rgba(0,0,0,.24),inset 0 0 0 1px rgba(255,255,255,.025)}
+.huntv2-help-compact:active{transform:scale(.96)}
+
+/* Enemy intent is temporary, high-salience information. It is not a permanent HUD card. */
+.huntv2-enemy-intent{position:absolute;z-index:69;top:178px;left:50%;width:min(238px,62%);min-height:42px;transform:translate(-50%,-7px) scale(.98);opacity:0;visibility:hidden;pointer-events:none;display:grid;grid-template-columns:25px minmax(0,1fr) auto;align-items:center;gap:7px;padding:6px 9px 8px;border:1px solid rgba(229,126,90,.28);border-radius:11px;background:linear-gradient(180deg,rgba(38,13,14,.93),rgba(15,7,10,.94));box-shadow:0 8px 22px rgba(0,0,0,.30),0 0 18px rgba(218,83,61,.08);transition:opacity .12s ease,transform .12s ease,visibility .12s}
+.huntv2-enemy-intent.show{opacity:1;visibility:visible;transform:translate(-50%,0) scale(1)}
+.huntv2-enemy-intent>i{width:25px;height:25px;display:grid;place-items:center;border-radius:8px;background:rgba(216,84,64,.13);border:1px solid rgba(238,121,92,.22);font-style:normal;font-size:13px;color:#ffb39a}
+.huntv2-enemy-intent>div{min-width:0}.huntv2-enemy-intent span{display:block;font-size:7px;letter-spacing:.095em;font-weight:900;color:#d99888}.huntv2-enemy-intent strong{display:block;margin-top:1px;font:800 11px/1.02 Georgia,serif;color:#ffe0d5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.huntv2-enemy-intent small{display:block;margin-top:2px;font-size:7.4px;color:#cbb8b2}
+.huntv2-enemy-intent>b{font-size:8.2px;color:#f1b29d;font-variant-numeric:tabular-nums}
+.huntv2-enemy-intent>u{position:absolute;left:7px;right:7px;bottom:3px;height:2px;border-radius:2px;overflow:hidden;background:rgba(255,255,255,.07);text-decoration:none}.huntv2-enemy-intent>u>em{display:block;width:100%;height:100%;transform-origin:left;background:linear-gradient(90deg,#d76452,#ffd276);box-shadow:0 0 7px rgba(248,153,91,.35)}
+.huntv2-enemy-intent.tier-heavy{border-color:rgba(239,166,79,.42);background:linear-gradient(180deg,rgba(45,26,10,.94),rgba(20,10,7,.95))}.huntv2-enemy-intent.tier-heavy>i{color:#ffd073;background:rgba(234,169,72,.14)}
+.huntv2-enemy-intent.tier-ultimate{width:min(264px,68%);border-color:rgba(246,202,92,.68);background:linear-gradient(180deg,rgba(63,38,8,.97),rgba(24,12,7,.97));box-shadow:0 8px 24px rgba(0,0,0,.34),0 0 24px rgba(241,186,62,.18)}
+.huntv2-enemy-intent.tier-ultimate>i{color:#ffe17a;background:rgba(245,201,83,.18);box-shadow:0 0 12px rgba(244,191,60,.16)}.huntv2-enemy-intent.tier-ultimate strong{color:#fff0b2}
+@keyframes huntv2IntentFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+/* Break is the core burst window: a single center callout with a real countdown. */
+.huntv2-break-window{position:absolute;z-index:71;left:50%;top:222px;min-width:154px;transform:translate(-50%,-5px) scale(.96);opacity:0;visibility:hidden;pointer-events:none;display:grid;grid-template-columns:auto auto;align-items:baseline;justify-content:center;column-gap:8px;padding:7px 12px 6px;border:1px solid rgba(246,196,76,.46);border-radius:11px;background:linear-gradient(180deg,rgba(52,34,9,.94),rgba(16,12,7,.94));box-shadow:0 8px 22px rgba(0,0,0,.30),0 0 19px rgba(241,181,48,.15);transition:opacity .14s ease,transform .14s ease,visibility .14s}
+.huntv2-break-window.show{opacity:1;visibility:visible;transform:translate(-50%,0) scale(1)}
+.huntv2-break-window>span{font:900 11px/1 Georgia,serif;letter-spacing:.06em;color:#ffd66d}.huntv2-break-window>strong{font:900 15px/1 Georgia,serif;color:#fff1b5;font-variant-numeric:tabular-nums}.huntv2-break-window>em{grid-column:1/-1;margin-top:3px;text-align:center;font-size:7.2px;font-style:normal;color:#dcc78f;letter-spacing:.02em}
+
+/* Warn before the break, but do not steal focus until Thất Thế actually happens. */
+.huntv2-poise-row.near-break{background:rgba(220,152,48,.055);box-shadow:0 0 0 1px rgba(232,177,66,.14),0 0 12px rgba(230,164,49,.08)}
+.huntv2-poise-row.near-break>b{color:#f1c56b}.huntv2-poise-row.near-break .huntv2-poise{border-color:rgba(236,177,63,.36)}
+
+/* Skill role communicates rotation at a glance: TÍCH / PHÁ / XẢ / THỦ / TUYỆT. */
+.huntv2-skill-role{position:absolute;z-index:9;left:50%;bottom:2px;transform:translateX(-50%);max-width:88%;padding:1px 4px;border:1px solid rgba(255,255,255,.12);border-radius:5px;background:rgba(2,9,15,.82);font-size:6.4px;line-height:1.15;font-weight:950;letter-spacing:.045em;color:#d6e3e6;white-space:nowrap;pointer-events:none;text-shadow:0 1px 2px #000}
+.huntv2-skill.role-generate .huntv2-skill-role,.huntv2-skill.role-setup .huntv2-skill-role{color:#9de8d2;border-color:rgba(95,216,177,.22)}
+.huntv2-skill.role-break .huntv2-skill-role{color:#ffd177;border-color:rgba(238,184,70,.26)}
+.huntv2-skill.role-spend .huntv2-skill-role,.huntv2-skill.role-finisher .huntv2-skill-role{color:#ffb4a0;border-color:rgba(235,113,87,.25)}
+.huntv2-skill.role-defense .huntv2-skill-role,.huntv2-skill.role-support .huntv2-skill-role{color:#a9dcff;border-color:rgba(103,183,229,.25)}
+.huntv2-skill.role-ultimate .huntv2-skill-role{color:#ffdf79;border-color:rgba(241,193,74,.35);background:rgba(38,27,7,.88)}
+.huntv2-ult-ready{display:none;position:absolute;z-index:12;left:50%;top:4px;transform:translateX(-50%);padding:2px 4px;border-radius:5px;background:linear-gradient(180deg,#ffe07d,#b36d1b);color:#171006;font-size:5.7px;font-weight:1000;line-height:1;white-space:nowrap;box-shadow:0 0 12px rgba(247,197,66,.36);pointer-events:none}
+.huntv2-skill.ultimate.gauge-ready .huntv2-ult-ready{display:block;animation:huntv2UltReady 1s ease-in-out infinite alternate}.huntv2-skill.ultimate.gauge-ready>span:first-child{border-color:#ffe07a;box-shadow:0 0 0 2px rgba(243,199,79,.18),0 0 21px rgba(238,180,49,.38),inset 0 0 10px rgba(245,203,91,.08)}
+@keyframes huntv2UltReady{from{filter:brightness(.94);transform:translateX(-50%) scale(.97)}to{filter:brightness(1.13);transform:translateX(-50%) scale(1.025)}}
+
+.huntv2-skill-truth-note{margin:8px 0 0;padding:8px 9px;border:1px solid rgba(112,192,214,.15);border-radius:9px;background:rgba(5,22,33,.54);font-size:8.3px;line-height:1.35;color:#aebdc0}.huntv2-skill-truth-note b{color:#d6e9ed}
+
+/* Progressive disclosure help sheet — mechanics only when the player asks. */
+.huntv2-combat-help{display:grid;gap:10px}.huntv2-help-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.huntv2-help-grid article{min-width:0;display:grid;grid-template-columns:25px minmax(0,1fr);grid-template-rows:auto auto;gap:2px 7px;padding:9px;border:1px solid rgba(107,182,207,.14);border-radius:10px;background:linear-gradient(180deg,rgba(8,30,43,.72),rgba(4,17,27,.68))}.huntv2-help-grid article>i{grid-row:1/3;width:25px;height:25px;display:grid;place-items:center;border-radius:8px;background:rgba(106,192,218,.09);color:#9edff0;font:900 10px/1 Georgia,serif;font-style:normal}.huntv2-help-grid article>b{font-size:9.2px;color:#e7d59e}.huntv2-help-grid article>span{font-size:8.1px;line-height:1.3;color:#aebdc0}.huntv2-help-rule{padding:9px 10px;border-left:2px solid rgba(226,187,84,.46);border-radius:2px 9px 9px 2px;background:rgba(36,27,10,.34)}.huntv2-help-rule b{display:block;font-size:9px;color:#e9d293}.huntv2-help-rule span{display:block;margin-top:3px;font-size:8.1px;line-height:1.35;color:#b8b4a7}
+
+/* Priority statuses remain readable and visually rank above overflow. */
+.huntv2-status-tray .status[data-priority="2"],.huntv2-status-tray .status.priority-major{border-color:rgba(242,196,84,.48);box-shadow:0 0 12px rgba(240,190,65,.10),0 3px 9px rgba(0,0,0,.24)}
+
+@media(max-width:430px){
+  .huntv2-help-compact{top:151px;right:39px;width:24px;height:24px;font-size:11px}
+  .huntv2-enemy-intent{top:179px;width:58%;min-height:40px;padding:5px 8px 7px;grid-template-columns:23px minmax(0,1fr) auto}.huntv2-enemy-intent>i{width:23px;height:23px}.huntv2-enemy-intent strong{font-size:10.2px}.huntv2-enemy-intent span{font-size:6.8px}.huntv2-enemy-intent small{font-size:7.1px}.huntv2-enemy-intent.tier-ultimate{width:65%}
+  .huntv2-break-window{top:221px;min-width:146px;padding:6px 10px}.huntv2-break-window>span{font-size:10.4px}.huntv2-break-window>strong{font-size:14px}.huntv2-break-window>em{font-size:7px}
+  .huntv2-skill-role{font-size:6.1px;padding:1px 3px;bottom:2px}.huntv2-ult-ready{font-size:5.4px}
+  .huntv2-help-grid{grid-template-columns:1fr}.huntv2-help-grid article>b{font-size:9.4px}.huntv2-help-grid article>span,.huntv2-help-rule span{font-size:8.3px}
+}
+@media(prefers-reduced-motion:reduce){
+  .huntv2-enemy-intent>u>em,.huntv2-skill.ultimate.gauge-ready .huntv2-ult-ready{animation:none!important}
+}
+/* Alpha23.13 role aliases from the canonical skillRole() classifier. */
+.huntv2-skill.role-build .huntv2-skill-role{color:#9de8d2;border-color:rgba(95,216,177,.22)}
+.huntv2-skill.role-spend .huntv2-skill-role{color:#ffb4a0;border-color:rgba(235,113,87,.25)}
+.huntv2-skill.role-guard .huntv2-skill-role{color:#a9dcff;border-color:rgba(103,183,229,.25)}
+
+/* =========================
+   A1.7.5 legacy bridge — superseded by V83 production renderer
+   V83 promotes Pixi by default; ?combatRenderer=dom remains the explicit fallback.
+   Pixi owns actor art only; DOM keeps HUD/status/VFX/controls.
+   ========================= */
+.huntv2-pixi-host{position:absolute;z-index:9;inset:0;pointer-events:none;overflow:hidden;display:none}
+.huntv2-pixi-canvas{display:block;width:100%;height:100%;pointer-events:none}
+body[data-combat-renderer="pixi"] .huntv2-pixi-host{display:block}
+body[data-combat-renderer="pixi"] .huntv2-player-pose-set,
+body[data-combat-renderer="pixi"] .huntv2-beast-art{opacity:0!important}
+body[data-combat-renderer="pixi"] .huntv2-actor .huntv2-shadow{pointer-events:none}
+body:not([data-combat-renderer="pixi"]) .huntv2-pixi-host{display:none}
+
+/* A1.7.7 legacy FX bridge · active whenever V83 Pixi renderer is mounted
+   Actor-local DOM flashes/arcs are suppressed only while the Pixi renderer is active.
+   HUD, damage numbers, status chips and all interaction remain DOM. */
+body[data-combat-renderer="pixi"] .huntv2-actor .huntv2-cast-ring,
+body[data-combat-renderer="pixi"] .huntv2-actor .huntv2-hit-flash,
+body[data-combat-renderer="pixi"] .huntv2-sword-sweep,
+body[data-combat-renderer="pixi"] #huntv2Projectile,
+body[data-combat-renderer="pixi"] #huntv2SwordArc,
+body[data-combat-renderer="pixi"] #huntv2Lightning,
+body[data-combat-renderer="pixi"] #huntv2Impact,
+body[data-combat-renderer="pixi"] #huntv2ScreenFlash,
+body[data-combat-renderer="pixi"] #huntv2VfxLayer .huntv2-fx-primitive{opacity:0!important;animation:none!important;}
+
+/* =========================
+   V83 — Combat Presentation Production
+   Pixi is the default actor/FX renderer. DOM remains authoritative HUD + fallback.
+   Geometry is intentionally extension-safe for companion / ally / artifact actor slots.
+   ========================= */
+.huntv2-screen{--v83-panel:rgba(3,12,20,.86);--v83-panel-strong:rgba(2,9,16,.95);--v83-gold:#e6c46f;--v83-cyan:#79d5ef;--v83-danger:#ef6d5c}
+.huntv2-stage{background:#06131f;box-shadow:inset 0 -38px 50px rgba(0,0,0,.24)}
+.huntv2-bg{filter:saturate(.86) brightness(.69) contrast(1.07)}
+.huntv2-env-overlay{background:linear-gradient(180deg,rgba(2,9,15,.48),rgba(2,9,15,.04) 27%,rgba(2,9,15,.05) 61%,rgba(2,8,13,.72))}
+
+/* Battlefield hierarchy: boss owns the top, player status stays close to the player. */
+.huntv2-enemy-hud{left:54px;right:54px;top:35px;width:auto;height:72px;padding:8px 62px 7px 12px;border-radius:13px;background:linear-gradient(180deg,rgba(7,16,25,.94),rgba(3,10,17,.91));border-color:rgba(232,194,108,.24);box-shadow:0 8px 22px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.035)}
+.huntv2-enemy-hud .huntv2-portrait{width:58px;height:58px;top:6px;right:5px;border-color:rgba(223,95,90,.52)}
+.huntv2-hud-main{grid-template-rows:24px 16px 15px;gap:3px}.huntv2-hud-main>div:first-child{display:flex;align-items:baseline;gap:7px;min-width:0}.huntv2-hud-main strong{-webkit-line-clamp:1;white-space:nowrap;font-size:15px;line-height:1;color:#f3d4a0;text-shadow:0 1px 8px rgba(0,0,0,.55)}.huntv2-hud-main>div:first-child span{margin:0;font-size:8px;flex:0 1 auto}.huntv2-enemy-hud .huntv2-status-line{display:none}
+.huntv2-hp{height:16px;border-color:rgba(255,255,255,.13);box-shadow:inset 0 1px 4px rgba(0,0,0,.65)}.huntv2-hp>i{background:linear-gradient(90deg,#be3a38,#e95e49 62%,#ff9066)}.huntv2-hp>b{font-size:9px;letter-spacing:.015em}
+.huntv2-poise-row{grid-template-columns:53px minmax(0,1fr)}.huntv2-poise-row>b{font-size:7.7px}.huntv2-poise{height:13px}
+
+.huntv2-player-hud{top:auto;bottom:78px;left:8px;width:min(51%,250px);height:70px;padding:7px 9px 6px 60px;border-radius:31px 12px 12px 31px;background:linear-gradient(180deg,rgba(5,17,27,.91),rgba(2,10,17,.91));border-color:rgba(232,194,108,.23);box-shadow:0 8px 22px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.035)}
+.huntv2-player-portrait{left:3px;top:6px;width:56px;height:56px}.huntv2-player-hud-core{grid-template-rows:15px 14px 14px 14px;gap:1px}.huntv2-player-heading strong{font-size:12.2px;max-width:60%}.huntv2-player-heading span{font-size:7.6px}.huntv2-vital-row{grid-template-columns:19px minmax(0,1fr);gap:3px}.huntv2-vital-row>b{font-size:7.8px}.huntv2-vital{height:12px}.huntv2-vital>em{font-size:7.8px}.huntv2-player-meta span{font-size:7px;padding:1px 4px}
+
+/* Top chrome is compact and no longer competes with boss information. */
+.huntv2-resource-row{top:6px;right:8px;z-index:48}.huntv2-resource-row>span{height:24px;background:rgba(2,10,17,.78)}
+.huntv2-meta-strip{top:6px;left:8px;max-width:47%;height:24px;background:rgba(2,10,17,.78);border-color:rgba(232,194,108,.17)}
+.huntv2-map-compact{top:112px;right:8px}.huntv2-help-compact{top:112px;right:38px}
+.huntv2-status-lanes{top:111px;left:8px;right:8px;height:25px;gap:22px}
+.huntv2-boss-mechanic-chip,.huntv2-boss-ready-chip{top:140px}
+
+/* Boss telegraph occupies the visual centerline and reads before FX. */
+.huntv2-enemy-intent{top:139px;width:min(68%,290px);min-height:44px;padding:6px 10px 8px;background:linear-gradient(180deg,rgba(50,13,13,.94),rgba(18,7,9,.91));border-color:rgba(239,103,83,.5);box-shadow:0 9px 26px rgba(0,0,0,.35),0 0 20px rgba(229,83,66,.10)}
+.huntv2-enemy-intent strong{font-size:11.4px;color:#ffe0b7}.huntv2-enemy-intent span{font-size:7.3px;letter-spacing:.11em}.huntv2-enemy-intent small{font-size:7.7px}.huntv2-enemy-intent>i{width:26px;height:26px}.huntv2-enemy-intent.tier-ultimate{width:min(74%,315px);border-color:rgba(255,126,69,.68);box-shadow:0 10px 28px rgba(0,0,0,.38),0 0 26px rgba(255,92,46,.15)}
+.huntv2-break-window{top:188px;min-width:160px;padding:7px 12px;background:linear-gradient(180deg,rgba(43,31,8,.96),rgba(18,13,4,.94));box-shadow:0 8px 24px rgba(0,0,0,.34),0 0 18px rgba(226,185,62,.12)}
+.huntv2-break-window>span{font-size:10.8px}.huntv2-break-window>strong{font-size:14.8px}.huntv2-break-window>em{font-size:7.4px}
+
+/* Scene owns more vertical space; actors remain logical anchors for Pixi and future extension actors. */
+.huntv2-arena{top:126px;bottom:39px}
+.huntv2-actor.player{left:0;width:min(48%,220px);height:min(67%,292px);bottom:4%}.huntv2-actor.enemy{right:0;width:min(47%,220px);height:min(66%,286px);bottom:4%}.huntv2-actor.enemy.boss{right:-2%;width:min(54%,248px);height:min(74%,320px)}
+.huntv2-pixi-host{position:absolute;z-index:9;inset:0;pointer-events:none;overflow:hidden;display:none}
+body[data-combat-renderer="pixi"] .huntv2-pixi-host{display:block}
+body[data-combat-renderer="pixi"] .huntv2-player-pose-set,body[data-combat-renderer="pixi"] .huntv2-beast-art{opacity:0!important}
+body[data-combat-renderer="dom"] .huntv2-pixi-host,body:not([data-combat-renderer]) .huntv2-pixi-host{display:none}
+
+/* Actor extension surfaces are intentionally empty until a feature registers itself. */
+.huntv2-hud-extension-slots:empty{display:none}.huntv2-hud-extension-slots{position:absolute;z-index:40;left:8px;right:8px;bottom:116px;pointer-events:none}.huntv2-hud-extension-slots>[data-combat-hud-slot]{pointer-events:auto}
+
+/* Dao core and ultimate are close to the player but remain generic registered HUD content. */
+.huntv2-intel-lane{left:8px;right:58px;bottom:39px;height:34px;gap:5px}.huntv2-intel-meter{height:32px;padding:3px 6px;border-radius:9px;background:linear-gradient(180deg,rgba(4,17,28,.92),rgba(2,10,17,.94));border-color:rgba(120,200,225,.22)}.huntv2-intel-meter span{font-size:8px}.huntv2-intel-meter>b{font-size:8.2px}.huntv2-intel-meter>i{height:8px}
+
+/* Compact controls: useful, but not visually louder than combat. */
+.huntv2-quick-controls{top:207px;right:8px;width:39px;gap:4px}.huntv2-rail-btn{height:39px;border-radius:11px;background:rgba(2,10,17,.74)}.huntv2-rail-btn i{font-size:11px}.huntv2-rail-btn span{font-size:6.8px;max-width:35px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.huntv2-auto-card{top:207px;right:51px}
+
+/* Damage is a gameplay signal, not decoration. */
+.huntv2-float.enemy{right:10%}.huntv2-float.player{left:9%}.huntv2-float{top:44%;font-size:24px}.huntv2-float.damage-main strong{font-size:28px}.huntv2-float.crit strong{font-size:32px;color:#ffd06a}.huntv2-float.damage-main span{font-size:10px}.huntv2-float-layer{z-index:72}
+.huntv2-combat-caption{bottom:118px;width:min(62%,270px);padding:5px 9px;background:rgba(3,12,20,.70);backdrop-filter:blur(3px)}.huntv2-combat-caption strong{font-size:10px}.huntv2-combat-caption span{font-size:7px}
+
+/* Skill dock is read-only tactical information. Larger art, less micro-copy. */
+.huntv2-console{flex:0 0 158px;min-height:158px;padding:8px 7px 7px;background:linear-gradient(180deg,#061521,#020910);box-shadow:0 -12px 28px rgba(0,0,0,.35)}
+.huntv2-skills{height:106px;gap:4px;align-items:start}.huntv2-skill{height:102px}.huntv2-skill-art{width:50px;height:50px}.huntv2-skill.ultimate .huntv2-skill-art{width:56px;height:56px}.huntv2-skill>small{font-size:8px;margin-top:3px}.huntv2-skill-meta{font-size:7.7px!important}.huntv2-skill-meta b,.huntv2-skill-meta em{font-size:7.7px!important}.huntv2-skill-role{font-size:7.1px;bottom:2px;padding:1px 4px}.huntv2-action-deck{height:38px;gap:5px}.huntv2-action-deck button{min-height:36px}
+
+/* Stage footer remains available for farm/loot navigation, visually subordinate. */
+.huntv2-stage-bottom{height:36px;background:linear-gradient(180deg,rgba(2,9,15,0),rgba(2,9,15,.82) 42%,rgba(2,9,15,.94))}
+
+/* Production renderer quality states. */
+.huntv2-rail-btn.fx[data-fx-quality="low"] i{opacity:.72}.huntv2-rail-btn.fx[data-fx-quality="high"]{border-color:rgba(232,194,108,.34);box-shadow:0 0 13px rgba(232,194,108,.08)}.huntv2-rail-btn.fx[data-fx-quality="off"]{opacity:.66}
+
+@media(max-width:430px){
+  .huntv2-enemy-hud{left:43px;right:43px;height:70px;padding-right:58px}.huntv2-enemy-hud .huntv2-portrait{width:54px;height:54px;top:7px}.huntv2-hud-main strong{font-size:13.8px}.huntv2-hud-main>div:first-child span{font-size:7.5px}
+  .huntv2-player-hud{width:min(55%,228px);height:68px;padding-left:57px;bottom:78px}.huntv2-player-portrait{width:53px;height:53px}.huntv2-player-heading strong{font-size:11.5px}.huntv2-player-heading span{font-size:7.2px}.huntv2-player-meta span{font-size:6.6px}
+  .huntv2-meta-strip{max-width:44%}.huntv2-meta-strip strong{font-size:8.2px}.huntv2-resource-row>span{min-width:34px}
+  .huntv2-enemy-intent{top:137px;width:68%}.huntv2-enemy-intent.tier-ultimate{width:74%}.huntv2-break-window{top:186px}
+  .huntv2-arena{top:123px}.huntv2-actor.player{width:min(49%,205px);height:min(66%,275px)}.huntv2-actor.enemy{width:min(48%,205px);height:min(65%,270px)}.huntv2-actor.enemy.boss{width:min(55%,232px);height:min(73%,300px)}
+  .huntv2-intel-lane{right:51px}.huntv2-intel-meter{padding:3px 5px}.huntv2-intel-meter span{max-width:45px;font-size:7.6px}.huntv2-intel-meter>b{font-size:7.7px}
+  .huntv2-console{flex-basis:154px;min-height:154px}.huntv2-skills{height:103px;gap:3px}.huntv2-skill{height:99px}.huntv2-skill-art{width:46px;height:46px}.huntv2-skill.ultimate .huntv2-skill-art{width:52px;height:52px}.huntv2-skill>small{font-size:7.6px}.huntv2-skill-role{font-size:6.8px}.huntv2-action-deck{height:36px}
+}
+
+@media(max-width:370px){
+  .huntv2-enemy-hud{left:38px;right:38px}.huntv2-player-hud{width:59%;padding-left:53px}.huntv2-player-portrait{width:49px;height:49px;top:8px}.huntv2-player-heading span{display:none}.huntv2-player-meta span:nth-child(n+2){display:none}
+  .huntv2-skill-art{width:42px;height:42px}.huntv2-skill.ultimate .huntv2-skill-art{width:47px;height:47px}.huntv2-skill>small{font-size:7.1px}.huntv2-skill-meta b,.huntv2-skill-meta em{font-size:7.1px!important}
+}
+
+@media(min-width:700px){
+  .huntv2-enemy-hud{left:50%;right:auto;transform:translateX(-50%);width:min(520px,58%)}
+  .huntv2-player-hud{width:280px;bottom:82px}.huntv2-intel-lane{right:auto;width:440px}.huntv2-console{flex-basis:166px;min-height:166px}.huntv2-skills{max-width:720px;margin:0 auto}.huntv2-action-deck{max-width:720px;margin:0 auto}
+}
+
+/* V83 bootstrap safety: the empty Pixi host must remain measurable before the renderer
+   flips body[data-combat-renderer] to pixi. DOM actor art stays visible until mount succeeds. */
+.huntv2-pixi-host{display:block!important;visibility:hidden}
+body[data-combat-renderer="pixi"] .huntv2-pixi-host{display:block!important;visibility:visible}
+body[data-combat-renderer="dom"] .huntv2-pixi-host,body:not([data-combat-renderer]) .huntv2-pixi-host{display:block!important;visibility:hidden}
+
+/* V83 combat notices: global action summaries must never cover Boss telegraphs/HP.
+   Full detail remains available in the combat log / battle summary. */
+body[data-game-screen="hunt"] .notice:not(.hidden){
+  top:5px!important;left:50%!important;right:auto!important;transform:translateX(-50%);
+  width:min(66%,300px)!important;max-width:300px!important;min-height:24px!important;max-height:26px!important;
+  margin:0!important;padding:5px 10px!important;border-radius:999px!important;
+  overflow:hidden!important;white-space:nowrap!important;text-overflow:ellipsis!important;
+  font-size:8.2px!important;line-height:14px!important;text-align:center!important;z-index:176!important;
+}
+
+/* Hunt owns its feedback surface. Routine backend summaries are routed to combat caption/log;
+   only errors may use the global notice overlay. */
+body[data-game-screen="hunt"] .notice:not(.error){display:none!important}
+body[data-game-screen="hunt"] .notice.error:not(.hidden){display:block!important;top:5px!important;width:min(62%,270px)!important;max-width:270px!important}
+.huntv2-combat-caption{bottom:160px}
+
+/* V86 — Linh Thú companion HUD extension */
+.huntv2-beast-companion-hud{display:flex;align-items:center;gap:7px;max-width:180px;padding:5px 7px;border:1px solid rgba(117,204,181,.24);border-radius:9px;background:rgba(5,26,32,.78);box-shadow:0 6px 20px rgba(0,0,0,.18)}.huntv2-beast-companion-hud img{width:32px;height:32px;object-fit:contain;filter:drop-shadow(0 4px 5px rgba(0,0,0,.35))}.huntv2-beast-companion-hud div{min-width:0}.huntv2-beast-companion-hud span,.huntv2-beast-companion-hud b,.huntv2-beast-companion-hud small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.huntv2-beast-companion-hud span{font-size:6.5px;color:#79cdbb;letter-spacing:.07em}.huntv2-beast-companion-hud b{font-size:9px;color:#f0db9d}.huntv2-beast-companion-hud small{font-size:7px;color:#8da6a6}@media(max-width:390px){.huntv2-beast-companion-hud{max-width:145px}.huntv2-beast-companion-hud img{width:28px;height:28px}}
+
+/* V110 — Boss/Săn Yêu Production Intelligence. Read-only hints from canonical Hunt DTO. */
+.v110-readiness{display:grid;gap:5px;margin:0 0 10px;padding:10px 11px;border-radius:12px;border:1px solid rgba(255,255,255,.10);background:rgba(7,16,24,.66)}
+.v110-readiness>div{display:flex;align-items:center;justify-content:space-between;gap:8px}.v110-readiness small{font-size:7px;letter-spacing:.12em;opacity:.62}.v110-readiness strong{font-size:12px}.v110-readiness>span{font-size:8px;line-height:1.45;opacity:.78}.v110-readiness.tone-good{border-color:rgba(91,213,159,.32)}.v110-readiness.tone-warn{border-color:rgba(238,185,92,.36)}.v110-readiness.tone-danger{border-color:rgba(235,104,91,.38)}
+.v110-boss-plan{display:grid;gap:7px;margin:10px 0;padding:10px;border-radius:12px;background:linear-gradient(145deg,rgba(38,19,20,.82),rgba(19,23,31,.86));border:1px solid rgba(226,151,97,.25)}.v110-boss-plan header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.v110-boss-plan header small,.v110-boss-plan header strong{display:block}.v110-boss-plan header small{font-size:6.5px;letter-spacing:.12em;color:#d9a876}.v110-boss-plan header strong{margin-top:2px;font-size:11px}.v110-boss-plan header>b{font-size:8px;color:#f0cd83;white-space:nowrap}.v110-boss-plan>p,.v110-boss-plan>em{margin:0;font-size:8px;line-height:1.45}.v110-boss-plan>em{font-style:normal;color:#e9c796}
+.v110-counter-list{display:grid;gap:5px}.v110-counter{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:6px;align-items:center;padding:6px 7px;border-radius:8px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.055)}.v110-counter>i{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:8px}.v110-counter.covered>i{background:rgba(77,183,130,.18);color:#8de0b3}.v110-counter.missing>i{background:rgba(214,107,78,.18);color:#f0a18b}.v110-counter strong,.v110-counter span{display:block}.v110-counter strong{font-size:8px}.v110-counter span{font-size:6.5px;opacity:.62}.v110-counter>b{font-size:7px}.v110-counter.covered>b{color:#8de0b3}.v110-counter.missing>b{color:#f0a18b}
+.v110-climb-reason{display:grid;gap:4px;margin-top:9px;padding:9px;border-radius:10px;background:rgba(128,91,35,.10);border:1px solid rgba(215,177,103,.18)}.v110-climb-reason strong{font-size:9px;color:#e6c47c}.v110-climb-reason span,.v110-climb-reason small{font-size:7.5px;line-height:1.45;opacity:.76}.v110-climb-reason>b{margin-top:3px;font-size:8px}
+.v110-farm-recommendations{display:grid;gap:6px;margin-top:12px}.v110-farm-recommendations>header{display:grid;gap:2px}.v110-farm-recommendations>header strong{font-size:10px}.v110-farm-recommendations>header span{font-size:7px;opacity:.6}.v110-farm-rec{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 9px;border-radius:9px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06)}.v110-farm-rec small,.v110-farm-rec strong,.v110-farm-rec span{display:block}.v110-farm-rec small{font-size:6.5px;letter-spacing:.1em;color:#d4b877}.v110-farm-rec strong{font-size:8.5px;margin:1px 0}.v110-farm-rec span{font-size:6.8px;opacity:.64}.v110-farm-rec>b{font-size:8px;color:#e4ca8f;white-space:nowrap}
+.v110-readiness-chip{position:absolute;z-index:47;right:10px;top:116px;min-height:31px;padding:5px 8px;border-radius:9px;display:flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,.14);background:rgba(7,15,23,.82);color:#efe8d9;backdrop-filter:blur(7px)}.v110-readiness-chip i{font-style:normal}.v110-readiness-chip span{font-size:7.5px;font-weight:700}.v110-readiness-chip b{font-size:6.5px;opacity:.68}.v110-readiness-chip.tone-good{border-color:rgba(91,213,159,.34)}.v110-readiness-chip.tone-warn{border-color:rgba(238,185,92,.38)}.v110-readiness-chip.tone-danger{border-color:rgba(235,104,91,.42)}
+@media(max-width:430px){.v110-readiness-chip{right:7px;top:111px;max-width:150px}.v110-readiness-chip b{display:none}.v110-farm-rec{grid-template-columns:1fr}.v110-farm-rec>b{justify-self:start}.v110-boss-plan header{display:grid}.v110-boss-plan header>b{white-space:normal}}
+
+/* ========================================================================== */
+/* COMBAT UI V8 · CLEAN PORTRAIT HUD · 2026-09-05                            */
+/* Single canonical combat presentation layer. Gameplay/backend truth is      */
+/* unchanged; this layer owns hierarchy, readable geometry and state density. */
+/* ========================================================================== */
+.huntv2-combat-v8{
+  --cv8-edge:10px;--cv8-top-safe:calc(7px + env(safe-area-inset-top));--cv8-console-h:136px;
+  --cv8-xs:clamp(10px,2.55cqw,13px);--cv8-sm:clamp(11px,2.8cqw,14px);--cv8-md:clamp(12px,3.05cqw,15px);--cv8-lg:clamp(14px,3.55cqw,18px);--cv8-name:clamp(17px,4.3cqw,22px);--cv8-title:clamp(19px,4.8cqw,24px);
+  background:#07100e;color:#f1e8d4;font-size:var(--cv8-md);overflow:hidden;
+}
+.huntv2-combat-v8,.huntv2-combat-v8 *{min-width:0}
+.huntv2-combat-v8 .huntv2-body{display:grid;grid-template-rows:minmax(0,1fr) var(--cv8-console-h);height:100%;min-height:0;overflow:hidden;background:#07100e}
+.huntv2-combat-v8 .huntv2-stage{position:relative;min-height:0;overflow:hidden;border:0;background:#101914}
+.huntv2-combat-v8 .huntv2-bg{object-position:center 52%;filter:saturate(.88) brightness(.79) contrast(1.03);transform:scale(1.018)}
+.huntv2-combat-v8 .huntv2-env-overlay{background:linear-gradient(180deg,rgba(6,10,8,.28),rgba(6,10,8,.03) 20%,rgba(6,10,8,.01) 68%,rgba(3,7,6,.32) 88%,rgba(2,5,5,.62))}
+.huntv2-combat-v8 .huntv2-vignette{box-shadow:inset 0 0 44px rgba(0,0,0,.22)}
+
+/* Top identity: two compact zones, no overlap. */
+.huntv2-combat-v8 .huntv2-top-identity{position:absolute;z-index:72;left:var(--cv8-edge);top:var(--cv8-top-safe);width:56%;height:54px;display:grid;grid-template-columns:28px 46px minmax(0,1fr);align-items:center;gap:6px;color:#f4ead4;pointer-events:auto}
+.huntv2-combat-v8 .huntv2-combat-exit{position:static;width:28px;height:36px;min-width:28px;padding:0;border:1px solid rgba(229,199,132,.24);border-radius:18px;background:rgba(15,21,18,.74);color:#f0dfb4;display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.huntv2-combat-v8 .huntv2-combat-exit i{font:900 20px/1 Georgia,serif;font-style:normal}.huntv2-combat-v8 .huntv2-combat-exit span{display:none}
+.huntv2-combat-v8 .huntv2-identity-portrait{position:relative;width:46px;height:46px;border-radius:50%;overflow:hidden;border:1px solid rgba(237,209,148,.58);background:#14201c;box-shadow:0 0 0 2px rgba(8,12,10,.62),0 4px 12px rgba(0,0,0,.24)}
+.huntv2-combat-v8 .huntv2-identity-portrait img{width:100%;height:100%;object-fit:cover;object-position:50% 25%;transform:scale(1.12)}.huntv2-combat-v8 .huntv2-identity-portrait>i{display:none}
+.huntv2-combat-v8 .huntv2-identity-copy{min-width:0;display:grid;gap:2px;text-shadow:0 1px 3px #000}.huntv2-combat-v8 .huntv2-identity-copy strong{font:850 15px/1.06 Georgia,serif;color:#fff0cf;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.huntv2-combat-v8 .huntv2-identity-copy span{font-size:11px;line-height:1.1;color:#d2d2c5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.huntv2-combat-v8 .huntv2-identity-copy small{font-size:10px;line-height:1;color:#e2c576}
+.huntv2-combat-v8 .huntv2-resource-row{position:absolute;z-index:73;top:var(--cv8-top-safe);right:var(--cv8-edge);height:34px;display:flex;justify-content:flex-end;gap:5px;max-width:40%}
+.huntv2-combat-v8 .huntv2-resource-row>span{min-width:60px;max-width:92px;height:34px;padding:3px 8px;display:flex;align-items:center;justify-content:center;gap:5px;border:1px solid rgba(228,204,151,.22);border-radius:17px;background:rgba(15,21,18,.74);box-shadow:0 4px 12px rgba(0,0,0,.16)}
+.huntv2-combat-v8 .huntv2-resource-row img{width:18px;height:18px}.huntv2-combat-v8 .huntv2-resource-row b{font-size:var(--cv8-sm);line-height:1;color:#f4ead2;white-space:nowrap}
+.huntv2-combat-v8 .huntv2-meta-strip{position:absolute;z-index:71;top:calc(var(--cv8-top-safe) + 58px);left:50%;transform:translateX(-50%);height:32px;max-width:62%;padding:0 12px;display:flex;align-items:center;justify-content:center;gap:5px;border-radius:16px;border:1px solid rgba(224,196,132,.25);background:rgba(23,26,21,.76);box-shadow:0 5px 14px rgba(0,0,0,.16);color:#e8dfcb;white-space:nowrap;overflow:hidden}
+.huntv2-combat-v8 .huntv2-meta-strip strong{font:850 var(--cv8-sm)/1 Georgia,serif;color:#f0d08a;overflow:hidden;text-overflow:ellipsis}.huntv2-combat-v8 .huntv2-meta-strip span,.huntv2-combat-v8 .huntv2-meta-strip em{font-size:var(--cv8-xs);line-height:1;flex:0 0 auto}.huntv2-combat-v8 .huntv2-meta-strip i{font-size:var(--cv8-md);flex:0 0 auto}
+
+/* Secondary utilities. */
+.huntv2-combat-v8 .huntv2-quick-controls{right:8px;top:100px;width:44px;gap:7px;z-index:75}.huntv2-combat-v8 .huntv2-rail-btn{height:44px;border-radius:50%;padding:2px;border-color:rgba(224,197,134,.22);background:rgba(14,20,18,.74)}.huntv2-combat-v8 .huntv2-rail-btn i{font-size:14px}.huntv2-combat-v8 .huntv2-rail-btn span{font-size:var(--cv8-xs);font-weight:850}.huntv2-combat-v8 .huntv2-rail-btn.fx,.huntv2-combat-v8 .huntv2-rail-btn.log{display:none}.huntv2-combat-v8 .huntv2-auto-card{display:none}
+body[data-dev-sandbox="1"] .huntv2-combat-v8 .huntv2-rail-btn.fx{display:grid}
+.huntv2-combat-v8 .huntv2-help-compact,.huntv2-combat-v8 .huntv2-map-compact{right:8px;width:38px;height:38px;border-radius:50%;font-size:13px;background:rgba(14,20,18,.72);border-color:rgba(224,197,134,.20);color:#e2cf9c;box-shadow:0 4px 12px rgba(0,0,0,.18)}.huntv2-combat-v8 .huntv2-help-compact{top:151px}.huntv2-combat-v8 .huntv2-map-compact{top:195px}
+
+/* Boss HUD: persistent name + HP + Phá Thế only. Everything else contextual. */
+.huntv2-combat-v8 .huntv2-enemy-hud{position:absolute;z-index:74;left:auto;right:52px;top:106px;transform:none;width:min(72%,320px);height:auto;min-height:76px;padding:0;border:0;border-radius:0;background:none;box-shadow:none;text-shadow:0 1px 3px #000}
+.huntv2-combat-v8 .huntv2-enemy-hud .huntv2-portrait{display:none}.huntv2-combat-v8 .huntv2-hud-main{height:auto;display:grid;grid-template-rows:auto 16px 17px auto;gap:4px;min-width:0}.huntv2-combat-v8 .huntv2-hud-main>div:first-child{position:relative;min-width:0;padding-right:34px}.huntv2-combat-v8 .huntv2-hud-main strong{display:block;font:850 var(--cv8-name)/1.08 Georgia,serif;color:#f9ecd2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.huntv2-combat-v8 .huntv2-hud-main>div:first-child>span{display:none!important}
+.huntv2-combat-v8 .huntv2-boss-phase{position:absolute;right:0;top:0;min-width:30px;height:20px;padding:0 7px;display:grid;place-items:center;border-radius:10px;border:1px solid rgba(225,190,108,.30);background:rgba(29,24,14,.76);font-size:var(--cv8-xs);color:#f1cf82;font-style:normal}.huntv2-combat-v8 .huntv2-boss-phase[hidden],.huntv2-combat-v8 .huntv2-boss-phase[data-phase="1"]{display:none!important}
+.huntv2-combat-v8 .huntv2-hp{height:16px;border-radius:8px;border:1px solid rgba(255,255,255,.13);background:rgba(12,8,8,.76);box-shadow:0 2px 6px rgba(0,0,0,.22)}.huntv2-combat-v8 .huntv2-hp>b{font-size:var(--cv8-sm);font-weight:900;font-variant-numeric:tabular-nums}
+.huntv2-combat-v8 .huntv2-poise-row{grid-template-columns:64px minmax(0,1fr);gap:6px;min-height:17px}.huntv2-combat-v8 .huntv2-poise-row>b{font-size:var(--cv8-sm);letter-spacing:.01em;color:#c3ddd7}.huntv2-combat-v8 .huntv2-poise{height:13px;border-radius:7px;border-color:rgba(140,191,194,.30);background:rgba(5,14,14,.78)}.huntv2-combat-v8 .huntv2-poise>em{font-size:var(--cv8-xs);font-weight:900;font-variant-numeric:tabular-nums}
+.huntv2-combat-v8 .huntv2-status-line{min-height:22px;justify-content:flex-start;gap:5px}.huntv2-combat-v8 .huntv2-element-icons{display:flex;gap:4px}.huntv2-combat-v8 .huntv2-element-icons i{width:21px;height:21px;border-radius:50%;display:grid;place-items:center;font-size:10px}.huntv2-combat-v8 .huntv2-boss-trait{max-width:122px;height:22px;padding:0 6px;border-radius:11px;overflow:hidden}.huntv2-combat-v8 .huntv2-boss-trait span{font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.huntv2-combat-v8 .huntv2-enemy-info{right:-1px;top:25px;width:30px;height:30px;border-radius:50%;font-size:12px;border-color:rgba(224,196,132,.24);background:rgba(16,21,18,.78);color:#e5d29c}
+
+/* Statuses: glyph + integer remaining time/stack, max four + overflow count. */
+.huntv2-combat-v8 .huntv2-status-lanes{position:absolute;inset:0;z-index:76;pointer-events:none}.huntv2-combat-v8 .huntv2-status-lanes .huntv2-status-tray{position:absolute!important;height:30px;display:flex;align-items:center;gap:4px;overflow:hidden;pointer-events:auto}.huntv2-combat-v8 .huntv2-status-tray.enemy{top:198px;right:52px;max-width:70%;justify-content:flex-end}.huntv2-combat-v8 .huntv2-status-tray.player{left:var(--cv8-edge);top:calc(48% + 65px);max-width:68%}
+.huntv2-combat-v8 .huntv2-status-tray .status,.huntv2-combat-v8 .huntv2-status-tray .status-more{min-width:30px;height:30px;max-width:64px;padding:1px 5px;gap:3px;border-radius:9px;background:rgba(15,20,18,.86);border:1px solid rgba(255,255,255,.15);box-shadow:0 3px 9px rgba(0,0,0,.22)}.huntv2-combat-v8 .huntv2-status-tray .status>b{font-size:11px}.huntv2-combat-v8 .huntv2-status-tray .status>em{display:none}.huntv2-combat-v8 .huntv2-status-tray .status>small{font-size:var(--cv8-xs);line-height:1;color:#d3d8d0}.huntv2-combat-v8 .huntv2-status-tray .status>strong{font-size:var(--cv8-xs);color:#f1d47e}.huntv2-combat-v8 .huntv2-status-tray .status-more{display:grid;place-items:center;font-size:var(--cv8-xs);color:#d7d2bf}
+
+/* Telegraph belongs to Boss HUD and never becomes a center-screen card. */
+.huntv2-combat-v8 .huntv2-enemy-intent{top:228px;left:50%;width:min(68%,300px);min-height:42px;grid-template-columns:26px minmax(0,1fr) 22px;gap:7px;padding:6px 9px 8px;border-radius:11px}.huntv2-combat-v8 .huntv2-enemy-intent>i{width:26px;height:26px;font-size:13px}.huntv2-combat-v8 .huntv2-enemy-intent span{font-size:var(--cv8-xs);letter-spacing:.05em}.huntv2-combat-v8 .huntv2-enemy-intent strong{font-size:var(--cv8-md);line-height:1.08;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.huntv2-combat-v8 .huntv2-enemy-intent small{font-size:var(--cv8-xs);line-height:1.1}.huntv2-combat-v8 .huntv2-enemy-intent>b{font-size:var(--cv8-md);font-variant-numeric:tabular-nums}
+.huntv2-combat-v8 .huntv2-break-window{top:201px;left:50%;min-width:164px;padding:6px 11px;border-radius:11px}.huntv2-combat-v8 .huntv2-break-window>span{font-size:11px}.huntv2-combat-v8 .huntv2-break-window>strong{font-size:17px;font-variant-numeric:tabular-nums}.huntv2-combat-v8 .huntv2-break-window>em{font-size:10px}
+
+/* Battlefield safe bounds. Actor assets may vary but cannot escape the client. */
+.huntv2-combat-v8 .huntv2-arena{top:92px;bottom:0;overflow:hidden}.huntv2-combat-v8 .huntv2-back-seal{top:58%;width:clamp(190px,55cqw,310px);height:clamp(190px,55cqw,310px);opacity:.40}
+.huntv2-combat-v8 .huntv2-actor.player{left:-4%;bottom:-1%;width:min(57%,340px);height:min(51%,430px)}
+.huntv2-combat-v8 .huntv2-actor.enemy{right:0;bottom:auto;top:24%;width:min(48%,320px);height:min(42%,390px)}
+.huntv2-combat-v8 .huntv2-actor.enemy.boss{right:-1%;bottom:auto;top:22%;width:min(52%,350px);height:min(46%,430px)}
+.huntv2-combat-v8 .huntv2-player-art,.huntv2-combat-v8 .huntv2-beast-art{max-width:100%;max-height:100%;object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 16px 15px rgba(0,0,0,.46))}
+.huntv2-combat-v8 .huntv2-float{font-size:23px}.huntv2-combat-v8 .huntv2-float.damage-main span{font-size:11px}.huntv2-combat-v8 .huntv2-float.damage-main strong{font-size:27px}.huntv2-combat-v8 .huntv2-float.damage-main small{font-size:10px}.huntv2-combat-v8 .huntv2-float.crit strong{font-size:31px}.huntv2-combat-v8 .huntv2-result-pop span{font-size:10px}
+
+/* Player HUD stays above the face/torso safe area and never repeats realm/Dao. */
+.huntv2-combat-v8 .huntv2-player-hud{left:var(--cv8-edge);top:48%;bottom:auto;width:min(64%,270px);height:60px;padding:5px 7px;border:0;border-radius:10px;background:linear-gradient(90deg,rgba(9,15,12,.82),rgba(9,15,12,.38) 76%,transparent);box-shadow:none;text-shadow:0 1px 3px #000}
+.huntv2-combat-v8 .huntv2-player-portrait{display:none}.huntv2-combat-v8 .huntv2-player-hud-core{height:100%;display:grid;grid-template-rows:18px 17px 17px;gap:2px}.huntv2-combat-v8 .huntv2-player-heading strong{font:850 15px/1 Georgia,serif;color:#fff0cf;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.huntv2-combat-v8 .huntv2-player-heading span{display:none}.huntv2-combat-v8 .huntv2-vital-row{grid-template-columns:24px minmax(0,1fr);gap:5px}.huntv2-combat-v8 .huntv2-vital-row>b{font-size:var(--cv8-sm);color:#e1dccb}.huntv2-combat-v8 .huntv2-vital-row>small{display:none}.huntv2-combat-v8 .huntv2-vital{height:14px;border-radius:7px}.huntv2-combat-v8 .huntv2-vital>em{font-size:var(--cv8-sm);font-weight:900;font-variant-numeric:tabular-nums}.huntv2-combat-v8 .huntv2-player-meta{display:none}
+
+/* Transient callouts. Normal combat never creates a large center dashboard. */
+.huntv2-combat-v8 .huntv2-skill-callout{left:10px;top:auto;bottom:8px;max-width:54%;padding:5px 9px 6px 11px;background:linear-gradient(90deg,rgba(10,15,12,.92),rgba(29,24,14,.68),transparent);border-left-color:#e2c074}.huntv2-combat-v8 .huntv2-skill-callout small{font-size:10px;letter-spacing:.06em}.huntv2-combat-v8 .huntv2-skill-callout strong{font-size:14px}.huntv2-combat-v8 .huntv2-skill-callout.enemy{left:auto;right:10px}.huntv2-combat-v8 .huntv2-skill-callout.ultimate strong{font-size:18px}
+.huntv2-combat-v8 .huntv2-combat-caption{left:50%;bottom:8px;width:min(68%,280px);padding:5px 9px 6px;border-radius:10px;background:rgba(12,18,15,.76)}.huntv2-combat-v8 .huntv2-combat-caption strong{font-size:11px}.huntv2-combat-v8 .huntv2-combat-caption span{font-size:var(--cv8-xs);line-height:1.15}
+body.combat-dev-tour-running .huntv2-combat-v8 .huntv2-combat-caption{display:none!important}
+.huntv2-combat-v8 .huntv2-hud-extension-slots{position:absolute;z-index:48;right:8px;bottom:8px;display:flex;flex-direction:column;align-items:flex-end;gap:4px;max-width:38%;pointer-events:none}.huntv2-combat-v8 .huntv2-hud-extension-slots>*{pointer-events:auto}.huntv2-combat-v8 .huntv2-beast-companion-hud{max-width:150px;padding:5px 7px}.huntv2-combat-v8 .huntv2-beast-companion-hud span,.huntv2-combat-v8 .huntv2-beast-companion-hud small{font-size:10px}.huntv2-combat-v8 .huntv2-beast-companion-hud b{font-size:11px}
+
+/* Bottom combat dock: fixed Resource Zone -> Skill Rail -> report/CTA. */
+.huntv2-combat-v8 .huntv2-console{position:relative;z-index:80;height:var(--cv8-console-h);min-height:var(--cv8-console-h);padding:3px 8px 6px;display:grid;grid-template-rows:29px 64px 38px;gap:2px;background:linear-gradient(180deg,rgba(8,13,11,.48),rgba(5,9,8,.94) 28%,rgba(2,6,6,.995));border-top:1px solid rgba(225,198,137,.17);box-shadow:0 -10px 28px rgba(0,0,0,.28)}
+.huntv2-combat-v8 .huntv2-intel-lane{position:static;width:100%;height:29px;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);align-items:center;gap:4px;pointer-events:none;overflow:hidden}.huntv2-combat-v8 .huntv2-intel-meter{pointer-events:auto;width:100%;min-width:0;height:27px;padding:2px 6px;display:grid;grid-template-columns:minmax(34px,auto) minmax(18px,1fr) auto;gap:4px;align-items:center;border-radius:8px;border-color:rgba(137,186,187,.19);background:rgba(10,18,17,.76);box-shadow:none}.huntv2-combat-v8 .huntv2-intel-meter span{min-width:0;max-width:none;font-size:var(--cv8-xs);font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.huntv2-combat-v8 .huntv2-intel-meter>b{font-size:var(--cv8-xs);font-weight:900;color:#e7d49c;font-variant-numeric:tabular-nums;white-space:nowrap}.huntv2-combat-v8 .huntv2-intel-meter>i{height:6px;border-radius:4px}
+.huntv2-combat-v8 .huntv2-skills{height:64px;display:flex!important;align-items:center;justify-content:center;gap:clamp(3px,1.1vw,6px);padding:0 2px;overflow:hidden}.huntv2-combat-v8 .huntv2-skills::before{display:none!important}.huntv2-combat-v8 .huntv2-skill{display:flex;flex:0 0 46px;width:46px;height:58px;min-width:0;justify-content:flex-start}.huntv2-combat-v8 .huntv2-skill.compact-secondary{display:none}.huntv2-combat-v8 .huntv2-skill-art{width:46px;height:46px;border-radius:50%;border-width:1.5px}.huntv2-combat-v8 .huntv2-skill.ultimate{flex-basis:52px;width:52px;height:60px}.huntv2-combat-v8 .huntv2-skill.ultimate .huntv2-skill-art{width:52px;height:52px;border-radius:50%}.huntv2-combat-v8 .huntv2-skill>small,.huntv2-combat-v8 .huntv2-skill-meta,.huntv2-combat-v8 .huntv2-skill-role{display:none}.huntv2-combat-v8 .huntv2-cooldown>b{font-size:var(--cv8-lg);font-variant-numeric:tabular-nums}.huntv2-combat-v8 .huntv2-cn-low{width:18px;height:18px;font-size:10px}.huntv2-combat-v8 .huntv2-ult-ready{display:none;position:absolute;z-index:8;left:50%;top:-4px;transform:translateX(-50%);padding:3px 6px;border-radius:8px;background:#d6ad4d;color:#151009;font-size:var(--cv8-xs);font-weight:950;white-space:nowrap}.huntv2-combat-v8 .huntv2-skill.gauge-ready .huntv2-ult-ready{display:block}
+.huntv2-combat-v8 .huntv2-action-deck{grid-row:3;height:38px;margin:0;display:none;grid-template-columns:1fr;gap:0}.huntv2-combat-v8.is-prefight:not(.is-active-combat) .huntv2-action-deck{display:grid}.huntv2-combat-v8 .huntv2-action-deck .huntv2-context-button{display:none}.huntv2-combat-v8 .huntv2-fight{width:100%;height:38px;min-height:38px;border-radius:12px;justify-content:center;gap:8px;padding:3px 12px;border-color:rgba(232,199,119,.42);background:linear-gradient(180deg,rgba(92,64,25,.84),rgba(45,30,13,.90))}.huntv2-combat-v8 .huntv2-fight>i{width:28px;height:28px;flex-basis:28px;border-radius:50%;font-size:13px}.huntv2-combat-v8 .huntv2-fight strong{font-size:12px;line-height:1.05}.huntv2-combat-v8 .huntv2-fight span{font-size:10px;line-height:1.05;margin-top:2px;max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.huntv2-combat-v8 .huntv2-log-preview{grid-row:3;position:relative;left:auto;right:auto;bottom:auto;width:100%;height:38px;display:grid;grid-template-columns:minmax(0,1fr) 38px;border:1px solid rgba(226,199,137,.15);border-radius:11px;background:rgba(9,14,13,.80);box-shadow:none;overflow:hidden}.huntv2-combat-v8.is-prefight:not(.is-active-combat) .huntv2-log-preview,.huntv2-combat-v8.is-prefight:not(.is-active-combat) .huntv2-log-restore{display:none}.huntv2-combat-v8 .huntv2-log-preview.compact-hidden{display:none}.huntv2-combat-v8 .huntv2-log-preview-main{min-width:0;height:36px;display:grid;grid-template-columns:76px minmax(0,1fr) 18px;align-items:center;gap:6px;padding:0 5px 0 10px;border:0;background:transparent;color:#d7d9d0;text-align:left}.huntv2-combat-v8 .huntv2-log-preview-label{font-size:var(--cv8-xs);font-weight:900;letter-spacing:.04em;color:#d9bd7b}.huntv2-combat-v8 .huntv2-log-preview-body{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.huntv2-combat-v8 .huntv2-log-preview .huntv2-log-row{display:none;font-size:var(--cv8-sm);line-height:34px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.huntv2-combat-v8 .huntv2-log-preview .huntv2-log-row:last-child{display:block}.huntv2-combat-v8 .huntv2-log-preview-main>b{position:static;width:auto;height:auto;background:none;border:0;font-size:12px;color:#d8c88e}.huntv2-combat-v8 .huntv2-log-preview-hide{width:38px;height:36px;border:0;border-left:1px solid rgba(226,199,137,.10);background:rgba(255,255,255,.015);color:#a2aaa5;font-size:18px}.huntv2-combat-v8 .huntv2-log-restore{display:none;grid-row:3;justify-self:end;align-self:center;height:34px;padding:0 12px;border:1px solid rgba(226,199,137,.18);border-radius:17px;background:rgba(10,16,14,.82);color:#d7c180;align-items:center;gap:5px;font-size:var(--cv8-xs)}.huntv2-combat-v8 .huntv2-log-restore.show{display:flex}.huntv2-combat-v8 .huntv2-log-restore i{font-style:normal;font-size:12px}
+.huntv2-combat-v8 .huntv2-log{left:8px;right:8px;bottom:8px;max-height:min(230px,48%);border-radius:14px;background:rgba(8,13,12,.96)}.huntv2-combat-v8 .huntv2-log-head{height:40px;padding:0 12px}.huntv2-combat-v8 .huntv2-log-head span{font-size:12px}.huntv2-combat-v8 .huntv2-log-body{max-height:185px;padding:7px 11px 10px;gap:5px}.huntv2-combat-v8 .huntv2-log-row{font-size:11px;line-height:1.35}
+
+.huntv2-combat-v8 .huntv2-battle-summary{left:10px;right:10px;bottom:10px;padding:9px;border-radius:13px}.huntv2-combat-v8 .huntv2-summary-head strong{font-size:12px}.huntv2-combat-v8 .huntv2-summary-head span,.huntv2-combat-v8 .huntv2-summary-grid span{font-size:10px}.huntv2-combat-v8 .huntv2-summary-grid strong{font-size:11px}
+.huntv2-combat-v8 .huntv2-stage-bottom,.huntv2-combat-v8 .v110-readiness-chip,.huntv2-combat-v8 .huntv2-boss-mechanic-chip,.huntv2-combat-v8 .huntv2-boss-ready-chip{display:none!important}
+.huntv2-combat-v8 .huntv2-lock{inset:120px 14px 14px;gap:7px}.huntv2-combat-v8 .huntv2-lock strong{font-size:16px}.huntv2-combat-v8 .huntv2-lock span{font-size:11px;line-height:1.35;max-width:280px}.huntv2-combat-v8 .huntv2-sheet-skill strong{font-size:15px}.huntv2-combat-v8 .huntv2-sheet-skill span,.huntv2-combat-v8 .huntv2-boss-mechanic span,.huntv2-combat-v8 .huntv2-boss-mechanic em,.huntv2-combat-v8 .huntv2-boss-mechanic b{font-size:11px}
+body[data-game-screen="hunt"] .notice:not(.error){display:none!important}body[data-game-screen="hunt"] .notice.error:not(.hidden){display:block!important;top:7px!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important;width:min(72%,300px)!important;min-height:34px!important;max-height:42px!important;padding:8px 12px!important;font-size:11px!important;line-height:1.2!important;border-radius:18px!important;z-index:180!important}
+
+/* DEV panel and one-line Auto QA badge are client-anchored and layout-neutral. */
+.huntv2-combat-v8 > .huntv2-dev-sandbox{position:absolute!important;left:auto!important;right:8px!important;top:47px!important;width:min(300px,calc(100% - 16px))!important;max-width:calc(100% - 16px)!important;z-index:9500!important}.huntv2-combat-v8 > .huntv2-dev-sandbox:not(.open){width:54px!important;max-width:54px!important}.huntv2-combat-v8 .huntv2-dev-head small,.huntv2-combat-v8 .huntv2-dev-head>span,.huntv2-combat-v8 .huntv2-dev-panel p,.huntv2-combat-v8 .huntv2-dev-actions>button{font-size:10px}.huntv2-combat-v8 .huntv2-dev-actions>button,.huntv2-combat-v8 .huntv2-dev-primary,.huntv2-combat-v8 .huntv2-dev-panel button[data-dev-sequence]{min-height:40px}
+.huntv2-combat-v8 > .huntv2-dev-tour-hud{position:absolute!important;z-index:9400;left:8px;top:95px;width:min(170px,44%);height:30px;min-height:30px!important;padding:4px 28px 4px 8px;border:1px solid rgba(91,215,238,.28);border-radius:9px;background:rgba(3,18,25,.84);color:#dff9ff;box-shadow:0 5px 14px rgba(0,0,0,.22);overflow:hidden;pointer-events:none}.huntv2-combat-v8 > .huntv2-dev-tour-hud>div{display:flex;align-items:center;gap:5px;min-width:0;white-space:nowrap}.huntv2-combat-v8 > .huntv2-dev-tour-hud strong{font-size:10px;flex:0 0 auto}.huntv2-combat-v8 > .huntv2-dev-tour-hud span{font-size:10px;min-width:0;overflow:hidden;text-overflow:ellipsis}.huntv2-combat-v8 > .huntv2-dev-tour-hud>i{position:absolute;left:7px;right:28px;bottom:2px;height:2px;border-radius:2px;background:rgba(255,255,255,.12);overflow:hidden}.huntv2-combat-v8 > .huntv2-dev-tour-hud>i>em{display:block;height:100%;background:#62d6ec}.huntv2-combat-v8 > .huntv2-dev-tour-hud button{pointer-events:auto;position:absolute;right:3px;top:3px;width:23px;height:23px;border:0;border-radius:7px;background:rgba(255,255,255,.07);color:#dff9ff;font-size:10px}
+
+.huntv2-combat-v8 .huntv2-status-callout{font-size:10px;min-height:28px;padding:5px 8px}.huntv2-combat-v8 .huntv2-skill-sheet .v106-sheet-head .eyebrow{font-size:10px!important}.huntv2-combat-v8 .huntv2-skill-sheet .huntv2-sheet-skill span{font-size:11px!important}.huntv2-combat-v8 .huntv2-skill-sheet .v106-sheet-body>p{font-size:11px;line-height:1.45}.huntv2-combat-v8 .huntv2-skill-sheet .metric-row span{font-size:10px!important}.huntv2-combat-v8 .huntv2-skill-sheet .metric-row strong{font-size:11px!important}.huntv2-combat-v8 .huntv2-combat-help header span{font-size:10px}.huntv2-combat-v8 .huntv2-combat-help header strong{font-size:15px}.huntv2-combat-v8 .huntv2-combat-help header p{font-size:11px;line-height:1.45}.huntv2-combat-v8 .huntv2-help-grid article>b{font-size:11px}.huntv2-combat-v8 .huntv2-help-grid article>span,.huntv2-combat-v8 .huntv2-help-rule span{font-size:10px;line-height:1.4}.huntv2-combat-v8 .huntv2-help-rule b{font-size:11px}.huntv2-combat-v8 .huntv2-skill-truth-note{font-size:10px;line-height:1.4}
+
+/* Compact-height: recover space from actors/spacing, never by shrinking gameplay text. */
+@media(max-height:740px){
+  .huntv2-combat-v8{--cv8-console-h:122px}.huntv2-combat-v8 .huntv2-console{grid-template-rows:25px 56px 36px;padding-top:2px}.huntv2-combat-v8 .huntv2-intel-lane{height:25px}.huntv2-combat-v8 .huntv2-intel-meter{height:24px}.huntv2-combat-v8 .huntv2-skills{height:56px;gap:4px}.huntv2-combat-v8 .huntv2-skill{width:42px;flex-basis:42px;height:52px}.huntv2-combat-v8 .huntv2-skill-art{width:42px;height:42px}.huntv2-combat-v8 .huntv2-skill.ultimate{width:47px;flex-basis:47px;height:54px}.huntv2-combat-v8 .huntv2-skill.ultimate .huntv2-skill-art{width:47px;height:47px}.huntv2-combat-v8 .huntv2-top-identity{height:47px;grid-template-columns:26px 40px minmax(0,1fr)}.huntv2-combat-v8 .huntv2-identity-portrait{width:40px;height:40px}.huntv2-combat-v8 .huntv2-meta-strip{top:calc(var(--cv8-top-safe) + 49px);height:29px}.huntv2-combat-v8 .huntv2-enemy-hud{top:93px}.huntv2-combat-v8 .huntv2-status-tray.enemy{top:181px}.huntv2-combat-v8 .huntv2-enemy-intent{top:207px}.huntv2-combat-v8 .huntv2-break-window{top:181px}.huntv2-combat-v8 .huntv2-arena{top:76px}.huntv2-combat-v8 .huntv2-player-hud{top:46%;height:58px}.huntv2-combat-v8 .huntv2-status-tray.player{top:calc(46% + 62px)}.huntv2-combat-v8 .huntv2-actor.player{width:min(54%,240px);height:min(47%,304px)}.huntv2-combat-v8 .huntv2-actor.enemy.boss{width:min(49%,232px);height:min(43%,286px)}.huntv2-combat-v8 .huntv2-fight,.huntv2-combat-v8 .huntv2-log-preview{height:36px}
+}
+@media(min-height:901px){.huntv2-combat-v8{--cv8-console-h:144px}.huntv2-combat-v8 .huntv2-console{grid-template-rows:30px 69px 40px}.huntv2-combat-v8 .huntv2-skills{height:69px;gap:7px}.huntv2-combat-v8 .huntv2-skill{width:50px;flex-basis:50px;height:63px}.huntv2-combat-v8 .huntv2-skill-art{width:50px;height:50px}.huntv2-combat-v8 .huntv2-skill.ultimate{width:56px;flex-basis:56px;height:65px}.huntv2-combat-v8 .huntv2-skill.ultimate .huntv2-skill-art{width:56px;height:56px}.huntv2-combat-v8 .huntv2-actor.player{width:min(59%,390px);height:min(53%,470px)}.huntv2-combat-v8 .huntv2-actor.enemy.boss{width:min(54%,360px);height:min(48%,440px)}}
+@media(max-width:370px){.huntv2-combat-v8{--cv8-edge:7px}.huntv2-combat-v8 .huntv2-top-identity{width:58%;grid-template-columns:24px 39px minmax(0,1fr);gap:4px}.huntv2-combat-v8 .huntv2-combat-exit{width:24px;min-width:24px}.huntv2-combat-v8 .huntv2-identity-portrait{width:39px;height:39px}.huntv2-combat-v8 .huntv2-identity-copy small{display:none}.huntv2-combat-v8 .huntv2-resource-row{max-width:39%;gap:3px}.huntv2-combat-v8 .huntv2-resource-row>span{min-width:52px;padding-inline:5px}.huntv2-combat-v8 .huntv2-resource-row img{width:16px;height:16px}.huntv2-combat-v8 .huntv2-enemy-hud{right:48px;width:72%}.huntv2-combat-v8 .huntv2-status-tray.enemy{right:48px}.huntv2-combat-v8 .huntv2-player-hud{width:68%}.huntv2-combat-v8 .huntv2-skills{gap:3px}.huntv2-combat-v8 .huntv2-skill{width:40px;flex-basis:40px}.huntv2-combat-v8 .huntv2-skill-art{width:40px;height:40px}.huntv2-combat-v8 .huntv2-skill.ultimate{width:45px;flex-basis:45px}.huntv2-combat-v8 .huntv2-skill.ultimate .huntv2-skill-art{width:45px;height:45px}.huntv2-combat-v8 .huntv2-log-preview-main{grid-template-columns:68px minmax(0,1fr) 16px}}
+@media(prefers-reduced-motion:reduce){.huntv2-combat-v8 *,.huntv2-combat-v8 *::before,.huntv2-combat-v8 *::after{transition-duration:.001ms!important}}

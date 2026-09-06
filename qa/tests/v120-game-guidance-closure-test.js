@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import { buildProgressionGuideV103, buildSessionLoopV104 } from '../../dist/core/player-experience-v105.js';
+let pass=0;const ok=(v,m)=>{if(!v)throw new Error(m);pass++;console.log(`✓ ${m}`)};
+const g=buildProgressionGuideV103({order:114,currentRealmName:'Sáng Thế Chủ sơ kỳ',realmNameAtOrder:()=>undefined});
+ok(g.productionVerifiedThroughRealmOrder===117&&!g.immortalPlusProvisional,'V120 explains the full progression path through Sáng Thế Chủ');
+const loop=buildSessionLoopV104({alive:true,realmOrder:49,injury:0,overview:{cultivation:{ready:true,progressPct:100,nextRealm:'Địa Tiên'}},progressionClosure:{active:false},immortalProgression:{active:true,stage:{name:'Nhân Tiên',nextName:'Địa Tiên'},finalGate:{applies:true,ready:false,missing:['Công phá Tiên Linh Trì']},nextAction:{route:'dungeons',title:'Công phá Tiên Linh Trì',detail:'First-clear tầng 5'}},lateGameEconomy:{schema:'late-game-economy.v140'},contentLoop:{},potential:{unspent:0},power:{},specialization:{mainDaoId:'sword'},soul:{},pvp:{}});
+ok(loop.tasks[0].id==='ascend','V140 Tu Vi-ready player is told to Thăng Cảnh even when optional stage content remains');
+ok(loop.tasks.some(x=>x.id==='stage-content'&&x.optional),'unfinished stage content remains a useful optional recommendation');
+const app=fs.readFileSync(new URL('../../app.js',import.meta.url),'utf8');ok(app.includes('V120 · ĐƯỜNG TU TIÊN PRODUCTION')&&!app.includes('Môi giới đại cảnh giới'),'web guidance keeps stage objectives but removes realm catalyst UI');
+console.log(`V120 GAME GUIDANCE V140: ${pass}/${pass} PASS`);

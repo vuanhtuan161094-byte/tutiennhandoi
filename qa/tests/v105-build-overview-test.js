@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+import {buildRegistry} from '../../dist/content/registry.js';import {thanhHaWorld} from '../../dist/content/world.js';import {adventureEnemies} from '../../dist/content/entities.js';import {createPlayableAdventureState,playablePlayerProfile} from '../../dist/content/adventure.js';import {SimulationSession} from '../../dist/core/session.js';import {GameplayFacade} from '../../dist/core/gameplay.js';
+let pass=0;const check=(v,m)=>{if(!v)throw new Error(m);pass++;console.log(`✓ ${m}`)};const r=buildRegistry();
+const st=createPlayableAdventureState(),s=new SimulationSession(r,thanhHaWorld,adventureEnemies,playablePlayerProfile,10555,st),g=new GameplayFacade(s,r,thanhHaWorld);
+const before=JSON.stringify(s.snapshot()),xp=g.playerExperienceV105(1788210000000),x=xp.buildOverview,after=JSON.stringify(s.snapshot()),p=g.personalPower();
+check(xp.schema==='player-experience.v105'&&x.schema==='build-overview.v105','V105 exposes one consolidated player-experience DTO with build-overview.v105');
+check(x.score===p.score&&x.identity===p.identity,'V105 Build Overview uses canonical PersonalPower score/identity');
+check(JSON.stringify(x.sourceContribution.map(v=>[v.id,v.scoreAfter,v.gainPctFromPrevious]))===JSON.stringify(p.sources.map(v=>[v.id,v.scoreAfter,v.gainPctFromPrevious])),'V105 contribution rows are copied from canonical CombatEntity stage analysis');
+check(x.truth.includes('CombatEntity canonical')&&x.truth.includes('không cộng một chỉ số power riêng'),'V105 declares the no-fake-power contract');
+check(x.sourceContribution.some(v=>v.id==='character')&&x.sourceContribution.some(v=>v.id==='equipment')&&x.sourceContribution.some(v=>v.id==='dao'),'V105 keeps Character/Equipment/Dao stages visible even when a stage contributes zero');
+check(x.systems.length===7&&new Set(x.systems.map(v=>v.id)).size===7,'V105 gives one compact build status card per major current build layer');
+check(x.systems.every(v=>v.route&&v.value&&v.detail),'V105 each build layer links to the authoritative system screen');
+check(x.recommendations.some(v=>v.includes('Nút thắt hiện tại'))&&x.recommendations.some(v=>v.includes('Sở trường hiện tại')),'V105 tells the player both bottleneck and strongest axis');
+check(Number.isFinite(x.stats.attack)&&Number.isFinite(x.stats.maxHp)&&Number.isFinite(x.stats.defense),'V105 exposes real final CombatEntity combat stats');
+check(before===after,'V105 Build Overview is side-effect free');
+const app=fs.readFileSync('./app.js','utf8');check(app.includes('V105 · BUILD OVERVIEW')&&app.includes('Sức mạnh đến từ đâu?')&&app.includes('Nên nâng gì?'),'V105 UI answers source-of-power and next-upgrade questions');
+console.log(`\nV105 BUILD OVERVIEW: ${pass}/${pass} PASS`);

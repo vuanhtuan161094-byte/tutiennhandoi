@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+import { buildRegistry } from '../../dist/content/registry.js'; import { thanhHaWorld } from '../../dist/content/world.js'; import { adventureEnemies } from '../../dist/content/entities.js'; import { createPlayableAdventureState, playablePlayerProfile } from '../../dist/content/adventure.js'; import { SimulationSession } from '../../dist/core/session.js'; import { GameplayFacade } from '../../dist/core/gameplay.js';
+let pass=0;const check=(v,m)=>{if(!v)throw new Error(m);pass++;console.log(`✓ ${m}`)};
+const r=buildRegistry(),st=createPlayableAdventureState(); st.realm.maxRealmOrder=22; st.dungeons.parallelWorkerCapacity=Math.max(2,st.dungeons.parallelWorkerCapacity); st.inventory['resource.soul_dew']=100; st.inventory['resource.soul_essence']=50;
+const dungeonId=st.dungeons.unlockedDungeonIds[0]; st.dungeons.highestClearedFloor[dungeonId]=1;
+const s=new SimulationSession(r,thanhHaWorld,adventureEnemies,playablePlayerProfile,9601,st),g=new GameplayFacade(s,r,thanhHaWorld);
+let dto=g.soul(); check(dto.awakened,'V96 Soul awakens at Nascent Soul realm order'); check(dto.assignableTargets.some(x=>x.dungeonId===dungeonId&&x.floor===1),'V96 Soul DTO exposes only first-cleared assignment targets');
+const dew=s.state.inventory['resource.soul_dew'],ess=s.state.inventory['resource.soul_essence']; g.dispatch({type:'nourishSoul',batches:1});
+check(s.state.inventory['resource.soul_dew']===dew-4&&s.state.inventory['resource.soul_essence']===ess-1,'V96 nourish consumes canonical 4+1 resources');
+const report=g.dispatch({type:'createSoulClone',specialization:g.soul().assignableTargets[0].purpose}).data; const cloneId=report.clone.id;
+check(s.state.soul.clones.some(x=>x.id===cloneId&&x.specialization===g.soul().assignableTargets[0].purpose),'V96 create clone persists specialization in SoulState');
+check(s.state.dungeons.workers.some(x=>x.id===cloneId&&x.kind==='avatar'),'V96 clone becomes a real dungeon avatar worker');
+g.dispatch({type:'assignSoulClone',cloneId,dungeonId,floor:1}); check(s.state.dungeons.assignments[cloneId]?.dungeonId===dungeonId,'V96 clone assignment mutates real dungeon assignment state');
+dto=g.soul(); check(dto.clones.find(x=>x.id===cloneId)?.assignment?.floor===1,'V96 player DTO reflects clone assignment');
+g.dispatch({type:'dismissSoulClone',cloneId}); check(!s.state.soul.clones.some(x=>x.id===cloneId)&&!s.state.dungeons.assignments[cloneId],'V96 dismiss removes clone and assignment');
+const app=fs.readFileSync('./app.js','utf8'); check(app.includes('soul:renderSoulV96'),'V96 app router exposes Soul screen'); check(app.includes('data-soul-nourish')&&app.includes('data-soul-assign'),'V96 UI binds Soul mutation actions');
+console.log(`V96 SOUL: ${pass}/${pass} PASS`);

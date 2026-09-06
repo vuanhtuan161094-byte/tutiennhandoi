@@ -1,0 +1,152 @@
+export const BATTLE_DAO_AUTO_ROTATION_PREFIX_V127 = 'battle-dao.auto.v127';
+const DAOS = ['sword', 'fist', 'body', 'spell', 'poison', 'artifact', 'formation', 'mind'];
+function daoFromSkillId(id) {
+    const match = /^skill\.dao\.(sword|fist|body|spell|poison|artifact|formation|mind)\./.exec(id);
+    return match?.[1];
+}
+function rule(skillId, priority, ...conditions) { return { skillId, priority, conditions: conditions.length ? conditions : [{ type: 'always' }] }; }
+function rulesForDao(dao, skillIds, offset = 0) {
+    const out = [];
+    const add = (suffix, priority, ...conditions) => { const id = `skill.dao.${dao}.${suffix}`; if (skillIds.has(id))
+        out.push(rule(id, priority + offset, ...conditions)); };
+    const gauge = { type: 'selfUltimateGaugeAtLeast', value: 100 };
+    switch (dao) {
+        case 'sword':
+            // V2 canonical: Kiếm Ý là passive-stack, không còn là spend resource. Active/Tuyệt Kỹ quyết định theo Core Kiếm Khí.
+            add('ultimate', 132, gauge, { type: 'selfDaoV2ResourceAtLeast', resource: 'swordQi', value: 5 });
+            add('finisher', 124, { type: 'selfDaoV2ResourceAtLeast', resource: 'swordQi', value: 3 }, { type: 'targetIsBroken' });
+            add('finisher', 114, { type: 'selfDaoV2ResourceAtLeast', resource: 'swordQi', value: 5 });
+            add('counter', 112);
+            add('sever', 108, { type: 'selfDaoV2ResourceAtLeast', resource: 'swordQi', value: 2 });
+            add('break_mark', 100);
+            add('chain', 92);
+            add('flow_slash', 90);
+            add('myriad', 84);
+            add('nurture', 80, { type: 'selfDaoV2ResourceBelow', resource: 'swordQi', value: 3 });
+            add('basic', 10);
+            break;
+        case 'fist':
+            add('ultimate', 132, gauge, { type: 'selfDaoV2ResourceAtLeast', resource: 'fistForce', value: 4 });
+            add('finisher', 122, { type: 'selfDaoV2ResourceAtLeast', resource: 'fistForce', value: 5 });
+            add('finisher', 116, { type: 'selfDaoV2ResourceAtLeast', resource: 'fistForce', value: 4 }, { type: 'targetIsBroken' });
+            add('counter', 112);
+            add('heavy', 108, { type: 'selfDaoV2ResourceAtLeast', resource: 'fistForce', value: 2 });
+            add('pressure', 102);
+            add('chain_heavy', 96);
+            add('shock', 92);
+            add('triple', 88);
+            add('nurture', 82, { type: 'selfDaoV2ResourceBelow', resource: 'fistForce', value: 3 });
+            add('basic', 10);
+            break;
+        case 'body':
+            // Thể Tuyệt Kỹ là cứu nguy, không xả Gauge khi đang đầy máu.
+            add('ultimate', 134, gauge, { type: 'selfHpBelow', pct: 78 });
+            add('recover', 128, { type: 'selfHpBelow', pct: 55 }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 40 });
+            add('guard', 120, { type: 'selfShieldBelow', pct: 8 });
+            add('immovable', 116, { type: 'selfHpBelow', pct: 72 });
+            add('finisher', 112, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 70 });
+            add('counter', 110, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 30 });
+            add('break', 104, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 20 });
+            add('transform', 102);
+            add('elephant', 92);
+            add('basic', 10);
+            break;
+        case 'spell':
+            add('ultimate', 132, gauge);
+            add('restore', 126, { type: 'selfSpiritBelow', pct: 32 });
+            add('shield', 118, { type: 'selfHpBelow', pct: 62 });
+            // Đủ ba pháp thức trong Pháp Luân để mở Diễn Pháp, sau đó ưu tiên burst/break.
+            add('transform', 114, { type: 'selfDaoV2ResourceAtLeast', resource: 'lawWheel', value: 3 });
+            add('burst', 110);
+            add('break', 106);
+            add('channel', 98, { type: 'selfDaoV2ResourceBelow', resource: 'lawWheel', value: 3 });
+            add('seal', 94, { type: 'selfDaoV2ResourceBelow', resource: 'lawWheel', value: 3 });
+            add('light', 88);
+            add('basic', 10);
+            break;
+        case 'poison':
+            add('ultimate', 134, gauge, { type: 'selfDaoV2ResourceAtLeast', resource: 'poisonSeedStage', value: 4 });
+            add('consume', 122, { type: 'selfDaoV2ResourceAtLeast', resource: 'poisonSeedStage', value: 4 });
+            add('transform', 112, { type: 'selfDaoV2ResourceAtLeast', resource: 'poisonSeedStage', value: 2 });
+            add('guard', 108, { type: 'selfHpBelow', pct: 58 });
+            add('calamity', 104);
+            add('insects', 98);
+            add('mist', 94);
+            add('heart', 90);
+            add('bone', 86);
+            add('basic', 10);
+            break;
+        case 'artifact':
+            add('ultimate', 134, gauge, { type: 'selfDaoV2ResourceAtLeast', resource: 'artifactSourcesV2', value: 2 });
+            add('recall', 126, { type: 'selfSpiritBelow', pct: 28 }, { type: 'selfDaoV2ResourceAtLeast', resource: 'artifactSourcesV2', value: 1 });
+            add('guard', 120, { type: 'selfHpBelow', pct: 60 });
+            // Dựng đủ nguồn trước; các lệnh lớn không được chen vào ngay từ nguồn đầu tiên.
+            add('deploy', 116, { type: 'selfDaoV2ResourceBelow', resource: 'artifactSourcesV2', value: 3 });
+            add('split', 114, { type: 'selfDaoV2ResourceBelow', resource: 'artifactSourcesV2', value: 3 });
+            add('suppress', 108, { type: 'selfDaoV2ResourceAtLeast', resource: 'artifactSourcesV2', value: 3 });
+            add('sync', 104, { type: 'selfDaoV2ResourceAtLeast', resource: 'artifactSourcesV2', value: 3 });
+            add('merge', 100, { type: 'selfDaoV2ResourceAtLeast', resource: 'artifactSourcesV2', value: 3 }, { type: 'targetHpBelow', pct: 25 });
+            add('strike', 92, { type: 'selfDaoV2ResourceAtLeast', resource: 'artifactSourcesV2', value: 1 });
+            add('basic', 10);
+            break;
+        case 'formation':
+            add('deploy', 136, { type: 'selfDaoV2ResourceBelow', resource: 'formationIntegrityV2', value: 1 });
+            add('ultimate', 132, gauge, { type: 'selfDaoV2ResourceAtLeast', resource: 'formationIntegrityV2', value: 35 });
+            add('fortify', 124, { type: 'selfDaoV2ResourceBelow', resource: 'formationIntegrityV2', value: 55 });
+            add('break', 120, { type: 'selfSpiritBelow', pct: 24 });
+            add('full_activate', 114, { type: 'selfDaoV2ResourceAtLeast', resource: 'formationNurtureV2', value: 70 }, { type: 'selfDaoV2ResourceAtLeast', resource: 'formationIntegrityV2', value: 70 });
+            add('small_activate', 102, { type: 'selfDaoV2ResourceAtLeast', resource: 'formationNurtureV2', value: 35 }, { type: 'selfDaoV2ResourceAtLeast', resource: 'formationIntegrityV2', value: 55 });
+            add('convert', 98, { type: 'selfDaoV2ResourceBelow', resource: 'formationIntegrityV2', value: 72 }, { type: 'selfDaoV2ResourceAtLeast', resource: 'formationNurtureV2', value: 20 });
+            add('nourish', 94, { type: 'selfDaoV2ResourceBelow', resource: 'formationNurtureV2', value: 70 });
+            add('seal', 90, { type: 'selfDaoV2ResourceBelow', resource: 'formationNurtureV2', value: 70 });
+            add('basic', 10);
+            break;
+        case 'mind':
+            add('ultimate', 134, gauge);
+            add('guard', 124, { type: 'selfHpBelow', pct: 58 });
+            add('interfere', 120, { type: 'targetIsCasting' });
+            add('burst', 114, { type: 'selfDaoV2ResourceAtLeast', resource: 'mindEchoCounter', value: 2 });
+            add('observe', 102);
+            add('flow', 98);
+            add('split', 94);
+            add('chase', 90);
+            add('mark', 86);
+            add('basic', 10);
+            break;
+    }
+    // Mọi skill Bản Đạo đang gắn đều có đường fallback, nhưng không được vượt rule chiến thuật phía trên.
+    let fallback = 72;
+    for (const id of skillIds) {
+        if (daoFromSkillId(id) !== dao || out.some(r => r.skillId === id))
+            continue;
+        out.push(rule(id, fallback--, { type: 'always' }));
+    }
+    return out;
+}
+/**
+ * Auto-rotation backend V1.27 + Bản Đạo V2. Chủ Đạo là nguồn Active duy nhất; Phụ Đạo chỉ đóng góp Passive.
+ * Không thay skill/loadout của người chơi, chỉ sinh rule cho những skill Chủ Đạo đã được gắn.
+ */
+export function battleDaoAutoRotationV127(mainDao, activeSkillIds, secondaryDao) {
+    const unique = [...new Set(activeSkillIds)], set = new Set(unique);
+    const rules = [];
+    rules.push(...rulesForDao(mainDao, set, 0));
+    // V2 canonical: Phụ Đạo không có Active/Ultimate, vì vậy không sinh rotation rule cho secondaryDao.
+    void secondaryDao;
+    for (const id of unique) {
+        if (daoFromSkillId(id) || rules.some(r => r.skillId === id))
+            continue;
+        rules.push(rule(id, 34, { type: 'always' }));
+    }
+    const presentDaos = DAOS.filter(dao => unique.some(id => daoFromSkillId(id) === dao));
+    for (const dao of presentDaos) {
+        if (dao === mainDao || dao === secondaryDao)
+            continue;
+        rules.push(...rulesForDao(dao, set, -28));
+    }
+    rules.sort((a, b) => b.priority - a.priority);
+    return { name: `${BATTLE_DAO_AUTO_ROTATION_PREFIX_V127}:${mainDao}${secondaryDao ? `+${secondaryDao}` : ''}`, rules };
+}
+export function isBattleDaoAutoRotationV127(profile) { return Boolean(profile?.name?.startsWith(BATTLE_DAO_AUTO_ROTATION_PREFIX_V127)); }
+export function isBattleDaoSkillIdV127(id) { return Boolean(daoFromSkillId(id)); }
+//# sourceMappingURL=battle-dao-rotation-v127.js.map

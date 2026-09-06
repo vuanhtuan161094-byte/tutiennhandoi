@@ -1,0 +1,33 @@
+TU TIEN NHAN ROI - UNIVERSAL WEB + ANDROID V128
+Version game: 1.39.0-alpha.23.78
+
+MUC TIEU
+- Choi tren Android ma KHONG can laptop/PC.
+- KHONG can Node server.
+- Game core/CombatKernel/economy/save chay ngay trong browser tren dien thoai.
+
+CAI LAN DAU (TERMUX)
+1) Cai Termux (nen dung ban F-Droid/GitHub chinh thuc).
+2) Mo Termux, chay:
+   termux-setup-storage
+3) Cho phep truy cap file khi Android hoi.
+4) Chay:
+   pkg install python unzip -y
+5) Dat file ZIP vao thu muc Download, sau do chay:
+   rm -rf ~/tutien
+   mkdir -p ~/tutien
+   unzip ~/storage/downloads/TU_TIEN_UNIVERSAL_WEB_ANDROID_V128_v1.39.0-alpha.23.78.zip -d ~/tutien
+   cd ~/tutien
+   bash START_GAME_ANDROID.sh
+6) Chrome se mo: http://127.0.0.1:8765/index.html?standalone=1
+
+LAN SAU
+   cd ~/tutien
+   bash START_GAME_ANDROID.sh
+
+GHI CHU
+- Giu Termux chay trong luc choi. Tat Termux = local static server dung; save KHONG mat.
+- Save production nam trong localStorage cua Chrome/WebView tren chinh dien thoai.
+- Menu game van co Xuat save / Nhap save. Nen xuat backup dinh ky.
+- Co the dung "Them vao man hinh chinh" trong Chrome de mo nhu app. Service Worker se cache cac file da dung, nhung ban Termux van la cach chac chan nhat cho alpha nay.
+- Day la standalone runtime: /api game duoc xu ly local trong browser, khong goi may tinh.

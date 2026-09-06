@@ -1,0 +1,13 @@
+{
+  "schema": "tutien-user-assets.v1",
+  "skins": [],
+  "backgrounds": [],
+  "equipment": {
+    "byId": {},
+    "bySlot": {}
+  },
+  "skills": {
+    "byId": {}
+  },
+  "featureIcons": {}
+}

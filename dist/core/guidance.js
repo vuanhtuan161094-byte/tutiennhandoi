@@ -1,0 +1,84 @@
+import { marketQuotes, marketsAtLocation } from './economy.js';
+import { highestClearedDungeonFloor } from './dungeon.js';
+import { playerFactionMembership } from './faction.js';
+import { cultivationProgressV140, previewRetreatBankV140, isMajorRealmGateV140, isTribulationGateV140 } from './cultivation-v140.js';
+
+function clamp(value,min,max){ return Math.max(min,Math.min(max,Number(value)||0)); }
+function goalPriority(state,id){ return clamp(state.goals.find(goal=>goal.id===id)?.priority??0,0,100); }
+function push(candidates,candidate){ candidates.push({...candidate,score:Math.round(candidate.score*100)/100}); }
+function dungeonGoal(purpose){ return purpose==='cultivation'?'cultivation':purpose==='alchemy'?'alchemy':purpose==='forging'?'forging':purpose==='artifact'?'artifact':purpose==='talisman'?'talisman':'equipment'; }
+function professionGoal(id){ return id==='alchemy'?'alchemy':id==='forging'?'forging':'talisman'; }
+function riskProfile(risk){ if(risk==='cautious')return{challengeMargin:2,injuryTolerance:12}; if(risk==='balanced')return{challengeMargin:0,injuryTolerance:28}; if(risk==='proactive')return{challengeMargin:0,injuryTolerance:48}; return{challengeMargin:0,injuryTolerance:72}; }
+function reserveFor(state,resourceId){ return resourceId==='resource.spirit_stone'?state.resourcePolicy.reserveSpiritStones:(state.resourcePolicy.reserveResources[resourceId]??0); }
+function availableAboveReserve(adventure,guidance,resourceId){ return Math.max(0,(adventure.inventory[resourceId]??0)-reserveFor(guidance,resourceId)); }
+function canCraftRecipe(adventure,guidance,recipe){ return recipe.ingredients.every(req=>req.options.some(opt=>availableAboveReserve(adventure,guidance,opt.resourceId)+1e-9>=opt.quantity)); }
+function shortestNextHop(world,from,target,known){ if(from===target)return undefined; const queue=[from],prev=new Map([[from,undefined]]); while(queue.length){ const cur=queue.shift(); for(const n of world.locations[cur]?.neighbors??[]){ if(!known.has(n)||prev.has(n))continue; prev.set(n,cur); if(n===target){ let cursor=target,parent=prev.get(cursor); while(parent&&parent!==from){cursor=parent;parent=prev.get(cursor);} return cursor;} queue.push(n); }} return undefined; }
+
+export function createGuidanceAutomationPolicy(){
+  return {allowedActivityTypes:['retreat','gather','hunt','explore','dungeon'],blockedDungeonIds:[],maxInjury:55,wakeOnContentEvent:true,wakeBeforeBoss:true,maxConsecutiveSameAction:3,strategyRules:[]};
+}
+export function normalizeGuidanceAutomationPolicy(value){
+  const base=createGuidanceAutomationPolicy();
+  const metrics=['tuViPct','injury','realmOrder','spiritStones'];
+  const preferences=['retreat','gather','hunt','explore','dungeon','ascend','craft'];
+  return {
+    allowedActivityTypes:[...new Set(value?.allowedActivityTypes??base.allowedActivityTypes)],
+    blockedDungeonIds:[...new Set(value?.blockedDungeonIds??base.blockedDungeonIds)],
+    maxInjury:clamp(value?.maxInjury??base.maxInjury,0,100),
+    wakeOnContentEvent:value?.wakeOnContentEvent??base.wakeOnContentEvent,
+    wakeBeforeBoss:value?.wakeBeforeBoss??base.wakeBeforeBoss,
+    maxConsecutiveSameAction:Math.max(1,Math.floor(value?.maxConsecutiveSameAction??base.maxConsecutiveSameAction)),
+    strategyRules:(value?.strategyRules??[]).filter(rule=>rule&&typeof rule.id==='string'&&metrics.includes(rule.metric)&&['lt','lte','gt','gte'].includes(rule.op)&&preferences.includes(rule.prefer)).slice(0,12).map((rule,index)=>({...rule,id:rule.id||`rule.${index+1}`,enabled:rule.enabled!==false,value:Number.isFinite(rule.value)?rule.value:0,priorityBoost:clamp(Number.isFinite(rule.priorityBoost)?rule.priorityBoost:180,10,500)})),
+  };
+}
+export function createGuidanceState(){
+  return {enabled:false,risk:'balanced',goals:[{id:'cultivation',priority:80},{id:'ascension',priority:70},{id:'equipment',priority:35},{id:'artifact',priority:25},{id:'alchemy',priority:20},{id:'forging',priority:20},{id:'talisman',priority:15},{id:'wealth',priority:10},{id:'faction',priority:10},{id:'exploration',priority:20}],resourcePolicy:{reserveSpiritStones:40,reserveResources:{'resource.spirit_herb':8,'resource.black_iron_ore':8,'resource.artifact_dust':5,'resource.rune_insight':3},maxSpiritStonesPerDecision:36,allowMarketBuy:true,allowMarketSell:true,allowAscension:true,allowDungeonChallenge:true,allowProfessionCrafting:true,allowFactionContribution:true,allowTravel:true},stopOnMajorEvent:true,maxActivityYears:5,decisionHistory:[],automationPolicy:createGuidanceAutomationPolicy()};
+}
+export function cloneGuidanceState(state){
+  const base=createGuidanceState(), src=state??base;
+  const goals=(src.goals??base.goals).filter(g=>base.goals.some(x=>x.id===g.id)).map(g=>({...g}));
+  if(!goals.some(g=>g.id==='ascension'))goals.splice(1,0,{id:'ascension',priority:70});
+  return {...base,...src,goals,resourcePolicy:{...base.resourcePolicy,...(src.resourcePolicy??{}),allowAscension:src.resourcePolicy?.allowAscension??base.resourcePolicy.allowAscension,reserveResources:{...base.resourcePolicy.reserveResources,...(src.resourcePolicy?.reserveResources??{})}},decisionHistory:(src.decisionHistory??[]).map(e=>({...e,reasons:[...(e.reasons??[])]})),automationPolicy:normalizeGuidanceAutomationPolicy(src.automationPolicy)};
+}
+function automationMetricValue(adventure,metric){ const progress=cultivationProgressV140(adventure,adventure.realm.maxRealmOrder); if(metric==='tuViPct')return progress.progressPct; if(metric==='injury')return adventure.injury; if(metric==='realmOrder')return adventure.realm.maxRealmOrder; return adventure.inventory['resource.spirit_stone']??0; }
+function ruleMatches(adventure,rule){ const actual=automationMetricValue(adventure,rule.metric); return rule.op==='lt'?actual<rule.value:rule.op==='lte'?actual<=rule.value:rule.op==='gt'?actual>rule.value:actual>=rule.value; }
+function candidateMatchesPreference(candidate,prefer){ if(prefer==='ascend')return ['ascendRealm','tribulation'].includes(candidate.action.type); if(prefer==='craft')return candidate.action.type==='craft'; if(prefer==='dungeon')return candidate.action.type==='challengeDungeon'||(candidate.action.type==='activity'&&candidate.action.request.type==='dungeon'); if(prefer==='retreat')return candidate.action.type==='retreat'; return candidate.action.type==='activity'&&candidate.action.request.type===prefer; }
+function applyAutomationStrategy(adventure,automation,candidates){ for(const rule of automation.strategyRules){ if(!rule.enabled||!ruleMatches(adventure,rule))continue; for(const c of candidates)if(candidateMatchesPreference(c,rule.prefer)){c.score+=rule.priorityBoost;c.reasons=[...c.reasons,`Automation rule ${rule.id}: ${rule.metric} ${rule.op} ${rule.value} → ưu tiên ${rule.prefer} (+${rule.priorityBoost}).`];}} }
+
+export function planGuidance(adventure,guidance,world,registry,currentLifeId){
+  const candidates=[], risk=riskProfile(guidance.risk), automation=normalizeGuidanceAutomationPolicy(guidance.automationPolicy), remainingLife=Math.max(0,adventure.lifespanYears-adventure.ageYears), maxYears=Math.max(0.1,guidance.maxActivityYears);
+  if(!adventure.alive||remainingLife<=0){const none={action:{type:'none'},score:-999,summary:'Một đời đã kết thúc.',reasons:['Không còn hoạt động hợp lệ.'],blockers:['dead']};return{chosen:none,candidates:[none]};}
+  if(adventure.injury>automation.maxInjury){const none={action:{type:'none'},score:999,summary:'Automation dừng vì Thương Thế vượt ngưỡng an toàn.',reasons:[`Thương Thế ${adventure.injury.toFixed(0)} > ${automation.maxInjury}.`],blockers:['automationSafety']};return{chosen:none,candidates:[none]};}
+
+  const order=adventure.realm.maxRealmOrder, progress=cultivationProgressV140(adventure,order);
+  if(progress.ready){
+    const blockers=[];
+    if(!guidance.resourcePolicy.allowAscension)blockers.push('Policy cấm tự Thăng Cảnh.');
+    if(adventure.injury>risk.injuryTolerance)blockers.push(`Thương Thế ${adventure.injury.toFixed(0)} vượt mức rủi ro cho phép.`);
+    if(isTribulationGateV140(order)){
+      if(automation.wakeBeforeBoss)blockers.push('Policy yêu cầu đánh thức người chơi trước Thiên Kiếp.');
+      push(candidates,{action:{type:'tribulation'},score:goalPriority(guidance,'ascension')+50-blockers.length*500,summary:'Dẫn Thiên Kiếp.',reasons:['Tu Vi đã đầy tại cửa Thiên Kiếp.'],blockers});
+    }else if(isMajorRealmGateV140(order)){
+      push(candidates,{action:{type:'ascendRealm'},score:goalPriority(guidance,'ascension')+45-blockers.length*500,summary:'Thăng Cảnh.',reasons:['Tu Vi đã đầy và đủ điều kiện chuyển đại cảnh.'],blockers});
+    }
+  }
+
+  const bank=previewRetreatBankV140(adventure.cultivation).bankHours;
+  const retreatBlockers=[];
+  if(!automation.allowedActivityTypes.includes('retreat'))retreatBlockers.push('Automation policy cấm Bế Quan.');
+  if(adventure.injury>risk.injuryTolerance+20)retreatBlockers.push('Thương Thế quá cao để Bế Quan.');
+  if(bank<=1e-9)retreatBlockers.push('Không còn giờ Bế Quan trong ngân hàng.');
+  push(candidates,{action:{type:'retreat',realHours:Math.min(3,bank)},score:goalPriority(guidance,'cultivation')+(100-progress.progressPct)*0.45-adventure.injury*0.15-retreatBlockers.length*500,summary:`Bế Quan ${Math.min(3,bank).toFixed(1)}h.`,reasons:[`Ưu tiên Tu Hành ${goalPriority(guidance,'cultivation')}.`,`Tu Vi hiện ${progress.progressPct.toFixed(1)}%.`],blockers:retreatBlockers});
+
+  for(const dungeonId of adventure.dungeons.unlockedDungeonIds){ const dungeon=world.dungeons[dungeonId],floor=highestClearedDungeonFloor(adventure.dungeons,dungeonId); if(!dungeon||floor<=0)continue; const occupied=Object.values(adventure.dungeons.assignments).some(a=>a.dungeonId===dungeonId); const blockers=occupied?['Phó bản đang được phân thân vận hành.']:[]; if(!automation.allowedActivityTypes.includes('dungeon'))blockers.push('Automation policy cấm treo phó bản.'); if(automation.blockedDungeonIds.includes(dungeonId))blockers.push('Phó bản nằm trong danh sách cấm tự động.'); const goal=dungeonGoal(dungeon.purpose); push(candidates,{action:{type:'activity',request:{type:'dungeon',dungeonId,floor,durationYears:Math.min(maxYears,remainingLife),stopOnMajorEvent:guidance.stopOnMajorEvent}},score:goalPriority(guidance,goal)+floor*4+dungeon.tier*3-blockers.length*500,summary:`Treo ${dungeon.name} tầng ${floor}.`,reasons:[`Phục vụ mục tiêu ${goal}.`,`Đã công phá tới tầng ${floor}.`],blockers}); }
+  if(guidance.resourcePolicy.allowDungeonChallenge&&adventure.injury<=risk.injuryTolerance){ for(const dungeonId of adventure.dungeons.unlockedDungeonIds){ const dungeon=world.dungeons[dungeonId]; if(!dungeon)continue; const floor=highestClearedDungeonFloor(adventure.dungeons,dungeonId)+1,spec=dungeon.floors.find(x=>x.floor===floor); if(!spec)continue; const blockers=[]; if(automation.blockedDungeonIds.includes(dungeonId))blockers.push('Boss/phó bản nằm trong danh sách cấm tự động.'); if(automation.wakeBeforeBoss)blockers.push('Policy yêu cầu đánh thức người chơi trước boss chưa first-clear.'); if(adventure.realm.maxRealmOrder<Math.max(0,spec.requiredRealmOrder+risk.challengeMargin))blockers.push(`Cảnh giới chưa đạt biên an toàn của chế độ ${guidance.risk}.`); const goal=dungeonGoal(dungeon.purpose); push(candidates,{action:{type:'challengeDungeon',dungeonId,floor},score:goalPriority(guidance,goal)+34+floor*4-blockers.length*500,summary:`Công phá ${dungeon.name} tầng ${floor}.`,reasons:[`Mở tầng farm mới cho mục tiêu ${goal}.`,`Mức rủi ro: ${guidance.risk}.`],blockers}); }}
+  if(guidance.resourcePolicy.allowProfessionCrafting){ for(const [professionId,track] of Object.entries(adventure.professions.tracks)){ if(professionId==='alchemy')continue; for(const recipeId of track.knownRecipeIds){ const recipe=registry.professionRecipe(recipeId),blockers=canCraftRecipe(adventure,guidance,recipe)?[]:['Không đủ nguyên liệu sau khi giữ mức dự trữ.'],goal=professionGoal(professionId); push(candidates,{action:{type:'craft',recipeId,quantity:1},score:goalPriority(guidance,goal)+recipe.difficulty*2-blockers.length*500,summary:`Luyện 1 lần ${recipe.name}.`,reasons:[`Ưu tiên ${goal} ${goalPriority(guidance,goal)}.`],blockers}); }} }
+  const marketDefs=world.markets??{}; for(const market of marketsAtLocation(adventure.economy,adventure.locationId)){ const quotes=marketQuotes(adventure.economy,marketDefs,market.id); if(guidance.resourcePolicy.allowMarketSell&&goalPriority(guidance,'wealth')>0){ for(const quote of quotes){ if(!quote.sellUnitPrice)continue; const excess=Math.floor(availableAboveReserve(adventure,guidance,quote.resourceId)); if(excess<=0)continue; const quantity=Math.min(excess,8); push(candidates,{action:{type:'marketSell',marketId:market.id,resourceId:quote.resourceId,quantity},score:goalPriority(guidance,'wealth')+Math.log2(1+quantity*quote.sellUnitPrice)*3,summary:`Bán ${quantity} ${quote.resourceName} tại ${market.name}.`,reasons:[`Tài nguyên vượt mức dự trữ ${reserveFor(guidance,quote.resourceId)}.`],blockers:[]}); }} }
+  const membership=currentLifeId?playerFactionMembership(adventure.factions,currentLifeId):undefined; if(membership&&guidance.resourcePolicy.allowFactionContribution&&goalPriority(guidance,'faction')>0){ const faction=adventure.factions.factions[membership.factionId]; if(faction&&faction.locationId===adventure.locationId){ const preferred=['resource.spirit_stone','resource.spirit_herb','resource.black_iron_ore'].map(resourceId=>({resourceId,excess:Math.floor(availableAboveReserve(adventure,guidance,resourceId))})).find(x=>x.excess>0); if(preferred){const quantity=Math.min(preferred.excess,preferred.resourceId==='resource.spirit_stone'?30:8);push(candidates,{action:{type:'factionContribute',resourceId:preferred.resourceId,quantity},score:goalPriority(guidance,'faction')+Math.log2(1+quantity)*4,summary:`Cống hiến ${quantity} ${preferred.resourceId} cho ${faction.name}.`,reasons:['Chỉ dùng lượng vượt mức dự trữ cá nhân.'],blockers:[]});}}}
+  const current=world.locations[adventure.locationId],unknownNeighbor=current?.neighbors.find(id=>!adventure.knownLocationIds.includes(id)); if(unknownNeighbor)push(candidates,{action:{type:'activity',request:{type:'explore',durationYears:Math.min(.5,remainingLife),stopOnMajorEvent:guidance.stopOnMajorEvent}},score:goalPriority(guidance,'exploration')+16,summary:`Thám hiểm quanh ${current.name}.`,reasons:['Còn địa điểm lân cận chưa biết.'],blockers:[]});
+  if(guidance.resourcePolicy.allowTravel&&goalPriority(guidance,'wealth')>=25&&marketsAtLocation(adventure.economy,adventure.locationId).length===0){ const known=new Set(adventure.knownLocationIds),targetMarket=Object.values(adventure.economy.markets).find(m=>known.has(m.locationId)); if(targetMarket){const hop=shortestNextHop(world,adventure.locationId,targetMarket.locationId,known);if(hop)push(candidates,{action:{type:'activity',request:{type:'explore',targetLocationId:hop,durationYears:Math.min(.1,remainingLife),stopOnMajorEvent:guidance.stopOnMajorEvent}},score:goalPriority(guidance,'wealth')*.65+5,summary:`Di chuyển về ${world.locations[hop]?.name??hop} để tiếp cận thị trường.`,reasons:['Mục tiêu Tài Phú cao nhưng nơi hiện tại không có thị trường.'],blockers:[]});}}
+  if(!candidates.length){const none={action:{type:'none'},score:0,summary:'Không tìm thấy hành động phù hợp.',reasons:['Không có candidate hợp policy hiện tại.'],blockers:[]};return{chosen:none,candidates:[none]};}
+  applyAutomationStrategy(adventure,automation,candidates); candidates.sort((a,b)=>b.score-a.score||a.summary.localeCompare(b.summary)); const eligible=candidates.find(c=>c.blockers.length===0)??candidates[0]; return{chosen:eligible,candidates};
+}
+export function recordGuidanceDecision(state,worldYear,candidate){ state.decisionHistory.push({worldYear,action:candidate.action.type,score:candidate.score,summary:candidate.summary,reasons:[...candidate.reasons]}); if(state.decisionHistory.length>120)state.decisionHistory.splice(0,state.decisionHistory.length-120); }
+export function recommendGuidanceWorkerAssignments(adventure,guidance,world){ const occupied=new Set(Object.values(adventure.dungeons.assignments).map(a=>a.dungeonId)),idle=adventure.dungeons.workers.filter(w=>!adventure.dungeons.assignments[w.id]),assignments=[]; for(const worker of idle){ const options=adventure.dungeons.unlockedDungeonIds.map(dungeonId=>{const dungeon=world.dungeons[dungeonId],floor=highestClearedDungeonFloor(adventure.dungeons,dungeonId);if(!dungeon||floor<=0||occupied.has(dungeonId))return undefined;const goal=dungeonGoal(dungeon.purpose),score=goalPriority(guidance,goal)+floor*4+dungeon.tier*2;return{dungeonId,floor,score,reason:`${dungeon.name} phục vụ ${goal} (ưu tiên ${goalPriority(guidance,goal)}).`};}).filter(Boolean).sort((a,b)=>b.score-a.score); const best=options[0]; if(!best||best.score<=0)continue; assignments.push({workerId:worker.id,...best});occupied.add(best.dungeonId);} return assignments; }
