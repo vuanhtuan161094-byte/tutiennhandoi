@@ -33,8 +33,8 @@ import { contentLoopSummaryV117 } from './content-loop-v117.js';
 import { pveProgressionSummaryV118 } from './pve-progression-v118.js';
 import { pvpProductionSummaryV119 } from './pvp-production-v119.js';
 import { dispatchGameplayCommand } from './gameplay-dispatch.js';
-import { buildGameplayFlow } from './gameplay-flow.js';
-import { buildMyriadLivesV141 } from './gameplay-myriad-lives.js';
+import { buildGameplayFlow, buildMyriadLivesV141 } from './gameplay-flow.js';
+
 const deadLifePlanningCommandTypes = new Set([
     'equip', 'activateArtifact', 'deactivateArtifact', 'setSkillActive', 'setLoadout', 'applyLoadoutPreset', 'saveCombatLoadout', 'applySavedCombatLoadout', 'cloneCombatLoadout',
     'setManifestations', 'setDaoDomain',
