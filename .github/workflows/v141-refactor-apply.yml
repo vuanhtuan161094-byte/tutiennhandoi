@@ -27,6 +27,7 @@ jobs:
 
       - name: Apply structural cleanup
         run: |
+          node qa/tools/v141-extract-gameplay-dispatch.js
           node qa/tools/v141-prune-app-dead-functions.js
           node qa/tools/v141-prune-core-dead-functions.js
           node qa/tools/v141-prune-hotspot-dead-functions.js
@@ -38,6 +39,7 @@ jobs:
           node --check dist/core/session.js
           node --check dist/core/session-restore.js
           node --check dist/core/gameplay.js
+          node --check dist/core/gameplay-dispatch.js
           node --check dist/core/combat.js
           node --check modules/hunt-combat-v2.js
 
@@ -54,6 +56,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app.js dist/core/session.js dist/core/session-restore.js dist/core/gameplay.js dist/core/combat.js modules/hunt-combat-v2.js
+          git add app.js dist/core/session.js dist/core/session-restore.js dist/core/gameplay.js dist/core/gameplay-dispatch.js dist/core/combat.js modules/hunt-combat-v2.js
           git commit -m "refactor: apply safe V141 structural cleanup"
           git push origin HEAD:refactor/v141-codebase-optimization
