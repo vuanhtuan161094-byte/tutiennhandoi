@@ -17,7 +17,8 @@ import './potential.js';
 import { advanceDaoSuyByWorldYearsV127, daoSuyStatusV127, relieveDaoSuyOnMajorAscensionV140, resolveDaoSuyTribulationV127 } from './dao-suy-v127.js';
 import { effectiveMortalLifespanCapV127 } from './lifespan-v127.js';
 import { OFFLINE_CAP_REAL_HOURS, WORLD_YEARS_PER_REAL_HOUR, WORLD_YEARS_PER_REAL_SECOND } from './realtime-balance.js';
-import { CULTIVATION_TICK_SECONDS_V140, RETREAT_BANK_CAP_HOURS_V140, RETREAT_DAILY_BANK_HOURS_V140, cleanCultivationStateV140, cultivationProgressV140, cultivationRateV140, cultivationRealmV140, commitRetreatBankV140, previewRetreatBankV140, isTribulationGateV140, isMajorRealmGateV140 } from './cultivation-v140.js';
+import { CULTIVATION_TICK_SECONDS_V140, RETREAT_BANK_CAP_HOURS_V140, RETREAT_DAILY_BANK_HOURS_V140, cleanCultivationStateV140, cultivationProgressV140, cultivationRateV140, cultivationRealmV140, commitRetreatBankV140, previewRetreatBankV140, isTribulationGateV140, isMajorRealmGateV140, effectiveCultivationRequiredTuViV140, CULTIVATION_REALMS_V140 } from './cultivation-v140.js';
+import { cultivationR3Rank, ensureCultivationRuntimeR3, heavenRewardProfileR3, isOldRealmSkipEligibleR3, retreatInsightProfileR3, retreatRefundProfileR3, rollLingGuangMultiplierR3, rollRetreatInsightMultiplierR3 } from './reincarnation-progression-v1102.js';
 import { applyCombatDeathLifespanPenalty, realSecondsUntilNaturalDeath } from './offline.js';
 import { availableRealmMaps, majorRealmIndexForMapFloor, majorRealmIndexForRealmOrder, mapFloorForRealmZone, mapStartFloorForRealm, realmMapDefinition, realmMapDefinitionForFloor, realmMapRewardProfile, zoneFloorForMapFloor } from '../content/realm-maps.js';
 import { addEquipment, applyEquipmentToEntity, attemptEquipmentEnhancement, buildEquipmentInstance, equipItem, equipmentPower, transferEquipmentEnhancement } from './equipment.js';
@@ -574,6 +575,8 @@ export class SimulationSession {
         const nextMajor = majorRealmIndexForRealmOrder(next.order);
         this.stateValue.realm = { realmId: next.id, maxRealmOrder: next.order };
         this.stateValue.cultivation.tuVi = 0;
+        const oldMajor=cultivationRealmV140(current.order).majorRealmIndex,newMajor=cultivationRealmV140(next.order).majorRealmIndex;
+        if(newMajor>oldMajor){const momentum=Math.max(0,Math.min(20,reincarnationTreeRuntimeModifierV136(this.stateValue.inheritedOrigins,'cultivation.majorMomentumPct')));if(momentum>0){const nextRequired=effectiveCultivationRequiredTuViV140(this.stateValue,next.order);this.stateValue.cultivation.tuVi=Math.min(nextRequired,nextRequired*momentum/100);}}
         if (next.order < 46) {
             const alchemyLife = ensureAlchemyV112State(this.stateValue.economy).life;
             const nextCap = effectiveMortalLifespanCapV127(next.order, this.stateValue.inheritedOrigins) + Math.max(0, Number(alchemyLife?.lifespanPillBonusYears) || 0);
@@ -611,17 +614,24 @@ export class SimulationSession {
         while (remaining > 1e-9 && this.stateValue.alive) {
             const order = this.stateValue.realm.maxRealmOrder;
             const row = cultivationRealmV140(order);
-            if (row.requiredTuVi <= 0) break;
+            const required = effectiveCultivationRequiredTuViV140(this.stateValue, order);
+            if (required <= 0) break;
             const before = Math.max(0, Number(this.stateValue.cultivation.tuVi) || 0);
-            const missing = Math.max(0, row.requiredTuVi - before);
-            if (missing > 0) {
-                const add = Math.min(missing, remaining);
-                this.stateValue.cultivation.tuVi = before + add; remaining -= add; gained += add;
-            }
-            if (this.stateValue.cultivation.tuVi + 1e-9 < row.requiredTuVi) break;
+            const missing = Math.max(0, required - before);
+            if (missing > 0) { const add = Math.min(missing, remaining); this.stateValue.cultivation.tuVi = before + add; remaining -= add; gained += add; }
+            if (this.stateValue.cultivation.tuVi + 1e-9 < required) break;
             const realm = this.registry.realm(this.stateValue.realm.realmId);
             if (!realm.nextRealmId || isTribulationGateV140(order) || isMajorRealmGateV140(order)) break;
             transitions.push(this.applyRealmTransitionV140(realm.nextRealmId, source));
+            if(source==='self-cultivation'){
+                const rt=ensureCultivationRuntimeR3(this.stateValue.cultivation);
+                const chance=Math.max(0,Math.min(5,reincarnationTreeRuntimeModifierV136(this.stateValue.inheritedOrigins,'cultivation.skipOldStageChancePct')));
+                const nowOrder=this.stateValue.realm.maxRealmOrder;
+                if(chance>0 && isOldRealmSkipEligibleR3(this.stateValue,nowOrder,CULTIVATION_REALMS_V140)){
+                    rt.skipRolls+=1; const rng=new SeededRng(mixSeed(this.rootSeed ^ 0x6137ac91,rt.skipRolls*131+rt.selfTicks));
+                    if(rng.chance(chance)){ const nowRealm=this.registry.realm(this.stateValue.realm.realmId); if(nowRealm.nextRealmId){transitions.push(this.applyRealmTransitionV140(nowRealm.nextRealmId,'reincarnation-skip-old-stage'));} }
+                }
+            }
         }
         return { gained, unused: remaining, transitions, summary: this.cultivationSummaryV140() };
     }
@@ -631,60 +641,53 @@ export class SimulationSession {
         const total = Math.max(0, Number(this.stateValue.cultivation.commitRemainderSeconds)||0) + seconds;
         let ticks = Math.floor(total / CULTIVATION_TICK_SECONDS_V140);
         this.stateValue.cultivation.commitRemainderSeconds = total - ticks * CULTIVATION_TICK_SECONDS_V140;
-        let gained = 0; const transitions=[]; let usedTicks=0;
-        while (ticks > 0 && this.stateValue.alive) {
-            const order=this.stateValue.realm.maxRealmOrder, row=cultivationRealmV140(order), rate=cultivationRateV140(this.stateValue,order).finalTuViPer15s;
-            if (row.requiredTuVi<=0 || rate<=0) break;
-            const missing=Math.max(0,row.requiredTuVi-(Number(this.stateValue.cultivation.tuVi)||0));
-            if (missing<=1e-9) {
-                const realm=this.registry.realm(this.stateValue.realm.realmId);
-                if (!realm.nextRealmId || isTribulationGateV140(order) || isMajorRealmGateV140(order)) break;
-                transitions.push(this.applyRealmTransitionV140(realm.nextRealmId,'self-cultivation')); continue;
-            }
-            const needTicks=Math.ceil(missing/rate);
-            const use=Math.min(ticks,needTicks);
-            const before=Number(this.stateValue.cultivation.tuVi)||0;
-            this.stateValue.cultivation.tuVi=Math.min(row.requiredTuVi,before+use*rate);
-            gained += this.stateValue.cultivation.tuVi-before; ticks-=use; usedTicks+=use;
-            if (this.stateValue.cultivation.tuVi+1e-9>=row.requiredTuVi) {
-                const realm=this.registry.realm(this.stateValue.realm.realmId);
-                if (!realm.nextRealmId || isTribulationGateV140(order) || isMajorRealmGateV140(order)) break;
-                transitions.push(this.applyRealmTransitionV140(realm.nextRealmId,'self-cultivation'));
-            }
+        let gained=0,usedTicks=0; const transitions=[]; const rt=ensureCultivationRuntimeR3(this.stateValue.cultivation);
+        while(ticks>0&&this.stateValue.alive){
+            const order=this.stateValue.realm.maxRealmOrder,required=effectiveCultivationRequiredTuViV140(this.stateValue,order);
+            if(required<=0)break;
+            if((Number(this.stateValue.cultivation.tuVi)||0)+1e-9>=required && (isTribulationGateV140(order)||isMajorRealmGateV140(order)))break;
+            const rate=cultivationRateV140(this.stateValue,order).finalTuViPer15s; if(rate<=0)break;
+            rt.selfTicks+=1; rt.heavenRewardProgressTicks+=1;
+            const lingRank=cultivationR3Rank(this.stateValue,'cultivation.lingGuangRank');
+            const rng=new SeededRng(mixSeed(this.rootSeed ^ 0x1a91f00d,rt.selfTicks*131+order*17));
+            const ling=rollLingGuangMultiplierR3(lingRank,rng);
+            if(ling>1){rt.lastLingGuangMultiplier=ling;rt.lastLingGuangTick=rt.selfTicks;}
+            let tickGain=rate*ling;
+            const heaven=heavenRewardProfileR3(cultivationR3Rank(this.stateValue,'cultivation.heavenRewardRank'));
+            if(Number.isFinite(heaven.thresholdTicks)&&rt.heavenRewardProgressTicks>=heaven.thresholdTicks){rt.heavenRewardProgressTicks-=heaven.thresholdTicks;tickGain+=rate*heaven.bonusTicks;}
+            const grant=this.grantTuViV140(tickGain,'self-cultivation'); gained+=grant.gained; transitions.push(...grant.transitions);
+            ticks-=1; usedTicks+=1;
+            const afterOrder=this.stateValue.realm.maxRealmOrder,afterReq=effectiveCultivationRequiredTuViV140(this.stateValue,afterOrder);
+            if(afterReq>0&&(Number(this.stateValue.cultivation.tuVi)||0)+1e-9>=afterReq&&(isTribulationGateV140(afterOrder)||isMajorRealmGateV140(afterOrder)))break;
         }
         const worldYears = seconds * WORLD_YEARS_PER_REAL_SECOND;
         if (worldYears > 0) {
             this.stateValue.worldTimeYears += worldYears; this.stateValue.ageYears += worldYears;
             advanceDaoSuyByWorldYearsV127(this.stateValue.immortal, this.stateValue.realm.maxRealmOrder, worldYears, this.stateValue.inheritedOrigins);
             const cultivationTalents = cultivationTalentBonuses(this.stateValue.inheritedOrigins);
-            applyNaturalInjuryRecovery(this.stateValue, seconds, reincarnationTreeRuntimeModifierV136(this.stateValue.inheritedOrigins, 'cultivation.injuryRecoveryPct') + cultivationTalents.injuryRecoveryPct);
+            applyNaturalInjuryRecovery(this.stateValue, seconds, cultivationTalents.injuryRecoveryPct);
             this.applyNaturalDeathToState(mixSeed(this.rootSeed ^ 0x140140, this.actionIndexValue));
         }
         if (seconds>0) this.actionIndexValue += 1;
-        return { realSeconds:seconds, worldYears, gained, ticks:usedTicks, transitions:transitions.map(x=>({from:x.current.name,to:x.next.name})), summary:this.cultivationSummaryV140() };
+        return { realSeconds:seconds, worldYears, gained, ticks:usedTicks, transitions:transitions.map(x=>({from:x.current.name,to:x.next.name})), lingGuang:{lastMultiplier:rt.lastLingGuangMultiplier,lastTick:rt.lastLingGuangTick}, summary:this.cultivationSummaryV140() };
     }
     instantRetreatV140(realHours = 3, nowUnixMs = Date.now()) {
         if (!this.stateValue.alive) throw new Error('Đời hiện tại đã kết thúc.');
-        commitRetreatBankV140(this.stateValue.cultivation, nowUnixMs);
-        const order=this.stateValue.realm.maxRealmOrder, row=cultivationRealmV140(order);
-        if (row.requiredTuVi<=0) throw new Error('Cảnh giới đã viên mãn cuối cùng.');
-        const requested=Math.max(0,Math.min(Number(realHours)||0,this.stateValue.cultivation.retreatBankHours));
-        if (requested<=0) throw new Error('Không còn giờ Bế Quan khả dụng.');
-        const before=Number(this.stateValue.cultivation.tuVi)||0;
-        const injury=Math.max(0,Math.min(100,Number(this.stateValue.injury)||0));
-        if(injury>60) throw new Error('Thương Thế trên 60/100: cần trị thương trước khi Bế Quan.');
-        const injuryMultiplier=injury>40?0.75:injury>20?0.90:1;
-        const retreatTreePct=reincarnationTreeRuntimeModifierV136(this.stateValue.inheritedOrigins,'cultivation.retreatGainPct');
-        const retreatTalentPct=cultivationTalentBonuses(this.stateValue.inheritedOrigins).retreatGainPct;
-        const perHour=row.requiredTuVi*(row.retreat3hProgressPct/3)/100*injuryMultiplier*(1+(retreatTreePct+retreatTalentPct)/100);
-        const missing=Math.max(0,row.requiredTuVi-before);
-        const hoursUsed=perHour>0?Math.min(requested,missing/perHour):0;
-        const gain=Math.min(missing,perHour*hoursUsed);
-        this.stateValue.cultivation.retreatBankHours=Math.max(0,this.stateValue.cultivation.retreatBankHours-hoursUsed);
-        const grant=this.grantTuViV140(gain,'retreat');
-        const event={id:`retreat.v140.${this.currentLifeValue.lifeId}.${this.actionIndexValue}`,worldTimeYears:this.stateValue.worldTimeYears,ageYears:this.stateValue.ageYears,type:'cultivation',significance:8,message:`Bế Quan ${hoursUsed.toFixed(2)}h · Tu Vi +${grant.gained.toFixed(0)}.`,locationId:this.stateValue.locationId,tags:['Retreat','CultivationV140'],data:{hoursUsed,gain:grant.gained,bankHoursAfter:this.stateValue.cultivation.retreatBankHours}};
-        this.historyValue.append(event); this.actionIndexValue+=1;
-        return {hoursRequested:requested,hoursUsed,gained:grant.gained,bankHoursAfter:this.stateValue.cultivation.retreatBankHours,event,summary:this.cultivationSummaryV140(nowUnixMs)};
+        const bank=commitRetreatBankV140(this.stateValue.cultivation, nowUnixMs);
+        const order=this.stateValue.realm.maxRealmOrder,row=cultivationRealmV140(order),required=effectiveCultivationRequiredTuViV140(this.stateValue,order);
+        if(required<=0) throw new Error('Cảnh giới đã viên mãn cuối cùng.');
+        const requested=Math.max(0,Math.min(Number(realHours)||0,this.stateValue.cultivation.retreatBankHours)); if(requested<=0)throw new Error('Không còn giờ Bế Quan khả dụng.');
+        const injury=Math.max(0,Math.min(100,Number(this.stateValue.injury)||0)); if(injury>60)throw new Error('Thương Thế trên 60/100: cần trị thương trước khi Bế Quan.');
+        const injuryMultiplier=injury>40?0.75:injury>20?0.90:1; const retreatTalentPct=cultivationTalentBonuses(this.stateValue.inheritedOrigins).retreatGainPct;
+        const basePerHour=required*(row.retreat3hProgressPct/3)/100*injuryMultiplier*(1+retreatTalentPct/100);
+        const rt=ensureCultivationRuntimeR3(this.stateValue.cultivation),dayKey=bank.dayKey; if(rt.retreatRefundDayKey!==dayKey){rt.retreatRefundDayKey=dayKey;rt.retreatRefundedHours=0;}
+        const insightRank=cultivationR3Rank(this.stateValue,'cultivation.retreatInsightRank'),refundRank=cultivationR3Rank(this.stateValue,'cultivation.retreatRefundRank');
+        let remaining=requested,hoursUsed=0,totalGain=0,refunded=0; const insights=[];
+        while(remaining>1e-9){let slice=Math.min(1,remaining);const seedBase=Math.floor(rt.selfTicks+this.actionIndexValue*97+hoursUsed*1000),rng=new SeededRng(mixSeed(this.rootSeed ^ 0x8e71a251,seedBase));const mult=rollRetreatInsightMultiplierR3(insightRank,rng);const before=Number(this.stateValue.cultivation.tuVi)||0,missing=Math.max(0,effectiveCultivationRequiredTuViV140(this.stateValue,this.stateValue.realm.maxRealmOrder)-before);if(missing<=1e-9)break;slice=Math.min(slice,basePerHour*mult>0?missing/(basePerHour*mult):0);if(slice<=1e-9)break;const grant=this.grantTuViV140(Math.min(missing,basePerHour*slice*mult),'retreat');totalGain+=grant.gained;hoursUsed+=slice;remaining-=slice;if(mult>1)insights.push(mult);if(this.stateValue.realm.maxRealmOrder!==order)break;const rp=retreatRefundProfileR3(refundRank),rr=new SeededRng(mixSeed(this.rootSeed ^ 0x41ef75a3,seedBase+31));if(rt.retreatRefundedHours<1&&rr.chance(rp.chancePct*slice)){const add=Math.min(rp.hours,1-rt.retreatRefundedHours);refunded+=add;rt.retreatRefundedHours+=add;}}
+        this.stateValue.cultivation.retreatBankHours=Math.max(0,Math.min(RETREAT_BANK_CAP_HOURS_V140,this.stateValue.cultivation.retreatBankHours-hoursUsed+refunded));
+        const event={id:`retreat.v140.${this.currentLifeValue.lifeId}.${this.actionIndexValue}`,worldTimeYears:this.stateValue.worldTimeYears,ageYears:this.stateValue.ageYears,type:'cultivation',significance:8,message:`Bế Quan ${hoursUsed.toFixed(2)}h · Tu Vi +${totalGain.toFixed(0)}${insights.length?` · Ngộ Đạo ×${Math.max(...insights).toFixed(2)}`:""}${refunded?` · hoàn ${Math.round(refunded*60)} phút`:""}.`,locationId:this.stateValue.locationId,tags:['Retreat','CultivationV140','ReincarnationCultivationR3'],data:{hoursUsed,gain:totalGain,refundedHours:refunded,insights,bankHoursAfter:this.stateValue.cultivation.retreatBankHours}};
+        this.historyValue.append(event);this.actionIndexValue+=1;
+        return {hoursUsed,gained:totalGain,refundedHours:refunded,insights,bankHoursAfter:this.stateValue.cultivation.retreatBankHours,event,summary:this.cultivationSummaryV140()};
     }
     ascendRealmV140() {
         if (!this.stateValue.alive) throw new Error('Đời hiện tại đã kết thúc.');
@@ -692,7 +695,8 @@ export class SimulationSession {
         if (!current.nextRealmId) throw new Error('Đã đạt cảnh giới cuối cùng.');
         if (isTribulationGateV140(current.order)) throw new Error('Cửa này phải vượt Thiên Kiếp.');
         if (!isMajorRealmGateV140(current.order)) throw new Error('Tiểu cảnh được tự động thăng khi Tu Vi đầy.');
-        if ((Number(this.stateValue.cultivation.tuVi)||0)+1e-9 < row.requiredTuVi) throw new Error(`Tu Vi chưa đủ: cần ${row.requiredTuVi.toFixed(0)}.`);
+        const required=effectiveCultivationRequiredTuViV140(this.stateValue,current.order);
+        if ((Number(this.stateValue.cultivation.tuVi)||0)+1e-9 < required) throw new Error(`Tu Vi chưa đủ: cần ${required.toFixed(0)}.`);
         if ((Number(this.stateValue.injury)||0) > 60) throw new Error('Thương Thế trên 60/100: cần trị thương trước khi Thăng Cảnh.');
         const result=this.applyRealmTransitionV140(current.nextRealmId,'ascend'); this.actionIndexValue+=1;
         return {fromRealmId:result.current.id,toRealmId:result.next.id,event:result.event,summary:this.cultivationSummaryV140()};
@@ -3292,7 +3296,7 @@ export class SimulationSession {
         synchronizeSoulForRealm(this.stateValue.soul, this.stateValue.realm.maxRealmOrder, this.stateValue.dungeons.parallelWorkerCapacity);
         const authority = soulCloneAuthorityProfileV127(this.stateValue.realm.maxRealmOrder, this.stateValue.soul.clones.length);
         syncSoulDungeonWorkers(this.stateValue.soul, this.stateValue.dungeons, authority.capacity);
-        const protectorTreePct = reincarnationTreeRuntimeModifierV136(this.stateValue.inheritedOrigins, 'cultivation.protectorEffectPct');
+        const protectorTreePct = 0; // R3: Phân Thân bonus no longer belongs to the Tu Luyện tree.
         const soul = cloneSoulState(this.stateValue.soul);
         soul.clones = soul.clones.map((clone, index) => ({
             ...clone,
@@ -4421,17 +4425,18 @@ export class SimulationSession {
         const current = this.registry.realm(this.stateValue.realm.realmId);
         if (!current.nextRealmId) throw new Error('Không còn cảnh giới sau để độ kiếp.');
         const row = cultivationRealmV140(order);
-        if ((Number(this.stateValue.cultivation.tuVi) || 0) + 1e-9 < row.requiredTuVi) throw new Error(`Tu Vi chưa đủ dẫn kiếp: cần ${row.requiredTuVi.toLocaleString('vi-VN')}.`);
+        const required = effectiveCultivationRequiredTuViV140(this.stateValue, order);
+        if ((Number(this.stateValue.cultivation.tuVi) || 0) + 1e-9 < required) throw new Error(`Tu Vi chưa đủ dẫn kiếp: cần ${required.toLocaleString('vi-VN')}.`);
         const seed = mixSeed(this.rootSeed ^ 0x5a17c9e3, this.actionIndexValue);
         const integration = this.integrationSummary();
-        const tribulationSuccessPct = reincarnationTreeRuntimeModifierV136(this.stateValue.inheritedOrigins, 'cultivation.tribulationSuccessPct');
+        const tribulationSuccessPct = 0; // R3: Thiên Kiếp success is not a Tu Luyện tree node.
         const result = this.tribulationEngine.attempt({ realm: this.stateValue.realm, injury: this.stateValue.injury, soul: this.stateValue.soul, dao: this.stateValue.dao, integration, intensity, seed, worldYear: this.stateValue.worldTimeYears, nextRealmId: current.nextRealmId, successBonusPct: tribulationSuccessPct });
-        const injuryGuardPct = Math.min(30, reincarnationTreeRuntimeModifierV136(this.stateValue.inheritedOrigins, 'cultivation.injuryGainReductionPct'));
+        const injuryGuardPct = 0; // R3: Thương Thế mitigation belongs outside this tree.
         result.injury = Math.max(0, result.injury * (1 - injuryGuardPct / 100));
-        const cost = Math.min(this.stateValue.cultivation.tuVi, row.requiredTuVi * (result.tuViCostPct / 100));
+        const cost = Math.min(this.stateValue.cultivation.tuVi, required * (result.tuViCostPct / 100));
         this.stateValue.cultivation.tuVi = Math.max(0, this.stateValue.cultivation.tuVi - cost);
         this.stateValue.injury = Math.min(100, this.stateValue.injury + result.injury);
-        if (result.passed) this.applyRealmTransitionV140(current.nextRealmId, 'heavenly-tribulation');
+        if (result.passed) { const rt=ensureCultivationRuntimeR3(this.stateValue.cultivation); rt.tribulationTemperStacks=Math.min(5,(rt.tribulationTemperStacks||0)+1); this.applyRealmTransitionV140(current.nextRealmId, 'heavenly-tribulation'); }
         this.stateValue.tribulation = this.stateValue.tribulation ?? createTribulationState();
         this.stateValue.tribulation.faced += 1;
         if (result.passed) this.stateValue.tribulation.passed += 1; else this.stateValue.tribulation.failed += 1;
@@ -4714,7 +4719,7 @@ export class SimulationSession {
     resolveRealtimeOffline(plan, lastSeenUnixMs, nowUnixMs) {
         if (!this.stateValue.alive) throw new Error('Current life has ended');
         const elapsedSeconds = Math.max(0, (Number(nowUnixMs) - Number(lastSeenUnixMs)) / 1000);
-        const capHours = Math.min(168, Math.max(0, OFFLINE_CAP_REAL_HOURS + reincarnationTreeRuntimeModifierV136(this.stateValue.inheritedOrigins, 'cultivation.offlineCapHoursBonus')));
+        const capHours = OFFLINE_CAP_REAL_HOURS; // R3: offline cap returns to the owner system; Luân Hồi does not own it.
         const rewardSeconds = Math.min(elapsedSeconds, capHours * 3600, realSecondsUntilNaturalDeath(this.stateValue));
         const beforeTuVi = this.stateValue.cultivation.tuVi;
         if (rewardSeconds > 0) this.advanceRealtimeCultivationV140(rewardSeconds);

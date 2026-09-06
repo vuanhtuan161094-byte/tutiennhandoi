@@ -1,3 +1,4 @@
+import { additiveSelfCultivationPctR3, cloneCultivationRuntimeR3, effectiveMajorRequirementR3 } from './reincarnation-progression-v1102.js';
 // V140 canonical cultivation balance. One source of truth for 118 realm orders.
 export const CULTIVATION_TICK_SECONDS_V140 = 15;
 export const RETREAT_DAILY_BANK_HOURS_V140 = 3;
@@ -39,14 +40,17 @@ export function cultivationRateV140(state, realmOrder){
   const birthMultiplier=Math.max(.25,Math.min(8,Number(state?.inheritedOrigins?.['birth.cultivation.multiplier'])||1));
   const birthPct=(birthMultiplier-1)*100;
   const base=row.baseTuViPer15s;
-  const pct=configuredPct+birthPct;
+  const perfectStage=Boolean(row.nextRealmId)&&CULTIVATION_REALMS_V140[row.order+1]?.majorRealmIndex!==row.majorRealmIndex;
+  const reincarnationPct=additiveSelfCultivationPctR3(state,row.order,CULTIVATION_REALMS_V140,perfectStage);
+  const pct=configuredPct+birthPct+reincarnationPct;
   const final=Math.max(0,Math.round(base+flat+base*pct/100));
-  return {baseTuViPer15s:base,flatTuViPer15s:flat,baseTuViBonusPct:pct,finalTuViPer15s:final,sources:[{id:'realm-base',label:`Nền ${row.name}`,kind:'base',value:base},...(flat?[{id:'flat',label:'Nguồn Tu Vi cố định',kind:'flat',value:flat}]:[]),...(birthPct?[{id:'birth',label:'Thiên phú / xuất thân',kind:'percent',value:birthPct}]:[]),...(configuredPct?[{id:'base-pct',label:'Nguồn % Tu Vi nền khác',kind:'percent',value:configuredPct}]:[])]};
+  return {baseTuViPer15s:base,flatTuViPer15s:flat,baseTuViBonusPct:pct,finalTuViPer15s:final,sources:[{id:'realm-base',label:`Nền ${row.name}`,kind:'base',value:base},...(flat?[{id:'flat',label:'Nguồn Tu Vi cố định',kind:'flat',value:flat}]:[]),...(birthPct?[{id:'birth',label:'Thiên phú / xuất thân',kind:'percent',value:birthPct}]:[]),...(configuredPct?[{id:'base-pct',label:'Nguồn % Tu Vi nền khác',kind:'percent',value:configuredPct}]:[]),...(reincarnationPct?[{id:'reincarnation-cultivation-r3',label:'Cây Luân Hồi · Tu Luyện',kind:'percent',value:reincarnationPct}]:[])]};
 }
+export function effectiveCultivationRequiredTuViV140(state,realmOrder){const row=cultivationRealmV140(realmOrder);const next=CULTIVATION_REALMS_V140[row.order+1];const majorGate=Boolean(row.nextRealmId)&&Boolean(next)&&next.majorRealmIndex!==row.majorRealmIndex;return effectiveMajorRequirementR3(state,row,majorGate);}
 export function cultivationProgressV140(state, realmOrder){
   const row=cultivationRealmV140(realmOrder);
   const tuVi=Math.max(0,Number(state?.cultivation?.tuVi)||0);
-  const required=Math.max(0,row.requiredTuVi);
+  const required=effectiveCultivationRequiredTuViV140(state,realmOrder);
   return {tuVi,requiredTuVi:required,progressPct:required>0?Math.min(100,tuVi/required*100):100,ready:required===0||tuVi>=required};
 }
 export function addTuViV140(state, amount, realmOrder){
@@ -81,5 +85,5 @@ export function retreatRewardV140(state,realmOrder,hours){
   return {hoursUsed:used,gained:applied.gained,progressPct:row.requiredTuVi?applied.gained/row.requiredTuVi*100:0,bankHoursAfter:state.cultivation.retreatBankHours};
 }
 export function cleanCultivationStateV140(cultivation={}){
-  return {tuVi:Math.max(0,Number(cultivation.tuVi)||0),commitRemainderSeconds:clamp(cultivation.commitRemainderSeconds,0,14.999999),retreatBankHours:clamp(cultivation.retreatBankHours||3,0,RETREAT_BANK_CAP_HOURS_V140),retreatBankDayKey:String(cultivation.retreatBankDayKey||'')};
+  return {tuVi:Math.max(0,Number(cultivation.tuVi)||0),commitRemainderSeconds:clamp(cultivation.commitRemainderSeconds,0,14.999999),retreatBankHours:clamp(cultivation.retreatBankHours||3,0,RETREAT_BANK_CAP_HOURS_V140),retreatBankDayKey:String(cultivation.retreatBankDayKey||''),reincarnationR3:cloneCultivationRuntimeR3(cultivation.reincarnationR3)};
 }

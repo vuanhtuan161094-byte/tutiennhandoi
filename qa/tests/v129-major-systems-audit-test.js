@@ -80,17 +80,18 @@ test('V129 Tâm Pháp keeps 100% main/secondary passive ownership while generic 
   assert(Math.abs(both.attackPct-(sword.attackPct+body.attackPct))<1e-9 && Math.abs(both.physiquePct-(sword.physiquePct+body.physiquePct))<1e-9,'secondary Tâm Pháp generic package must resolve at full authored strength, not 60%');
 });
 
-test('V140 Luân Hồi tree keeps long-horizon cultivation payoff without retired Phá Cảnh ownership',()=>{
-  assert.equal(reincarnationTreeNodesV136.length,29,'canonical tree must stay 29 nodes');
-  const max={ranks:Object.fromEntries(reincarnationTreeNodesV136.map(x=>[x.id,50]))};
-  assert.equal(reincarnationTreeNodesV136.some(x=>String(x.modifierKey).includes('breakthroughRequirementReduction')),false,'retired Phá Cảnh requirement reduction must not return');
-  assert(nodeModifierValue(max,'cultivation.selfGainPct')>=100,'max tree needs major self-cultivation payoff');
-  assert(nodeModifierValue(max,'cultivation.retrainGainPct')>=150,'max tree needs major retraining payoff');
-  assert(nodeModifierValue(max,'cultivation.retreatGainPct')>=50,'max tree needs meaningful Bế Quan payoff');
-  assert(nodeModifierValue(max,'cultivation.tribulationSuccessPct')>=15,'max tree needs a bounded Thiên Kiếp payoff');
-  assert(nodeModifierValue(max,'cultivation.cultivationPillGainPct')>=50,'max tree needs a Tu Vi Đan payoff');
-  assert(nodeModifierValue(max,'cultivation.injuryRecoveryPct')>=100,'max tree needs a Thương Thế recovery payoff');
-  assert(nodeModifierValue(max,'cultivation.offlineRewardPct')>=50,'max tree needs meaningful offline payoff');
+test('Luân Hồi Tu Luyện R3 has 12 independent 20-rank nodes with the approved ownership and caps',()=>{
+  const cultivation=reincarnationTreeNodesV136.filter(x=>x.treeId==='cultivation');
+  const manual=reincarnationTreeNodesV136.filter(x=>x.treeId==='manual');
+  assert.equal(cultivation.length,12); assert.equal(manual.length,13);
+  assert(cultivation.every(x=>x.maxRank===20)); assert(cultivation.every(x=>(x.prerequisites??[]).length===0),'Tu Luyện nodes must be freely learnable');
+  const max={ranks:Object.fromEntries(reincarnationTreeNodesV136.map(x=>[x.id,x.maxRank]))};
+  assert.equal(nodeModifierValue(max,'cultivation.baseGainPct'),25);
+  assert.equal(nodeModifierValue(max,'cultivation.majorBreakthroughRequirementReductionPct'),5);
+  assert.equal(nodeModifierValue(max,'cultivation.skipOldStageChancePct'),5);
+  assert.equal(nodeModifierValue(max,'cultivation.newRecordGainPct'),20);
+  assert.equal(nodeModifierValue(max,'cultivation.perfectStageGainPct'),40);
+  for(const retired of ['cultivation.retreatGainPct','cultivation.protectorEffectPct','cultivation.tribulationSuccessPct','cultivation.cultivationPillGainPct','cultivation.lifePotentialGainPct','cultivation.permanentPotentialBonusPct','cultivation.lifespanPct','cultivation.daoDecayRateReductionPct','cultivation.offlineRewardPct','cultivation.offlineCapHoursBonus','cultivation.injuryRecoveryPct','cultivation.injuryGainReductionPct','cultivation.reincarnationEnergyCostReductionPct']) assert.equal(nodeModifierValue(max,retired),0,retired+' must be retired from Tu Luyện tree');
 });
 
 test('V129 Luân Hồi combat memories use real CombatEntity consumers without hidden global total-damage scalar',()=>{
