@@ -1,0 +1,29 @@
+# Local/runtime state
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+.DS_Store
+Thumbs.db
+
+# Node/editor caches
+node_modules/
+.npm/
+.vscode/
+.idea/
+
+# Local game saves / transient exports
+save*.json
+saves/
+backups/
+coverage/
+.tmp/
+tmp/
+
+# Generated packaging artifacts
+*.zip
+*.7z
+*.rar
+
+# Keep authored runtime under dist/ tracked intentionally.
