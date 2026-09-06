@@ -1,15 +1,16 @@
 # NEXT CHAT TASKS — GAME TU TIÊN NHÀN DỖI
 
-**Canonical package:** `TU_TIEN_V140_CULTIVATION_V2_CLEAN`
-**Version:** `1.40.0-alpha.24.0`
+**Canonical checkpoint:** `V141_CODEBASE_OPTIMIZED`
+**Gameplay/web version:** `1.40.0-alpha.24.0`
 **Date:** 2026-09-06
 
 ## 0. Quy tắc bắt buộc khi mở chat mới
 
-1. Dùng source trong ZIP này làm **source of truth duy nhất**.
+1. Dùng source V141 codebase-optimized hiện tại làm **source of truth duy nhất**. V141 là structural refactor trên gameplay V140, không phải thiết kế gameplay mới.
 2. Đọc theo thứ tự:
    - `CHAT_MOI_START_HERE.md`
    - `CURRENT_CHECKPOINT.md`
+   - `V141_CODEBASE_OPTIMIZATION_CLOSURE_REPORT.md`
    - `V140_CULTIVATION_CLOSURE_REPORT.md`
    - `docs/CULTIVATION_V140_BALANCE.csv`
    - `docs/PROJECT_STRUCTURE.md`
@@ -17,10 +18,11 @@
 4. Không thêm một hệ mới chỉ để giải quyết một vấn đề mà hệ hiện tại đã có thể xử lý.
 5. Khi sửa hệ nào: audit backend + frontend + save + content + economy + test cùng lúc; không sửa riêng UI.
 6. Sau mỗi hệ phải có: source-of-truth rõ, zero-zombie scan, targeted test và regression liên quan.
+7. Không đảo ngược các module boundary V141 chỉ để tiện vá nhanh; nếu cần thay đổi boundary phải chứng minh consumer/QA rõ ràng.
 
 ## 1. A. Tu Luyện Cốt Lõi — CLOSED / KHÔNG THIẾT KẾ LẠI
 
-V140 đã khóa:
+V140 đã khóa và V141 giữ nguyên:
 
 - 118 tiểu cảnh / 29 đại cảnh tới Sáng Thế Chủ.
 - Một nguồn canonical: `dist/core/cultivation-v140.js`.
@@ -50,11 +52,25 @@ V140 đã khóa:
 
 Các từ "breakthrough" thuộc **Linh Căn / Pháp Bảo / Thể Chất** nếu là nâng phẩm riêng của hệ đó không đồng nghĩa với Phá Cảnh cảnh giới và không được xóa nhầm.
 
-## 2. Việc tiếp theo — B. LUÂN HỒI
+## 2. V141 Codebase Optimization — CLOSED
+
+V141 chỉ tối ưu cấu trúc code, giữ nguyên gameplay V140. Các trách nhiệm lớn đã được tách khỏi monolith gồm gameplay dispatch/flow, combat decision/effect resolution, session guidance, dungeon challenge, alchemy-pill use và content-event effect application. Vạn Thế read-model được gộp vào gameplay-flow để không làm tăng initial static graph vượt performance budget.
+
+Closure cuối:
+
+- Cultivation core: **11/11 PASS**.
+- Transport/API: **4/4 PASS**.
+- Zero legacy: **4510/4510 PASS** trên 205 production files.
+- Backend closure: **47/47 PASS**.
+- Frontend closure: **19/19 PASS**.
+- Frontend performance architecture gate: **PASS**.
+- Health scan: **0 unresolved relative imports; 0 risky-pattern hits**.
+
+## 3. Việc tiếp theo — B. LUÂN HỒI
 
 ### Mục tiêu
 
-Không code ngay. Trước tiên phải audit toàn bộ Luân Hồi trong source V140 để xác định hệ đang quá phức tạp, quá mỏng hay trùng vai trò với hệ khác.
+Không code ngay. Trước tiên phải audit toàn bộ Luân Hồi trong source V141 hiện tại để xác định hệ đang quá phức tạp, quá mỏng hay trùng vai trò với hệ khác.
 
 ### Audit phải trả lời đủ
 
@@ -88,7 +104,7 @@ Mỗi mechanic phải được kết luận một trong:
 
 Chỉ sau khi người dùng chốt B mới code.
 
-## 3. Sau Luân Hồi
+## 4. Sau Luân Hồi
 
 Tiếp tục audit từng hệ, không làm đồng thời nhiều hệ:
 
@@ -115,7 +131,7 @@ Tiếp tục audit từng hệ, không làm đồng thời nhiều hệ:
 21. Thế giới / bản đồ / sự kiện.
 22. UI/UX tổng thể sau khi gameplay systems ổn định hơn.
 
-## 4. Quy tắc economy Tu Vi cho các hệ sau
+## 5. Quy tắc economy Tu Vi cho các hệ sau
 
 Khi audit Công Pháp / Pháp Bảo / Linh Căn / Đan / Luân Hồi / hoạt động:
 
@@ -126,9 +142,9 @@ Khi audit Công Pháp / Pháp Bảo / Linh Căn / Đan / Luân Hồi / hoạt đ
 - Reward tức thời từ Đan/Event/Activity có thể author theo `TIME_EQUIVALENT` hoặc `% requirement`, sau đó runtime đổi ra số Tu Vi thực.
 - Mỗi hệ phải có budget riêng để tổng nguồn Tu Vi không nổ theo số lượng hệ thống.
 
-## 5. QA canonical hiện tại
+## 6. QA canonical hiện tại
 
-Các gate V140 cần giữ xanh:
+Các gate V140 vẫn là gameplay regression authority của V141:
 
 ```bash
 node qa/tests/v140-cultivation-core-test.js
@@ -140,16 +156,16 @@ node qa/runners/v140-backend-gates.js closure
 node qa/runners/v140-frontend-gates.js closure
 ```
 
-Closure đã ghi nhận tại thời điểm đóng gói:
+Closure V141 đã ghi nhận:
 
 - Cultivation core: 11/11 PASS.
 - Transport/API: 4/4 PASS.
-- Zero legacy: 4466/4466 PASS.
+- Zero legacy: 4510/4510 PASS.
 - Backend closure: 47/47 PASS.
 - Frontend closure: 19/19 PASS.
-- PvP balance: 8/8 PASS.
-- ES-module syntax: 204/204 PASS.
+- Frontend performance architecture: PASS.
+- Health scan: no unresolved relative imports / no risky patterns.
 
-## 6. Câu mở đầu đề nghị cho chat mới
+## 7. Câu mở đầu đề nghị cho chat mới
 
-> Tiếp tục Game Tu Tiên Nhàn Dỗi từ ZIP này. Đọc `CHAT_MOI_START_HERE.md`, `CURRENT_CHECKPOINT.md` và `NEXT_CHAT_TASKS.md` trước. V140 Tu Luyện V2 đã CLOSED, không phục hồi mechanic V129. Bây giờ audit chi tiết **B. Luân Hồi** từ source thật theo mẫu HIỆN TRẠNG → KEEP/XÓA/GỘP → CẢI TIẾN → FINAL DESIGN. Chưa code cho tới khi tôi chốt thiết kế.
+> Tiếp tục Game Tu Tiên Nhàn Dỗi từ V141 codebase-optimized source. Đọc `CHAT_MOI_START_HERE.md`, `CURRENT_CHECKPOINT.md`, `V141_CODEBASE_OPTIMIZATION_CLOSURE_REPORT.md` và `NEXT_CHAT_TASKS.md` trước. V140 Tu Luyện V2 vẫn là gameplay canonical; V141 chỉ refactor cấu trúc code. Bây giờ audit chi tiết **B. Luân Hồi** từ source thật theo mẫu HIỆN TRẠNG → GAMEPLAY LOOP → KEEP → XÓA/GỘP → CẢI TIẾN → BALANCE → UI → FINAL DESIGN. Chưa code cho tới khi tôi chốt thiết kế.
