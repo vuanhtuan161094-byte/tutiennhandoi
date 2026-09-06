@@ -735,14 +735,51 @@ export class CombatEngine {
             if (!source.alive || !target.alive)
                 break;
             switch (effect.type) {
-                case 'damage': {
+                case 'damage':
+                    this.resolveEffectDamageV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
+                    break;
+                case 'damageOverTime':
+                    this.resolveEffectDamageOverTimeV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
+                    break;
+                case 'heal':
+                    this.resolveEffectHealV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
+                    break;
+                case 'drain':
+                    this.resolveEffectDrainV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
+                    break;
+                case 'removeStatus':
+                    this.resolveEffectRemoveStatusV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
+                    break;
+                case 'shield':
+                    this.resolveEffectShieldV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
+                    break;
+                case 'applyStatus':
+                    this.resolveEffectApplyStatusV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
+                    break;
+                case 'addMark':
+                    this.resolveEffectAddMarkV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
+                    break;
+                case 'consumeMarkDamage':
+                    this.resolveEffectConsumeMarkDamageV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
+                    break;
+                case 'restoreSpirit':
+                    this.resolveEffectRestoreSpiritV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
+                    break;
+            }
+        }
+    }
+    resolveEffectDamageV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
+        do {
                     const outcome = this.applyDamage(source, target, this.damageContextFromEffect(source, effect, defaultSourceTag, skill, skillId, cooldownDamageBonusPct, runtimeAction), now);
                     recordDamageOutcomeV2(runtimeAction, effect.sourceTag ?? defaultSourceTag, outcome);
                     if (outcome.hpDamage > 0)
                         this.generateBloodBreath(source, outcome.hpDamage, effect.sourceTag ?? defaultSourceTag, now);
                     break;
-                }
-                case 'damageOverTime': {
+                
+        } while (false);
+    }
+    resolveEffectDamageOverTimeV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
+        do {
                     if (effect.ticks > 0 && effect.interval > 0) {
                         const daoDot = skill ? adjustDaoDotV118(source, skill, effect.coefficientPerTick, effect.ticks) : { coefficientPerTick: effect.coefficientPerTick, ticks: effect.ticks };
                         const poisonTracked = Boolean(skill && skillRuntimeV117(skill).daoBinding === 'poison');
@@ -773,16 +810,22 @@ export class CombatEngine {
                         });
                     }
                     break;
-                }
-                case 'heal': {
+                
+        } while (false);
+    }
+    resolveEffectHealV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
+        do {
                     const healTarget = effect.target === 'target' ? target : source;
                     const srcStats = effectiveStats(source, this.registry, now);
                     const maxHp = combatMaxHp(healTarget.baseStats);
                     const base = ((effect.flat ?? 0) + maxHp * ((effect.maxHpPct ?? 0) / 100) + srcStats.attack * (effect.attackCoefficient ?? 0)) * runtimeEffectMultiplier;
                     this.applyHeal(source, healTarget, base, now, skillId);
                     break;
-                }
-                case 'drain': {
+                
+        } while (false);
+    }
+    resolveEffectDrainV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
+        do {
                     const sealV133 = this.elementalContextV133(source, skill, skill?.elementalCoefficients, runtimeAction);
                     const outcome = this.applyDamage(source, target, {
                         sourceTag: defaultSourceTag,
@@ -809,8 +852,11 @@ export class CombatEngine {
                             this.applyHeal(source, source, outcome.hpDamage * Math.max(0, effect.healRatio), now, skillId);
                     }
                     break;
-                }
-                case 'removeStatus': {
+                
+        } while (false);
+    }
+    resolveEffectRemoveStatusV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
+        do {
                     const statusTarget = effect.target === 'target' ? target : source;
                     const before = statusTarget.statuses.length;
                     statusTarget.statuses = statusTarget.statuses.filter(active => {
@@ -823,19 +869,28 @@ export class CombatEngine {
                     const removed = before - statusTarget.statuses.length;
                     this.log(now, 'info', `${statusTarget.name} giải trừ ${removed} trạng thái.`, source.id, statusTarget.id, skillId, { removed });
                     break;
-                }
-                case 'shield': {
+                
+        } while (false);
+    }
+    resolveEffectShieldV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
+        do {
                     const shieldRuntimeMultiplier = runtimeEffectMultiplier * (1 + Math.max(0, source.combatBuildV117?.daoNatureShieldEffectPctV125 ?? 0) / 100) * battleDaoV2HealShieldMultiplier(source, now);
                     const scaled = { ...effect, capacity: effect.capacity * shieldRuntimeMultiplier, maxHpPct: (effect.maxHpPct ?? 0) * shieldRuntimeMultiplier, attackCoefficient: (effect.attackCoefficient ?? 0) * shieldRuntimeMultiplier };
                     this.applyDirectShield(source, target, scaled, now, skillId);
                     break;
-                }
-                case 'applyStatus': {
+                
+        } while (false);
+    }
+    resolveEffectApplyStatusV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
+        do {
                     const statusTarget = effect.target === 'self' ? source : target;
                     this.applyStatus(source, statusTarget, effect.statusId, effect.duration, effect.stacks ?? 1, now, skillId);
                     break;
-                }
-                case 'addMark': {
+                
+        } while (false);
+    }
+    resolveEffectAddMarkV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
+        do {
                     const dao = skill ? skillRuntimeV117(skill).daoBinding : undefined;
                     if (battleDaoV2Enabled(source) && dao === 'poison' && effect.mark === 'Độc Tầng') {
                         const gained = addPoisonSeedStageV2(source, target.id, effect.stacks, now);
@@ -854,8 +909,11 @@ export class CombatEngine {
                     target.marks[effect.mark] = Math.min(cap, before + stacks);
                     this.log(now, 'mark', `${target.name} nhận ${effect.mark}: ${target.marks[effect.mark]}/${effect.maxStacks}.`, source.id, target.id, skillId, { stacks: target.marks[effect.mark] });
                     break;
-                }
-                case 'consumeMarkDamage': {
+                
+        } while (false);
+    }
+    resolveEffectConsumeMarkDamageV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
+        do {
                     const current = target.marks[effect.mark] ?? 0;
                     const dao = skill ? skillRuntimeV117(skill).daoBinding : undefined;
                     const sig = skill?.daoRuntimeV118?.signature;
@@ -928,8 +986,11 @@ export class CombatEngine {
                     if (outcome.hpDamage > 0)
                         this.generateBloodBreath(source, outcome.hpDamage, effect.sourceTag ?? defaultSourceTag, now);
                     break;
-                }
-                case 'restoreSpirit': {
+                
+        } while (false);
+    }
+    resolveEffectRestoreSpiritV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
+        do {
                     const before = source.spirit;
                     const requested = Math.max(0, effect.flat);
                     source.spirit = Math.min(source.baseStats.maxSpirit, source.spirit + requested);
@@ -944,9 +1005,8 @@ export class CombatEngine {
                     }
                     this.log(now, 'resource', `${source.name} hồi ${restored.toFixed(0)} Chân Nguyên.`, source.id, source.id, skillId);
                     break;
-                }
-            }
-        }
+                
+        } while (false);
     }
     elementalContextV133(source, skill, authored, runtimeAction, spread = 1) {
         const coefficients = { ...(authored ?? {}) };
