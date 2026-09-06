@@ -35,5 +35,9 @@ const next=String.raw`function replaceRegexOnce(text,re,after,label){
 }`;
 if(!s.includes(old)) throw new Error('R3 patcher compatibility target not found');
 s=s.replace(old,next);
+const badHistory='this.currentLifeValue.history.push(event);this.historyValue.push(event);this.actionIndexValue+=1;';
+const goodHistory='this.historyValue.append(event);this.actionIndexValue+=1;';
+if(!s.includes(badHistory)) throw new Error('R3 retreat history target not found');
+s=s.replace(badHistory,goodHistory);
 fs.writeFileSync(p,s);
 await import('./apply-reincarnation-cultivation-r3.js');
