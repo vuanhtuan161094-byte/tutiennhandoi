@@ -22,7 +22,7 @@ import { bloodlineDefinition, bloodlineIds, bundleSummaryLines } from './birth-o
 import { economyMaterialDefinition, heavenlyTreasureDefinitions } from './economy-v111.js';
 import { BATTLE_DAO_IDS, BATTLE_DAO_NAMES } from './build-foundation-v113.js';
 import { battleDaoV2SkillDescriptionV79, skillCombatExplanationV125 } from './specialization-skill-progression-v125.js';
-import { resourcePveDefinitionV12329, resourcePveFloorRewardPreviewV12329, resourcePveFarmRewardPreviewV109, resourcePveProductionCatalogV109 } from './resource-pve-v12329.js';
+import { resourcePveDefinitionV12329, resourcePveFloorRewardPreviewV12329, resourcePveFarmRewardPreviewV109 } from './resource-pve-v12329.js';
 import { buildBuildOverviewV105, buildGameplayClarityV102, buildProgressionGuideV103, buildSessionLoopV104 } from './player-experience-v105.js';
 import { globalBuildBalanceSummaryV108 } from './global-build-balance-v108.js';
 import { mortalProgressionSummaryV113 } from './progression-closure-v113.js';
