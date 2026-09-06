@@ -636,10 +636,7 @@ function render(){
   return needsDomReplace;
 }
 function page(title,sub,body,right=''){return `<div class="page-title"><div><h1>${esc(title)}</h1><p>${esc(sub)}</p></div>${right}</div>${body}`;}
-function liveModeLabel(mode){return mode==='hunt'?'Đang Tu Luyện + Tự Săn':'Đang Tu Luyện';}
-function gearGlyph(slot=''){const s=String(slot).toLowerCase();if(s.includes('weapon'))return'VK';if(s.includes('robe'))return'ÁO';if(s.includes('head'))return'MŨ';if(s.includes('boot'))return'GI';if(s.includes('belt'))return'ĐAI';if(s.includes('glove'))return'GĂ';if(s.includes('necklace'))return'DC';if(s.includes('ring'))return'NH';if(s.includes('bracelet'))return'VT';if(s.includes('talisman')||s.includes('accessory'))return'PH';return'ĐỒ';}
 function skillGlyph(skill){const tags=(skill?.tags||[]).join(' ').toLowerCase();if(tags.includes('kiếm')||tags.includes('sword'))return'KI';if(tags.includes('hỏa')||tags.includes('fire'))return'HỎ';if(tags.includes('lôi')||tags.includes('lightning'))return'LÔ';if(tags.includes('thủy')||tags.includes('water'))return'TH';if(tags.includes('băng')||tags.includes('ice'))return'BĂ';if(tags.includes('buff'))return'TĂ';if(tags.includes('debuff'))return'GI';return'CP';}
-function heroStat(label,value){return `<div class="hero-stat"><span>${esc(label)}</span><b>${esc(value)}</b></div>`;}
 
 function renderOverview(){
   const o=model.overview,h=model.endlessHunt,c=model.character,cult=o.cultivation||{};
@@ -1478,16 +1475,6 @@ async function confirmAction(title,text){const d=$('#confirmDialog');$('#confirm
 /* v1.06 Mobile Screen Architecture — 1 viewport = 1 game screen */
 function v106Sheet(id,title,body){return `<section class="v106-sheet" data-sheet-panel="${esc(id)}"><div class="v106-sheet-head"><button class="v106-close" data-sheet-close aria-label="Quay lại">←</button><div class="v106-sheet-title"><div class="eyebrow">Chi tiết</div><h2>${esc(title)}</h2></div></div><div class="v106-sheet-body" tabindex="-1">${body}</div></section>`;}
 function v106MoreSheet(){return v106Sheet('more','Tiện ích',`<div class="v106-menu-grid"><button data-tab-jump="overview">${navIcon('overview')}<span>Tổng Quan</span></button><button data-tab-jump="roots">${navIcon('roots')}<span>Linh Căn</span></button><button data-tab-jump="path">${navIcon('path')}<span>Định Đạo</span></button><button data-tab-jump="build">${navIcon('build')}<span>Phối Đồ</span></button><button data-tab-jump="automation">${navIcon('automation')}<span>Tự Động</span></button>${DEV_MODE?`<button data-tab-jump="devlab">${navIcon('devlab')}<span>DEV Lab</span></button>`:''}</div>`);}
-function v106Screen(id,title,subtitle,body,tools='',sheets=''){return `<section class="v106-screen v106-${id}"><header class="v106-screen-head"><div><h1>${esc(title)}</h1>${subtitle?`<p>${esc(subtitle)}</p>`:''}</div><div class="v106-head-tools">${tools}<button class="v106-icon-btn" data-sheet-open="more" aria-label="Tiện ích">•••</button></div></header><div class="v106-screen-body">${body}</div>${sheets}${v106MoreSheet()}</section>`;}
-function v106CompactStat(label,value){return `<div class="v106-stat"><span>${esc(label)}</span><b>${esc(value)}</b></div>`;}
-function v106OriginSheet(c,o){
-  const b=c.birth||{}, op=c.originProgression||{}, br=op.bloodline||{}, pr=op.physique||{}, rr=op.resources||{};
-  const catalog=(c.bloodlineCatalog||[]).map(x=>`<option value="${esc(x.id)}">${esc(x.name)} · ${esc(x.tierLabel)}</option>`).join('');
-  const talents=(b.talents||[]).map(x=>`<div class="v106-detail-row"><strong>${esc(x.name)}</strong><span>${esc(x.rarity||'')}</span><small>${esc(x.description||'')}</small></div>`).join('')||'<div class="empty">Không có thiên phú nổi bật.</div>';
-  const bloodActions=br.available?`<div class="v106-action-grid"><button class="button" data-blood-purify ${!br.canPurify?'disabled':''}>Nuôi Độ Thuần</button><button class="button gold" data-blood-advance ${!br.canAdvance?'disabled':''}>Thăng Huyết Mạch</button><button class="button ghost" data-blood-advance-protected ${!br.canAdvance?'disabled':''}>Thăng + Bảo Hộ</button></div><div class="field"><label>Hoán Huyết</label><select name="bloodlineTarget">${catalog}</select><button class="button danger" data-blood-swap>Hoán Huyết</button></div>`:`<div class="field"><label>Tạo Huyết từ Vô Huyết</label><select name="bloodlineTarget">${catalog}</select><button class="button danger" data-blood-implant>Tạo Huyết</button></div>`;
-  return `<div class="v106-section-title">Hồ sơ sinh mệnh</div>${(b.originLines||[]).map(x=>`<div class="v106-origin-line">${esc(x)}</div>`).join('')||`${metric('Linh Căn',c.root||'Không rõ')}${metric('Xuất Thân',b.family||'Không rõ')}${metric('Mệnh Cách',b.fate||'Không rõ')}`}<div class="v106-section-title">Thiên Phú</div>${talents}<div class="v106-section-title">Huyết Mạch</div>${metric('Tên',br.name||'Vô Huyết Mạch')}${br.available?metric('Phẩm / Độ Thuần',`${br.grade} · ${num(br.purity)}%`):''}${metric('Huyết Tinh',num(rr.bloodlineEssence||0))}${bloodActions}<div class="v106-section-title">Thể Chất</div>${metric('Tên',pr.name||'Phàm Thể')}${metric('Cảnh',pr.stage||'Chưa thức tỉnh')}${metric('Thể Phách Tinh Hoa',num(rr.bodyEssence||0))}${pr.available?`<button class="button gold" data-physique-advance ${!pr.canAdvance?'disabled':''}>Tiến Thể Chất</button>`:''}`;
-}
-function v106PotentialSheet(c){const pot=c.potential||{unspent:0,allocations:{},definitions:[]};return `<div class="v106-sheet-summary">Điểm còn lại <b>${pot.unspent}</b></div><div class="v106-detail-list">${(pot.definitions||[]).map(d=>`<div class="v106-detail-row"><strong>${esc(d.name)} · ${pot.allocations?.[d.id]||0}</strong><small>${esc(d.description||'')}</small><small>${(d.perPoint||[]).map(esc).join(' · ')}</small><div class="tag-row"><button class="button" data-potential="${esc(d.id)}" data-points="1" ${pot.unspent<1?'disabled':''}>+1</button><button class="button ghost" data-potential="${esc(d.id)}" data-points="5" ${pot.unspent<5?'disabled':''}>+5</button></div></div>`).join('')}</div>`;}
 
 /* v1.09 cleanup: removed superseded v1.06 header renderer */
 function primaryTabGroup(id){
@@ -1601,21 +1588,12 @@ content.addEventListener('click',e=>{
 
 
 /* v1.07 Visual Production Rewrite — art-first mobile presentation */
-function v107Screen(id,title,body,sheets=''){
-  return `<section class="v107-screen v107-${id}"><div class="v107-titlebar"><h1>${esc(title)}</h1><button class="v107-more" data-sheet-open="more" aria-label="Mở tiện ích">•••</button></div><div class="v107-body">${body}</div>${sheets}${v106MoreSheet()}</section>`;
-}
 function v107SkillArt(skillOrIndex,index=0){
   const skill=(skillOrIndex&&typeof skillOrIndex==='object')?skillOrIndex:null;
   const fallbackIndex=skill?index:Number(skillOrIndex||0);
   const custom=userAssetPath('skills',skill?.id||'');
   const production=skill?productionSkillIconPath(skill.id):'';
   return custom||production||`/assets/v107/skill-${Math.abs(fallbackIndex)%6+1}.webp`;
-}
-function v107ItemArt(itemOrIndex,index=0){
-  const item=(itemOrIndex&&typeof itemOrIndex==='object')?itemOrIndex:null;
-  const fallbackIndex=item?index:Number(itemOrIndex||0);
-  const custom=userAssetPath('equipment',item?.id||'',item?.slot||'');
-  return custom||`/assets/v107/item-${Math.abs(fallbackIndex)%18+1}.webp`;
 }
 function v107SlotLabel(slot=''){const s=String(slot).toLowerCase();return s.includes('weapon')?'Kiếm':s.includes('head')?'Đầu':s.includes('robe')?'Y Phục':s.includes('belt')?'Đai':s.includes('glove')?'Hộ Thủ':s.includes('boot')?'Giày':s.includes('necklace')?'Ngọc Bội':s.includes('ring')?'Nhẫn':s.includes('bracelet')?'Vòng':s.includes('talisman')?'Phù':'Trang Bị';}
 function v107TierClass(x={}){const raw=`${x.grade||''} ${x.quality||''} ${x.tier||''}`.toLowerCase();if(raw.includes('phá')||raw.includes('breaker'))return'apex';if(raw.includes('cực')||raw.includes('extreme'))return'extreme';if(raw.includes('tiên')||raw.includes('immortal'))return'immortal';if(raw.includes('thiên')||raw.includes('heaven'))return'heaven';return'normal';}
@@ -1636,48 +1614,10 @@ function v1071SlotIcon(slot=''){
   if(s.includes('ring'))return `<svg ${common}><circle cx="12" cy="14" r="6"/><path d="m9 8 3-5 3 5"/></svg>`;
   return `<svg ${common}><circle cx="12" cy="12" r="8"/></svg>`;
 }
-function v1071OriginSummary(c){
-  const b=c.birth||{};
-  const lines=b.originLines||[];
-  if(lines.length)return `<div class="v1071-origin-summary">${lines.slice(0,6).map((x,i)=>{const parts=String(x).split(':');return `<div><span>${esc(parts.shift()||`Căn ${i+1}`)}</span><b>${esc(parts.join(':').trim()||'—')}</b></div>`;}).join('')}</div>`;
-  return `<div class="v1071-origin-summary"><div><span>Linh Căn</span><b>${esc(c.root||'Không rõ')}</b></div><div><span>Huyết Mạch</span><b>${esc((c.bloodlines||[])[0]?.name||'Vô Huyết')}</b></div><div><span>Thể Chất</span><b>${esc((c.physiques||[])[0]||'Phàm Thể')}</b></div><div><span>Thiên Phú</span><b>${esc((b.talents||[])[0]?.name||'Không')}</b></div><div><span>Mệnh Cách</span><b>${esc(b.fate||'Không rõ')}</b></div><div><span>Xuất Thân</span><b>${esc(b.family||'Không rõ')}</b></div></div>`;
-}
-function v1071BloodSheet(c){
-  const op=c.originProgression||{},br=op.bloodline||{},rr=op.resources||{};
-  const catalog=(c.bloodlineCatalog||[]).map(x=>`<option value="${esc(x.id)}">${esc(x.name)} · ${esc(x.tierLabel)}</option>`).join('');
-  const actions=br.available
-    ? `<div class="v106-action-grid"><button class="button" data-blood-purify ${!br.canPurify?'disabled':''}>Nuôi Độ Thuần</button><button class="button gold" data-blood-advance ${!br.canAdvance?'disabled':''}>Thăng Huyết Mạch</button><button class="button ghost" data-blood-advance-protected ${!br.canAdvance?'disabled':''}>Thăng + Bảo Hộ</button></div><div class="field"><label>Hoán Huyết</label><select name="bloodlineTarget">${catalog}</select><button class="button danger" data-blood-swap>Hoán Huyết</button></div>`
-    : `<div class="field"><label>Tạo Huyết</label><select name="bloodlineTarget">${catalog}</select><button class="button danger" data-blood-implant>Tạo Huyết</button></div>`;
-  return `<div class="v1071-focus-value"><span>Huyết Mạch</span><strong>${esc(br.name||'Vô Huyết Mạch')}</strong></div>${br.available?metric('Phẩm / Độ Thuần',`${br.grade} · ${num(br.purity)}%`):metric('Trạng thái','Chưa thức tỉnh')}${metric('Huyết Tinh',num(rr.bloodlineEssence||0))}${actions}`;
-}
-function v1071BodySheet(c){
-  const op=c.originProgression||{},pr=op.physique||{},rr=op.resources||{};
-  return `<div class="v1071-focus-value"><span>Thể Chất</span><strong>${esc(pr.name||'Phàm Thể')}</strong></div>${metric('Cảnh',pr.stage||'Chưa thức tỉnh')}${metric('Thể Phách Tinh Hoa',num(rr.bodyEssence||0))}${pr.available?`<button class="button gold" data-physique-advance ${!pr.canAdvance?'disabled':''}>Tiến Thể Chất</button>`:'<div class="empty">Thể Chất chưa mở tiến giai.</div>'}`;
-}
 
 
-function v1072ActionIcon(kind='origin'){
-  const common='viewBox="0 0 32 32" aria-hidden="true"';
-  if(kind==='blood')return `<svg ${common}><path d="M16 4c5 7 8 10 8 15a8 8 0 1 1-16 0c0-5 3-8 8-15Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 20c1.2 2 3 3 5.5 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
-  if(kind==='body')return `<svg ${common}><path d="M16 5c3 3 6 4 9 5v6c0 5.5-3.2 9.4-9 11-5.8-1.6-9-5.5-9-11v-6c3-1 6-2 9-5Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 17h8M16 13v8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
-  if(kind==='manual')return `<svg ${common}><path d="M7 8.5c3-1.5 6-1.3 9 .7v16c-3-2-6-2.2-9-.8V8.5Zm18 0c-3-1.5-6-1.3-9 .7v16c3-2 6-2.2 9-.8V8.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 13h3M19 13h3M10 17h3M19 17h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`;
-  return `<svg ${common}><circle cx="16" cy="16" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M16 7c3.2 3 4.8 6 4.8 9S19.2 22 16 25c-3.2-3-4.8-6-4.8-9S12.8 10 16 7Z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="16" cy="16" r="2.2" fill="currentColor"/></svg>`;
-}
 
 /* v1.09 cleanup: removed superseded v1.07 character renderer */
-function v139CultIcon(kind='meditate'){
-  const common='viewBox="0 0 32 32" aria-hidden="true"';
-  if(kind==='idle')return `<svg ${common}><path d="M16 6v20M10 25h12"/><path d="M16 13c-4.8 0-8-2.5-8.5-6.7 4.4-.4 7.5 1.6 8.5 5.2M16 13c4.8 0 8-2.5 8.5-6.7-4.4-.4-7.5 1.6-8.5 5.2"/></svg>`;
-  if(kind==='retreat')return `<svg ${common}><circle cx="16" cy="16" r="10"/><circle cx="16" cy="16" r="4"/><path d="M16 2v4M16 26v4M2 16h4M26 16h4"/></svg>`;
-  if(kind==='hunt')return `<svg ${common}><path d="M7 25 25 7M9 7l16 16"/><path d="m21 5 6 6-4 1-3-3 1-4ZM5 21l6 6-4 1-3-3 1-4Z"/></svg>`;
-  if(kind==='method')return `<svg ${common}><circle cx="16" cy="16" r="10"/><path d="M16 6c3.2 3.2 4.7 6.5 4.7 10S19.2 22.8 16 26c-3.2-3.2-4.7-6.5-4.7-10S12.8 9.2 16 6Z"/><circle cx="16" cy="16" r="2"/></svg>`;
-  if(kind==='pill')return `<svg ${common}><path d="M10 6h12v5c0 2-1.1 3.7-3 4.7V25H13v-9.3c-1.9-1-3-2.7-3-4.7V6Z"/><path d="M11 10h10M13 20h6"/></svg>`;
-  if(kind==='fate')return `<svg ${common}><path d="M16 4 19 12l8 4-8 4-3 8-3-8-8-4 8-4 3-8Z"/><circle cx="16" cy="16" r="2"/></svg>`;
-  if(kind==='body')return `<svg ${common}><path d="M16 4c4 4 8 5 10 6v7c0 6-3.6 10-10 12-6.4-2-10-6-10-12v-7c2-1 6-2 10-6Z"/><path d="M11 17h10M16 12v10"/></svg>`;
-  if(kind==='break')return `<svg ${common}><path d="M16 3 19 11l8 5-8 5-3 8-3-8-8-5 8-5 3-8Z"/><path d="m13 10 6 12M20 9l-8 14"/></svg>`;
-  if(kind==='burn')return `<svg ${common}><path d="M17 3c2 6-2 7 1 11 2-2 3-4 3-7 5 5 6 10 3 15-2 4-5 6-9 6-6 0-10-4-10-10 0-5 3-9 7-12-1 5 2 7 3 9 3-4 1-7 2-12Z"/></svg>`;
-  return `<svg ${common}><circle cx="16" cy="16" r="10"/><path d="M10 20c2-5 10-5 12 0M12 12h.01M20 12h.01"/></svg>`;
-}
 
 function v90JourneySheet(j={}){
   const steps=Array.isArray(j.steps)?j.steps:[];
@@ -2049,11 +1989,6 @@ function v138246EnhanceStatPreview(x){
   const fmt=(key,val)=>{const pct=/(Pct|Chance|Reduction|Efficiency)/i.test(key),speed=key==='actionSpeed';return `${val>=0?'+':''}${num(val,speed?3:pct?1:2)}${pct?'%':''}`;};
   return keys.map(key=>{const raw=Number(base[key]||0),a=raw*(1+cur/100),b=raw*(1+next/100),d=b-a;return {key,current:a,next:b,delta:d,currentText:fmt(key,a),nextText:fmt(key,b),deltaText:fmt(key,d)};});
 }
-function v138246EnhanceQuick(x,sys={}){
-  const cur=Number(x?.enhancementLevel||0),max=Number(sys?.enhancement?.maxLevel||20);if(!x||cur>=max)return '';
-  const cost=Number(x.nextEnhanceCost||0),owned=Number(sys?.resources?.forgingEssence||0),chance=Number(x.nextEnhanceChancePct||0),risk=Number(x.nextEnhanceDowngradeChancePct||0),rows=v138246EnhanceStatPreview(x);
-  return `<section class="v138246-enhance-quick"><header><div><small>CƯỜNG HÓA TIẾP</small><strong>+${num(cur)} → +${num(cur+1)}</strong></div><span>${num(chance,1)}%</span></header><div class="v138246-enhance-mini-stats">${rows.map(r=>`<article><span>${esc(statName(r.key))}</span><b>${r.currentText} <i>→</i> ${r.nextText}</b><em>${r.deltaText}</em></article>`).join('')}</div><footer><span class="${owned>=cost?'ok':'short'}">Khí Luyện ${num(owned)}/${num(cost)}</span><b class="${risk>0?'risk':''}">${risk>0?`Tụt cấp ${num(risk,1)}%`:'Không tụt cấp'}</b></footer></section>`;
-}
 function v138246ShowEnhanceFeedback(payload,itemName='Trang bị'){
   const report=payload?.result?.data;if(!report||typeof report.beforeLevel!=='number')return;
   const tone=report.success?'success':report.downgraded?'down':report.protectionUsed?'protected':'fail';
@@ -2347,36 +2282,6 @@ function v138234ItemDisplayName(x={}){
   name=name.replace(/^(Phàm|Linh|Huyền|Địa|Thiên|Tiên|Cực|Phá)\s*[·•-]?\s*/,'').replace(/^(Hạ|Trung|Thượng|Cực)\s*Phẩm\s*/,'').trim();
   const parts=name.split(/\s*[·•|]\s*/).filter(Boolean);return (parts.at(-1)||name||'Trang bị').slice(0,42);
 }
-function v1086RenderInventory(){
-  const gear=model.equipment||[],sys=model.equipmentSystem||{},equipped=gear.filter(x=>x.equipped),resources=model.inventory||[];
-  const slots=(sys.slots||[]).map(x=>[x.id,x.label]);
-  let selected=gear.find(x=>x.id===inventoryUi.selectedId)||gear.find(x=>!x.equipped)||gear[0]||null;
-  const filtered=gear.filter(x=>(inventoryUi.group==='all'||x.slotGroup===inventoryUi.group)&&(inventoryUi.slot==='all'||x.slot===inventoryUi.slot)&&(inventoryUi.setId==='all'||!inventoryUi.setId||x.setId===inventoryUi.setId));
-  filtered.sort((a,b)=>inventoryUi.sort==='enhance'?Number(b.enhancementLevel||0)-Number(a.enhancementLevel||0)||Number(b.itemLevel||0)-Number(a.itemLevel||0):inventoryUi.sort==='impact'?Number(b.powerDeltaPct||0)-Number(a.powerDeltaPct||0):inventoryUi.sort==='grade'?v138234GradeRank(b.grade)-v138234GradeRank(a.grade)||Number(b.itemLevel||0)-Number(a.itemLevel||0)||Number(b.enhancementLevel||0)-Number(a.enhancementLevel||0):Number(b.itemLevel||0)-Number(a.itemLevel||0)||Number(b.enhancementLevel||0)-Number(a.enhancementLevel||0));
-  const visibleLimit=Math.max(36,Number(inventoryUi.visibleLimit||72)),visibleFiltered=filtered.slice(0,visibleLimit);
-  if(filtered.length&&!filtered.some(x=>x.id===selected?.id))selected=filtered[0];
-  if(selected)inventoryUi.selectedId=selected.id;
-  const equippedSame=selected?equipped.find(x=>x.slot===selected.slot):null;
-  const equippedRail=(sys.slots||[]).map(slot=>{const x=gear.find(g=>g.id===slot.equippedItemId);return `<button class="v13820-equipped-slot v13823-touch ${x?v107TierClass(x):'empty'}" ${x?`data-inventory-select="${esc(x.id)}" data-item-long="item-${gear.indexOf(x)}"`:''} aria-label="${esc(x?`${slot.label}: ${x.name}`:`${slot.label}: trống`)}"><span>${x?`${v13823LazyImg(v1077EquipArt(slot.id,x),x.name)}<b>+${num(x.enhancementLevel||0)}</b>`:`<i>${v1077SlotIcon(slot.id)}</i><em class="v13823-empty-mark">TRỐNG</em>`}</span><small>${esc(slot.label)}</small></button>`;}).join('');
-  const itemGrid=visibleFiltered.map(x=>{const i=gear.indexOf(x),active=selected?.id===x.id;return `<button class="v13820-item v13823-touch v13823-rarity-card ${v107TierClass(x)} ${x.equipped?'equipped':''} ${x.locked?'locked':''} ${active?'selected':''}" data-inventory-select="${esc(x.id)}" data-item-long="item-${i}" aria-label="${esc(`${x.name}, ${v13823RarityLabel(x)}, cấp ${num(x.itemLevel||0)}${x.locked?', đã khóa':''}`)}"><span>${v13823LazyImg(v1077EquipArt(x.slot,x),x.name)}<b>+${num(x.enhancementLevel||0)}</b>${x.locked?'<u class="v13823-lock-glyph">◆</u>':''}${x.setId?'<u class="v138233-item-set-glyph">SET</u>':''}</span><strong>Lv.${num(x.itemLevel||0)}</strong><small title="${esc(x.name)}">${esc(v138234ItemDisplayName(x))}</small><em class="v13823-rarity-label">${esc(v13823RarityLabel(x))}</em>${x.setName?`<mark class="v138233-item-set-name">${esc(x.setName)}</mark>`:''}${x.equipped?'<i>Đang mặc</i>':''}</button>`;}).join('');
-  const delta=v13820StatDelta(selected,equippedSame).slice(0,6),hints=v13820BuildHints(selected,equippedSame);
-  const compare=selected?`<aside class="v13820-compare"><div class="v13820-compare-title"><div><span>Đang chọn</span><strong>So sánh trang bị</strong></div><button data-sheet-open="item-${gear.indexOf(selected)}">Chi tiết</button></div>${v13820ItemSummary(selected)}${selected.equipped?'<div class="v13820-current-pill">Món này đang được trang bị</div>':`<div class="v13820-versus">so với đang mặc</div>${v13820ItemSummary(equippedSame)}<div class="v13820-delta-list">${delta.map(({key,value})=>`<div class="${value>0?'pos':value<0?'neg':''}"><span>${esc(statName(key))}</span><b>${v13820DeltaText(value,key)}</b></div>`).join('')||'<div><span>Ô hiện tại</span><b>Trống</b></div>'}</div><div class="v13820-hints">${hints.map(([kind,title,sub])=>`<div class="${kind}"><i>${kind==='up'?'↑':kind==='down'?'↓':'✦'}</i><span><b>${esc(title)}</b><small>${esc(sub)}</small></span></div>`).join('')}</div>${v13822IntelPanel(selected)}<button class="v13820-equip-cta" data-equip="${esc(selected.id)}" ${selected.locked?'disabled':''}>${selected.locked?'Trang bị đã khóa':'Trang Bị'}</button>`}</aside>`:'<aside class="v13820-compare"><div class="v13820-empty-compare">Chưa có trang bị.</div></aside>';
-  const modeTabs=v13821InventoryModeTabs(gear.length,sys);
-  const head=`<div class="v13820-inventory-head"><div><span>Trang bị đang mặc</span><strong>${num(sys.equippedCount??equipped.length)}/${num(sys.canonicalSlotCount??10)} ô</strong></div><div class="v13820-set-mini">${(sys.sets||[]).slice(0,2).map(set=>`<span>${esc(set.setName)} <b>${num(set.equippedPieces)}/${num(set.maxPieces)}</b></span>`).join('')||'<span>Chưa có Set hoạt động</span>'}</div></div><div class="v13820-equipped-rail">${equippedRail}</div>${modeTabs}`;
-  const setFilterOptions=(sys.setCatalog||[]).filter(x=>x.unlocked||Number(x.ownedSlotCount||0)>0||Number(x.equippedPieces||0)>0).sort((a,b)=>a.category.localeCompare(b.category)||a.setName.localeCompare(b.setName));
-  const activeSetFilter=(sys.setCatalog||[]).find(x=>x.setId===inventoryUi.setId);
-  const gearBody=`${head}${activeSetFilter?`<div class="v138233-inventory-set-filter"><span>Đang xem riêng bộ</span><strong>${esc(activeSetFilter.setName)}</strong><button data-clear-inventory-set>Hiện tất cả</button></div>`:''}<div class="v13820-filters v138233-filters"><select data-inventory-filter="group"><option value="all" ${inventoryUi.group==='all'?'selected':''}>Tất cả nhóm</option><option value="attire" ${inventoryUi.group==='attire'?'selected':''}>Trang Phục</option><option value="jewelry" ${inventoryUi.group==='jewelry'?'selected':''}>Phụ Kiện</option></select><select data-inventory-filter="slot"><option value="all" ${inventoryUi.slot==='all'?'selected':''}>Tất cả vị trí</option>${slots.map(([id,label])=>`<option value="${esc(id)}" ${inventoryUi.slot===id?'selected':''}>${esc(label)}</option>`).join('')}</select><select data-inventory-filter="setId"><option value="all" ${inventoryUi.setId==='all'?'selected':''}>Mọi Set</option>${setFilterOptions.map(set=>`<option value="${esc(set.setId)}" ${inventoryUi.setId===set.setId?'selected':''}>${esc(set.setName)}</option>`).join('')}</select><select data-inventory-filter="sort"><option value="level" ${inventoryUi.sort==='level'?'selected':''}>Cấp cao trước</option><option value="enhance" ${inventoryUi.sort==='enhance'?'selected':''}>Cường hóa</option><option value="impact" ${inventoryUi.sort==='impact'?'selected':''}>Build (ước lượng)</option><option value="grade" ${inventoryUi.sort==='grade'?'selected':''}>Phẩm chất</option></select></div><div class="v13820-inventory-main"><div class="v13820-grid-wrap"><div class="v13820-grid-head"><div><strong>Kho Trang Bị</strong><span>${filtered.length}/${gear.length} món</span></div><small>Chạm để chọn · giữ để xem chi tiết</small></div><div class="v13820-item-grid">${itemGrid||'<div class="v1086-empty-state v13823-empty-state"><i>□</i><strong>Không có món phù hợp</strong><span>Bộ lọc hiện tại không có trang bị.</span><button class="button ghost" data-clear-inventory-filters>Xóa bộ lọc</button></div>'}</div></div>${compare}</div>`;
-  const equippedBody=`${v138240EquippedOverview(gear,sys)}`;
-  const forgeBody=`${head}${v13821Workshop(gear,selected,sys)}`;
-  const setBody=`${head}${v13821SetScreen(sys,gear)}`;
-  const body=inventoryUi.view==='equipped'?equippedBody:inventoryUi.view==='forge'?forgeBody:inventoryUi.view==='sets'?setBody:gearBody;
-  const sheetItemIds=new Set([...visibleFiltered,...equipped,...(selected?[selected]:[])].map(x=>x.id));
-  const itemSheets=gear.filter(x=>sheetItemIds.has(x.id)).map(x=>v13820ItemSheet(x,gear.indexOf(x),equipped.find(g=>g.slot===x.slot),sys)).join('');
-  const resBody=`<div class="v106-resource-grid">${resources.map(x=>`<div><span>${esc(x.name)}</span><b>${num(x.quantity,2)}</b></div>`).join('')}</div>`;
-  const artBody=v88InventoryArtifactBody();
-  const setSheets=v138233SetSheets(sys,gear);
-  return `<section class="v107-screen v1086-inventory v13820-inventory v13821-inventory v13823-inventory-final v138233-inventory"><div class="v107-body">${body}</div>${itemSheets}${setSheets}${v138239GearSourcesSheet(sys)}${v106Sheet('resources','Vật Phẩm & Tài Nguyên',resBody)}${v106Sheet('artifacts','Pháp Bảo & Chí Bảo',artBody)}${v106MoreSheet()}</section>`;
-}
 
 
 /* v1.07.3 — Character Target Composition Pass
@@ -2392,15 +2297,6 @@ function v1073EquipPreview(slot=''){
   if(s.includes('necklace'))return '/assets/v1073/equip-necklace.webp';
   if(s.includes('ring'))return '/assets/v1073/equip-ring.webp';
   return '/assets/v1073/equip-ring.webp';
-}
-function v1073ActionArt(kind='origin'){
-  return userAssetPath('featureIcons',kind)||`/assets/v1073/action-${kind}.webp`;
-}
-function v1073StatusIcon(kind='hp'){
-  const common='viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
-  if(kind==='qi')return `<svg ${common}><path d="M12 3c4 4 6 7 6 10a6 6 0 1 1-12 0c0-3 2-6 6-10Z"/><path d="M9 14c1.2 1.5 2.4 2 4.5 2"/></svg>`;
-  if(kind==='power')return `<svg ${common}><path d="m5 4 15 15M19 4 4 19"/><path d="m4 4 4 1-3 3m15-4-4 1 3 3M4 20l4-1-3-3m15 4-4-1 3-3"/></svg>`;
-  return `<svg ${common}><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 5.5-7 10-7 10Z"/></svg>`;
 }
 
 /* v1.09 cleanup: removed superseded v1.07.3 header renderer */
@@ -2426,9 +2322,6 @@ function v138ExpressionThumb(expr={},avatar=''){
   const id=expr.id||'neutral',symbol=expr.symbol||'—';
   return expressionPortraitMarkup({expressionId:id,avatar,rig:PLAYER_COMBAT_VISUAL.portraitRig,className:'v138-expression-thumb',badge:symbol,alt:expr.name||id});
 }
-function v1085SceneComposite(skin={},background={}){
-  return String(skin?.composites?.[background?.id]||'');
-}
 function v1074AppearanceSheet(){
   const visuals=v1074VisualState();
   const skin=v1074SelectedVisual('skin');
@@ -2437,13 +2330,6 @@ function v1074AppearanceSheet(){
   const expressions=(visuals.expressions||[]).map(x=>`<button class="v138-expression-choice ${x.selected?'selected':''}" data-visual-expression="${esc(x.id)}" ${x.unlocked===false?'disabled':''}>${v138ExpressionThumb(x,x.portrait||avatar)}<b>${esc(x.name)}</b><small>${x.selected?'Đang dùng':esc(x.description||'Biểu cảm tĩnh')}</small></button>`).join('');
   const backgrounds=(visuals.backgrounds||[]).map(x=>`<button class="v1074-visual-choice background ${x.selected?'selected':''}" data-visual-background="${esc(x.id)}" ${x.unlocked===false?'disabled':''}><span class="v1074-bg-thumb" style="background-image:url('${esc(x.asset)}')"></span><b>${esc(x.name)}</b><small>${x.selected?'Đang dùng':x.unlocked===false?'Chưa mở':'Chọn cảnh'}</small></button>`).join('');
   return `<div class="v1074-appearance"><div class="v106-section-title">Skin nhân vật</div><div class="v1074-choice-grid">${skins}</div><div class="v106-section-title v138-expression-title">Biểu cảm tĩnh <small>Portrait · Hồ sơ · PvP card</small></div><div class="v138-expression-grid">${expressions}</div><div class="v106-section-title">Bối cảnh</div><div class="v1074-choice-grid">${backgrounds}</div><div class="footer-note">Biểu cảm dùng Face Rig tái sử dụng: đổi tóc/ngoại trang sau này không cần render lại 16 mặt. Combat body vẫn dùng pose tác giả cố định.</div></div>`;
-}
-function v1074EquipmentSheet(x,label,slot){
-  if(!x)return '';
-  const stats=Object.entries(x.stats||{}).map(([k,v])=>`${statName(k)} ${Number(v)>=0?'+':''}${num(v,2)}`).join(' · ');
-  const maxed=Number(x.enhancementLevel||0)>=20;
-  const protection=resourceQuantity('resource.enhancement_protection_talisman');
-  return `${metric('Vị trí',label)}${metric('Phẩm',x.grade||x.quality||x.tier||'Phàm')}${metric('Cường hóa',`+${num(x.enhancementLevel||0)} · ${num(x.enhancementBonusPct||0)}%`)}<p class="small muted">${esc(stats||'Chưa có chỉ số phụ.')}</p><div class="v106-action-grid"><button class="button ghost" data-open-inventory="gear" data-inventory-slot="${esc(x.slot)}">Mở Hành Trang</button>${maxed?'':`<button class="button gold" data-enhance="${esc(x.id)}">Cường Hóa · ${num(x.nextEnhanceChancePct,1)}%</button><button class="button ghost" data-enhance-protected="${esc(x.id)}" ${protection<1?'disabled':''}>Cường Hóa + Bùa</button>`}</div>`;
 }
 
 /* v1.09 cleanup: removed superseded v1.07.4 header renderer */
@@ -2463,35 +2349,6 @@ function v1075OriginCards(c){
   const rows=raw.length?raw.map((line,i)=>{const parts=String(line).split(':');return [parts.shift()?.trim()||fallback[i][0],parts.join(':').trim()||fallback[i][1]];}):fallback;
   const icons=['◇','◈','⬡','✦','◎','⌂'];
   return `<div class="v1075-origin-grid">${rows.map((x,i)=>`<div class="v1075-origin-card"><i>${icons[i]||'◇'}</i><div><span>${esc(x[0])}</span><strong>${esc(x[1])}</strong></div></div>`).join('')}</div>`;
-}
-function v1075OriginSheet(c){
-  return `${v1075OriginCards(c)}<div class="v1075-sheet-nav"><button class="primary" data-tab-jump="path"><b>Định Đạo</b><span>Đạo Tính · Chủ/Phụ Bản Đạo</span></button><button data-sheet-open="blood"><b>Huyết Mạch</b><span>Độ thuần · thăng phẩm · hoán huyết</span></button><button data-sheet-open="body"><b>Thể Chất</b><span>Tiến cảnh thể chất</span></button></div>`;
-}
-function v1075BloodSheet(c){
-  const op=c.originProgression||{},br=op.bloodline||{},rr=op.resources||{};
-  const purity=Math.max(0,Math.min(100,Number(br.purity||0)));
-  const grade=br.grade||'Phàm';
-  const catalog=(c.bloodlineCatalog||[]).map(x=>`<option value="${esc(x.id)}">${esc(x.name)} · ${esc(x.tierLabel)}</option>`).join('');
-  const nextText=br.nextGrade?`${br.nextGrade} · ${num(br.advanceEssenceCost||0)} Huyết Tinh`:'Đã đạt giới hạn hiện tại';
-  const actions=br.available?`<div class="v1075-action-grid"><button data-blood-purify ${!br.canPurify?'disabled':''}><b>Nuôi Độ Thuần</b><span>+10% mỗi lần</span></button><button class="gold" data-blood-advance ${!br.canAdvance?'disabled':''}><b>Thăng Huyết Mạch</b><span>${esc(nextText)}</span></button><button data-blood-advance-protected ${!br.canAdvance?'disabled':''}><b>Thăng + Bảo Hộ</b><span>Hộ Huyết: ${num(rr.protection||0)}</span></button></div>`:'';
-  const swapLabel=br.available?'Hoán Huyết':'Tạo Huyết';
-  const swapAttr=br.available?'data-blood-swap':'data-blood-implant';
-  return `<div class="v1075-focus blood"><div class="v1075-focus-mark">◉</div><div><span>Huyết Mạch hiện tại</span><strong>${esc(br.name||'Vô Huyết Mạch')}</strong><small>${br.available?`${esc(grade)} · Độ Thuần ${num(purity)}%`:'Chưa có huyết mạch bẩm sinh'}</small></div></div>${br.available?`<div class="v1075-progress"><div><span>Độ Thuần</span><b>${num(purity)}%</b></div><div class="bar"><i style="width:${purity}%"></i></div></div>`:''}<div class="v1075-resource-row"><div><span>Huyết Tinh</span><b>${num(rr.bloodlineEssence||0)}</b></div><div><span>Hộ Huyết</span><b>${num(rr.protection||0)}</b></div><div><span>Phẩm</span><b>${esc(br.available?grade:'—')}</b></div></div>${actions}<div class="v1075-swap"><label>${swapLabel}</label><div><select name="bloodlineTarget">${catalog}</select><button class="danger" ${swapAttr}>${swapLabel}</button></div><small>${br.available?'Tối đa một lần mỗi đời; Độ Thuần trở về 0%.':'Tạo huyết từ Vô Huyết cần nhiều tài nguyên hơn.'}</small></div>`;
-}
-function v1075BodySheet(c){
-  const op=c.originProgression||{},pr=op.physique||{},rr=op.resources||{};
-  const stages=['Sơ Tỉnh','Nhập Môn','Tiểu Thành','Đại Thành','Viên Mãn'];
-  const idx=Math.max(-1,stages.indexOf(pr.stage));
-  const next=pr.nextStage|| (pr.available&&idx<stages.length-1?stages[idx+1]:'');
-  return `<div class="v1075-focus body"><div class="v1075-focus-mark">✦</div><div><span>Thể Chất hiện tại</span><strong>${esc(pr.name||'Phàm Thể')}</strong><small>${esc(pr.stage||'Chưa thức tỉnh')}</small></div></div><div class="v1075-stage-track">${stages.map((x,i)=>`<div class="${i<=idx?'done':''} ${i===idx?'current':''}"><i></i><span>${esc(x)}</span></div>`).join('')}</div><div class="v1075-resource-row two"><div><span>Thể Phách Tinh Hoa</span><b>${num(rr.bodyEssence||0)}</b></div><div><span>Bước tiếp</span><b>${esc(next||'Chưa mở')}</b></div></div>${pr.available?`<div class="v1075-next-cost"><span>Yêu cầu tiến cảnh</span><b>${pr.nextStage?`${esc(pr.nextStage)} · ${num(pr.cost||0)} tinh hoa`:'Đã Viên Mãn'}</b></div><button class="v1075-main-action" data-physique-advance ${!pr.canAdvance?'disabled':''}>Tiến Thể Chất</button>`:`<div class="v1075-locked-note"><b>Chưa có Thể Chất đặc biệt</b><span>Đời này đang dùng Phàm Thể, không có tiến cảnh riêng.</span></div>`}`;
-}
-function v1075ManualSheet(c,o){
-  const tm=c.techniqueManuals||{};
-  const known=tm.known||[], eq=tm.equipped||{}, byId=new Map(known.map(x=>[x.id,x]));
-  const slots=[['inner','Tâm Pháp'],['art','Võ Học'],['movement','Thân Pháp'],['secret','Bí Thuật']];
-  const slotHtml=slots.map(([id,label],i)=>{const x=byId.get(eq[id]);return `<div class="v1075-manual-slot ${x?'filled':''}"><i>${['◉','⚔','◇','✦'][i]}</i><div><span>${esc(label)}</span><strong>${x?esc(x.name):'Chưa trang bị'}</strong>${x?`<small>${esc(x.gradeLabel)} · ${esc(x.stage)} · ${num(x.mastery,1)}%</small>`:'<small>Ô Bí Thuật trống</small>'}</div></div>`;}).join('');
-  const list=known.map(x=>`<div class="v1075-manual-row"><div class="v1075-manual-grade">${esc(x.gradeLabel||'Phàm')}</div><div class="v1075-manual-info"><strong>${esc(x.name)}</strong><span>${esc(x.slotLabel)} · ${esc(x.stage)} · ${num(x.mastery,1)}%</span><small>${esc(x.description||'')}</small></div><div class="v1075-manual-actions"><button data-tech-equip="${esc(x.id)}" ${x.equipped||o.life.realmOrder<(x.requiredRealmOrder||0)?'disabled':''}>${x.equipped?'Đang dùng':'Trang bị'}</button><button data-tech-study="${esc(x.id)}" data-tech-batches="1" ${Number(tm.fragments||0)<1?'disabled':''}>Tham ngộ</button></div></div>`).join('');
-  return `<div class="v1075-manual-head"><span>Bí Thuật Tàn Trang</span><b>${num(tm.fragments||0)}</b></div><div class="v1075-manual-slots">${slotHtml}</div><div class="v1075-subtitle"><b>Bí Thuật đã lĩnh ngộ</b><span>${known.length}</span></div><div class="v1075-manual-list">${list||'<div class="v1075-locked-note"><b>Chưa lĩnh ngộ Bí Thuật/Võ Học</b><span>Thu thập Bí Thuật Tàn Trang để tham ngộ Bí Thuật/Võ Học mới.</span></div>'}</div>`;
 }
 
 
@@ -2641,7 +2498,6 @@ function v1078StatsSheet(c,o){
   const elementHtml=allElements.length?`<section class="v13819-element-detail"><header><b>Ngũ Hành chi tiết</b><span>Hiệu lực / Kháng</span></header>${allElements.map(k=>{const a=affinities.find(x=>x[0]===k)?.[1]||0,r=resists.find(x=>x[0]===k)?.[1]||0;return `<div><span>${esc((V1077_ELEMENT_META[k]||[localizeUiTerm(k)])[0])}</span><strong>${num(a,1)}%</strong><em>${num(r,1)}%</em></div>`;}).join('')}</section>`:'';
   return `<div class="v13819-detail-core"><div><span>Công Lực</span><strong>${num(core.power??st.attack??0)}</strong></div><div><span>Thể Phách</span><strong>${num(core.body??0)}</strong></div><div><span>Phòng Ngự</span><strong>${num(core.defense??st.defense??0)}</strong></div></div><p class="v13819-detail-note">Ba chỉ số lõi cho biết nền tảng nhân vật; các nhóm bên dưới giúp bạn nhìn rõ tấn công, sinh tồn và hướng build. Phá Thế được tổng hợp từ kỹ năng và hiệu ứng đang thật sự hoạt động.</p><div class="v13819-detail-grid">${groupHtml}</div>${elementHtml}`;
 }
-function v13819ValuePct(v){return `${num(Math.max(0,Number(v||0)),1)}%`;}
 function v13819AffinityValue(v){
   if(v&&typeof v==='object')return Number(v.pct??v.value??v.multiplier??0);
   const n=Number(v||0);return Math.abs(n)<=1?n*100:n;
@@ -2662,11 +2518,6 @@ function v13819SetCategorySummary(sys={},category='attire'){
   const best=list[0];
   const group=sys.groups?.[category];
   return best?{name:best.setName,pieces:Number(best.equippedPieces||0),max:Number(best.maxPieces||group?.slotCount||0),active:(best.thresholds||[]).filter(x=>x.active).length}:{name:group?.label||(category==='attire'?'Trang Phục':'Phụ Kiện'),pieces:0,max:Number(group?.slotCount||0),active:0};
-}
-function v13819SetSheet(sys={}){
-  const sets=(sys.sets||[]);
-  if(!sets.length)return `<div class="v13819-empty-set"><b>Chưa kích hoạt Set</b><span>Mặc các Trang Phục cùng Ngũ Hành để mở bonus 2/4/6.</span></div>`;
-  return `<div class="v13819-set-sheet">${sets.map(set=>`<section><header><div><span>${set.category==='attire'?'Trang Phục':set.category==='jewelry'?'Phụ Kiện':'Set'}</span><b>${esc(set.setName)}</b></div><strong>${num(set.equippedPieces)}/${num(set.maxPieces)}</strong></header><div>${(set.thresholds||[]).map(t=>`<article class="${t.active?'active':'inactive'}"><i>${t.active?'✓':'○'}</i><div><b>${num(t.pieces)} món · ${esc(t.name||'Bonus Set')}</b><span>${esc(t.summary||'')}</span></div></article>`).join('')}</div></section>`).join('')}</div>`;
 }
 const V13819_STAT_HELP={
   attack:'Tấn Công gom các chỉ số giúp hit trực tiếp gây hiệu quả tốt hơn. Công Lực là trục lõi; Hội Tâm và Xuyên Giáp có consumer riêng trong combat.',
@@ -2771,21 +2622,9 @@ function v138232CharacterBodyArt(skin={}){
   if(String(skin?.id||'')==='skin.white_immortal')return PLAYER_COMBAT_VISUAL.poses?.idle||'/assets/runtime/v138/characters/immortal_swordsman_01/idle.webp';
   return visualVariantAsset(skin,'character',PLAYER_COMBAT_VISUAL.poses?.idle||'/assets/runtime/v138/characters/immortal_swordsman_01/idle.webp');
 }
-function v138232RootElement(c={},st={}){
-  const rootElement=c.originDetails?.spiritualRoot?.elements?.[0];
-  if(rootElement){const meta=V1077_ELEMENT_META[rootElement]||[localizeUiTerm(rootElement)];return meta[0];}
-  return v13819TopElement(st.elementalAffinities||{})?.label||'';
-}
 function v138232ProfileReady(c={}){
   const br=c.originProgression?.bloodline||{},pr=c.originProgression?.physique||{},tm=c.techniqueManuals||{};
   return Boolean(br.canPurify||br.canAdvance||pr.canAdvance||(Number(tm.fragments||0)>0&&(tm.known||[]).some(x=>Number(x.mastery||0)<100)));
-}
-function v138232AxisLabel(axis=''){
-  return ({offense:'Thiên về tấn công',damage:'Thiên về tấn công',survival:'Thiên về sinh tồn',control:'Thiên về khống chế',mobility:'Thiên về tốc độ',sustain:'Thiên về duy trì',balanced:'Cân bằng'})[String(axis||'').toLowerCase()]||'Phong cách cân bằng';
-}
-function v138232SetMeter(pieces=0,max=0){
-  const count=Math.max(0,Number(pieces)||0),total=Math.max(0,Number(max)||0);
-  return `<span class="v138232-set-meter" aria-hidden="true">${Array.from({length:total},(_,i)=>`<i class="${i<count?'on':''}"></i>`).join('')}</span>`;
 }
 function v138232NextAction({potential=0,enhanceable=0,enhanceableItemId='',profileReady=false}={}){
   if(potential>0)return{attr:'data-sheet-open="potential"',kicker:'NÊN LÀM TIẾP',title:`Dùng ${potential} Điểm Tiềm Năng`,detail:'Tăng ngay Công Lực, Thể Phách hoặc Phòng Ngự của đời hiện tại.',cta:'Phân bổ',tone:'potential'};
