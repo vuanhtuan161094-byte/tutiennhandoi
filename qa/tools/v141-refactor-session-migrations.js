@@ -7,13 +7,17 @@ const sessionPath=path.join(ROOT,'dist/core/session.js');
 const migrationPath=path.join(ROOT,'dist/core/session-save-migrations.js');
 let source=fs.readFileSync(sessionPath,'utf8');
 
+const helperMarker='function startingRealmState(registry) {';
 const importLine="import { migrateStateV1, migrateStateV2, migrateStateV3, migrateStateV5, migrateStateV6, migrateStateV7, migrateStateV8, starterProfessionState } from './session-save-migrations.js';";
-if(source.includes(importLine)&&fs.existsSync(migrationPath)){
+// Extraction is complete when the dedicated module exists and the original helper block
+// is no longer present. Do not depend on the exact session import shape: later cleanup may
+// legitimately prune or rewrite that import while session-restore owns the migration calls.
+if(fs.existsSync(migrationPath)&&!source.includes(helperMarker)){
   console.log('Session migration extraction already applied.');
   process.exit(0);
 }
 
-const start=source.indexOf('function startingRealmState(registry) {');
+const start=source.indexOf(helperMarker);
 const end=source.indexOf('const CONTENT_FACTION_RANK_ORDER',start);
 if(start<0||end<=start)throw new Error('Expected V140 migration helper block not found');
 let block=source.slice(start,end);
@@ -28,7 +32,7 @@ fs.writeFileSync(migrationPath,imports+block);
 const anchor="import { EventHistory } from './history.js';\n";
 if(!source.includes(anchor))throw new Error('Session import anchor not found');
 source=source.replace(anchor,`${anchor}${importLine}\n`);
-const newStart=source.indexOf('function startingRealmState(registry) {');
+const newStart=source.indexOf(helperMarker);
 const newEnd=source.indexOf('const CONTENT_FACTION_RANK_ORDER',newStart);
 source=source.slice(0,newStart)+source.slice(newEnd);
 fs.writeFileSync(sessionPath,source);
