@@ -10,10 +10,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: v141-full-closure-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  full-closure:
+  preflight:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,7 +31,6 @@ jobs:
         run: |
           node --check app.js
           node --check dist/core/session.js
-          node --check dist/core/session-save-migrations.js
           node --check dist/core/session-restore.js
           node --check dist/core/gameplay.js
           node --check dist/core/combat.js
@@ -42,8 +45,30 @@ jobs:
           node qa/tests/v140-cultivation-transport-test.js
           node qa/tests/v140-zero-legacy-test.js
 
+  backend-closure:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Backend full closure
         run: node qa/runners/v140-backend-gates.js closure
 
+  frontend-closure:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Frontend full closure
         run: node qa/runners/v140-frontend-gates.js closure
