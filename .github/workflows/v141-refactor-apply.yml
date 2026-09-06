@@ -25,13 +25,15 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Apply session extractions
+      - name: Apply structural cleanup
         run: |
           node qa/tools/v141-refactor-session-migrations.js
           node qa/tools/v141-refactor-session-restore.js
+          node qa/tools/v141-prune-app-dead-functions.js
 
       - name: Syntax check
         run: |
+          node --check app.js
           node --check dist/core/session.js
           node --check dist/core/session-save-migrations.js
           node --check dist/core/session-restore.js
@@ -49,6 +51,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dist/core/session.js dist/core/session-save-migrations.js dist/core/session-restore.js
-          git commit -m "refactor: extract session save compatibility modules"
+          git add app.js dist/core/session.js dist/core/session-save-migrations.js dist/core/session-restore.js
+          git commit -m "refactor: apply safe V141 structural cleanup"
           git push origin HEAD:refactor/v141-codebase-optimization
