@@ -50,4 +50,4 @@ jobs:
           node --check dist/core/reincarnation-progression-v1102.js
           node --check dist/core/cultivation-v140.js
           node --check dist/core/session.js
-          node --check dist/app.js
+          node --check app.js
