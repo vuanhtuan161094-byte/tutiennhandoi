@@ -27,13 +27,23 @@ const manualRankBaseCost = rank => {
   return rank <= 10 ? 50 : rank <= 20 ? 150 : rank <= 30 ? 400 : rank <= 40 ? 1000 : 2500;
 };
 
+const deriveRankCost = (base, costClass, rank) => {
+  if (costClass === 'high') {
+    // Canonical high-class rounding alternates floor/ceil by purchased rank so .25 curves
+    // preserve the intended aggregate cost instead of accumulating Math.round bias.
+    const raw = base * 1.25;
+    return rank % 2 === 1 ? Math.floor(raw) : Math.ceil(raw);
+  }
+  const multiplier = COST_CLASS_MULTIPLIER[costClass];
+  assert.notEqual(multiplier, undefined, `Unknown cost class: ${costClass}`);
+  return Math.round(base * multiplier);
+};
+
 const deriveNodeCost = node => {
-  const multiplier = COST_CLASS_MULTIPLIER[node.costClass];
-  assert.notEqual(multiplier, undefined, `Unknown cost class: ${node.id} -> ${node.costClass}`);
   const baseCost = node.treeId === 'cultivation' ? cultivationRankBaseCost : manualRankBaseCost;
   let total = 0;
   for (let rank = 1; rank <= node.maxRank; rank += 1) {
-    total += Math.round(baseCost(rank) * multiplier);
+    total += deriveRankCost(baseCost(rank), node.costClass, rank);
   }
   // Locked legacy canonical surcharge on Đại Viên Mãn Chân Giải rank 50.
   if (node.id === 'manual.grand_completion') total += 120;
