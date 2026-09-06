@@ -31,7 +31,7 @@ jobs:
           cache: ''
 
       - name: Apply R3 source patch
-        run: node qa/tools/apply-reincarnation-cultivation-r3.js
+        run: node qa/tools/run-reincarnation-cultivation-r3.js
 
       - name: Dedicated Luân Hồi cultivation test
         run: node qa/tests/reincarnation-cultivation-r3-test.js
