@@ -30,6 +30,7 @@ jobs:
           node qa/tools/v141-extract-gameplay-dispatch.js
           node qa/tools/v141-extract-gameplay-flow.js
           node qa/tools/v141-split-bind-dynamic.js
+          node qa/tools/v141-split-combat-resolve-effects.js
           node qa/tools/v141-prune-app-dead-functions.js
           node qa/tools/v141-prune-core-dead-functions.js
           node qa/tools/v141-prune-hotspot-dead-functions.js
