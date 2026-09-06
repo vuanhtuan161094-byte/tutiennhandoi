@@ -39,6 +39,9 @@ jobs:
       - name: Codebase health scan
         run: node qa/tools/codebase-health.js
 
+      - name: Hotspot structure profile
+        run: node qa/tools/hotspot-structure.js
+
       - name: Canonical cultivation gates
         run: |
           node qa/tests/v140-cultivation-core-test.js
