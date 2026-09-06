@@ -1,7 +1,6 @@
 import { ActivityEngine } from './activity.js';
 import { EventHistory } from './history.js';
 import { restoreSimulationSession } from './session-restore.js';
-import './session-save-migrations.js';
 import { fiveElementCounter } from './combat-rules.js';
 import { cloneAdventureState } from './world.js';
 import { applyCharacterToEntity, awakenBloodline, characterStatSourceStagesV129, cloneCharacterSystemState, gainTechniqueMastery, learnSkill as learnCombatSkill, learnTechnique, setActiveTechnique, setCombatLoadout } from './character.js';
