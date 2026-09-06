@@ -1,0 +1,60 @@
+name: V141 Verified Release Package
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v1.41.*'
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Canonical V140/V141 closure gates
+        run: |
+          node qa/tests/v140-cultivation-core-test.js
+          node qa/tests/v140-cultivation-transport-test.js
+          node qa/tests/v140-zero-legacy-test.js
+          node qa/runners/v140-backend-gates.js closure
+          node qa/runners/v140-frontend-gates.js closure
+
+      - name: Build deterministic source package
+        run: |
+          PACKAGE="TU_TIEN_V141_CODEBASE_OPTIMIZED.zip"
+          git archive --format=zip --prefix=TU_TIEN_V141_CODEBASE_OPTIMIZED/ HEAD > "$PACKAGE"
+          sha256sum "$PACKAGE" > "${PACKAGE}.sha256"
+          echo "PACKAGE=$PACKAGE" >> "$GITHUB_ENV"
+
+      - name: Upload verified package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TU_TIEN_V141_CODEBASE_OPTIMIZED
+          path: |
+            ${{ env.PACKAGE }}
+            ${{ env.PACKAGE }}.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish GitHub Release for V141 tag
+        if: startsWith(github.ref, 'refs/tags/v1.41.')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "$PACKAGE" "${PACKAGE}.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
