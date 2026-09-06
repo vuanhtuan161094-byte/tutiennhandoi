@@ -7,9 +7,9 @@ import { spawnSync } from 'node:child_process';
 const FILES=[
   'app.js',
   'dist/core/session.js',
-  'dist/core/session-save-migrations.js',
   'dist/core/session-restore.js',
   'dist/core/gameplay.js',
+  'dist/core/gameplay-dispatch.js',
   'dist/core/combat.js',
   'modules/hunt-combat-v2.js',
 ];
