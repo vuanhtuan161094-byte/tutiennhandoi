@@ -1,0 +1,51 @@
+name: V141 Refactor Apply
+
+on:
+  push:
+    branches:
+      - 'refactor/v141-codebase-optimization'
+    paths:
+      - '.v141-refactor-trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-refactor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Apply session migration extraction
+        run: node qa/tools/v141-refactor-session-migrations.js
+
+      - name: Syntax check
+        run: |
+          node --check dist/core/session.js
+          node --check dist/core/session-save-migrations.js
+
+      - name: Fast canonical gates
+        run: |
+          node qa/runners/v140-backend-gates.js fast
+          node qa/runners/v140-frontend-gates.js fast
+
+      - name: Commit generated refactor
+        run: |
+          if git diff --quiet; then
+            echo "No refactor changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist/core/session.js dist/core/session-save-migrations.js
+          git commit -m "refactor: extract session save migrations"
+          git push origin HEAD:refactor/v141-codebase-optimization
