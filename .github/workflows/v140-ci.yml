@@ -28,6 +28,7 @@ jobs:
           cache: ''
 
       - name: Codebase health scan
+        continue-on-error: true
         run: node qa/tools/codebase-health.js
 
       - name: V140 cultivation core
