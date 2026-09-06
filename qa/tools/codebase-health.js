@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const ROOT=process.cwd();
 const SCAN_ROOTS=['dist','modules','web','qa'];
-const ROOT_FILES=['app.js','standalone-entry.js','standalone-runtime.js','pwa-register.js','pwa-sw.js'];
+const ROOT_FILES=['app.js','standalone-entry.js','standalone-runtime.js','pwa-register.js','pwa-sw.js','index.html','styles.css','combat-v2.css'];
 const EXCLUDE_DIRS=new Set(['node_modules','vendor','assets','.git']);
 const SOURCE_EXTS=new Set(['.js','.mjs','.cjs','.css','.html']);
 
@@ -27,31 +27,34 @@ const files=[
 const rel=file=>path.relative(ROOT,file).replaceAll('\\','/');
 const rows=[];
 const unresolved=[];
-const importGraph=new Map();
+const resolvedEdges=[];
 const versioned=[];
 const risky=[];
+const textByFile=new Map();
 
 const importRe=/(?:import\s+(?:[^'";]+?\s+from\s+)?|export\s+[^'";]+?\s+from\s+|import\s*\()(['"])([^'"]+)\1/g;
 
 for(const file of files){
   const text=fs.readFileSync(file,'utf8');
+  textByFile.set(rel(file),text);
   const bytes=Buffer.byteLength(text);
   const lines=text.split(/\r?\n/).length;
   const fileRel=rel(file);
   const imports=[];
   let match;
   while((match=importRe.exec(text))){
-    const spec=match[2];
-    if(!spec.startsWith('.'))continue;
-    imports.push(spec);
+    const rawSpec=match[2];
+    if(!rawSpec.startsWith('.'))continue;
+    imports.push(rawSpec);
+    const spec=rawSpec.split(/[?#]/,1)[0];
     let resolved=path.resolve(path.dirname(file),spec);
     if(!path.extname(resolved)){
       const options=[`${resolved}.js`,`${resolved}.mjs`,`${resolved}.cjs`,path.join(resolved,'index.js')];
       resolved=options.find(fs.existsSync)||resolved;
     }
-    if(!fs.existsSync(resolved))unresolved.push({from:fileRel,spec});
+    if(!fs.existsSync(resolved))unresolved.push({from:fileRel,spec:rawSpec});
+    else resolvedEdges.push({from:fileRel,to:rel(resolved),spec:rawSpec});
   }
-  importGraph.set(fileRel,imports);
   if(/(?:^|[-_.])v\d+(?:[-_.]|$)/i.test(path.basename(file)))versioned.push(fileRel);
   if(/\beval\s*\(|\bnew\s+Function\s*\(/.test(text))risky.push({file:fileRel,type:'dynamic-code'});
   rows.push({file:fileRel,bytes,lines,imports:imports.length});
@@ -60,6 +63,24 @@ for(const file of files){
 rows.sort((a,b)=>b.bytes-a.bytes);
 const large=rows.filter(x=>x.bytes>=100_000||x.lines>=2500);
 const medium=rows.filter(x=>(x.bytes>=50_000||x.lines>=1200)&&!large.includes(x));
+
+const inboundByFile=new Map();
+for(const edge of resolvedEdges)inboundByFile.set(edge.to,(inboundByFile.get(edge.to)||0)+1);
+
+const rawMentionsByFile=new Map();
+for(const target of rows.map(x=>x.file)){
+  const base=path.basename(target);
+  let mentions=0;
+  for(const [source,text] of textByFile){
+    if(source===target)continue;
+    if(text.includes(base))mentions++;
+  }
+  rawMentionsByFile.set(target,mentions);
+}
+
+const versionedDeadCandidates=versioned
+  .filter(file=>(inboundByFile.get(file)||0)===0&&(rawMentionsByFile.get(file)||0)===0)
+  .sort();
 
 const stemGroups=new Map();
 for(const file of versioned){
@@ -70,7 +91,10 @@ for(const file of versioned){
   list.push(file);
   stemGroups.set(key,list);
 }
-const versionFamilies=[...stemGroups.entries()].filter(([,list])=>list.length>1).map(([stem,list])=>({stem,files:list.sort()}));
+const versionFamilies=[...stemGroups.entries()].filter(([,list])=>list.length>1).map(([stem,list])=>({
+  stem,
+  files:list.sort().map(file=>({file,inbound:inboundByFile.get(file)||0,rawMentions:rawMentionsByFile.get(file)||0}))
+}));
 
 const result={
   scannedFiles:rows.length,
@@ -81,6 +105,7 @@ const result={
   riskyPatterns:risky,
   versionedFiles:versioned.sort(),
   versionFamilies,
+  versionedDeadCandidates,
   topFiles:rows.slice(0,40)
 };
 
@@ -94,6 +119,7 @@ md.push(`- Large files: **${large.length}**`);
 md.push(`- Unresolved relative imports: **${unresolved.length}**`);
 md.push(`- Version-suffixed source files: **${versioned.length}**`);
 md.push(`- Multi-version families: **${versionFamilies.length}**`);
+md.push(`- Unreferenced versioned candidates: **${versionedDeadCandidates.length}**`);
 md.push('');
 md.push('## Largest files');
 md.push('');
@@ -114,13 +140,18 @@ md.push('');
 if(versionFamilies.length){
   for(const family of versionFamilies){
     md.push(`- **${family.stem}**`);
-    for(const file of family.files)md.push(`  - \`${file}\``);
+    for(const item of family.files)md.push(`  - \`${item.file}\` — inbound imports ${item.inbound}, raw mentions ${item.rawMentions}`);
   }
 }else md.push('- None');
+md.push('');
+md.push('## Unreferenced versioned candidates');
+md.push('');
+if(versionedDeadCandidates.length)for(const file of versionedDeadCandidates)md.push(`- \`${file}\``);else md.push('- None');
 md.push('');
 md.push('## Policy');
 md.push('');
 md.push('- Large files are refactor candidates, not automatic failures.');
+md.push('- Unreferenced versioned files are deletion candidates only after canonical QA passes without them.');
 md.push('- Version-suffixed files are candidates for canonical renaming only after import/QA closure.');
 md.push('- This scanner must not mutate production source.');
 
@@ -136,6 +167,7 @@ console.log(JSON.stringify({
   riskyPatterns:risky,
   versioned:versioned.length,
   versionFamilies,
+  versionedDeadCandidates,
   topFiles:rows.slice(0,15)
 },null,2));
 if(unresolved.length)process.exitCode=2;
