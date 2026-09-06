@@ -33,6 +33,7 @@ jobs:
           node qa/tools/v141-split-combat-resolve-effects.js
           node qa/tools/v141-extract-combat-decision.js
           node qa/tools/v141-extract-session-guidance.js
+          node qa/tools/v141-extract-session-dungeon.js
           node qa/tools/v141-prune-app-dead-functions.js
           node qa/tools/v141-prune-core-dead-functions.js
           node qa/tools/v141-prune-hotspot-dead-functions.js
@@ -44,6 +45,7 @@ jobs:
           node --check dist/core/session.js
           node --check dist/core/session-restore.js
           node --check dist/core/session-guidance.js
+          node --check dist/core/session-dungeon.js
           node --check dist/core/gameplay.js
           node --check dist/core/gameplay-dispatch.js
           node --check dist/core/gameplay-flow.js
@@ -64,6 +66,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app.js dist/core/session.js dist/core/session-restore.js dist/core/session-guidance.js dist/core/gameplay.js dist/core/gameplay-dispatch.js dist/core/gameplay-flow.js dist/core/combat.js dist/core/combat-decision.js modules/hunt-combat-v2.js
+          git add app.js dist/core/session.js dist/core/session-restore.js dist/core/session-guidance.js dist/core/session-dungeon.js dist/core/gameplay.js dist/core/gameplay-dispatch.js dist/core/gameplay-flow.js dist/core/combat.js dist/core/combat-decision.js modules/hunt-combat-v2.js
           git commit -m "refactor: apply safe V141 structural cleanup"
           git push origin HEAD:refactor/v141-codebase-optimization
