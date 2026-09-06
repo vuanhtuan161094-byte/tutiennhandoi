@@ -57,3 +57,29 @@ if(!s.includes(refundChance)) throw new Error('R3 retreat refund chance target n
 s=s.replace(refundChance,refundChanceFixed);
 fs.writeFileSync(p,s);
 await import('./apply-reincarnation-cultivation-r3.js');
+
+// Keep the V141 initial module graph budget unchanged: R3 helpers live in the
+// already-eager reincarnation progression module instead of adding a new edge.
+const r3Path='dist/core/reincarnation-cultivation-r3.js';
+const progressionPath='dist/core/reincarnation-progression-v1102.js';
+let embedded=fs.readFileSync(r3Path,'utf8');
+embedded=embedded
+  .replace("const PREFIX='reincarnation.tree.v127.';","const CULTIVATION_R3_PREFIX='reincarnation.tree.v127.';")
+  .replace("const clamp=(v,a,b)=>Math.max(a,Math.min(b,Number(v)||0));\n",'')
+  .replaceAll('PREFIX+','CULTIVATION_R3_PREFIX+');
+let progression=fs.readFileSync(progressionPath,'utf8');
+if(!progression.includes('export function cultivationR3Rank(')){
+  progression += '\n\n// Luân Hồi Tu Luyện R3 — embedded here to preserve the V141 eager-module budget.\n'+embedded;
+  fs.writeFileSync(progressionPath,progression);
+}
+const rewrites=[
+  ['dist/core/cultivation-v140.js',"from './reincarnation-cultivation-r3.js'","from './reincarnation-progression-v1102.js'"],
+  ['dist/core/session.js',"from './reincarnation-cultivation-r3.js'","from './reincarnation-progression-v1102.js'"],
+  ['qa/tests/reincarnation-cultivation-r3-test.js',"from '../../dist/core/reincarnation-cultivation-r3.js'","from '../../dist/core/reincarnation-progression-v1102.js'"]
+];
+for(const [file,from,to] of rewrites){
+  let text=fs.readFileSync(file,'utf8');
+  if(!text.includes(from)) throw new Error('R3 graph rewrite target missing: '+file);
+  text=text.replace(from,to);
+  fs.writeFileSync(file,text);
+}
