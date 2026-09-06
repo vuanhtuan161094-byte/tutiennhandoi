@@ -60,7 +60,8 @@ while(i<switchClose){
       const open=source.indexOf('{',caseStart);
       const close=matchingBrace(source,open);
       const body=source.slice(open+1,close);
-      if(/\breturn\b/.test(body))throw new Error(`case ${m[1]} contains return; refusing automatic extraction`);
+      // A direct case-level return would change semantics after extraction. Nested callback returns are safe.
+      if(/^ {20}return\b/m.test(body))throw new Error(`case ${m[1]} contains a direct return; refusing automatic extraction`);
       cases.push({type:m[1],start:caseStart,open,close,body});
       i=close+1;
       continue;
