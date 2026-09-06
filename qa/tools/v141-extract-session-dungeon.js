@@ -37,15 +37,26 @@ const close=matchingBrace(source,open);
 const body=source.slice(open+1,close);
 const localDecls=[...prelude.matchAll(/^(?:const|let|var)\s+([A-Za-z_$][\w$]*)\b|^function\s+([A-Za-z_$][\w$]*)\s*\(/gm)].map(m=>m[1]||m[2]).filter(Boolean);
 const localDeps=localDecls.filter(name=>used(body,name));
-if(localDeps.length)throw new Error(`challengeDungeonFloor depends on prelude locals: ${localDeps.join(', ')}`);
+const copiedLocals=[];
+for(const name of localDeps){
+  const start=prelude.search(new RegExp(`^function\\s+${esc(name)}\\s*\\(`,'m'));
+  if(start<0)throw new Error(`challengeDungeonFloor depends on non-function prelude local: ${name}`);
+  const fnOpen=prelude.indexOf('{',start);
+  const fnClose=matchingBrace(prelude,fnOpen);
+  copiedLocals.push(prelude.slice(start,fnClose+1));
+}
+const dependencyText=`${copiedLocals.join('\n')}\n${body}`;
+// Do not allow copied helpers to introduce a second layer of hidden prelude coupling.
+const hiddenLocalDeps=localDecls.filter(name=>!localDeps.includes(name)&&used(copiedLocals.join('\n'),name));
+if(hiddenLocalDeps.length)throw new Error(`copied dungeon helper depends on additional prelude locals: ${hiddenLocalDeps.join(', ')}`);
 const imports=[];
 for(const match of prelude.matchAll(/^import\s*\{([^}]*)\}\s*from\s*(['"][^'"]+['"])\s*;?\s*$/gm)){
   const specs=match[1].split(',').map(x=>x.trim()).filter(Boolean);
-  const keep=specs.filter(spec=>used(body,spec.split(/\s+as\s+/i).map(x=>x.trim()).filter(Boolean).at(-1)));
+  const keep=specs.filter(spec=>used(dependencyText,spec.split(/\s+as\s+/i).map(x=>x.trim()).filter(Boolean).at(-1)));
   if(keep.length)imports.push(`import { ${keep.join(', ')} } from ${match[2]};`);
 }
-for(const match of prelude.matchAll(/^import\s+([A-Za-z_$][\w$]*)\s+from\s+(['"][^'"]+['"])\s*;?\s*$/gm))if(used(body,match[1]))imports.push(match[0].trim());
-const generated=`${imports.join('\n')}\n\n// V141: dungeon challenge orchestration is isolated from the central session container.\nexport function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {${body}\n}\n`;
+for(const match of prelude.matchAll(/^import\s+([A-Za-z_$][\w$]*)\s+from\s+(['"][^'"]+['"])\s*;?\s*$/gm))if(used(dependencyText,match[1]))imports.push(match[0].trim());
+const generated=`${imports.join('\n')}\n\n${copiedLocals.join('\n\n')}\n\n// V141: dungeon challenge orchestration is isolated from the central session container.\nexport function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {${body}\n}\n`;
 fs.writeFileSync(OUT,generated);
 const replacement=`    challengeDungeonFloor(dungeonId, floor = 1) {\n        return challengeSessionDungeonFloorV141.call(this, dungeonId, floor);\n    }`;
 source=source.slice(0,methodStart)+replacement+source.slice(close+1);
@@ -55,4 +66,4 @@ if(!importMatches.length)throw new Error('No import anchor found');
 const last=importMatches.at(-1);const insertAt=last.index+last[0].length;
 source=source.slice(0,insertAt)+`\n${IMPORT}`+source.slice(insertAt);
 fs.writeFileSync(FILE,source);
-console.log(JSON.stringify({extractedMethod:'SimulationSession.challengeDungeonFloor',output:OUT,bodyBytes:Buffer.byteLength(body),importCount:imports.length,sessionBytesAfter:Buffer.byteLength(source)},null,2));
+console.log(JSON.stringify({extractedMethod:'SimulationSession.challengeDungeonFloor',output:OUT,bodyBytes:Buffer.byteLength(body),importCount:imports.length,copiedLocals:localDeps,sessionBytesAfter:Buffer.byteLength(source)},null,2));
