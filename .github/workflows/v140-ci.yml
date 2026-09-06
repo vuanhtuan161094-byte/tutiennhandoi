@@ -12,6 +12,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: v140-qa-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   canonical-qa:
     runs-on: ubuntu-latest
@@ -47,7 +51,9 @@ jobs:
         run: node qa/runners/v140-frontend-gates.js fast
 
       - name: Backend closure
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
         run: node qa/runners/v140-backend-gates.js closure
 
       - name: Frontend closure
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
         run: node qa/runners/v140-frontend-gates.js closure
