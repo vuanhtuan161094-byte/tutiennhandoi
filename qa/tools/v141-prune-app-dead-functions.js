@@ -9,10 +9,13 @@ let source=fs.readFileSync(FILE,'utf8');
 const originalBytes=Buffer.byteLength(source);
 const removed=[];
 const rejected=[];
+const blocked=new Set();
 
 const escapeRe=value=>String(value).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 const occurrenceCount=(text,name)=>(text.match(new RegExp(`\\b${escapeRe(name)}\\b`,'g'))||[]).length;
-const declarationNames=text=>[...text.matchAll(/^function\s+([A-Za-z_$][\w$]*)\s*\(/gm)].map(m=>m[1]).filter(name=>occurrenceCount(text,name)===1);
+const declarationNames=text=>[...text.matchAll(/^function\s+([A-Za-z_$][\w$]*)\s*\(/gm)]
+  .map(m=>m[1])
+  .filter(name=>!blocked.has(name)&&occurrenceCount(text,name)===1);
 
 function removeCandidate(text,name){
   const re=new RegExp(`^function\\s+${escapeRe(name)}\\s*\\(`,'m');
@@ -54,18 +57,30 @@ function syntaxOk(text){
   }
 }
 
-for(const name of declarationNames(source)){
-  if(occurrenceCount(source,name)!==1)continue;
-  const proposal=removeCandidate(source,name);
-  if(!proposal){rejected.push({name,reason:'boundary'});continue;}
-  if(!syntaxOk(proposal)){rejected.push({name,reason:'syntax'});continue;}
-  source=proposal;
-  removed.push(name);
+let rounds=0;
+const MAX_ROUNDS=64;
+while(rounds<MAX_ROUNDS){
+  const candidates=declarationNames(source);
+  if(!candidates.length)break;
+  let changed=false;
+  for(const name of candidates){
+    if(occurrenceCount(source,name)!==1)continue;
+    const proposal=removeCandidate(source,name);
+    if(!proposal){blocked.add(name);rejected.push({name,reason:'boundary'});continue;}
+    if(!syntaxOk(proposal)){blocked.add(name);rejected.push({name,reason:'syntax'});continue;}
+    source=proposal;
+    removed.push(name);
+    changed=true;
+  }
+  rounds++;
+  if(!changed)break;
 }
+if(rounds>=MAX_ROUNDS&&declarationNames(source).length)throw new Error(`Dead-function convergence exceeded ${MAX_ROUNDS} rounds`);
 
 if(!syntaxOk(source))throw new Error('Final app.js syntax check failed after dead-function pruning');
 fs.writeFileSync(FILE,source);
 console.log(JSON.stringify({
+  rounds,
   removedCount:removed.length,
   removed,
   rejected,
