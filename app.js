@@ -1245,15 +1245,8 @@ function v239BindDongFuPanelActions(scope=content){
   scope.querySelectorAll('[data-farm-category]').forEach(btn=>btn.onclick=()=>{dungeonUi.resourceCategory=btn.dataset.farmCategory||null;activeTab='dungeons';render();hydrateViewV129('dungeons',{force:true}).catch(()=>{});requestAnimationFrame(()=>content.querySelector('.v2329-resource-card.focus')?.scrollIntoView({behavior:'smooth',block:'center'}));});
   scope.querySelectorAll('[data-dongfu-open-dungeons-general]').forEach(btn=>btn.onclick=()=>{dungeonUi.resourceCategory=null;activeTab='dungeons';render();showNotice('Đan Phòng/Luyện Khí dùng nguyên liệu nghề; 23.29 chưa có bí cảnh tài nguyên riêng cho hai nghề này.');});
 }
-function bindDynamic(){
-  const nativeQsaV129=content.querySelectorAll.bind(content),nativeQsV129=content.querySelector.bind(content);
-  let bindingPhaseV129=true;
-  const bindDataIndexV129=new Map();
-  for(const node of nativeQsaV129('*'))for(const attr of node.attributes||[]){if(!attr.name.startsWith('data-'))continue;let bucket=bindDataIndexV129.get(attr.name);if(!bucket){bucket=[];bindDataIndexV129.set(attr.name,bucket);}bucket.push(node);}
-  const exactDataSelectorV129=/^\[(data-[a-z0-9-]+)\]$/;
-  const qsaV129=selector=>{if(bindingPhaseV129){const match=exactDataSelectorV129.exec(String(selector));if(match)return bindDataIndexV129.get(match[1])||[];}return nativeQsaV129(selector);};
-  const qsV129=selector=>{if(bindingPhaseV129){const match=exactDataSelectorV129.exec(String(selector));if(match)return (bindDataIndexV129.get(match[1])||[])[0]||null;}return nativeQsV129(selector);};
-
+/* V141 bindDynamic split helpers */
+function bindWorldSocialActionsV141(qsaV129,qsV129){
   qsaV129('[data-guide-section]').forEach(btn=>btn.onclick=()=>{guideUi.section=btn.dataset.guideSection||'today';activeTab='guide';renderPreservingUi();});
   qsaV129('[data-travel-location]').forEach(btn=>btn.onclick=async()=>{const id=btn.dataset.travelLocation;if(!id)return;const loc=(model.locations||[]).find(x=>x.id===id);const ok=await confirmAction('Du Hành',`Tới ${loc?.name||id}? Hành động này thực thi explore thật và có thể làm thời gian thế giới trôi.`);if(ok)perform({type:'activity',request:{type:'explore',targetLocationId:id,durationYears:0.1,stopOnMajorEvent:true}});});
   qsaV129('[data-soul-nourish]').forEach(btn=>btn.onclick=()=>perform({type:'nourishSoul',batches:Number(btn.dataset.soulNourish||1)}));
@@ -1283,6 +1276,9 @@ function bindDynamic(){
   qsaV129('[data-dao-contemplate]').forEach(btn=>btn.onclick=()=>perform({type:'contemplateDao',daoId:model.dao?.canonicalDaoId,years:Number(btn.dataset.daoContemplate||1)}));
   qsaV129('[data-dao-interpretation]').forEach(btn=>btn.onclick=async()=>{const id=btn.dataset.daoInterpretation;if(await confirmAction('Diễn Giải Đạo Ý','Diễn giải định hướng modifier/triggers của Đạo Ý và Đạo Vực.'))perform({type:'setDaoInterpretation',daoId:model.dao?.canonicalDaoId,interpretationId:id});});
   qsaV129('[data-dao-domain]').forEach(btn=>btn.onclick=()=>perform({type:'setDaoDomain',active:btn.dataset.daoDomain==='1'}));
+}
+
+function bindDongFuEconomyActionsV141(qsaV129,qsV129){
   v239BindDongFuPanelActions(content);
   qsaV129('[data-v89-route]').forEach(btn=>btn.onclick=()=>{const tab=btn.dataset.v89Route||'dungeons';navigateTo(tab);});
   qsaV129('[data-v89-offer]').forEach(btn=>btn.onclick=()=>action({action:'economyOfferV89',offerId:btn.dataset.v89Offer,nowUnixMs:Date.now()}).catch(()=>{}));
@@ -1298,6 +1294,9 @@ function bindDynamic(){
     if(meta&&old){old.outerHTML=v239DongFuInfoPanel(meta);const panel=qsV129('[data-dongfu-info-panel]');if(panel)v239BindDongFuPanelActions(panel);}
   });
   qsaV129('[data-dongfu-quick-collect]').forEach(btn=>btn.onclick=()=>showNotice('Đan/Luyện Khí hiện tự đồng bộ thành phẩm vào kho khi hoàn tất; không có vật phẩm chờ nhận thủ công.'));
+}
+
+function bindJourneyCultivationActionsV141(qsaV129,qsV129){
   qsaV129('[data-v90-journey-action]').forEach(btn=>btn.onclick=()=>{const a=(model?.flow?.actions||[]).find(x=>x.key===btn.dataset.v90JourneyAction);if(a?.command)perform(a.command);else if(a?.view)navigateTo(a.view==='dashboard'?'cultivation':a.view);else if(model?.flow?.journey?.currentRoute)navigateTo(model.flow.journey.currentRoute);});
   qsaV129('[data-v90-journey-route]').forEach(btn=>btn.onclick=()=>navigateTo(btn.dataset.v90JourneyRoute||model?.flow?.journey?.currentRoute||'cultivation'));
   qsaV129('[data-flow-index]').forEach(btn=>btn.onclick=()=>{const a=model.flow.actions.find(x=>x.index===Number(btn.dataset.flowIndex));if(a?.command)perform(a.command);else if(a?.view){navigateTo(a.view==='dashboard'?'cultivation':a.view);}});
@@ -1315,6 +1314,9 @@ function bindDynamic(){
   qsV129('[data-use-cultivation-pill]')?.addEventListener('click',()=>action({action:'useCultivationPill'}).catch(()=>{}));
   qsV129('[data-select-floor]')?.addEventListener('click',()=>action({action:'endlessFloor',floor:Number(qsV129('[name="floorSelect"]')?.value||1)}));
   qsV129('[data-auto-advance]')?.addEventListener('click',()=>action({action:'endlessAutoAdvance',enabled:qsV129('[name="autoAdvance"]')?.value==='1'}));
+}
+
+function bindInventoryNavigationActionsV141(qsaV129,qsV129){
   qsaV129('[data-open-inventory]').forEach(btn=>btn.onclick=()=>{if(!tabUnlocked('inventory')){showNotice(tabUnlockText('inventory'),true);return;}activeTab='inventory';inventoryUi.view=btn.dataset.openInventory||'gear';const slot=btn.dataset.inventorySlot,itemId=btn.dataset.inventoryItem;if(inventoryUi.view==='gear'&&slot){inventoryUi.group='all';inventoryUi.slot=slot;inventoryUi.setId='all';}if(itemId)inventoryUi.selectedId=itemId;if(inventoryUi.view==='forge'){inventoryUi.forgeTab='enhance';}if(inventoryUi.view==='sets'){inventoryUi.setFilter='current';inventoryUi.setCategory='all';inventoryUi.setIdentity='all';inventoryUi.setSearch='';}render();});
   qsaV129('[data-tab-jump]').forEach(btn=>btn.onclick=()=>navigateTo(btn.dataset.tabJump));
   qsaV129('[data-dongfu-section]').forEach(btn=>btn.onclick=()=>{dongfuUi.section=btn.dataset.dongfuSection||'home';activeTab='dongfu';render();hydrateViewV129('dongfu',{force:true}).catch(()=>{});});
@@ -1374,7 +1376,9 @@ function bindDynamic(){
   qsV129('[data-clear-set-filters]')?.addEventListener('click',()=>{inventoryUi.setFilter='all';inventoryUi.setCategory='all';inventoryUi.setIdentity='all';inventoryUi.setSearch='';renderPreservingUi();});
   qsaV129('[data-set-to-inventory]').forEach(btn=>btn.onclick=()=>{inventoryUi.view='gear';inventoryUi.setId=btn.dataset.setToInventory||'all';inventoryUi.group=btn.dataset.setCategory||'all';inventoryUi.slot='all';renderPreservingUi();});
   // V129 performance: inventory long-press is delegated once on #content; do not attach 5 pointer listeners per card.
+}
 
+function bindBuildCollectionActionsV141(qsaV129,qsV129){
   qsaV129('[data-visual-skin]').forEach(btn=>btn.onclick=()=>action({action:'visualProfile',characterSkinId:btn.dataset.visualSkin}));
   qsaV129('[data-visual-background]').forEach(btn=>btn.onclick=()=>action({action:'visualProfile',characterBackgroundId:btn.dataset.visualBackground}));
   qsaV129('[data-visual-expression]').forEach(btn=>btn.onclick=()=>action({action:'visualProfile',selectedExpression:btn.dataset.visualExpression}));
@@ -1437,6 +1441,9 @@ function bindDynamic(){
   qsV129('[data-blood-swap]')?.addEventListener('click',async()=>{const targetId=qsV129('[name="bloodlineTarget"]')?.value;if(targetId&&await confirmAction('Hoán Huyết','Hoán Huyết tối đa một lần mỗi đời, Độ Thuần về 0% và chịu Dị Huyết Bất Dung. Tiếp tục?'))perform({type:'swapBloodline',targetId});});
   qsV129('[data-blood-implant]')?.addEventListener('click',async()=>{const targetId=qsV129('[name="bloodlineTarget"]')?.value;if(targetId&&await confirmAction('Tạo Huyết','Tạo Huyết từ Vô Huyết bắt đầu Phàm 0%, rất tốn tài nguyên và chịu Nghịch Huyết Bất Dung. Tiếp tục?'))perform({type:'implantBloodline',targetId});});
   qsV129('[data-save-majors]')?.addEventListener('click',()=>{const ids=[...qsaV129('[name="major"]:checked')].map(x=>x.value);action({action:'majorTalents',ids});});
+}
+
+function bindReincarnationReplayActionsV141(qsaV129,qsV129){
   qsV129('[data-meditative-passing]')?.addEventListener('click',async()=>{const eternal=model?.reincarnation?.lifeEnd?.mode==='eternal';if(await confirmAction(eternal?'Xả Vĩnh Sinh thân':'Tọa Hóa',eternal?'Kết thúc Vĩnh Sinh thân hiện tại và bước vào hai Thí Luyện Luân Hồi? Chưa chuyển sinh ngay.':'Kết thúc đời hiện tại để bước vào hai Thí Luyện Luân Hồi? Chưa chuyển sinh ngay.'))perform({type:'meditativePassing'});});
   qsaV129('[data-reinc-trial]').forEach(btn=>btn.onclick=()=>action({action:'reincarnationTrialV2',kind:btn.dataset.reincTrial}));
   qsV129('[data-reinc-finalize]')?.addEventListener('click',async()=>{if(await confirmAction('Chốt Reward Luân Hồi','Dùng best result của Cọc Gỗ và Sinh Tồn, trừ Năng Lượng Luân Hồi và ghi reward permanent? Sau khi chốt không thể chạy lại hai bài test cho đời này.'))action({action:'reincarnationRewardFinalizeV2',confirmedBuildReady:true});});
@@ -1457,7 +1464,22 @@ function bindDynamic(){
   if(model?.combatReview&&$('#battleStage')&&!$('#battleStage').classList.contains('ambient')){resetBattleStage(model.combatReview);showAllReplay();}
   if($('#battleStage')?.classList.contains('ambient'))startAmbientBattleLoop(); else stopAmbientBattleLoop();
   if(activeTab==='hunt'){if(huntCombatModule)huntCombatModule.mountHuntCombatV2(content,{model,live,action});else loadHuntCombatModuleV129().catch(()=>{});}
+}
 
+function bindDynamic(){
+  const nativeQsaV129=content.querySelectorAll.bind(content),nativeQsV129=content.querySelector.bind(content);
+  let bindingPhaseV129=true;
+  const bindDataIndexV129=new Map();
+  for(const node of nativeQsaV129('*'))for(const attr of node.attributes||[]){if(!attr.name.startsWith('data-'))continue;let bucket=bindDataIndexV129.get(attr.name);if(!bucket){bucket=[];bindDataIndexV129.set(attr.name,bucket);}bucket.push(node);}
+  const exactDataSelectorV129=/^\[(data-[a-z0-9-]+)\]$/;
+  const qsaV129=selector=>{if(bindingPhaseV129){const match=exactDataSelectorV129.exec(String(selector));if(match)return bindDataIndexV129.get(match[1])||[];}return nativeQsaV129(selector);};
+  const qsV129=selector=>{if(bindingPhaseV129){const match=exactDataSelectorV129.exec(String(selector));if(match)return (bindDataIndexV129.get(match[1])||[])[0]||null;}return nativeQsV129(selector);};
+  bindWorldSocialActionsV141(qsaV129,qsV129);
+  bindDongFuEconomyActionsV141(qsaV129,qsV129);
+  bindJourneyCultivationActionsV141(qsaV129,qsV129);
+  bindInventoryNavigationActionsV141(qsaV129,qsV129);
+  bindBuildCollectionActionsV141(qsaV129,qsV129);
+  bindReincarnationReplayActionsV141(qsaV129,qsV129);
   bindingPhaseV129=false;
 }
 async function loadIntel(id,floor){try{const data=await request(`/api/boss-intel?dungeonId=${encodeURIComponent(id)}&floor=${floor}`);selectedBossIntel=data.intel;activeTab='combat';render();}catch(error){showNotice(error.message,true);}}
