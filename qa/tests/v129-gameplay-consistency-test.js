@@ -114,7 +114,9 @@ test('all frontend perform command types have GameplayFacade dispatch handlers',
   const gameplay = fs.readFileSync(new URL('../../dist/core/gameplay.js', import.meta.url), 'utf8');
   const dispatchAt = gameplay.indexOf('dispatch(command)');
   assert.ok(dispatchAt >= 0, 'GameplayFacade.dispatch missing');
-  const dispatchSource = gameplay.slice(dispatchAt);
+  const dispatchModuleUrl = new URL('../../dist/core/gameplay-dispatch.js', import.meta.url);
+  const dispatchModule = fs.existsSync(dispatchModuleUrl) ? fs.readFileSync(dispatchModuleUrl, 'utf8') : '';
+  const dispatchSource = `${gameplay.slice(dispatchAt)}\n${dispatchModule}`;
   const cases = new Set([...dispatchSource.matchAll(/case\s+['"]([^'"]+)['"]\s*:/g)].map(m => m[1]));
   const missing = [...commands].filter(name => !cases.has(name));
   assert.deepEqual(missing, [], `frontend perform commands missing GameplayFacade handlers: ${missing.join(', ')}`);
