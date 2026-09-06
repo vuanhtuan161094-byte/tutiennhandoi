@@ -1874,15 +1874,6 @@ function v13820ItemSummary(x){
   const stats=Object.entries(x.effectiveStats||x.stats||{}).slice(0,6).map(([k,v])=>`<div><span>${esc(statName(k))}</span><b>${Number(v)>=0?'+':''}${num(v,2)}</b></div>`).join('');
   return `<div class="v13820-compare-item v13823-rarity-card ${v107TierClass(x)} ${x.locked?'locked':''}"><div class="v13820-compare-art">${v13823LazyImg(v1077EquipArt(x.slot,x),x.name)}<b>+${num(x.enhancementLevel||0)}</b>${x.locked?'<i class="v13823-lock-badge">KHÓA</i>':''}</div><div class="v13820-compare-meta"><small>${esc(x.slotLabel||v107SlotLabel(x.slot))}</small><strong>${esc(x.name)}</strong><span>Lv.${num(x.itemLevel||0)} · ${esc(x.setName||x.role||'Trang bị')}</span><em class="v13823-rarity-label">${esc(v13823RarityLabel(x))}</em></div></div><div class="v13820-mini-stats">${stats||'<div><span>Chỉ số</span><b>—</b></div>'}</div>`;
 }
-function v13822SignedPct(value){const n=Number(value||0);return `${n>0?'+':''}${num(n,1)}%`;}
-function v13822MetricTone(value){const n=Number(value||0);return n>.15?'up':n<-.15?'down':'neutral';}
-function v13822BuildIdentity(intel){
-  const b=intel?.build||{}; const chips=[];
-  for(const x of (b.daoBindings||[]))chips.push(`<span class="dao">${esc(x.label)}</span>`);
-  for(const x of (b.primaryRoots||[]))chips.push(`<span class="root">${esc(x.label)} Hành</span>`);
-  for(const x of (b.markNames||[]).slice(0,3))chips.push(`<span class="mark">Ấn: ${esc(x)}</span>`);
-  return chips.length?`<div class="v13822-build-chips">${chips.join('')}</div>`:'<div class="v13822-build-chips"><span>Chuỗi kỹ năng hiện tại chưa nghiêng rõ về một Đạo/Hành/Ấn cụ thể.</span></div>';
-}
 
 function v138239StatValue(item,key){
   const value=Number((item?.effectiveStats||item?.stats||{})[key]||0);
