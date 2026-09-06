@@ -7,6 +7,11 @@ const SCAN_ROOTS=['dist','modules','web','qa'];
 const ROOT_FILES=['app.js','standalone-entry.js','standalone-runtime.js','pwa-register.js','pwa-sw.js','index.html','styles.css','combat-v2.css'];
 const EXCLUDE_DIRS=new Set(['node_modules','vendor','assets','.git']);
 const SOURCE_EXTS=new Set(['.js','.mjs','.cjs','.css','.html']);
+// qa/tools contains code-generation templates with import statements as string data.
+// Parsing those templates as live module imports produces false unresolved-import failures.
+// We still include tool files in size/version diagnostics, but runtime import resolution is
+// intentionally limited to executable game/test modules outside this generator directory.
+const IMPORT_SCAN_EXCLUDED_PREFIXES=['qa/tools/'];
 
 function walk(target,out=[]){
   if(!fs.existsSync(target))return out;
@@ -41,19 +46,22 @@ for(const file of files){
   const lines=text.split(/\r?\n/).length;
   const fileRel=rel(file);
   const imports=[];
-  let match;
-  while((match=importRe.exec(text))){
-    const rawSpec=match[2];
-    if(!rawSpec.startsWith('.'))continue;
-    imports.push(rawSpec);
-    const spec=rawSpec.split(/[?#]/,1)[0];
-    let resolved=path.resolve(path.dirname(file),spec);
-    if(!path.extname(resolved)){
-      const options=[`${resolved}.js`,`${resolved}.mjs`,`${resolved}.cjs`,path.join(resolved,'index.js')];
-      resolved=options.find(fs.existsSync)||resolved;
+  if(!IMPORT_SCAN_EXCLUDED_PREFIXES.some(prefix=>fileRel.startsWith(prefix))){
+    importRe.lastIndex=0;
+    let match;
+    while((match=importRe.exec(text))){
+      const rawSpec=match[2];
+      if(!rawSpec.startsWith('.'))continue;
+      imports.push(rawSpec);
+      const spec=rawSpec.split(/[?#]/,1)[0];
+      let resolved=path.resolve(path.dirname(file),spec);
+      if(!path.extname(resolved)){
+        const options=[`${resolved}.js`,`${resolved}.mjs`,`${resolved}.cjs`,path.join(resolved,'index.js')];
+        resolved=options.find(fs.existsSync)||resolved;
+      }
+      if(!fs.existsSync(resolved))unresolved.push({from:fileRel,spec:rawSpec});
+      else resolvedEdges.push({from:fileRel,to:rel(resolved),spec:rawSpec});
     }
-    if(!fs.existsSync(resolved))unresolved.push({from:fileRel,spec:rawSpec});
-    else resolvedEdges.push({from:fileRel,to:rel(resolved),spec:rawSpec});
   }
   if(/(?:^|[-_.])v\d+(?:[-_.]|$)/i.test(path.basename(file)))versioned.push(fileRel);
   if(/\beval\s*\(|\bnew\s+Function\s*\(/.test(text))risky.push({file:fileRel,type:'dynamic-code'});
@@ -153,6 +161,7 @@ md.push('');
 md.push('- Large files are refactor candidates, not automatic failures.');
 md.push('- Unreferenced versioned files are deletion candidates only after canonical QA passes without them.');
 md.push('- Version-suffixed files are candidates for canonical renaming only after import/QA closure.');
+md.push('- qa/tools code-generation template imports are excluded from runtime import resolution.');
 md.push('- This scanner must not mutate production source.');
 
 const outDir=path.join(ROOT,'docs','generated');
