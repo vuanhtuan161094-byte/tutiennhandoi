@@ -2,9 +2,15 @@
 import fs from 'node:fs';
 
 const FILE='dist/core/gameplay.js';
+const FLOW='dist/core/gameplay-flow.js';
 const OUT='dist/core/gameplay-myriad-lives.js';
 const IMPORT="import { buildMyriadLivesV141 } from './gameplay-myriad-lives.js';";
+const CONSOLIDATED_MARKER='// V141: Vạn Thế archive/projection DTO assembly is isolated from the facade shell.';
 let source=fs.readFileSync(FILE,'utf8');
+if(fs.existsSync(FLOW)&&fs.readFileSync(FLOW,'utf8').includes(CONSOLIDATED_MARKER)&&!fs.existsSync(OUT)&&source.includes('return buildMyriadLivesV141.call(this);')){
+  console.log('Gameplay myriadLives extraction already consolidated into gameplay-flow.js.');
+  process.exit(0);
+}
 if(source.includes(IMPORT)&&fs.existsSync(OUT)){
   console.log('Gameplay myriadLives extraction already applied.');
   process.exit(0);
