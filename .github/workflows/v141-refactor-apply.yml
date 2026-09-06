@@ -31,6 +31,7 @@ jobs:
           node qa/tools/v141-refactor-session-restore.js
           node qa/tools/v141-prune-app-dead-functions.js
           node qa/tools/v141-prune-core-dead-functions.js
+          node qa/tools/v141-prune-hotspot-dead-functions.js
           node qa/tools/v141-prune-unused-named-imports.js
 
       - name: Syntax check
