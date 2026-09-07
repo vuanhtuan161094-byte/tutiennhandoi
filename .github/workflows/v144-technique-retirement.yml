@@ -20,6 +20,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Adjust V144 patcher retry matcher
+        run: node qa/tools/fix-v144-patcher-r1.mjs
       - name: Apply V144 retirement patch
         run: node qa/tools/apply-v144-technique-retirement.mjs
       - name: Focused V144 smoke gates
