@@ -1,11 +1,11 @@
-export const REINCARNATION_ENERGY_CAP = 500;
+export const REINCARNATION_ENERGY_CAP = 300;
 export const REINCARNATION_ENERGY_RECHARGE_PER_24H = 100;
 export const REINCARNATION_TRIAL_DURATION_SECONDS = 60;
 export const REINCARNATION_TREE_MAX_RANK_V127 = 50; // Công Pháp compatibility tree still uses 50 ranks.
 export const REINCARNATION_CULTIVATION_TREE_MAX_RANK_R3 = 20;
-export const REINCARNATION_TREE_MAX_TOTAL_COST_V127 = 1_001_870; // 294,500 Tu Luyện R3 + 707,370 Công Pháp legacy tree.
+export const REINCARNATION_TREE_MAX_TOTAL_COST_V127 = 1_125_370; // +123,500 RP for 4 root Luân Hồi V4 nodes.
 export const REINCARNATION_PERMANENT_POTENTIAL_BASE_PCT_V127 = 3;
-export const REINCARNATION_PERMANENT_POTENTIAL_MAX_PCT_V127 = 6;
+export const REINCARNATION_PERMANENT_POTENTIAL_MAX_PCT_V127 = 10;
 export const REINCARNATION_TRIAL_MAX_BONUS_PCT_V127 = 120;
 
 export const corePotentialDefinitions = [
@@ -14,7 +14,7 @@ export const corePotentialDefinitions = [
   { id: 'defense', name: 'Phòng Ngự', description: 'Tăng trực tiếp Phòng Ngự gốc của nhân vật.', perPoint: ['Phòng Ngự +3'] },
 ];
 
-// R3: Tu Luyện nodes are independent. Player may learn any node in any order.
+// R3/V4: các node 20 cấp dùng cùng cost curve nặng; người chơi có thể đầu tư nhiều nhánh.
 export const REINCARNATION_TREE_TIER_INVESTMENT = [0];
 export const REINCARNATION_RANK_COSTS = Array.from({ length: 50 }, (_, i) => {
   const r = i + 1;
@@ -45,8 +45,18 @@ const c = (id, order, name, description, costClass, modifierKey, maxValue, miles
   id, treeId:'cultivation', tier:0, order, name, description, maxRank:20, costClass, modifierKey,
   perRank:maxValue/20, milestoneBonus:milestones, prerequisites:[], additionalModifiers:[],
 });
+const r = (id, order, name, description, costClass, modifierKey, maxValue, milestones={}) => ({
+  id, treeId:'reincarnation', tier:0, order, name, description, maxRank:20, costClass, modifierKey,
+  perRank:maxValue/20, milestoneBonus:milestones, prerequisites:[], additionalModifiers:[],
+});
 
 export const reincarnationTreeNodesV136 = [
+  // GỐC LUÂN HỒI V4 — Phase 1. Không khóa chéo; mỗi node 20 cấp và dùng cost curve nặng như Tu Luyện R3.
+  r('reincarnation.permanent_potential',0,'Căn Cơ Bất Diệt','Tăng tỷ lệ Điểm Tiềm Năng Đời được chuyển thành Điểm Tiềm Năng Vĩnh Viễn khi Luân Hồi: nền 3%, tối đa 10%.','core','cultivation.permanentPotentialBonusPct',7,{5:'4,75%',10:'6,5%',15:'8,25%',20:'10%'}),
+  r('reincarnation.life_potential',1,'Tiềm Mạch Khai Thiên','Tăng Điểm Tiềm Năng Đời nhận từ các mốc cảnh giới; áp dụng ngay khi mốc mới được ghi nhận trong đời.','high','cultivation.lifePotentialGainPct',25,{5:'+6,25%',10:'+12,5%',15:'+18,75%',20:'+25%'}),
+  r('reincarnation.energy_efficiency',2,'Luân Hồi Dư Lực','Giảm Năng Lượng Luân Hồi tiêu hao khi chủ động Tọa Hóa; không thay đổi quy luật cảnh giới càng cao thì giá năng lượng càng thấp.','high','cultivation.reincarnationEnergyCostReductionPct',25,{5:'-6,25%',10:'-12,5%',15:'-18,75%',20:'-25%'}),
+  r('reincarnation.rp_gain',3,'Vạn Thế Tích Lũy','Tăng Điểm Luân Hồi nhận khi chốt một đời. Node trực tiếp tăng RP nên dùng cost class Core, cùng quy mô chi tiêu với các node Tu Luyện mạnh.','core','reincarnation.rpGainPct',25,{5:'+6,25%',10:'+12,5%',15:'+18,75%',20:'+25%'}),
+
   // CÂY LUÂN HỒI — TU LUYỆN R3: 12 node độc lập × 20 cấp.
   c('cultivation.ling_quang',0,'Linh Quang Chợt Hiện','Mỗi tick Tự Tu 15 giây, kể cả offline, có thể nhận Tu Vi ×2 đến ×10. Mốc 5 mở ×3–×4; 10 mở ×5–×6; 15 mở ×7–×8; 20 mở ×9–×10.','rare','cultivation.lingGuangRank',20,{5:'Mở ×3–×4',10:'Mở ×5–×6',15:'Mở ×7–×8',20:'Mở ×9–×10'}),
   c('cultivation.heaven_reward',1,'Thiên Đạo Thù Cần','Tu đủ số tick sẽ chắc chắn nhận một khoản Tu Vi nền, không phụ thuộc may rủi và không nhân chồng với Linh Quang.','high','cultivation.heavenRewardRank',20,{5:'40 phút → +4 tick nền',10:'30 phút → +5 tick nền',15:'25 phút → +6 tick nền',20:'20 phút → +8 tick nền'}),
@@ -135,16 +145,17 @@ export function previewReincarnationV2Reward(args){
   const conversionPct=clamp(Number(args.permanentPotentialConversionPct)||REINCARNATION_PERMANENT_POTENTIAL_BASE_PCT_V127,REINCARNATION_PERMANENT_POTENTIAL_BASE_PCT_V127,REINCARNATION_PERMANENT_POTENTIAL_MAX_PCT_V127);
   const permanentBase=Math.max(0,Math.round(lifePotential*conversionPct/100));
   const energyReduction=clamp(Number(args.energyCostReductionPct)||0,0,25), energyCost=Math.max(1,Math.ceil(cfg.energyCost*(1-energyReduction/100)));
-  return {lifeId:args.lifeId,depthTier:info.tierId,depthTierIndex:info.tierIndex,depthStage:info.stage,reincarnationPoints:Math.round(cfg.reincarnationPoints*(1+trialBonus/100)),reincarnationPointsBase:cfg.reincarnationPoints,permanentPotentialBase:permanentBase,permanentPotentialConversionPct:conversionPct,trialBonusPct:trialBonus,permanentPotentialGain:Math.round(permanentBase*(1+trialBonus/100)),energyCost,energyCostBase:cfg.energyCost,offenseRatio:args.offense?.ratio??0,survivalRatio:args.survival?.ratio??0,finalizedAtUnixMs:args.nowUnixMs??Date.now()};
+  const rpGainPct=clamp(Number(args.reincarnationPointsGainPct)||0,0,25);
+  return {lifeId:args.lifeId,depthTier:info.tierId,depthTierIndex:info.tierIndex,depthStage:info.stage,reincarnationPoints:Math.round(cfg.reincarnationPoints*(1+trialBonus/100)*(1+rpGainPct/100)),reincarnationPointsBase:cfg.reincarnationPoints,permanentPotentialBase:permanentBase,permanentPotentialConversionPct:conversionPct,trialBonusPct:trialBonus,reincarnationPointsGainPct:rpGainPct,permanentPotentialGain:Math.round(permanentBase*(1+trialBonus/100)),energyCost,energyCostBase:cfg.energyCost,offenseRatio:args.offense?.ratio??0,survivalRatio:args.survival?.ratio??0,finalizedAtUnixMs:args.nowUnixMs??Date.now()};
 }
 
 function baseRankCost(rank){ const r=clamp(Math.floor(rank),1,50); return r<=10?50:r<=20?150:r<=30?400:r<=40?1000:2500; }
-const CULTIVATION_R3_NODE_IDS=new Set(reincarnationTreeNodesV136.filter(x=>x.treeId==='cultivation').map(x=>x.id));
-function cultivationR3BaseRankCost(rank){ const r=clamp(Math.floor(rank),1,20); return r<=5?100:r<=10?300:r<=15?900:2500; }
+const TWENTY_RANK_NODE_IDS=new Set(reincarnationTreeNodesV136.filter(x=>x.maxRank===20).map(x=>x.id));
+function twentyRankBaseCost(rank){ const r=clamp(Math.floor(rank),1,20); return r<=5?100:r<=10?300:r<=15?900:2500; }
 export function rankCost(rankToBuy,costClass='normal',nodeId=''){
-  const isCultivationR3=CULTIVATION_R3_NODE_IDS.has(nodeId);
-  const rank=clamp(Math.floor(rankToBuy),1,isCultivationR3?20:50);
-  const base=isCultivationR3?cultivationR3BaseRankCost(rank):baseRankCost(rank);
+  const isTwentyRank=TWENTY_RANK_NODE_IDS.has(nodeId);
+  const rank=clamp(Math.floor(rankToBuy),1,isTwentyRank?20:50);
+  const base=isTwentyRank?twentyRankBaseCost(rank):baseRankCost(rank);
   let cost;
   if(costClass==='high'){ const raw=base*1.25; cost=rank%2===1?Math.floor(raw):Math.ceil(raw); }
   else cost=Math.round(base*(REINCARNATION_COST_CLASS_MULTIPLIER[costClass]??1));
@@ -157,8 +168,10 @@ export function totalAllTreeSpentPoints(state,definitions=starterReincarnationTr
 export function totalTreeMaxCostV127(definitions=starterReincarnationTreeNodes){ return definitions.reduce((s,node)=>s+nodeSpentPoints(node,node.maxRank),0); }
 export function availableTreePoints(state,definitions=starterReincarnationTreeNodes){ return Math.max(0,state.lifetimePointsEarned-totalAllTreeSpentPoints(state,definitions)); }
 export function nodeModifierValue(state,modifierKey,definitions=starterReincarnationTreeNodes){ let total=0;for(const node of definitions){const rank=clamp(Math.floor(state?.ranks?.[node.id]??0),0,node.maxRank);if(node.modifierKey===modifierKey)total+=rank*node.perRank;for(const extra of node.additionalModifiers??[])if(extra.modifierKey===modifierKey)total+=rank*extra.perRank;}return total; }
-export function permanentPotentialConversionPctV127(treeState){ return clamp(REINCARNATION_PERMANENT_POTENTIAL_BASE_PCT_V127+nodeModifierValue(treeState,'cultivation.permanentPotentialBonusPct'),3,6); }
+export function permanentPotentialConversionPctV127(treeState){ return clamp(REINCARNATION_PERMANENT_POTENTIAL_BASE_PCT_V127+nodeModifierValue(treeState,'cultivation.permanentPotentialBonusPct'),REINCARNATION_PERMANENT_POTENTIAL_BASE_PCT_V127,REINCARNATION_PERMANENT_POTENTIAL_MAX_PCT_V127); }
 export function reincarnationEnergyCostReductionPctV127(treeState){ return clamp(nodeModifierValue(treeState,'cultivation.reincarnationEnergyCostReductionPct'),0,25); }
+export function reincarnationPointsGainPctV4(treeState){ return clamp(nodeModifierValue(treeState,'reincarnation.rpGainPct'),0,25); }
+export function lifePotentialGainPctV4(treeState){ return clamp(nodeModifierValue(treeState,'cultivation.lifePotentialGainPct'),0,25); }
 export function spendReincarnationTreeRank(state,nodeId,ranks=1,definitions=starterReincarnationTreeNodes){ const node=definitions.find(x=>x.id===nodeId);if(!node)throw new Error(`Node Luân Hồi không tồn tại: ${nodeId}`);const next={lifetimePointsEarned:state.lifetimePointsEarned,ranks:{...state.ranks},highestAchievementTierByTree:{...state.highestAchievementTierByTree},cultivationR3:true};const current=clamp(Math.floor(next.ranks[node.id]??0),0,node.maxRank),count=Math.max(1,Math.floor(ranks));if(current+count>node.maxRank)throw new Error(`${node.name} tối đa ${node.maxRank}/${node.maxRank}.`);for(const req of node.prerequisites??[])if((next.ranks[req.nodeId]??0)<req.minRank)throw new Error(`Cần ${req.nodeId} đạt ${req.minRank}/${node.maxRank}.`);let cost=0;for(let r=current+1;r<=current+count;r++)cost+=rankCost(r,node.costClass,node.id);if(availableTreePoints(next,definitions)<cost)throw new Error(`Không đủ Điểm Luân Hồi: cần ${cost}, hiện có ${availableTreePoints(next,definitions)}.`);next.ranks[node.id]=current+count;return next; }
 export function resetReincarnationTreeRanks(state){ return {...state,ranks:{},highestAchievementTierByTree:{...state.highestAchievementTierByTree},cultivationR3:true}; }
 
