@@ -1,0 +1,69 @@
+name: V144 Finalize Retirement
+
+on:
+  push:
+    branches:
+      - feature/v142-equipment-hunt
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: "startsWith(github.event.head_commit.message, 'chore(v144): finalize retirement closure')"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Repair V144 retirement syntax residue
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          path = Path('dist/core/session.js')
+          s = path.read_text(encoding='utf-8')
+          pattern = re.compile(r"(?m)^\s{12}id: def\.id, name: def\.name, grade: def\.grade \?\? 'mundane'.*\n\s{8}\}\)\)\.sort\(.*\);\n")
+          s2, n = pattern.subn('', s, count=1)
+          if n != 1:
+              raise SystemExit(f'V144 orphan battleManuals residue match count={n}')
+          path.write_text(s2, encoding='utf-8')
+          print('Removed orphan V125 battleManuals residue')
+          PY
+          node --check dist/core/session.js
+
+      - name: V144 focused retirement gate
+        run: |
+          node qa/tests/v127-manual-progression-test.js
+          node qa/tests/v143-hunt-reward-authority-test.js
+          node qa/tests/v144-technique-v103-retirement-test.js
+          node qa/tests/v141-hunt-cultivation-closure-test.js
+          node qa/runners/v142-equipment-hunt-gate.js
+
+      - name: Full V140 canonical gates
+        run: |
+          node qa/tests/v140-cultivation-core-test.js
+          node qa/tests/v140-cultivation-transport-test.js
+          node qa/tests/v140-zero-legacy-test.js
+          node qa/tests/v141-hunt-cultivation-closure-test.js
+          node qa/runners/v142-equipment-hunt-gate.js
+          node qa/runners/v140-backend-gates.js fast
+          node qa/runners/v140-frontend-gates.js fast
+          node qa/runners/v140-backend-gates.js closure
+          node qa/runners/v140-frontend-gates.js closure
+
+      - name: Commit closed V144 source
+        shell: bash
+        run: |
+          git config user.name "vuanhtuan161094-byte"
+          git config user.email "vuanhtuan161094@gmail.com"
+          rm -f .github/workflows/v144-finalize-retirement.yml
+          git add -A
+          git commit -m "fix(v144): close technique retirement cleanup"
+          git push origin HEAD:feature/v142-equipment-hunt
