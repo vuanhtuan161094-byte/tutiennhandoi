@@ -38,7 +38,7 @@ function patchSession() {
   if (text.includes('lượt trang bị${overflowEquipmentRolls')) {
     text = replaceOnce(
       text,
-      /        const summaryLines = \[`Săn ảo tầng \$\{map\.zoneFloor\}:[^\n]+lượt trang bị\$\{overflowEquipmentRolls \? ` \(\$\{overflowEquipmentRolls\} lượt dư tự đổi Tinh Hoa\)` : ''\}\.`, \.\.\.\.economyAwards\.map\(x => `\$\{x\.label\}: Tiên Ngọc Khóa \+\$\{x\.boundJade\}\.\`\)\];/,
+      /^        const summaryLines = .*lượt trang bị.*$/m,
       "        const summaryLines = [`Săn ảo tầng ${map.zoneFloor}: ${kills.toLocaleString('vi-VN')} yêu thú${eliteKills ? ` · ${eliteKills.toLocaleString('vi-VN')} Tinh Anh` : ''}.`, `Linh Thạch +${spiritStones.toLocaleString('vi-VN')} · Yêu Đan +${demonCores.toLocaleString('vi-VN')} · Mảnh Trang Bị +${fragmentSettlementV142.totalFragments.toLocaleString('vi-VN')}.`, ...equipmentDropNames.slice(0, 5).map(name => `Mảnh: ${name}.`), ...economyAwards.map(x => `${x.label}: Tiên Ngọc Khóa +${x.boundJade}.`)];",
       'virtual summary',
     );
