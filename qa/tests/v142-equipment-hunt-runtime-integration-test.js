@@ -32,7 +32,7 @@ assert.ok(realBlock.includes('settleRealHuntEquipmentFragmentsV142'));
 assert.ok(!realBlock.includes('buildEquipmentInstance('), 'Real Hunt V142 không được rơi nguyên món.');
 assert.ok(!realBlock.includes('equipmentGradesByDepth'), 'Real Hunt không còn Grade ladder cũ.');
 
-assert.match(equipment, /import \{ equipmentSetPowerV142 \} from '\.\/equipment-v142\.js';/, 'equipmentPower phải import Set V142.');
+assert.match(equipment, /import \{[^\n]*equipmentSetPowerV142[^\n]*\} from '\.\/equipment-v142\.js';/, 'equipmentPower phải import Set V142.');
 assert.ok(equipment.includes('const v142SetPower = equipmentSetPowerV142(state);'), 'Set V142 phải đi vào combat power thật.');
 assert.ok(equipment.includes('activeSets.push(...v142SetPower.activeSets);'));
 
