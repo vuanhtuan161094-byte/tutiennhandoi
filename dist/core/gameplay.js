@@ -2,8 +2,9 @@ import { artifactQualityName, artifactTierName } from './artifact.js';
 import { ARTIFACTS_V88, RELICS_V88, artifactGradeLabelV88 } from './artifact-v88.js';
 import { CANONICAL_EQUIPMENT_SLOTS, EQUIPMENT_SLOT_LABELS, EQUIPMENT_ANTI_DOWNGRADE_RESOURCE, EQUIPMENT_ENHANCE_ESSENCE_RESOURCE, EQUIPMENT_MAX_ENHANCEMENT, EQUIPMENT_TRANSFER_GEM_RESOURCE, effectiveEquipmentStats, enhancementBonusPct, enhancementDowngradeChancePct, enhancementEssenceCost, enhancementSuccessChancePct, equipmentAffixLinesV114, equipmentGradeIndex, equipmentGradeName, equipmentPower, equipmentQualityName, equipmentSlotGroup, equipmentTierName, equipmentTraitName, equippedItems } from './equipment.js';
 import { EQUIPMENT_ATTIRE_SLOTS_V142, EQUIPMENT_JEWELRY_SLOTS_V142, EQUIPMENT_MAX_ENHANCEMENT_V142, EQUIPMENT_SET_CATALOG_V142, EQUIPMENT_SLOT_LABELS_V142, EQUIPMENT_SLOTS_V142, equipmentRankIndexFromRealmOrderV142, equipmentRankNameV142, equipmentSetDefinitionV142 } from './equipment-v142.js';
-import { EQUIPMENT_FRAGMENT_CRAFT_COST_V142, EQUIPMENT_FRAGMENT_UPGRADE_RATIO_V142 } from './equipment-fragments-v142.js';
-import { EQUIPMENT_SET_FRAGMENT_ENGRAVE_COST_V142 } from './equipment-set-fragments-v142.js';
+const EQUIPMENT_FRAGMENT_CRAFT_COST_UI_V142 = 50;
+const EQUIPMENT_FRAGMENT_REFINE_RATIO_UI_V142 = 3;
+const EQUIPMENT_SET_ENGRAVE_COST_UI_V142 = 50;
 import { LIVE_EQUIPMENT_SET_CATALOG_V12310, equipmentSetCatalogEntryV116, equipmentSetSlotsV116, isEquipmentSetUnlockedV116, isLiveEquipmentSetV12310 } from './equipment-set-v116.js';
 import { EQUIPMENT_AFFIX_DEFINITIONS_V114, EQUIPMENT_AFFIX_MAX_ROLL_PCT_V114, equipmentAffixDefinitionV114, formatEquipmentAffixV114 } from './equipment-affix-v114.js';
 import { AFFIX_FAMILY_CHANGE_RESOURCE_NAME_V115, AFFIX_FAMILY_CHANGE_RESOURCE_V115, DAO_INSCRIPTION_FRAGMENT_RESOURCE_NAME_V115, DAO_INSCRIPTION_FRAGMENT_RESOURCE_V115, daoEngraveCostV115, reforgeAffixCostV115, refineAffixCostV115 } from './equipment-reforge-v115.js';
@@ -749,7 +750,7 @@ export class GameplayFacade {
             reforgeCount: Math.max(0, Math.floor(item.reforgeCount ?? 0)),
             ...(impact ? { powerDeltaPct: impact.deltaPct, powerAfter: impact.scoreAfter } : { powerImpactDeferredV129: true }),
             stats: { ...item.stats }, effectiveStats: { ...effectiveEquipmentStats(item) },
-            transferEligibleTargetIds: (item.enhancementLevel ?? 0) > 0 ? state.equipment.items.filter(candidate => candidate.id !== item.id && candidate.slot === item.slot && (candidate.enhancementLevel ?? 0) < (item.enhancementLevel ?? 0)).map(candidate => candidate.id) : [],
+            transferEligibleTargetIds: (item.enhancementLevel ?? 0) > 0 ? state.equipment.items.filter(candidate => candidate.id !== item.id && candidate.slot === item.slot && (candidate.enhancementLevel ?? 0) < (item.enhancementLevel ?? 0) && (candidate.schema !== 'equipment.v142' || (item.enhancementLevel ?? 0) <= EQUIPMENT_MAX_ENHANCEMENT_V142)).map(candidate => candidate.id) : [],
             source: item.source.kind === 'field' ? (item.source.dungeonId === 'endless.hunt' ? `Vô Tận Tháp · tầng ${item.source.floor}` : 'Săn yêu dã ngoại') : item.source.kind === 'dungeon' ? 'Phó bản/Boss' : item.source.kind === 'craft' ? 'Luyện khí' : 'Tông môn',
         };
     }
@@ -841,7 +842,7 @@ export class GameplayFacade {
                 ownedSlots:canonicalSlots.filter(slot=>ownedSlotIds.has(slot)).map(slot=>({slot,slotLabel:EQUIPMENT_SLOT_LABELS_V142[slot]??slot,itemCount:owned.filter(item=>item.slot===slot).length})),
                 missingSlots:canonicalSlots.filter(slot=>!ownedSlotIds.has(slot)).map(slot=>({slot,slotLabel:EQUIPMENT_SLOT_LABELS_V142[slot]??slot})),
                 thresholds:set.bonuses.map(def=>({pieces:def.pieces,name:def.name,description:def.name,active:equippedPieces>=def.pieces})),
-                fragmentBalance,engraveCost:EQUIPMENT_SET_FRAGMENT_ENGRAVE_COST_V142,
+                fragmentBalance,engraveCost:EQUIPMENT_SET_ENGRAVE_COST_UI_V142,
                 acquisition:{targetDungeonName:set.category==='attire'?'Ngũ Hành Đạo Khố':'Linh Bội Bảo Khố',repeatTargetDrops:true,firstClearUnlocksCraft:false},
             };
         });
@@ -876,7 +877,7 @@ export class GameplayFacade {
                 manualTrial: { id: V122_TARGET_SET_DUNGEONS.daoAttire, name: 'Bát Đạo Chân Điện', description: 'Thử luyện 8 Bản Đạo. Không rơi Set Bản Đạo; Bí Tịch Trấn Phái đi theo Chủ Đạo và mở sâu bằng Đạo Hạnh từ chiến đấu thật.' },
                 forgeDungeon: { id: V122_FORGE_DUNGEON_ID, name: 'Thiên Công Luyện Vực', description: '8 tầng Phàm→Phá; nguồn nhắm đích cho vật liệu Luyện Đồ gồm Tinh Hoa, Tinh Khoáng, Chuyển Tính Thạch, Bùa Chống Tụt và Ngọc Chuyển Cường Hóa.' },
             },
-            v142: { schema:'equipment-ui.v142', craftCostPerItem:EQUIPMENT_FRAGMENT_CRAFT_COST_V142, refineRatio:EQUIPMENT_FRAGMENT_UPGRADE_RATIO_V142, setEngraveCostPerItem:EQUIPMENT_SET_FRAGMENT_ENGRAVE_COST_V142, maxEnhancementLevel:EQUIPMENT_MAX_ENHANCEMENT_V142, maxRankIndex:v142MaxRankIndex, slots:EQUIPMENT_SLOTS_V142.map(slot=>({id:slot,label:EQUIPMENT_SLOT_LABELS_V142[slot]??slot,group:EQUIPMENT_ATTIRE_SLOTS_V142.includes(slot)?'attire':'jewelry'})), fragmentRows:Array.from({length:v142MaxRankIndex+1},(_,rankIndex)=>({rankIndex,rankName:equipmentRankNameV142(rankIndex),balance:Math.max(0,Number(v142FragmentWallet[rankIndex]??0)),craftCost:EQUIPMENT_FRAGMENT_CRAFT_COST_V142,craftable:Math.max(0,Number(v142FragmentWallet[rankIndex]??0))>=EQUIPMENT_FRAGMENT_CRAFT_COST_V142,refinable:rankIndex<v142MaxRankIndex&&Math.max(0,Number(v142FragmentWallet[rankIndex]??0))>=EQUIPMENT_FRAGMENT_UPGRADE_RATIO_V142})), setRows:v142SetRows, itemCount:state.equipment.items.filter(item=>item.schema==='equipment.v142').length },
+            v142: { schema:'equipment-ui.v142', craftCostPerItem:EQUIPMENT_FRAGMENT_CRAFT_COST_UI_V142, refineRatio:EQUIPMENT_FRAGMENT_REFINE_RATIO_UI_V142, setEngraveCostPerItem:EQUIPMENT_SET_ENGRAVE_COST_UI_V142, maxEnhancementLevel:EQUIPMENT_MAX_ENHANCEMENT_V142, maxRankIndex:v142MaxRankIndex, slots:EQUIPMENT_SLOTS_V142.map(slot=>({id:slot,label:EQUIPMENT_SLOT_LABELS_V142[slot]??slot,group:EQUIPMENT_ATTIRE_SLOTS_V142.includes(slot)?'attire':'jewelry'})), fragmentRows:Array.from({length:v142MaxRankIndex+1},(_,rankIndex)=>({rankIndex,rankName:equipmentRankNameV142(rankIndex),balance:Math.max(0,Number(v142FragmentWallet[rankIndex]??0)),craftCost:EQUIPMENT_FRAGMENT_CRAFT_COST_UI_V142,craftable:Math.max(0,Number(v142FragmentWallet[rankIndex]??0))>=EQUIPMENT_FRAGMENT_CRAFT_COST_UI_V142,refinable:rankIndex<v142MaxRankIndex&&Math.max(0,Number(v142FragmentWallet[rankIndex]??0))>=EQUIPMENT_FRAGMENT_REFINE_RATIO_UI_V142})), setRows:v142SetRows, itemCount:state.equipment.items.filter(item=>item.schema==='equipment.v142').length },
             sets:[...sets,...v142ActiveSets], setCatalog:[...setCatalog,...v142SetRows],
         };
     }

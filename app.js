@@ -2106,7 +2106,7 @@ function v142EquipmentCraftPanel(sys,selected){
 }
 function v13821Workshop(gear,selected,sys){
   if(!selected)return '<div class="v1086-empty-state"><i>◇</i><strong>Chưa có trang bị</strong><span>Loot một món để mở Luyện Đồ.</span></div>';
-  const daoLive=Boolean(sys?.capabilities?.daoInscriptionRuntimeLive),socketVisible=Boolean(sys?.capabilities?.socketGems)||v138245SocketState(selected).total>0;
+  const daoLive=!selected?.isV142&&Boolean(sys?.capabilities?.daoInscriptionRuntimeLive),socketVisible=!selected?.isV142&&(Boolean(sys?.capabilities?.socketGems)||v138245SocketState(selected).total>0);
   if(inventoryUi.forgeTab==='dao'&&!daoLive)inventoryUi.forgeTab='enhance';
   if(inventoryUi.forgeTab==='socket'&&!socketVisible)inventoryUi.forgeTab='enhance';
   const tab=inventoryUi.forgeTab||'enhance';

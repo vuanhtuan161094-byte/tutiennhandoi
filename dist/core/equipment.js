@@ -352,6 +352,9 @@ export function transferEquipmentEnhancement(state, fromItemId, toItemId, invent
         throw new Error('Ngọc Chuyển Cường Hóa chỉ chuyển giữa trang bị cùng ô.');
     const sourceLevel = clampEnhancement(source.enhancementLevel ?? 0);
     const targetLevel = clampEnhancement(target.enhancementLevel ?? 0);
+    const targetMaxEnhancement = target.schema === 'equipment.v142' ? EQUIPMENT_MAX_ENHANCEMENT_V142 : EQUIPMENT_MAX_ENHANCEMENT;
+    if (sourceLevel > targetMaxEnhancement)
+        throw new Error(`Trang bị đích chỉ cho phép Cường Hóa tối đa +${targetMaxEnhancement}.`);
     if (sourceLevel <= 0)
         throw new Error('Trang bị nguồn chưa có cường hóa.');
     if (targetLevel >= sourceLevel)

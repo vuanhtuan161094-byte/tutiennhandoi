@@ -3495,6 +3495,8 @@ export class SimulationSession {
         const item = this.stateValue.equipment.items.find(x => x.id === itemId);
         if (!item)
             throw new Error(`Unknown equipment instance: ${itemId}`);
+        if (item.schema === 'equipment.v142')
+            throw new Error('Trang bị V142 không dùng Đạo Văn.');
         const result = engraveDaoInscriptionExactV115(item, inscriptionId, this.stateValue.inventory);
         const seed = mixSeed(this.rootSeed ^ 0x115da0, this.actionIndexValue + 1);
         this.historyValue.append({ id: `equipment.dao-engrave.v115.${seed}.${itemId}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: 'system', significance: 12, message: `Khắc Đạo Văn ${inscriptionId} lên ${item.name}.`, locationId: this.stateValue.locationId, tags: ['Equipment', 'DaoInscription', 'Deterministic'], data: { itemId, inscriptionId, spiritStones: result.cost.spiritStones, equipmentEssence: result.cost.equipmentEssence, daoFragments: result.cost.daoFragments ?? 0 } });
@@ -3507,6 +3509,8 @@ export class SimulationSession {
         const item = this.stateValue.equipment.items.find(x => x.id === itemId);
         if (!item)
             throw new Error(`Unknown equipment instance: ${itemId}`);
+        if (item.schema === 'equipment.v142')
+            throw new Error('Trang bị V142 không dùng Ngũ Hành Ngọc.');
         const result = socketEquipmentGemV128(item, socketIndex, element, this.stateValue.inventory);
         const seed = mixSeed(this.rootSeed ^ 0x1286e01, this.actionIndexValue + 1);
         this.historyValue.append({ id: `equipment.gem.socket.v128.${seed}.${itemId}.${socketIndex}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: 'system', significance: 7, message: `Khảm ${result.effect.name} Lv${result.effect.level} vào ${item.name} · ô ${result.socketIndex + 1}.`, locationId: this.stateValue.locationId, tags: ['Equipment', 'GemV128', 'Socket', result.gem.element], data: { itemId, socketIndex: result.socketIndex, element: result.gem.element, level: result.gem.level, spentBlanks: result.spentBlanks } });
@@ -3519,6 +3523,8 @@ export class SimulationSession {
         const item = this.stateValue.equipment.items.find(x => x.id === itemId);
         if (!item)
             throw new Error(`Unknown equipment instance: ${itemId}`);
+        if (item.schema === 'equipment.v142')
+            throw new Error('Trang bị V142 không dùng Ngũ Hành Ngọc.');
         const result = upgradeEquipmentGemV128(item, socketIndex, this.stateValue.inventory);
         const seed = mixSeed(this.rootSeed ^ 0x1286e02, this.actionIndexValue + 1);
         this.historyValue.append({ id: `equipment.gem.upgrade.v128.${seed}.${itemId}.${socketIndex}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: 'system', significance: 7 + result.gem.level, message: `Nâng ${result.effect.name} trên ${item.name} thành Lv${result.gem.level}.`, locationId: this.stateValue.locationId, tags: ['Equipment', 'GemV128', 'Upgrade', result.gem.element], data: { itemId, socketIndex: result.socketIndex, element: result.gem.element, level: result.gem.level, spentBlanks: result.spentBlanks } });
@@ -3531,6 +3537,8 @@ export class SimulationSession {
         const item = this.stateValue.equipment.items.find(x => x.id === itemId);
         if (!item)
             throw new Error(`Unknown equipment instance: ${itemId}`);
+        if (item.schema === 'equipment.v142')
+            throw new Error('Trang bị V142 không dùng Ngũ Hành Ngọc.');
         const result = unsocketEquipmentGemV128(item, socketIndex, this.stateValue.inventory);
         const seed = mixSeed(this.rootSeed ^ 0x1286e03, this.actionIndexValue + 1);
         this.historyValue.append({ id: `equipment.gem.unsocket.v128.${seed}.${itemId}.${socketIndex}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: 'system', significance: 3, message: `Tháo Ngũ Hành Ngọc khỏi ${item.name} · ô ${result.socketIndex + 1}; hoàn ${result.refundedBlanks} Ngũ Hành Ngọc Phôi.`, locationId: this.stateValue.locationId, tags: ['Equipment', 'GemV128', 'Unsocket'], data: { itemId, socketIndex: result.socketIndex, refundedBlanks: result.refundedBlanks } });
