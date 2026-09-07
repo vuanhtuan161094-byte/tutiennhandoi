@@ -3,10 +3,20 @@ export const HUNT_VIRTUAL_FARM_BATCH_SECONDS_V77 = 30;
 export const HUNT_VIRTUAL_FARM_MIN_SECONDS_PER_KILL_V77 = 2;
 export const HUNT_VIRTUAL_FARM_MAX_SECONDS_PER_KILL_V77 = 180;
 export const HUNT_VIRTUAL_FARM_ELITE_CHANCE_PCT_V77 = 1.5;
+export const HUNT_VIRTUAL_FARM_MODEL_VERSION_V141 = 'v141-build-parity';
+
+const clamp = (value, min, max) => Math.max(min, Math.min(max, Number(value) || 0));
+
 /**
- * Cheap sustained-DPS estimator used only for virtual-farm throughput.
- * It intentionally does NOT use combat power score. It follows the live build's offensive stats,
- * crit profile, action speed, armor penetration and authored active-skill count.
+ * Cheap read-only sustained-DPS estimator used by the Săn Ảo preview/telemetry only.
+ * Settlement authority remains the representative CombatKernel V2 encounter in SimulationSession.
+ *
+ * V141 parity closure:
+ * - generic Combat Power is never used to mint farm throughput;
+ * - current offensive stats, Crit/Hội Tâm, Action Speed, Xuyên and active-skill breadth are reflected;
+ * - real outgoing Damage% layers carried by the canonical CombatEntity (currently Mệnh Cách V4)
+ *   are reflected in the preview instead of being silently ignored;
+ * - Boss Damage% is intentionally excluded because Săn Ảo farms ordinary/elite mobs, not Bosses.
  */
 export function huntVirtualFarmPlayerDpsLog10V77(entity) {
     const s = entity.stats;
@@ -20,9 +30,15 @@ export function huntVirtualFarmPlayerDpsLog10V77(entity) {
         + heart.chancePct / 100 * Math.max(0, heart.damagePct - 100) / 100;
     const penFactor = 1 + Math.max(0, Math.min(100, Number(s.armorPenPct) || 0)) / 180;
     const skillCount = Math.max(0, (entity.skillIds || []).filter(id => id && id !== 'skill.basic_strike').length);
-    // Active skills improve sustained clear speed, but with diminishing returns so slot count itself never dominates a build.
+    // Active skills improve sustained clear speed with diminishing returns; slot count itself never dominates a build.
     const skillFactor = 1 + Math.min(.55, skillCount * .085);
-    const sustained = Math.max(1, attack * speed * critFactor * penFactor * skillFactor);
+
+    // CombatKernel V2 consumes Fate V4 outgoing damage as a separate multiplicative layer rather than Attack.
+    // Mirror that layer in the read-only preview so Chiến Mệnh never looks weaker in Săn Ảo than in live combat.
+    const fateDamagePct = clamp(entity.combatBuildV117?.fateV4?.damagePct, -90, 500);
+    const outgoingDamageFactor = Math.max(.1, 1 + fateDamagePct / 100);
+
+    const sustained = Math.max(1, attack * speed * critFactor * penFactor * skillFactor * outgoingDamageFactor);
     return Math.log10(sustained);
 }
 export function huntVirtualFarmProfileV77(input) {
