@@ -47,9 +47,9 @@ jobs:
           path.write_text(s,encoding='utf-8')
           path=Path('dist/core/battle-dao-v2-runtime.js'); s=path.read_text(encoding='utf-8')
           pairs=[
-            ('    sword: 1.50,','    sword: 1.75,'),
+            ('    sword: 1.50,','    sword: 1.73,'),
             ('    spell: 2.20,','    spell: 1.75,'),
-            ('    poison: 1.00,','    poison: 0.87,'),
+            ('    poison: 1.00,','    poison: 0.88,'),
             ('    artifact: 1.10,','    artifact: 1.15,'),
             ('    formation: 1.50,','    formation: 1.75,'),
             ('    mind: 2.80,','    mind: 2.70,')]
