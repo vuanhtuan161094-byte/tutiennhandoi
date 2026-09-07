@@ -12,103 +12,67 @@ jobs:
   finalize:
     if: "startsWith(github.event.head_commit.message, 'chore(v144): finalize retirement closure')"
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-
-      - name: Apply final V144 source repairs
+      - name: Apply V144 candidate calibration
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
 
-          # 1) Remove orphan V125 battleManuals body left by the retirement patch.
-          path = Path('dist/core/session.js')
-          s = path.read_text(encoding='utf-8')
-          pattern = re.compile(r"(?m)^\s{12}id: def\.id, name: def\.name, grade: def\.grade \?\? 'mundane'.*\n\s{8}\}\)\)\.sort\(.*\);\n")
-          s, n = pattern.subn('', s, count=1)
-          if n != 1:
-              raise SystemExit(f'V144 orphan battleManuals residue match count={n}')
-          path.write_text(s, encoding='utf-8')
+          path=Path('dist/core/session.js'); s=path.read_text(encoding='utf-8')
+          s,n=re.compile(r"(?m)^\s{12}id: def\.id, name: def\.name, grade: def\.grade \?\? 'mundane'.*\n\s{8}\}\)\)\.sort\(.*\);\n").subn('',s,count=1)
+          if n!=1: raise SystemExit(f'session residue count={n}')
+          path.write_text(s,encoding='utf-8')
 
-          # 2) Remove retired Element Seal from the client snapshot.
-          path = Path('dist/core/client-shell.js')
-          s = path.read_text(encoding='utf-8')
-          old = 'spiritualRoots: api.getSpiritualRootsV131(), elementSeals: api.getElementSealsV133(), collection'
-          if old not in s:
-              raise SystemExit('V144 client-shell elementSeals residue not found')
-          path.write_text(s.replace(old, 'spiritualRoots: api.getSpiritualRootsV131(), collection', 1), encoding='utf-8')
+          path=Path('dist/core/client-shell.js'); s=path.read_text(encoding='utf-8')
+          old='spiritualRoots: api.getSpiritualRootsV131(), elementSeals: api.getElementSealsV133(), collection'
+          if old not in s: raise SystemExit('client-shell residue missing')
+          path.write_text(s.replace(old,'spiritualRoots: api.getSpiritualRootsV131(), collection',1),encoding='utf-8')
 
-          # 3) Provenance must enforce that retired manual combat is absent.
-          path = Path('qa/tests/v129-stat-provenance-test.js')
-          s = path.read_text(encoding='utf-8')
-          old = "  const crit=stat(p,'critChancePct');\n  assert(crit.sources.some(x=>x.id==='character.techniques'),'live Bí Thuật contribution must be traceable when it changes Crit');"
-          new = "  assert(!ids.has('character.techniques'),'retired V103/V119 Công Pháp combat source must not survive in provenance');"
-          if old not in s:
-              raise SystemExit('V144 stale provenance assertion not found')
-          path.write_text(s.replace(old, new, 1), encoding='utf-8')
+          path=Path('qa/tests/v129-stat-provenance-test.js'); s=path.read_text(encoding='utf-8')
+          old="  const crit=stat(p,'critChancePct');\n  assert(crit.sources.some(x=>x.id==='character.techniques'),'live Bí Thuật contribution must be traceable when it changes Crit');"
+          if old not in s: raise SystemExit('provenance residue missing')
+          path.write_text(s.replace(old,"  assert(!ids.has('character.techniques'),'retired V103/V119 Công Pháp combat source must not survive in provenance');",1),encoding='utf-8')
 
-          # 4) Retiring the old manual combat package slightly over-buffed the relative value of the 6p Fire set.
-          # Keep the existing 15% cross-set role envelope by a minimal immortal-grade Fire recalibration only.
-          path = Path('dist/core/equipment-set-v116.js')
-          s = path.read_text(encoding='utf-8')
-          replacements = {
-              'export const SET_V129_FIRE_DAMAGE = [5, 6, 7, 8, 9, 10, 12, 14];':
-              'export const SET_V129_FIRE_DAMAGE = [5, 6, 7, 8, 9, 9, 12, 14];',
-              'export const SET_V129_FIRE_CRIT = [2, 3, 4, 5, 6, 7, 8, 10];':
-              'export const SET_V129_FIRE_CRIT = [2, 3, 4, 5, 6, 6, 8, 10];',
-              'export const SET_V129_FIRE_CRIT_DAMAGE = [12, 15, 18, 22, 26, 30, 35, 40];':
-              'export const SET_V129_FIRE_CRIT_DAMAGE = [12, 15, 18, 22, 26, 28, 35, 40];',
-          }
-          for old, new in replacements.items():
-              if old not in s:
-                  raise SystemExit(f'V144 Fire recalibration marker missing: {old}')
-              s = s.replace(old, new, 1)
-          path.write_text(s, encoding='utf-8')
+          path=Path('dist/core/equipment-set-v116.js'); s=path.read_text(encoding='utf-8')
+          for old,new in {
+            'export const SET_V129_FIRE_DAMAGE = [5, 6, 7, 8, 9, 10, 12, 14];':'export const SET_V129_FIRE_DAMAGE = [5, 6, 7, 8, 9, 9, 12, 14];',
+            'export const SET_V129_FIRE_CRIT = [2, 3, 4, 5, 6, 7, 8, 10];':'export const SET_V129_FIRE_CRIT = [2, 3, 4, 5, 6, 6, 8, 10];',
+            'export const SET_V129_FIRE_CRIT_DAMAGE = [12, 15, 18, 22, 26, 30, 35, 40];':'export const SET_V129_FIRE_CRIT_DAMAGE = [12, 15, 18, 22, 26, 28, 35, 40];',
+          }.items():
+            if old not in s: raise SystemExit(f'Fire marker missing {old}')
+            s=s.replace(old,new,1)
+          path.write_text(s,encoding='utf-8')
 
-          print('V144 final source repairs applied')
+          path=Path('dist/core/battle-dao-v2-runtime.js'); s=path.read_text(encoding='utf-8')
+          old="""export const BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_MID = Object.freeze({
+    sword: 1.50,
+    fist: 1.05,
+    body: 1.15,
+    spell: 2.20,
+    poison: 1.00,
+    artifact: 1.10,
+    formation: 1.50,
+    mind: 2.80,
+});"""
+          new="""export const BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_MID = Object.freeze({
+    sword: 2.10,
+    fist: 1.05,
+    body: 1.15,
+    spell: 1.55,
+    poison: 0.72,
+    artifact: 1.15,
+    formation: 2.05,
+    mind: 2.80,
+});"""
+          if old not in s: raise SystemExit('Dao MID calibration marker missing')
+          path.write_text(s.replace(old,new,1),encoding='utf-8')
           PY
-          node --check dist/core/session.js
-          node --check dist/core/client-shell.js
-          node --check dist/core/equipment-set-v116.js
-          node --check qa/tests/v129-stat-provenance-test.js
-
-      - name: Balance regression after manual retirement
+      - name: Diagnose V129 round robin
         run: node qa/tests/v129-global-build-balance-test.js
-
-      - name: V144 focused retirement gate
-        run: |
-          node qa/tests/v127-manual-progression-test.js
-          node qa/tests/v129-stat-provenance-test.js
-          node qa/tests/v143-hunt-reward-authority-test.js
-          node qa/tests/v144-technique-v103-retirement-test.js
-          node qa/tests/v141-hunt-cultivation-closure-test.js
-          node qa/runners/v142-equipment-hunt-gate.js
-
-      - name: Full V140 canonical gates
-        run: |
-          node qa/tests/v140-cultivation-core-test.js
-          node qa/tests/v140-cultivation-transport-test.js
-          node qa/tests/v140-zero-legacy-test.js
-          node qa/tests/v141-hunt-cultivation-closure-test.js
-          node qa/runners/v142-equipment-hunt-gate.js
-          node qa/runners/v140-backend-gates.js fast
-          node qa/runners/v140-frontend-gates.js fast
-          node qa/runners/v140-backend-gates.js closure
-          node qa/runners/v140-frontend-gates.js closure
-
-      - name: Commit closed V144 source
-        shell: bash
-        run: |
-          git config user.name "vuanhtuan161094-byte"
-          git config user.email "vuanhtuan161094@gmail.com"
-          rm -f .github/workflows/v144-finalize-retirement.yml
-          git add -A
-          git commit -m "fix(v144): close technique retirement cleanup"
-          git push origin HEAD:feature/v142-equipment-hunt
