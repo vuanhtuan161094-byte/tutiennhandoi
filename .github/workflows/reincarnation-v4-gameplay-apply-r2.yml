@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Harden staged patch R2
+      - name: Harden staged patch R3
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -33,6 +33,11 @@ jobs:
           new="function fateOutgoingDamageMultiplierV4(source,target){ const fate=source?.combatBuildV117?.fateV4??{},general=Math.max(0,Number(fate.damagePct)||0),bossPct=Math.max(0,Number(fate.bossDamagePct)||0),boss=target?.tags?.some(tag=>['boss','dungeonguardian','bosslike'].includes(String(tag).toLowerCase())); return (1+general/100)*(boss?1+bossPct/100:1); }"
           if old not in s: raise SystemExit('missing Fate damage helper anchor')
           s=s.replace(old,new,1).replace('fateBossDamageMultiplierV4(source,target)','fateOutgoingDamageMultiplierV4(source,target)')
+          # Also patch the legacy combat path used by the production mortal profile.
+          combat_anchor="# 5) Session: sync chosen Fate to character runtime, Bế Quan/offline/Tài Mệnh, and new RP inputs."
+          combat_insert="""\n# 4b) Production mortal currently uses legacy CombatEngine path; Fate damage must apply there too.\np='dist/core/combat.js'; s=read(p)\ns=rep(s,\n\"        let damage = raw * defenseFactor(srcStats.attack, dstStats.defense, 0);\",\n\"        let damage = raw * fateOutgoingDamageMultiplierV4(source,target) * defenseFactor(srcStats.attack, dstStats.defense, 0);\",'legacy fate outgoing damage')\nwrite(p,s)\n\n"""
+          if combat_anchor not in s: raise SystemExit('missing combat legacy insertion anchor')
+          s=s.replace(combat_anchor,combat_insert+combat_anchor,1)
           s=s.replace("assert(b.stats.attack>a.stats.attack*1.19); assert(combatMaxHp(b.stats)>combatMaxHp(a.stats)*1.27);", "assert.equal(b.combatBuildV117.fateV4.damagePct,20); assert(combatMaxHp(b.stats)>combatMaxHp(a.stats)*1.27);")
           marker="test('Boss Damage của Chiến Mệnh is consumed inside CombatKernel V2',()=>{"
           generic="""test('Damage của Chiến Mệnh is consumed as real outgoing damage inside CombatKernel V2',()=>{\n  const player={...structuredClone(playableMortalCultivator),id:'p',stats:{...playableMortalCultivator.stats,attack:500},combatBuildV117:{fateV4:{damagePct:0}}};\n  const boosted=structuredClone(player); boosted.combatBuildV117.fateV4.damagePct=20;\n  const target={...structuredClone(heavySwordCultivator),id:'t',stats:{...heavySwordCultivator.stats,maxHp:20000,physique:1000}};\n  const a=runCombatKernelV2({mode:'realtime',registry,seed:8181,entities:[player,target],maxDuration:8}).battle;\n  const b=runCombatKernelV2({mode:'realtime',registry,seed:8181,entities:[boosted,target],maxDuration:8}).battle;\n  assert(b.finalState.t.hp<a.finalState.t.hp,`${a.finalState.t.hp} -> ${b.finalState.t.hp}`);\n});\n\n"""
@@ -42,7 +47,6 @@ jobs:
           anchor="# 3) Cultivation: Tu Mệnh applies to self-cultivation. Keep pure V140 provenance."
           if anchor not in s: raise SystemExit('missing personal power insertion anchor')
           s=s.replace(anchor,insert+anchor,1)
-          # Remove the final legacy lifeScore field as well; settlement remains chronicle-only, not RP input.
           guard="if 'lifeScore:this.previewCurrentLifeSettlement' in s or 'lifeScore:settlement.totalScore' in s: raise SystemExit('lifeScore reward dependency remains')"
           injected="s=s.replace(\"const finalized={...reward,energySpent,forcedPassing:!voluntary,lifeScore:settlement.totalScore,grade:settlement.grade};\",\"const finalized={...reward,energySpent,forcedPassing:!voluntary,grade:settlement.grade};\")\n"+guard
           if guard not in s: raise SystemExit('missing lifeScore guard')
