@@ -39,6 +39,7 @@ Mệnh Cách is deterministic current-life build selection. RP is Luân Hồi pr
 - Combat Power is telemetry; it does not declare Boss victory or directly mint farm kills.
 - Minimum real TTK is 0.25 s/kill, keeping 24h below the 350,000-fight safety ceiling.
 - Hunt remains a resource/combat loop, never a second Tu Vi engine.
+- Boss/difficulty progression uses the strongest Boss as authority and scales downward; same-realm players are not guaranteed to clear every floor.
 
 ## 4. Equipment V142 / V143 — CURRENT AUTHORITY
 
@@ -50,6 +51,9 @@ Current equipment progression is the V142 ranked-item architecture, not legacy T
 - Rank progression/fusion, ranked crafting, Hunt fragment settlement and dedicated equipment dungeon conversion are live.
 - Five Ngũ Hành equipment Set identities and Set-fragment engraving are live.
 - V143 Set Resonance is an endless fragment sink. Endless growth must stay on safe raw/bounded stat lanes and must not break combat caps.
+- V142 enhancement cap is +15.
+- 50 same-rank fragments craft one item; 3 lower-rank fragments refine to one next-rank fragment; 3 same-slot/same-rank items merge the main item upward.
+- Raw equipment stats can scale aggressively for infinite-game progression; Chân Nguyên and utility stats must not use the same explosive raw curve.
 
 Hunt reward source authority after V143 cleanup:
 
@@ -100,7 +104,7 @@ Removing V103/V119 combat power changed the shared CombatKernel balance envelope
 
 ## 7. V144 CANONICAL QA — PASS / LOCKED
 
-Normal `V140 Canonical QA` run `34147106838` completed **SUCCESS** on commit `c54100bdf6839415162ab0b99db448f266bf46ed`, containing final V144 gameplay source.
+Normal `V140 Canonical QA` run `34147222773` completed **SUCCESS** on commit `1e2ee21085fb5c98df62f4f5593cd8eeb160e03e`.
 
 PASS gates:
 
@@ -117,6 +121,22 @@ PASS gates:
 
 The temporary V144 patch/finalization workflows were removed. V144 is closed. Do not reopen V103/V119 manual gameplay because obsolete tests, old saves or historical content mention it; only compatibility data may remain inert until a later explicit migration.
 
-## 8. Next work
+## 8. NEXT WORK — V145 LINH CĂN × NGŨ HÀNH CLOSURE
 
-Continue from current branch HEAD and the next user-selected gameplay module. Preserve V140 cultivation, V141 Hunt, V142/V143 equipment-reward authority and V144 single-Công-Pháp invariants unless the user explicitly changes a design rule.
+The user explicitly selected V145 as the next subsystem.
+
+Start with a source-first forensic audit of all Linh Căn / Spiritual Root / Ngũ Hành / elemental-affinity / old Hành Ấn or Element Seal references. Then consolidate to one live authority and close backend + frontend + save + economy + CombatKernel + QA together.
+
+Mandatory V145 closure conditions:
+
+- exactly one live player-facing Linh Căn progression authority;
+- five Hành Kim/Mộc/Thủy/Hỏa/Thổ are coherent;
+- every consumed material has a live source and every minted progression material has a sink;
+- Hunt only mints intentional Linh Căn resources;
+- Linh Căn effects are consumed by shared CombatKernel, not UI-only/Combat-Power-only;
+- interactions with skill `primaryRoot`, Ngũ Hành Bosses and Equipment Sets are verified;
+- duplicate Hành Ấn/Element Seal lanes are retired or left inert only when save compatibility requires it;
+- targeted V145 tests PASS;
+- normal full V140 Canonical QA SUCCESS before marking V145 CLOSED.
+
+Detailed execution plan is in `NEXT_CHAT_TASKS.md`.
