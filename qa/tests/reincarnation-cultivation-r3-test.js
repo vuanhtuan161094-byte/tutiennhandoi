@@ -1,17 +1,51 @@
 import assert from 'node:assert/strict';
-import { reincarnationTreeNodesV136, nodeModifierValue, nodeSpentPoints, totalTreeMaxCostV127, REINCARNATION_TREE_MAX_TOTAL_COST_V127, cloneReincarnationProgressStateV1102 } from '../../dist/core/reincarnation-progression-v1102.js';
+import {
+  reincarnationTreeNodesV136,
+  nodeModifierValue,
+  nodeSpentPoints,
+  totalTreeMaxCostV127,
+  REINCARNATION_TREE_MAX_TOTAL_COST_V127,
+  REINCARNATION_ENERGY_CAP,
+  REINCARNATION_PERMANENT_POTENTIAL_MAX_PCT_V127,
+  cloneReincarnationProgressStateV1102,
+  permanentPotentialConversionPctV127,
+  reincarnationEnergyCostReductionPctV127,
+  reincarnationPointsGainPctV4,
+  lifePotentialGainPctV4,
+} from '../../dist/core/reincarnation-progression-v1102.js';
 import { lingGuangWeightsR3, heavenRewardProfileR3, retreatInsightProfileR3, retreatRefundProfileR3 } from '../../dist/core/reincarnation-progression-v1102.js';
+
+const root=reincarnationTreeNodesV136.filter(x=>x.treeId==='reincarnation');
 const cultivation=reincarnationTreeNodesV136.filter(x=>x.treeId==='cultivation');
+assert.equal(root.length,4);assert(root.every(x=>x.maxRank===20));
 assert.equal(cultivation.length,12);assert(cultivation.every(x=>x.maxRank===20));assert(cultivation.every(x=>(x.prerequisites??[]).length===0));
 const by=id=>cultivation.find(x=>x.id===id);
+const rootBy=id=>root.find(x=>x.id===id);
 assert.equal(cultivation.reduce((s,x)=>s+nodeSpentPoints(x,20),0),294500);
-assert.equal(totalTreeMaxCostV127(),REINCARNATION_TREE_MAX_TOTAL_COST_V127);assert.equal(REINCARNATION_TREE_MAX_TOTAL_COST_V127,1001870);
+assert.equal(root.reduce((s,x)=>s+nodeSpentPoints(x,20),0),123500);
+assert.equal(totalTreeMaxCostV127(),REINCARNATION_TREE_MAX_TOTAL_COST_V127);assert.equal(REINCARNATION_TREE_MAX_TOTAL_COST_V127,1125370);
+assert.equal(REINCARNATION_ENERGY_CAP,300);
+assert.equal(REINCARNATION_PERMANENT_POTENTIAL_MAX_PCT_V127,10);
 assert.equal(nodeModifierValue({ranks:{'cultivation.base_gain':20}},'cultivation.baseGainPct'),25);
 assert.equal(nodeModifierValue({ranks:{'cultivation.major_requirement':20}},'cultivation.majorBreakthroughRequirementReductionPct'),5);
 assert.equal(nodeModifierValue({ranks:{'cultivation.skip_old_stage':20}},'cultivation.skipOldStageChancePct'),5);
 assert.equal(nodeModifierValue({ranks:{'cultivation.perfect_stage':20}},'cultivation.perfectStageGainPct'),40);
+
+const rootMax={ranks:{
+  'reincarnation.permanent_potential':20,
+  'reincarnation.life_potential':20,
+  'reincarnation.energy_efficiency':20,
+  'reincarnation.rp_gain':20,
+}};
+assert.equal(permanentPotentialConversionPctV127(rootMax),10);
+assert.equal(lifePotentialGainPctV4(rootMax),25);
+assert.equal(reincarnationEnergyCostReductionPctV127(rootMax),25);
+assert.equal(reincarnationPointsGainPctV4(rootMax),25);
+assert.equal(nodeSpentPoints(rootBy('reincarnation.permanent_potential'),20),38000);
+assert.equal(nodeSpentPoints(rootBy('reincarnation.rp_gain'),20),38000);
+
 const w=lingGuangWeightsR3(20);assert.deepEqual(w,{2:10,3:3.5,4:1.2,5:.5,6:.2,7:.08,8:.04,9:.02,10:.01});
 assert.deepEqual(heavenRewardProfileR3(20),{thresholdTicks:80,bonusTicks:8});assert.deepEqual(retreatInsightProfileR3(20),{small:18,medium:6,great:1});assert.deepEqual(retreatRefundProfileR3(20),{chancePct:20,hours:.5});
-const migrated=cloneReincarnationProgressStateV1102({tree:{lifetimePointsEarned:999999,ranks:{'cultivation.retrain':50,'cultivation.self':50,'manual.cultivation':17}}},0);assert.equal(migrated.tree.ranks['cultivation.retrain'],undefined);assert.equal(migrated.tree.ranks['cultivation.self'],undefined);assert.equal(migrated.tree.ranks['manual.cultivation'],17);assert.equal(migrated.tree.cultivationR3,true);
+const migrated=cloneReincarnationProgressStateV1102({tree:{lifetimePointsEarned:999999,ranks:{'cultivation.retrain':50,'cultivation.self':50,'manual.cultivation':17,'reincarnation.permanent_potential':99}}},0);assert.equal(migrated.tree.ranks['cultivation.retrain'],undefined);assert.equal(migrated.tree.ranks['cultivation.self'],undefined);assert.equal(migrated.tree.ranks['manual.cultivation'],17);assert.equal(migrated.tree.ranks['reincarnation.permanent_potential'],20);assert.equal(migrated.tree.cultivationR3,true);
 assert(by('cultivation.ling_quang')&&by('cultivation.heaven_reward')&&by('cultivation.retreat_refund'));
-console.log('REINCARNATION CULTIVATION R3 — PASS');
+console.log('REINCARNATION CULTIVATION R3 + V4 ROOT — PASS');
