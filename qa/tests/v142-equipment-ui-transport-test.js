@@ -10,7 +10,9 @@ assert.match(gameplay,/from '\.\/equipment-v142\.js'/,'Gameplay read model phả
 assert.ok(gameplay.includes("const v142Item = item.schema === 'equipment.v142';"),'Item read model phải nhận diện V142.');
 assert.ok(gameplay.includes('rankName: v142Item ? item.equipmentRankName'),'UI phải nhận tên bậc V142.');
 assert.ok(gameplay.includes('maxEnhancementLevel'),'UI item phải nhận cap cường hóa riêng.');
-assert.ok(gameplay.includes('const v142Summary = this.session.equipmentV142Summary();'),'equipmentSystem phải expose fragment/crafting summary V142.');
+assert.ok(gameplay.includes('state.equipmentFragmentsV142?.byRank'),'equipmentSystem phải đọc fragment wallet V142 trực tiếp.');
+assert.ok(gameplay.includes('state.equipmentSetFragmentsV142?.bySetId'),'equipmentSystem phải đọc Tàn Ấn V142 trực tiếp.');
+assert.ok(!gameplay.includes('const v142Summary = this.session.equipmentV142Summary();'),'Read-model không được gọi ensure/mutate summary V142.');
 assert.ok(gameplay.includes('fragmentRows:'),'equipmentSystem phải expose hàng mảnh theo bậc.');
 assert.ok(gameplay.includes('setRows:'),'equipmentSystem phải expose Tàn Ấn/Set V142.');
 
