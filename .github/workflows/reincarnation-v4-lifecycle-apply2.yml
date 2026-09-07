@@ -34,6 +34,8 @@ jobs:
           Path('/tmp/reincarnation-v4-lifecycle-patch.py').write_text('\n'.join(body)+'\n')
           PY
           python3 /tmp/reincarnation-v4-lifecycle-patch.py
+          echo '--- remaining Mệnh Thai calls ---'
+          grep -n -C 4 'applyFateEmbryoToEntity\|effectiveManifestationCapacity\|fateEmbryo' dist/core/session.js || true
       - name: Verify lifecycle closure
         run: |
           node --check dist/core/reincarnation-progression-v1102.js
