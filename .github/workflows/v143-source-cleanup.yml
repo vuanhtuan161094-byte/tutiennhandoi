@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   patch:
-    if: startsWith(github.event.head_commit.message, 'chore(v143): stage Hunt source cleanup')
+    if: "${{ startsWith(github.event.head_commit.message, 'chore(v143):') }}"
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
