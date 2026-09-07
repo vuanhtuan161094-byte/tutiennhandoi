@@ -1,0 +1,48 @@
+name: V145 Apply Closure Patch
+
+on:
+  push:
+    branches:
+      - feature/v142-equipment-hunt
+
+permissions:
+  contents: write
+
+jobs:
+  apply-v145:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/v142-equipment-hunt
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Apply guarded V145 patch
+        run: node qa/tools/v145-apply-patch.mjs
+
+      - name: V145 targeted closure
+        run: node qa/tests/v145-spiritual-root-closure-test.js
+
+      - name: V144 retirement regression
+        run: node qa/tests/v144-technique-v103-retirement-test.js
+
+      - name: V142 Equipment x Hunt regression
+        run: node qa/runners/v142-equipment-hunt-gate.js
+
+      - name: Remove temporary patch machinery
+        run: git rm .github/workflows/v145-apply-patch.yml qa/tools/v145-apply-patch.mjs
+
+      - name: Commit V145 implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat(v145): close spiritual root elemental authority"
+          git push origin HEAD:feature/v142-equipment-hunt
