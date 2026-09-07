@@ -24,6 +24,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Align guarded patcher with live character import
+        run: node qa/tools/v145-fix-patcher.mjs
+
       - name: Apply guarded V145 patch
         id: apply
         shell: bash
@@ -53,7 +56,7 @@ jobs:
         run: node qa/runners/v142-equipment-hunt-gate.js
 
       - name: Remove temporary patch machinery
-        run: git rm .github/workflows/v145-apply-patch.yml qa/tools/v145-apply-patch.mjs
+        run: git rm .github/workflows/v145-apply-patch.yml qa/tools/v145-apply-patch.mjs qa/tools/v145-fix-patcher.mjs
 
       - name: Commit V145 implementation
         run: |
