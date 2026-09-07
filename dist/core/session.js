@@ -86,7 +86,7 @@ import { RESOURCE_PVE_DUNGEONS_V12329 } from './resource-pve-v12329.js';
 import { buyEconomyOfferV89, economyActivitySummaryV89, recordBoundJadeSpendV89, recordEconomyActivityV89, recordFirstClearBoundJadeV89, recordProgressionBoundJadeV89, recordPvpWinBoundJadeV91, recordPvpSeasonBoundJadeV94 } from './economy-activity-v89.js';
 import { buildEconomyProductionV111 } from './economy-production-v111.js';
 import { REINCARNATION_TREE_TIER_INVESTMENT, availableTreePoints, cloneReincarnationProgressStateV1102, corePotentialDefinitions, depthInfoForRealmOrder, ensureLifePotentialForRealm, nodeModifierValue, permanentPotentialConversionPctV127, previewReincarnationV2Reward, rankCost, rechargeReincarnationEnergy, reincarnationEnergyCostReductionPctV127, reincarnationPointsGainPctV4, reincarnationTreeRuntimeModifierV136, resetReincarnationTreeRanks, spendLifeCorePotential, spendPermanentCorePotential, spendReincarnationTreeRank, starterReincarnationTreeNodes, syncReincarnationTreeRuntimeOriginsV136, totalTreeMaxCostV127, totalTreeSpentPoints } from './reincarnation-progression-v1102.js';
-import { FATE_BUILD_TOTAL_UNLOCK_COST_V4, activeFateBuildV4, cloneFateBuildStateV4, fateBuildUnlockPreviewV4, selectActiveFateBuildV4 as selectActiveFateBuildStateV4, unlockFateBuildV4 as unlockFateBuildStateV4 } from './reincarnation-fate-build-v4.js';
+import { FATE_BUILD_TOTAL_UNLOCK_COST_V4, activeFateBuildV4, cloneFateBuildStateV4, fateBuildUnlockPreviewV4, selectActiveFateBuildV4 as selectActiveFateBuildStateV4, unlockFateBuildV4 as unlockFateBuildStateV4 } from './reincarnation-progression-v1102.js';
 import { runSessionGuidanceV141 } from './session-guidance.js';
 import { challengeSessionDungeonFloorV141 } from './session-dungeon.js';
 import { useSessionAlchemyPillV141 } from './session-alchemy-pill.js';
@@ -4735,10 +4735,10 @@ export class SimulationSession {
     voluntaryPassingEligibility(nowUnixMs = Date.now()) {
         if (!this.stateValue.alive) return { ok:false, reason:'Đời hiện tại đã kết thúc.' };
         const rp=this.metaValue.reincarnationProgress;
-        rp.energy=rechargeReincarnationEnergy(rp.energy,nowUnixMs);
+        const energyState=rechargeReincarnationEnergy(rp.energy,nowUnixMs);
         const preview=previewReincarnationV2Reward({lifeId:this.currentLifeValue.lifeId,realmOrder:this.stateValue.realm.maxRealmOrder,lifePotentialEarned:this.stateValue.character.corePotential?.life?.lifetimeEarned??0,permanentPotentialConversionPct:permanentPotentialConversionPctV127(rp.tree),energyCostReductionPct:reincarnationEnergyCostReductionPctV127(rp.tree),reincarnationPointsGainPct:reincarnationPointsGainPctV4(rp.tree),lifeScore:this.previewCurrentLifeSettlement().totalScore,nowUnixMs});
-        if(rp.energy.current+1e-9<preview.energyCost) return {ok:false,reason:`Không đủ Năng Lượng Luân Hồi: cần ${preview.energyCost}, hiện có ${rp.energy.current.toFixed(1)}/300.`,energyCost:preview.energyCost,energy:rp.energy.current};
-        return {ok:true,energyCost:preview.energyCost,energy:rp.energy.current,projectedRp:preview.reincarnationPoints};
+        if(energyState.current+1e-9<preview.energyCost) return {ok:false,reason:`Không đủ Năng Lượng Luân Hồi: cần ${preview.energyCost}, hiện có ${energyState.current.toFixed(1)}/300.`,energyCost:preview.energyCost,energy:energyState.current};
+        return {ok:true,energyCost:preview.energyCost,energy:energyState.current,projectedRp:preview.reincarnationPoints};
     }
     enterMeditativePassing(nowUnixMs = Date.now()) {
         const gate=this.voluntaryPassingEligibility(nowUnixMs); if(!gate.ok) throw new Error(gate.reason??'Chưa thể Tọa Hóa.');

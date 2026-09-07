@@ -37,4 +37,7 @@ assert(session.includes("const voluntary=Boolean(lifeEnd?.tags?.includes('Volunt
 assert(session.includes('const energySpent=voluntary?reward.energyCost:0'));
 assert(!session.includes('applyFateEmbryoToEntity('));
 assert(!session.includes('effectiveManifestationCapacity('));
+const eligibilityBlock=session.slice(session.indexOf('    voluntaryPassingEligibility('),session.indexOf('    enterMeditativePassing('));
+assert(eligibilityBlock.includes('const energyState=rechargeReincarnationEnergy'));
+assert(!eligibilityBlock.includes('rp.energy='),'Tọa Hóa eligibility/read preview must not mutate Energy state.');
 console.log('REINCARNATION V4 LIFECYCLE CONTRACT — PASS');
