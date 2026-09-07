@@ -37,17 +37,44 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import re
+
           p=Path('dist/core/session.js')
           s=p.read_text()
+
+          # Remove any last Mệnh Thai combat wrapper in boss/combat paths.
           pattern=r"(?P<indent>[ \t]*)const immortalPlayer = applyImmortalToEntity\(greatPlayer, this\.stateValue\.immortal, this\.stateValue\.realm, effectiveManifestationCapacity\(this\.stateValue\.immortal\.manifestationCapacity, this\.stateValue\.fateEmbryo\)\);\s*const fatePlayer = applyFateEmbryoToEntity\(immortalPlayer, this\.stateValue\.fateEmbryo, this\.fateEmbryoSummary\(\)\);\s*const talentedPlayer = applyReincarnationCombatTalents\(fatePlayer, this\.stateValue\.inheritedOrigins\);"
           def repl(m):
               i=m.group('indent')
               return f"{i}const immortalPlayer = applyImmortalToEntity(greatPlayer, this.stateValue.immortal, this.stateValue.realm, this.stateValue.immortal.manifestationCapacity);\n{i}const talentedPlayer = applyReincarnationCombatTalents(immortalPlayer, this.stateValue.inheritedOrigins);"
           s,_=re.subn(pattern,repl,s)
+
+          # personalPowerSummary must not keep a deleted Mệnh Thai stage or variable.
+          s=s.replace(
+              "        const capacity = effectiveManifestationCapacity(this.stateValue.immortal.manifestationCapacity, this.stateValue.fateEmbryo);",
+              "        const capacity = this.stateValue.immortal.manifestationCapacity;"
+          )
+          s=s.replace(
+              "        const fate = applyFateEmbryoToEntity(immortal, this.stateValue.fateEmbryo, this.fateEmbryoSummary());\n        const talents = applyReincarnationCombatTalents(fate, this.stateValue.inheritedOrigins);",
+              "        const talents = applyReincarnationCombatTalents(immortal, this.stateValue.inheritedOrigins);"
+          )
+          s=s.replace("            { id: 'fate_embryo', name: 'Mệnh Thai / Mệnh Cơ', entity: fate },\n", "")
           p.write_text(s)
+
+          # V129 regression owned the removed First-Clear Tọa Hóa gate. Rewrite it to assert V4 semantics.
+          p=Path('qa/tests/v129-gameplay-consistency-test.js')
+          t=p.read_text()
+          t=t.replace("test('legacy Săn Yêu FirstClearLike event unlocks Tọa Hóa', () => {\n  const ev = { id:'legacy.hunt.first', worldTimeYears:20, ageYears:30, type:'combat', significance:34, message:'Boss cleared', tags:['EndlessHunt','Victory','FloorBoss','FirstClearLike'] };\n  assert.equal(session(1299101, readyState(), [ev]).voluntaryPassingEligibility().ok, true);\n});",
+          "test('legacy Săn Yêu FirstClearLike event is no longer a Tọa Hóa requirement', () => {\n  const ev = { id:'legacy.hunt.first', worldTimeYears:20, ageYears:30, type:'combat', significance:34, message:'Boss cleared', tags:['EndlessHunt','Victory','FloorBoss','FirstClearLike'] };\n  assert.equal(session(1299101, readyState(), [ev]).voluntaryPassingEligibility().ok, true);\n  assert.equal(session(1299105, readyState(), []).voluntaryPassingEligibility().ok, true);\n});")
+          t=t.replace("test('Săn Yêu boss-clear state repairs old saves even when history tag is missing', () => {\n  const state = readyState();\n  state.endlessHunt = createEndlessHuntState();\n  state.endlessHunt.totalBossKills = 1;\n  state.endlessHunt.highestClearedFloor = 1;\n  state.endlessHunt.highestClearedByMajor = { '1': 1 };\n  const gate = session(1299102, state, []).voluntaryPassingEligibility();\n  assert.equal(gate.ok, true);\n  assert.ok(gate.firstClears >= 1);\n});",
+          "test('Săn Yêu clear state is independent from voluntary Tọa Hóa eligibility', () => {\n  const state = readyState();\n  state.endlessHunt = createEndlessHuntState();\n  state.endlessHunt.totalBossKills = 1;\n  state.endlessHunt.highestClearedFloor = 1;\n  state.endlessHunt.highestClearedByMajor = { '1': 1 };\n  const gate = session(1299102, state, []).voluntaryPassingEligibility();\n  assert.equal(gate.ok, true);\n  assert.equal(gate.firstClears, undefined);\n});")
+          t=t.replace("test('Phó Bản cleared-state evidence also repairs an old missing-history save', () => {\n  const state = readyState();\n  state.dungeons.highestClearedFloor['dungeon.spirit_gathering_cave'] = 2;\n  const gate = session(1299103, state, []).voluntaryPassingEligibility();\n  assert.equal(gate.ok, true);\n  assert.ok(gate.firstClears >= 2);\n});",
+          "test('Phó Bản clear state is independent from voluntary Tọa Hóa eligibility', () => {\n  const state = readyState();\n  state.dungeons.highestClearedFloor['dungeon.spirit_gathering_cave'] = 2;\n  const gate = session(1299103, state, []).voluntaryPassingEligibility();\n  assert.equal(gate.ok, true);\n  assert.equal(gate.firstClears, undefined);\n});")
+          t=t.replace("test('Tọa Hóa blocker message names concrete player actions instead of unexplained First Clear jargon', () => {\n  const gate = session(1299104, readyState(), []).voluntaryPassingEligibility();\n  assert.equal(gate.ok, false);\n  assert.match(gate.reason, /Boss Săn Yêu|Phó Bản/);\n  assert.doesNotMatch(gate.reason, /First Clear/);\n});",
+          "test('Tọa Hóa V4 has no age, realm or First Clear blocker when energy is sufficient', () => {\n  const state=createPlayableAdventureState();\n  state.ageYears=1; state.realm.maxRealmOrder=0; state.realm.realmId='realm.mortal';\n  const gate=session(1299104,state,[]).voluntaryPassingEligibility();\n  assert.equal(gate.ok,true);\n  assert.equal(gate.reason,undefined);\n  assert.ok(gate.energyCost>0);\n});")
+          p.write_text(t)
           PY
           echo '--- remaining Mệnh Thai runtime hooks ---'
-          grep -n -C 3 'applyFateEmbryoToEntity\|effectiveManifestationCapacity' dist/core/session.js || true
+          grep -n -C 2 'applyFateEmbryoToEntity\|effectiveManifestationCapacity' dist/core/session.js || true
       - name: Verify lifecycle closure
         run: |
           node --check dist/core/reincarnation-progression-v1102.js
@@ -66,7 +93,7 @@ jobs:
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add dist/core/reincarnation-progression-v1102.js dist/core/reincarnation.js dist/core/life.js dist/core/session.js qa/tests/reincarnation-v4-lifecycle-contract-test.js
+          git add dist/core/reincarnation-progression-v1102.js dist/core/reincarnation.js dist/core/life.js dist/core/session.js qa/tests/reincarnation-v4-lifecycle-contract-test.js qa/tests/v129-gameplay-consistency-test.js
           git diff --cached --quiet && exit 0
           git commit -m "feat: rebuild reincarnation v4 lifecycle"
           git push origin HEAD:feature/reincarnation-cultivation-r3
