@@ -1,4 +1,4 @@
-import { applyCharacterToEntity, gainTechniqueMastery } from './character.js';
+import { applyCharacterToEntity } from './character.js';
 import { cloneBuildFoundationV113 } from './build-foundation-v113.js';
 import { daoNatureTierForRealmV125, gainBattleDaoPracticeFromCastCountsV125, grantDaoNaturePointV125, practiceContentEfficiencyForGapV125 } from './specialization-skill-progression-v125.js';
 import { applyEquipmentToEntity } from './equipment.js';
@@ -13,7 +13,7 @@ import { applyIntegrationToEntity, integrationSummary as deriveIntegrationSummar
 import { applyGreatVehicleToEntity, greatVehicleSummary as deriveGreatVehicleSummary } from './great-vehicle.js';
 import { applyImmortalToEntity } from './immortal.js';
 import { applyFateEmbryoToEntity, effectiveManifestationCapacity } from './fate-embryo.js';
-import { applyReincarnationArtifactTalents, applyReincarnationCombatTalents, dungeonPhaseInsightStudyYears, techniqueMasteryGainMultiplier, techniquePassiveStrengthMultiplier } from './reincarnation-talents.js';
+import { applyReincarnationArtifactTalents, applyReincarnationCombatTalents, techniquePassiveStrengthMultiplier } from './reincarnation-talents.js';
 import { compareCombatPower } from './personal-power.js';
 import { runCombatKernelV2 } from './combat-kernel-v2.js';
 import { ensureCollectionProgressStateV12316 } from './collection-progression-v12316.js';
@@ -160,24 +160,9 @@ export function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {
         else {
             this.stateValue.injury = Math.min(100, this.stateValue.injury + 14 + floor * 2);
             this.applyCombatDeathPenalty(`dungeon:${dungeonId}:floor:${floor}`);
-            // A prepared boss attempt should teach something even when it fails. This is intentionally
-            // small: defeat never becomes an optimal farm, but a near miss is not a total dead turn.
-            const studyYears = readiness.ratio >= 0.88 ? 0.55 : readiness.ratio >= 0.67 ? 0.35 : 0.16;
-            battleInsightGain = gainTechniqueMastery(this.stateValue.character, studyYears, techniqueMasteryGainMultiplier(this.stateValue.inheritedOrigins));
+            // V144: defeat never advances retired V103/V119 technique mastery.
         }
-        const phaseStudyYears = dungeonPhaseInsightStudyYears(this.stateValue.inheritedOrigins, phaseTransitions.length);
-        if (phaseStudyYears > 0) {
-            battleInsightGain += gainTechniqueMastery(this.stateValue.character, phaseStudyYears, techniqueMasteryGainMultiplier(this.stateValue.inheritedOrigins));
-        }
-        // Equipped secondary manuals also learn from real combat, but slower than the main inner method.
-        if (battleInsightGain > 0) {
-            for (const [slot, id] of Object.entries(this.stateValue.character.equippedTechniqueIds ?? {})) {
-                if (slot === 'inner' || !id)
-                    continue;
-                const before = this.stateValue.character.techniqueMastery[id] ?? 0;
-                this.stateValue.character.techniqueMastery[id] = Math.min(100, before + battleInsightGain * .35);
-            }
-        }
+        // V144: phase reading still feeds combat review/skill practice elsewhere; legacy manual mastery is inert.
         const equipmentFragmentText = equipmentFragmentDrops.length ? ` Thu ${equipmentFragmentDrops.map(drop => drop.kind === 'setFragmentV142' ? `Tàn Ấn ${drop.setName} +${drop.amount}` : `Mảnh Trang Bị ${drop.rankName} +${drop.amount}`).join(' · ')}.` : '';
         const event = {
             id: `dungeon.challenge.${seed}.${dungeonId}.${floor}`,

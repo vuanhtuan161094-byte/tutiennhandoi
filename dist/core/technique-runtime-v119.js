@@ -15,67 +15,14 @@ export function equippedTechniqueDefinitionsV119(state, lookup) {
     }
     return out;
 }
-export function resolveTechniqueRuntimeV119(state, lookup) {
-    const modifiers = [];
-    const sourceTechniqueIds = [];
-    const masteryByTechniqueId = {};
-    const rules = [];
-    const fixedRootBindings = {};
-    const learnedPassiveIds = [];
-    const unlockedVariantIds = [];
-    const trueMeaningIds = [];
-    // v1.25: Bản Đạo Bị Động is no longer auto-learned merely because a known manual reached a milestone.
-    // Only IDs already learned through the specialization/manual-fragment gate are exposed as passive knowledge here.
-    const legitimatelyLearnedPassives = new Set(state.buildFoundation?.learnedDaoPassiveIdsV118 ?? []);
-    for (const id of state.knownTechniqueIds ?? []) {
-        let def;
-        try {
-            def = lookup(id);
-        }
-        catch {
-            continue;
-        }
-        if (!def.contentV119)
-            continue;
-        const mastery = clamp(state.techniqueMastery[id] ?? 0, 0, 100);
-        for (const milestone of def.contentV119.milestones) {
-            if (mastery + 1e-9 < milestone.at)
-                continue;
-            for (const x of milestone.unlockPassiveIds ?? [])
-                if (legitimatelyLearnedPassives.has(x) && !learnedPassiveIds.includes(x))
-                    learnedPassiveIds.push(x);
-            for (const x of milestone.unlockVariantIds ?? [])
-                if (!unlockedVariantIds.includes(x))
-                    unlockedVariantIds.push(x);
-            if (milestone.trueMeaningId && !trueMeaningIds.includes(milestone.trueMeaningId))
-                trueMeaningIds.push(milestone.trueMeaningId);
-        }
-    }
-    for (const def of equippedTechniqueDefinitionsV119(state, lookup)) {
-        if (!def.contentV119)
-            continue;
-        const mastery = clamp(state.techniqueMastery[def.id] ?? 0, 0, 100);
-        sourceTechniqueIds.push(def.id);
-        masteryByTechniqueId[def.id] = mastery;
-        for (const milestone of def.contentV119.milestones) {
-            if (mastery + 1e-9 < milestone.at)
-                continue;
-            for (const m of milestone.modifiers ?? [])
-                modifiers.push({ ...m });
-            if (milestone.trueMeaningId)
-                rules.push(milestone.trueMeaningId);
-        }
-        if (def.slot === 'art' && def.contentV119.elementMode === 'fixed' && def.contentV119.fixedRoot) {
-            for (const skillId of def.grantedSkillIds ?? [])
-                if ((state.knownSkillIds ?? []).includes(skillId))
-                    fixedRootBindings[skillId] = def.contentV119.fixedRoot;
-        }
-    }
-    const staticMaxSpiritPct = modifiers.filter(x => x.kind === 'maxSpiritPct' && (x.condition ?? 'always') === 'always').reduce((a, b) => a + b.value, 0);
-    const staticDodgeFlatPct = modifiers.filter(x => x.kind === 'dodgeFlatPct' && (x.condition ?? 'always') === 'always').reduce((a, b) => a + b.value, 0);
-    const staticActionSpeedPct = modifiers.filter(x => x.kind === 'actionSpeedPct' && (x.condition ?? 'always') === 'always').reduce((a, b) => a + b.value, 0);
-    const staticSpiritRegenPct = modifiers.filter(x => x.kind === 'spiritRegenPct' && (x.condition ?? 'always') === 'always').reduce((a, b) => a + b.value, 0);
-    return { runtime: { sourceTechniqueIds, masteryByTechniqueId, modifiers, rules }, fixedRootBindings, staticMaxSpiritPct, staticDodgeFlatPct, staticActionSpeedPct, staticSpiritRegenPct, learnedPassiveIds, unlockedVariantIds, trueMeaningIds };
+/** V144 compatibility shim. V103/V119 manual state is migrated but no longer owns live combat. */
+export function resolveTechniqueRuntimeV119(_state, _lookup) {
+    return {
+        runtime: { sourceTechniqueIds: [], masteryByTechniqueId: {}, modifiers: [], rules: [] },
+        fixedRootBindings: {},
+        staticMaxSpiritPct: 0, staticDodgeFlatPct: 0, staticActionSpeedPct: 0, staticSpiritRegenPct: 0,
+        learnedPassiveIds: [], unlockedVariantIds: [], trueMeaningIds: [],
+    };
 }
 function effectiveRoot(entity, skill) { return skill.runtimeV117?.primaryRoot ?? entity.combatBuildV117?.skillRootBindingsV118?.[skill.id]; }
 function techniqueDomains(entity, skill) {

@@ -392,8 +392,6 @@ export class GameplayFacade {
             lessons.push(...report.readiness.recommendations.slice(0, 2));
         else if (report.firstClear)
             lessons.push('First Clear đã mở mốc farm mới; kiểm tra loot được khóa trước khi dọn kho.');
-        if (report.phaseTransitions.length > 0 && report.battleInsightGain > 0)
-            lessons.push(`Đọc phase mang lại ${report.battleInsightGain.toFixed(2)} mastery quy đổi.`);
         return {
             schema: 'combat-review.v1', dungeonId: report.dungeonId, dungeonName, floor: report.floor, guardianName: report.guardianName, won: report.won, firstClear: report.firstClear, battleDuration: report.battleDuration,
             readiness: { bandLabel: report.readiness.bandLabel, ratio: report.readiness.ratio, playerScore: report.readiness.player.score, enemyScore: report.readiness.enemy.score },
@@ -413,11 +411,7 @@ export class GameplayFacade {
             return { id, resolvedId: id, name: skill.name, baseName: skill.name, description: battleDaoV2SkillDescriptionV79(skill), tags: [...skill.tags], behaviorType: skill.behaviorType, spiritCost: skill.spiritCost, cooldown: skill.cooldown, castTime: skill.castTime, mechanics: skillCombatExplanationV125(skill), slot: skill.runtimeV117?.slotClass ?? 'active', dao: skill.runtimeV117?.daoBinding, active: state.character.activeSkillIds.includes(id), variant: false };
         });
     }
-    characterSkillsV129() {
-        const manuals = this.session.techniqueManualSummary();
-        const { catalog: _catalog, ...techniqueManuals } = manuals;
-        return { schema: 'character-skills.v129', knownSkills: this.clientKnownSkillsV129(), techniqueManuals };
-    }
+    characterSkillsV129() { return { schema: 'character-skills.v144', knownSkills: this.clientKnownSkillsV129() }; }
     characterCultivationV140() {
         return { schema:'character-cultivation.v140', ...this.session.cultivationSummaryV140(), injury:Math.max(0,Number(this.session.state.injury)||0) };
     }
@@ -462,7 +456,6 @@ export class GameplayFacade {
             : state.character.bloodlines.map(lineage => ({ ...lineage, name: this.registry.bloodline(lineage.id).name }));
         const combatEntity = this.session.personalCombatEntity();
         const coreBody = Number.isFinite(combatEntity.stats.physique) ? Math.max(0, combatEntity.stats.physique ?? 0) : Math.max(0, combatEntity.stats.maxHp / 20);
-        const activeTechnique = this.registry.technique(state.character.activeTechniqueId);
         return {
             ...this.dashboard(),
             birth: { family: this.session.currentLife.birth.family, familyRarity: this.session.currentLife.birth.familyRarity, fate: this.session.currentLife.birth.fate, aptitude: this.session.currentLife.birth.aptitude, luck: this.session.currentLife.birth.luck, talents: (this.session.currentLife.birth.birthTalents ?? []).map(x => ({ ...x })), divineAbility: this.session.currentLife.birth.divineAbility ? { ...this.session.currentLife.birth.divineAbility } : undefined, originLines: bundleSummaryLines(origins) },
@@ -483,14 +476,11 @@ export class GameplayFacade {
             inheritedOrigins: { ...state.inheritedOrigins },
             coreStats: { power: combatEntity.stats.attack, body: coreBody, defense: combatEntity.stats.defense },
             combatStats: { ...combatEntity.stats },
-            activeTechniqueDetail: { id: activeTechnique.id, name: activeTechnique.name, tags: [...activeTechnique.tags], mastery: state.character.techniqueMastery[activeTechnique.id] ?? 0 },
-            knownTechniques: state.character.knownTechniqueIds.map(id => { const t = this.registry.technique(id); return ({ id, name: t.name, tags: [...t.tags], mastery: state.character.techniqueMastery[id] ?? 0, active: id === state.character.activeTechniqueId }); }),
             knownSkills: state.character.knownSkillIds.filter(id => !id.startsWith('skill.class.')).map(id => { const skill = this.registry.skill(id); return ({ id, resolvedId: id, name: skill.name, baseName: skill.name, description: battleDaoV2SkillDescriptionV79(skill), tags: [...skill.tags], behaviorType: skill.behaviorType, spiritCost: skill.spiritCost, cooldown: skill.cooldown, castTime: skill.castTime, mechanics: skillCombatExplanationV125(skill), slot: skill.runtimeV117?.slotClass ?? 'active', dao: skill.runtimeV117?.daoBinding, active: state.character.activeSkillIds.includes(id), variant: false }); }),
             equipmentSlots: CANONICAL_EQUIPMENT_SLOTS.map((id, index) => ({ id, label: EQUIPMENT_SLOT_LABELS[id], index })),
             originProgression: this.session.originProgressionSummary(),
             bloodlineCatalog: bloodlineIds().filter(id => id !== 'bloodline.v101.none').map(id => { const d = bloodlineDefinition(id); return { id: d.id, name: d.name, tierLabel: d.tierLabel, band: d.band, description: d.description }; }),
             potential: this.session.lifePotentialSummary(),
-            techniqueManuals: this.session.techniqueManualSummary(),
         };
     }
     /** Compatibility action used by the current client; v1.10.2 routes it to the authoritative three-stat Potential pool. */
@@ -503,10 +493,6 @@ export class GameplayFacade {
     setSkillActive(skillId, active) { return this.session.setCombatSkillActive(skillId, active); }
 
 
-    equipTechniqueManual(techniqueId) { return this.session.equipTechniqueManual(techniqueId); }
-    studyTechniqueManual(techniqueId, batches = 1) { return this.session.studyTechniqueManual(techniqueId, batches); }
-    setTechniqueVariantsV119(variantIds) { return this.session.setTechniqueVariantsV119(variantIds); }
-    techniqueManuals() { return this.session.techniqueManualSummary(); }
     collectionV12316(nowUnixMs = Date.now()) { return this.session.collectionSummaryV12316(nowUnixMs); }
     collectionEconomyV12325(nowUnixMs = Date.now()) { return this.session.collectionEconomyV12325(nowUnixMs); }
     collectionEconomyV12326(nowUnixMs = Date.now()) { return this.session.collectionEconomyV12326(nowUnixMs); }
@@ -578,16 +564,12 @@ export class GameplayFacade {
     chooseSecondaryDaoV125(dao) { return this.session.chooseSecondaryDaoV125(dao); }
     allocateDaoNaturePointV125(tierId, branch, points = 1) { return this.session.allocateDaoNaturePointV125(tierId, branch, points); }
     chooseDaoNatureMajorBranchV125(tierId, branch) { return this.session.chooseDaoNatureMajorBranchV125(tierId, branch); }
-    restoreTechniqueManualV125(techniqueId) { return this.session.restoreTechniqueManualV125(techniqueId); }
-    upgradeDaoPassiveV125(passiveId, sourceTechniqueId) { return this.session.upgradeDaoPassiveV125(passiveId, sourceTechniqueId); }
     upgradeBattleDaoSkillV12317(skillId) { return this.session.upgradeBattleDaoSkillV12317(skillId); }
     advanceBattleDaoSkillV12317(skillId) { return this.session.advanceBattleDaoSkillV12317(skillId); }
     spiritualRootsV131() { return this.session.spiritualRootSummaryV131(); }
     setRootFocusV131(root) { return this.session.setRootFocusV131(root); }
     setRootOriginTargetV131(root, originId) { return this.session.setRootOriginTargetV131(root, originId); }
     activateRootOriginV131(root, originId) { return this.session.activateRootOriginV131(root, originId); }
-    elementSealsV133() { return this.session.elementSealSummaryV133(); }
-    setSkillElementSealV133(skillId, root) { return this.session.setSkillElementSealV133(skillId, root); }
     breakthroughRootQualityV131(root) { return this.session.breakthroughRootQualityV131(root); }
     dungeons() {
         const state = this.session.state;

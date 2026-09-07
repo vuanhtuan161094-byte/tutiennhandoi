@@ -79,10 +79,6 @@ export class LocalGameApplicationApi {
     harvestAlchemyGardenV85(slot) { return this.#game.harvestAlchemyGardenV85(slot); }
     spendPotential(id, points = 1) { return this.#game.spendPotential(id, points); }
     setSkillActive(skillId, active) { return this.#game.setSkillActive(skillId, active); }
-    equipTechniqueManual(techniqueId) { return this.#game.equipTechniqueManual(techniqueId); }
-    studyTechniqueManual(techniqueId, batches = 1) { return this.#game.studyTechniqueManual(techniqueId, batches); }
-    setTechniqueVariantsV119(variantIds) { return this.#game.setTechniqueVariantsV119(variantIds); }
-    getTechniqueManuals() { return this.#game.techniqueManuals(); }
     getCollectionV12316(nowUnixMs = Date.now()) { return this.#game.collectionV12316(nowUnixMs); }
     getCollectionEconomyV12325(nowUnixMs = Date.now()) { return this.#game.collectionEconomyV12325(nowUnixMs); }
     getCollectionEconomyV12326(nowUnixMs = Date.now()) { return this.#game.collectionEconomyV12326(nowUnixMs); }
@@ -131,16 +127,12 @@ export class LocalGameApplicationApi {
     chooseSecondaryDaoV125(dao) { return this.#game.chooseSecondaryDaoV125(dao); }
     allocateDaoNaturePointV125(tierId, branch, points = 1) { return this.#game.allocateDaoNaturePointV125(tierId, branch, points); }
     chooseDaoNatureMajorBranchV125(tierId, branch) { return this.#game.chooseDaoNatureMajorBranchV125(tierId, branch); }
-    restoreTechniqueManualV125(techniqueId) { return this.#game.restoreTechniqueManualV125(techniqueId); }
-    upgradeDaoPassiveV125(passiveId, sourceTechniqueId) { return this.#game.upgradeDaoPassiveV125(passiveId, sourceTechniqueId); }
     upgradeBattleDaoSkillV12317(skillId) { return this.#game.upgradeBattleDaoSkillV12317(skillId); }
     advanceBattleDaoSkillV12317(skillId) { return this.#game.advanceBattleDaoSkillV12317(skillId); }
     getSpiritualRootsV131() { return this.#game.spiritualRootsV131(); }
     setRootFocusV131(root) { return this.#game.setRootFocusV131(root); }
     setRootOriginTargetV131(root, originId) { return this.#game.setRootOriginTargetV131(root, originId); }
     activateRootOriginV131(root, originId) { return this.#game.activateRootOriginV131(root, originId); }
-    getElementSealsV133() { return this.#game.elementSealsV133(); }
-    setSkillElementSealV133(skillId, root) { return this.#game.setSkillElementSealV133(skillId, root); }
     breakthroughRootQualityV131(root) { return this.#game.breakthroughRootQualityV131(root); }
     challengeBoss(dungeonId, floor) { return this.perform({ type: 'challengeDungeon', dungeonId, floor }); }
     chooseEvent(eventId, choiceId) { return this.perform({ type: 'contentEvent', eventId, choiceId }); }

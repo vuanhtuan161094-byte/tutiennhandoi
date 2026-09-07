@@ -4,9 +4,8 @@ import { restoreSimulationSession } from './session-restore.js';
 import { fiveElementCounter } from './combat-rules.js';
 import { cloneAdventureState } from './world.js';
 import { applyCharacterToEntity, awakenBloodline, characterStatSourceStagesV129, cloneCharacterSystemState, learnSkill as learnCombatSkill, learnTechnique, setActiveTechnique, setCombatLoadout } from './character.js';
-import { TECHNIQUE_GRADE_ORDER, TECHNIQUE_INSIGHT_RESOURCE_ID, equipManual, learnTechniqueManual, studyTechniqueWithFragments, techniqueMasteryReport, unlockTechniqueGrantedSkills } from './technique-progression-v103.js';
 import { cloneBuildFoundationV113, setSkillVariantsV118 } from './build-foundation-v113.js';
-import { BATTLE_DAO_ACTIVE_LOADOUT_SLOTS_V125, addDaoNatureCultivationXpV125, addTechniqueFragmentsV125, allocateDaoNaturePointV125, battleDaoOfSkillV125, battleDaoSkillPreviewV125, battleDaoGameplayGuideV12311, battleDaoTechniqueFragmentTargetsV125, canLearnBattleDaoSkillV125, chooseDaoNatureMajorBranchV125, chooseSecondaryDaoV125, commitSpecializationV125, estimateBattleDaoCastCountsV125, gainBattleDaoPracticeFromCastCountsV125, isBattleDaoSkillV125, isCurrentDaoEligibleV125, isV119BattleDaoTechniqueV125, passiveUpgradeV125, practiceContentEfficiencyForGapV125, restoreTechniqueManualV125, retroactiveSkillPointsForRealmV125, rewardSkillPointsForRealmV125, skillPracticeProfileV125, spendSkillPointsToLearnV125, syncBattleDaoV2ProgressionV78, syncCanonicalBattleDaoLoadoutV125, syncDaoNatureTierUnlocksV125, techniqueDaoEligibleV125, techniqueRestoreFragmentRequirementV125, validateBattleDaoSkillUseV125, v125SpecializationSummary } from './specialization-skill-progression-v125.js';
+import { BATTLE_DAO_ACTIVE_LOADOUT_SLOTS_V125, addDaoNatureCultivationXpV125, allocateDaoNaturePointV125, battleDaoOfSkillV125, battleDaoSkillPreviewV125, battleDaoGameplayGuideV12311, canLearnBattleDaoSkillV125, chooseDaoNatureMajorBranchV125, chooseSecondaryDaoV125, commitSpecializationV125, estimateBattleDaoCastCountsV125, gainBattleDaoPracticeFromCastCountsV125, isBattleDaoSkillV125, isCurrentDaoEligibleV125, isV119BattleDaoTechniqueV125, passiveUpgradeV125, practiceContentEfficiencyForGapV125, retroactiveSkillPointsForRealmV125, rewardSkillPointsForRealmV125, skillPracticeProfileV125, spendSkillPointsToLearnV125, syncBattleDaoV2ProgressionV78, syncCanonicalBattleDaoLoadoutV125, syncDaoNatureTierUnlocksV125, techniqueDaoEligibleV125, validateBattleDaoSkillUseV125, v125SpecializationSummary } from './specialization-skill-progression-v125.js';
 import { BATTLE_DAO_V2_REALM_ORDER, battleDaoV2ActiveSlotsUnlocked, battleDaoV2Catalog, battleDaoV2Passives } from '../content/battle-dao-v2-catalog.js';
 import { battleDaoSkillGrowthCurrentSummaryV126, battleDaoSkillGrowthProfileV126 } from './battle-dao-skill-growth-v126.js';
 import { advanceSkillGradeV12317, ensureSkillHeartProgressionV12317, heartMethodGradeV12317, heartMethodStatSummaryV12317, skillAdvanceCostV12317, skillGradeV12317, skillLevelCostV12317, skillLevelV12317, skillScalingSummaryV12317, SKILL_GRADE_LABEL_V12317, SKILL_GRADE_ORDER_V12317, upgradeSkillLevelV12317 } from './skill-heart-method-v12317.js';
@@ -218,22 +217,11 @@ export class SimulationSession {
         const lifePotentialPct = nodeModifierValue(rp.tree, 'cultivation.lifePotentialGainPct');
         const core = this.stateValue.character.corePotential ?? { life: undefined, permanent: { power: 0, body: 0, defense: 0 } };
         this.stateValue.character.corePotential = { life: ensureLifePotentialForRealm(core.life, this.stateValue.realm.maxRealmOrder, lifePotentialPct), permanent: { ...rp.permanentPotential.allocations } };
-        // v1.25 compatibility: hydrate raw Thục Luyện / passive levels, grandfather already-known v1.19 Dao manuals as restored, and award missed realm Skill Points once.
+        // V144 compatibility: preserve migrated raw save fields, but legacy Công Pháp/manual restoration is inert; only V127 manuals are live progression.
         const v125Foundation = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId);
         syncGuaranteedRootOriginsV131(v125Foundation);
         this.stateValue.character.buildFoundation = v125Foundation;
         const v125Progression = v125Foundation.progressionV125;
-        for (const id of this.stateValue.character.knownTechniqueIds) {
-            let def;
-            try {
-                def = this.registry.technique(id);
-            }
-            catch {
-                continue;
-            }
-            if (isV119BattleDaoTechniqueV125(def) && !v125Progression.restoredTechniqueIds.includes(id))
-                v125Progression.restoredTechniqueIds.push(id);
-        }
         retroactiveSkillPointsForRealmV125(this.stateValue.character, this.stateValue.realm.maxRealmOrder);
         syncDaoNatureTierUnlocksV125(this.stateValue.character, this.stateValue.realm.maxRealmOrder);
         writeBirthModifiersToOrigins(this.stateValue.inheritedOrigins, this.currentLifeValue.birth);
@@ -1117,7 +1105,7 @@ export class SimulationSession {
         const fateRuntime = this.currentLifeValue.fateRuntime ?? (this.currentLifeValue.fateRuntime = createFateRuntimeState());
         const fateMods = result.won ? fateHuntModifiers(this.currentLifeValue.birth.originsV101?.fate, fateRuntime) : { rewardMultiplier: 1, equipmentChanceBonusPct: 0, notes: [], consumeOpportunityBoost: false };
         const fateEvent = fateResolveHuntEvent(this.currentLifeValue.birth.originsV101?.fate, new SeededRng((seed ^ 0x51ed270b) >>> 0), result.won, result.monster.grade === 'elite' || result.monster.grade === 'boss');
-        let cultivationGain = 0, spiritStones = 0, cultivationPillDrops = 0, injuryPillDropId, injuryPillDropName, techniqueFragmentDrops = 0, daoTechniqueFragmentTechniqueId, daoTechniqueFragmentTechniqueName, daoTechniqueFragmentAmount = 0, learnedTechniqueId, learnedTechniqueName, trueBloodDropId, equipmentDropId, equipmentDropName, jackpotHit = false, jackpotChancePctApplied = 0;
+        let cultivationGain = 0, spiritStones = 0, cultivationPillDrops = 0, injuryPillDropId, injuryPillDropName, trueBloodDropId, equipmentDropId, equipmentDropName, jackpotHit = false, jackpotChancePctApplied = 0;
         const economyMaterialDrops = {}, economyRareDrops = {};
         const rootQualityMaterialDrops = [];
         const rootOriginFarm = [];
@@ -1178,39 +1166,8 @@ export class SimulationSession {
                 trueBloodDropId = trueBloodResourceId(id);
                 this.stateValue.inventory[trueBloodDropId] = (this.stateValue.inventory[trueBloodDropId] ?? 0) + 1;
             }
-            // v1.03 Công Pháp loop: fragments are common progression; complete manuals are rare discoveries, weighted heavily toward lower grades.
-            const fragmentBase = result.monster.grade === 'boss' ? 4 + map.zone : result.monster.grade === 'elite' ? 3 : result.monster.grade === 'enhanced' ? 2 : 1;
-            if (result.monster.grade !== 'common' || rng.chance(45)) {
-                techniqueFragmentDrops = fragmentBase;
-                this.stateValue.inventory[TECHNIQUE_INSIGHT_RESOURCE_ID] = (this.stateValue.inventory[TECHNIQUE_INSIGHT_RESOURCE_ID] ?? 0) + techniqueFragmentDrops;
-                const targets = battleDaoTechniqueFragmentTargetsV125(this.stateValue.character, this.stateValue.realm.maxRealmOrder, [...this.registry.techniques.values()]);
-                if (targets.length) {
-                    const target = targets[Math.floor(rng.next() * targets.length)];
-                    daoTechniqueFragmentAmount = Math.max(1, fragmentBase + (result.monster.grade === 'boss' ? 2 : 0));
-                    addTechniqueFragmentsV125(this.stateValue.character, target.id, daoTechniqueFragmentAmount);
-                    daoTechniqueFragmentTechniqueId = target.id;
-                    daoTechniqueFragmentTechniqueName = target.name;
-                }
-            }
-            const manualChance = result.monster.grade === 'boss' ? Math.min(18, 5 + map.zone * 1.4) : result.monster.grade === 'elite' ? Math.min(5, 1 + map.zone * .35) : result.monster.grade === 'enhanced' ? Math.min(1.5, .2 + map.zone * .12) : 0;
-            if (manualChance > 0 && rng.chance(manualChance)) {
-                const maxGradeIndex = Math.min(7, Math.max(0, Math.floor(map.realmOrder / 7) + Math.floor((map.zone - 1) / 2)));
-                const unknown = [...this.registry.techniques.values()].filter(def => !isV119BattleDaoTechniqueV125(def) && !this.stateValue.character.knownTechniqueIds.includes(def.id) && (def.requiredRealmOrder ?? 0) <= this.stateValue.realm.maxRealmOrder && TECHNIQUE_GRADE_ORDER.indexOf(def.grade ?? 'mundane') <= maxGradeIndex);
-                if (unknown.length) {
-                    const weights = unknown.map(def => Math.pow(.52, TECHNIQUE_GRADE_ORDER.indexOf(def.grade ?? 'mundane')));
-                    const total = weights.reduce((a, b) => a + b, 0);
-                    let roll = rng.next() * total, index = 0;
-                    for (; index < weights.length - 1; index++) {
-                        roll -= weights[index];
-                        if (roll <= 0)
-                            break;
-                    }
-                    const def = unknown[index];
-                    learnTechniqueManual(this.stateValue.character, def, 0);
-                    learnedTechniqueId = def.id;
-                    learnedTechniqueName = def.name;
-                }
-            }
+            // V144: Hunt no longer mints V103/V119 manual fragments or complete legacy manuals.
+            // V127 Công Pháp progression is owned by the collection/manual economy.
             // v1.31 Linh Căn: target-farm and Chất Hành materials are granted only by a real HP-combat victory.
             // A dedicated RNG stream prevents Linh Căn additions from perturbing legacy equipment/economy loot rolls.
             const rootRng = new SeededRng((seed ^ 0x1f123bb5) >>> 0);
@@ -1243,7 +1200,7 @@ export class SimulationSession {
         const combatEvents = options.emitCombatEvents === false ? [] : buildEndlessHuntCombatStreamFromKernelV2({ registry: this.registry, battle: kernelCombat.battle, result, playerId: kernelCombat.playerEntity.id, enemyId: kernelCombat.enemyEntity.id, bossMechanic });
         const significance = result.won ? (result.monster.grade === 'boss' ? 34 : result.monster.grade === 'elite' ? 18 : result.monster.grade === 'enhanced' ? 11 : 6) : 18;
         const openedText = result.bossCleared && result.unlockedFloor ? `; mở tầng ${zoneFloorForMapFloor(result.unlockedFloor)} ${realmMapDefinitionForFloor(result.unlockedFloor).zoneName}` : '';
-        const event = { id: `endless.hunt.${seed}.${result.monster.floor}.${result.monster.grade}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: result.won ? 'combat' : 'injury', significance, message: result.won ? `${result.monster.gradeName} · ${map.zoneName} tầng ${map.zoneFloor}: hạ ${result.monster.name}; Linh Thạch +${spiritStones}${equipmentDropName ? `, rơi ${equipmentDropName}` : ''}${cultivationPillDrops ? `, Tu Vi Đan +${cultivationPillDrops}` : ''}${injuryPillDropName ? `, ${injuryPillDropName} +1` : ''}${trueBloodDropId ? `, Bản Mệnh Tinh Huyết +1` : ''}${techniqueFragmentDrops ? `, Bí Thuật Tàn Trang +${techniqueFragmentDrops}` : ''}${learnedTechniqueName ? `, lĩnh ngộ ${learnedTechniqueName}` : ''}${openedText}.${fateNotes.length ? ` ${fateNotes.join(' ')}` : ''}` : `Thất bại trước ${result.monster.name} · ${map.zoneName} tầng ${map.zoneFloor}; thương thế +${result.injuryGain}.${fateNotes.length ? ` ${fateNotes.join(' ')}` : ''}`, locationId: this.stateValue.locationId, tags: ['EndlessHunt', result.won ? 'Victory' : 'Defeat', result.monster.grade, map.zoneGradeId, ...result.monster.elements.map(x => `Element:${x}`), ...(result.bossCleared ? ['FloorBoss', 'FirstClear', 'FirstClearLike'] : []), ...(jackpotHit ? ['Jackpot'] : [])], data: { floor: result.monster.floor, localFloor: map.localFloor, zoneFloor: map.zoneFloor, zone: map.zone, majorRealmIndex: map.majorRealmIndex, grade: result.monster.grade, monsterName: result.monster.name, playerPowerLog10: result.playerPowerLog10, enemyPowerLog10: result.enemyPowerLog10, powerRatio: result.powerRatio, cultivationGain, spiritStones, equipmentDropId: equipmentDropId ?? '', economyMaterialDropsJson: JSON.stringify(economyMaterialDrops), economyRareDropsJson: JSON.stringify(economyRareDrops), bossCleared: result.bossCleared, unlockedFloor: result.unlockedFloor ?? 0, trainingPowerLogGain: result.trainingPowerLogGain, farmRewardEfficiencyPct: farmReward.pct, bossMechanicId: bossMechanic?.id ?? '', bossMechanicCoveragePct: bossMechanic?.coveragePct ?? 0, skillPracticeXp: skillPractice.reduce((a, x) => a + x.xpGain, 0), daoTechniqueFragmentTechniqueId: daoTechniqueFragmentTechniqueId ?? '', daoTechniqueFragmentAmount, rootQualityMaterialDropsJson: JSON.stringify(rootQualityMaterialDrops), rootOriginFarmJson: JSON.stringify(rootOriginFarm) } };
+        const event = { id: `endless.hunt.${seed}.${result.monster.floor}.${result.monster.grade}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: result.won ? 'combat' : 'injury', significance, message: result.won ? `${result.monster.gradeName} · ${map.zoneName} tầng ${map.zoneFloor}: hạ ${result.monster.name}; Linh Thạch +${spiritStones}${equipmentDropName ? `, rơi ${equipmentDropName}` : ''}${cultivationPillDrops ? `, Tu Vi Đan +${cultivationPillDrops}` : ''}${injuryPillDropName ? `, ${injuryPillDropName} +1` : ''}${trueBloodDropId ? `, Bản Mệnh Tinh Huyết +1` : ''}${openedText}.${fateNotes.length ? ` ${fateNotes.join(' ')}` : ''}` : `Thất bại trước ${result.monster.name} · ${map.zoneName} tầng ${map.zoneFloor}; thương thế +${result.injuryGain}.${fateNotes.length ? ` ${fateNotes.join(' ')}` : ''}`, locationId: this.stateValue.locationId, tags: ['EndlessHunt', result.won ? 'Victory' : 'Defeat', result.monster.grade, map.zoneGradeId, ...result.monster.elements.map(x => `Element:${x}`), ...(result.bossCleared ? ['FloorBoss', 'FirstClear', 'FirstClearLike'] : []), ...(jackpotHit ? ['Jackpot'] : [])], data: { floor: result.monster.floor, localFloor: map.localFloor, zoneFloor: map.zoneFloor, zone: map.zone, majorRealmIndex: map.majorRealmIndex, grade: result.monster.grade, monsterName: result.monster.name, playerPowerLog10: result.playerPowerLog10, enemyPowerLog10: result.enemyPowerLog10, powerRatio: result.powerRatio, cultivationGain, spiritStones, equipmentDropId: equipmentDropId ?? '', economyMaterialDropsJson: JSON.stringify(economyMaterialDrops), economyRareDropsJson: JSON.stringify(economyRareDrops), bossCleared: result.bossCleared, unlockedFloor: result.unlockedFloor ?? 0, trainingPowerLogGain: result.trainingPowerLogGain, farmRewardEfficiencyPct: farmReward.pct, bossMechanicId: bossMechanic?.id ?? '', bossMechanicCoveragePct: bossMechanic?.coveragePct ?? 0, skillPracticeXp: skillPractice.reduce((a, x) => a + x.xpGain, 0), rootQualityMaterialDropsJson: JSON.stringify(rootQualityMaterialDrops), rootOriginFarmJson: JSON.stringify(rootOriginFarm) } };
         const economyAwards = options.recordHistory !== false && result.won && result.monster.grade === 'boss'
             ? [...recordEconomyActivityV89(ensureCollectionProgressStateV12316(this.stateValue), 'huntBossWins', 1).awards, ...(result.bossCleared ? (() => { const x = recordFirstClearBoundJadeV89(ensureCollectionProgressStateV12316(this.stateValue), `hunt.${result.monster.floor}`); return x.awarded ? [{ id: `first-clear.hunt.${result.monster.floor}`, label: 'Thưởng công phá tầng đầu', boundJade: x.boundJade }] : []; })() : [])]
             : [];
@@ -1251,9 +1208,9 @@ export class SimulationSession {
             this.historyValue.append(event);
         this.actionIndexValue += 1;
         const bossRetryLine = !result.won && result.monster.grade === 'boss' ? 'Khiêu chiến Boss thất bại: Boss tầng này vẫn còn, có thể thử lại bất cứ lúc nào; bãi farm đã mở trước đó không bị mất.' : undefined;
-        const summaryLines = result.won ? [`Hạ ${result.monster.name} [${result.monster.gradeName}] · ${map.zoneName} tầng ${map.zoneFloor} trong ${result.battleSeconds.toFixed(1)}s · HP còn ${result.playerHpRemainingPct.toFixed(0)}%.`, `Sát thương thực gây ra ${formatLogMagnitude({ log10: result.effectiveDamageLog10 })} · Linh Thạch +${spiritStones}. Tu Luyện vẫn chạy độc lập 100%.`, ...(farmReward.pct < 100 ? [`Hiệu suất farm tầng thấp: ${farmReward.pct}% (${farmReward.reason})`] : []), ...(bossMechanic ? [`Cơ chế Boss: ${bossMechanic.name} · đối sách ${bossMechanic.coveragePct}% · ${bossMechanic.counterHint}`] : []), ...(result.monster.elements.length ? [`Ngũ Hành: ${result.monster.elements.join(' + ')} · ${elementMatchup.label}.`] : []), ...(equipmentDropName ? [`Rơi: ${equipmentDropName}.`] : []), ...(Object.keys(economyMaterialDrops).length ? [`Nguyên liệu: ${Object.entries(economyMaterialDrops).map(([id, n]) => `${economyMaterialDefinition(id)?.name ?? id} +${n}`).join(' · ')}.`] : []), ...(Object.keys(economyRareDrops).length ? [`Bảo vật: ${Object.entries(economyRareDrops).map(([id, n]) => `${heavenlyTreasureDefinitions[id]?.name ?? id} +${n}`).join(' · ')}.`] : []), ...((cultivationPillDrops || injuryPillDropName) ? [`Đan dược: ${cultivationPillDrops ? `Tu Vi Đan +${cultivationPillDrops}` : ''}${cultivationPillDrops && injuryPillDropName ? ' · ' : ''}${injuryPillDropName ? `${injuryPillDropName} +1` : ''}.`] : []), ...(trueBloodDropId ? [`Căn nguyên hiếm: Bản Mệnh Tinh Huyết +1.`] : []), ...(techniqueFragmentDrops ? [`Công Pháp: Tàn Trang +${techniqueFragmentDrops}${daoTechniqueFragmentTechniqueName ? ` · Mảnh ${daoTechniqueFragmentTechniqueName} +${daoTechniqueFragmentAmount}` : ''}${learnedTechniqueName ? ` · Lĩnh ngộ ${learnedTechniqueName}` : ''}.`] : learnedTechniqueName ? [`Công Pháp: Lĩnh ngộ ${learnedTechniqueName}.`] : []), ...(rootQualityMaterialDrops.length ? [`Chất Hành: ${rootQualityMaterialDrops.map(drop => `${drop.resourceName} +${drop.amount}`).join(' · ')}.`] : []), ...(rootOriginFarm.some(x => x.unlocked) ? [`Căn Nguyên: ${rootOriginFarm.filter(x => x.unlocked).map(x => `lĩnh hội ${x.targetName}`).join(' · ')}.`] : []), ...(jackpotHit ? [`Dị tượng chiến lợi phẩm: vận may hiếm đã kích hoạt.`] : []), ...fateNotes, ...(result.bossCleared && result.unlockedFloor ? [`Boss tầng bị hạ: đã mở ${realmMapDefinitionForFloor(result.unlockedFloor).zoneName} tầng ${zoneFloorForMapFloor(result.unlockedFloor)}.`] : [])] : [`${result.outcome === 'timeout' ? 'Hết thời gian giao tranh' : 'Bị đánh bại'} trước ${result.monster.name}; HP ngươi còn ${result.playerHpRemainingPct.toFixed(0)}% · HP mục tiêu còn ${result.enemyHpRemainingPct.toFixed(0)}%.`, `Thương thế +${result.injuryGain}; Chiến Lực chỉ còn là chỉ báo, thắng/thua do HP thực quyết định.`, ...(bossRetryLine ? [bossRetryLine] : []), ...realCombat.diagnosis, ...fateNotes];
+        const summaryLines = result.won ? [`Hạ ${result.monster.name} [${result.monster.gradeName}] · ${map.zoneName} tầng ${map.zoneFloor} trong ${result.battleSeconds.toFixed(1)}s · HP còn ${result.playerHpRemainingPct.toFixed(0)}%.`, `Sát thương thực gây ra ${formatLogMagnitude({ log10: result.effectiveDamageLog10 })} · Linh Thạch +${spiritStones}. Tu Luyện vẫn chạy độc lập 100%.`, ...(farmReward.pct < 100 ? [`Hiệu suất farm tầng thấp: ${farmReward.pct}% (${farmReward.reason})`] : []), ...(bossMechanic ? [`Cơ chế Boss: ${bossMechanic.name} · đối sách ${bossMechanic.coveragePct}% · ${bossMechanic.counterHint}`] : []), ...(result.monster.elements.length ? [`Ngũ Hành: ${result.monster.elements.join(' + ')} · ${elementMatchup.label}.`] : []), ...(equipmentDropName ? [`Rơi: ${equipmentDropName}.`] : []), ...(Object.keys(economyMaterialDrops).length ? [`Nguyên liệu: ${Object.entries(economyMaterialDrops).map(([id, n]) => `${economyMaterialDefinition(id)?.name ?? id} +${n}`).join(' · ')}.`] : []), ...(Object.keys(economyRareDrops).length ? [`Bảo vật: ${Object.entries(economyRareDrops).map(([id, n]) => `${heavenlyTreasureDefinitions[id]?.name ?? id} +${n}`).join(' · ')}.`] : []), ...((cultivationPillDrops || injuryPillDropName) ? [`Đan dược: ${cultivationPillDrops ? `Tu Vi Đan +${cultivationPillDrops}` : ''}${cultivationPillDrops && injuryPillDropName ? ' · ' : ''}${injuryPillDropName ? `${injuryPillDropName} +1` : ''}.`] : []), ...(trueBloodDropId ? [`Căn nguyên hiếm: Bản Mệnh Tinh Huyết +1.`] : []), ...(rootQualityMaterialDrops.length ? [`Chất Hành: ${rootQualityMaterialDrops.map(drop => `${drop.resourceName} +${drop.amount}`).join(' · ')}.`] : []), ...(rootOriginFarm.some(x => x.unlocked) ? [`Căn Nguyên: ${rootOriginFarm.filter(x => x.unlocked).map(x => `lĩnh hội ${x.targetName}`).join(' · ')}.`] : []), ...(jackpotHit ? [`Dị tượng chiến lợi phẩm: vận may hiếm đã kích hoạt.`] : []), ...fateNotes, ...(result.bossCleared && result.unlockedFloor ? [`Boss tầng bị hạ: đã mở ${realmMapDefinitionForFloor(result.unlockedFloor).zoneName} tầng ${zoneFloorForMapFloor(result.unlockedFloor)}.`] : [])] : [`${result.outcome === 'timeout' ? 'Hết thời gian giao tranh' : 'Bị đánh bại'} trước ${result.monster.name}; HP ngươi còn ${result.playerHpRemainingPct.toFixed(0)}% · HP mục tiêu còn ${result.enemyHpRemainingPct.toFixed(0)}%.`, `Thương thế +${result.injuryGain}; Chiến Lực chỉ còn là chỉ báo, thắng/thua do HP thực quyết định.`, ...(bossRetryLine ? [bossRetryLine] : []), ...realCombat.diagnosis, ...fateNotes];
         summaryLines.push(...economyAwards.map(x => `${x.label}: Tiên Ngọc Khóa +${x.boundJade}.`));
-        return { seed, won: result.won, rewardContext: options.rewardContext ?? 'online', jackpotHit, jackpotChancePctApplied, floor: result.monster.floor, monsterId: result.monster.id, monsterName: result.monster.name, grade: result.monster.gradeName, battleSeconds: result.battleSeconds, damage: formatLogMagnitude({ log10: result.effectiveDamageLog10 }), powerRatio: result.powerRatio, cultivationGain, spiritStones, cultivationPillDrops, injuryPillDropId, injuryPillDropName, economyMaterialDrops: { ...economyMaterialDrops }, economyRareDrops: { ...economyRareDrops }, techniqueFragmentDrops, daoTechniqueFragmentTechniqueId, daoTechniqueFragmentTechniqueName, daoTechniqueFragmentAmount, skillPractice, learnedTechniqueId, learnedTechniqueName, equipmentDropId, equipmentDropName, rootQualityMaterialDrops, rootOriginFarm, injuryGain: result.injuryGain, bossCleared: result.bossCleared, unlockedFloor: result.unlockedFloor, farmRewardEfficiencyPct: farmReward.pct, bossMechanic, combatEvents, summaryLines, economyAwards, event, state: options.cloneState === false ? this.stateValue : this.state };
+        return { seed, won: result.won, rewardContext: options.rewardContext ?? 'online', jackpotHit, jackpotChancePctApplied, floor: result.monster.floor, monsterId: result.monster.id, monsterName: result.monster.name, grade: result.monster.gradeName, battleSeconds: result.battleSeconds, damage: formatLogMagnitude({ log10: result.effectiveDamageLog10 }), powerRatio: result.powerRatio, cultivationGain, spiritStones, cultivationPillDrops, injuryPillDropId, injuryPillDropName, economyMaterialDrops: { ...economyMaterialDrops }, economyRareDrops: { ...economyRareDrops }, skillPractice, equipmentDropId, equipmentDropName, rootQualityMaterialDrops, rootOriginFarm, injuryGain: result.injuryGain, bossCleared: result.bossCleared, unlockedFloor: result.unlockedFloor, farmRewardEfficiencyPct: farmReward.pct, bossMechanic, combatEvents, summaryLines, economyAwards, event, state: options.cloneState === false ? this.stateValue : this.state };
     }
     equipmentCombatImpact(itemId) {
         const snapshot = this.state;
@@ -3574,136 +3531,16 @@ export class SimulationSession {
         this.actionIndexValue += 1;
         return { item, cost };
     }
-    learnTechnique(techniqueId, startingMastery = 0) {
-        if (!this.stateValue.alive)
-            throw new Error('Đời hiện tại đã kết thúc; không thể lĩnh ngộ Công Pháp mới sau khi tử vong.');
-        const def = this.registry.technique(techniqueId);
-        if (isV119BattleDaoTechniqueV125(def)) {
-            const foundation = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId);
-            if (!foundation.progressionV125?.daoNatureCommitted || !foundation.battleDao.committed)
-                throw new Error('Phải Định Đạo tại Trúc Cơ trước khi học Công Pháp Bản Đạo.');
-            if (!techniqueDaoEligibleV125(foundation, def))
-                throw new Error('Công Pháp này không thuộc Chủ Đạo/Phụ Đạo của đời hiện tại.');
-            if (!foundation.progressionV125?.restoredTechniqueIds.includes(def.id))
-                throw new Error('Công Pháp Bản Đạo phải thu đủ mảnh và phục nguyên trước khi học.');
-        }
-        learnTechniqueManual(this.stateValue.character, def, startingMastery);
+    legacyTechniqueRetiredV144(action = 'Công Pháp legacy') {
+        throw new Error(`${action} đã nghỉ production ở V144. Công Pháp canonical dùng hệ V127 (Lv1000 / 10 lần tiến giai).`);
     }
-    useTechnique(techniqueId) {
-        const def = this.registry.technique(techniqueId);
-        if ((def.slot ?? 'inner') !== 'inner')
-            throw new Error('Công pháp này không phải Tâm Pháp chính; hãy trang bị vào đúng ô Võ Học/Thân Pháp/Bí Thuật.');
-        setActiveTechnique(this.stateValue.character, techniqueId);
-    }
-    equipTechniqueManual(techniqueId) {
-        const def = this.registry.technique(techniqueId);
-        if (isV119BattleDaoTechniqueV125(def)) {
-            const f = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId);
-            if (!f.progressionV125?.daoNatureCommitted || !techniqueDaoEligibleV125(f, def))
-                throw new Error('Công Pháp này không thuộc Chủ Đạo/Phụ Đạo hiện tại.');
-            if (!f.progressionV125.restoredTechniqueIds.includes(def.id))
-                throw new Error('Công Pháp Bản Đạo chưa được phục nguyên đủ mảnh.');
-        }
-        if (!this.stateValue.character.knownTechniqueIds.includes(techniqueId))
-            throw new Error('Chưa lĩnh ngộ công pháp này.');
-        if (this.stateValue.realm.maxRealmOrder < (def.requiredRealmOrder ?? 0))
-            throw new Error(`${def.name} yêu cầu cảnh giới order ${def.requiredRealmOrder}.`);
-        const slot = def.slot ?? 'inner';
-        const oldId = (this.stateValue.character.equippedTechniqueIds ?? {})[slot];
-        let oldGranted = [];
-        if (oldId && oldId !== techniqueId) {
-            try {
-                oldGranted = [...(this.registry.technique(oldId).grantedSkillIds ?? [])];
-            }
-            catch { }
-        }
-        equipManual(this.stateValue.character, def);
-        // Sau tử vong chỉ được đổi build đã sở hữu; không được lợi dụng thao tác trang bị để mở kỹ năng mới.
-        const unlocked = this.stateValue.alive ? unlockTechniqueGrantedSkills(this.stateValue.character, def) : [];
-        for (const skillId of def.grantedSkillIds ?? [])
-            this.registry.skill(skillId);
-        // An equipped manual owns its granted active in the current rotation. Replacing the manual removes the old granted active, but knowledge is retained.
-        let active = this.stateValue.character.activeSkillIds.filter(id => !oldGranted.includes(id));
-        let rules = (this.stateValue.character.combatAiProfile?.rules ?? []).filter(rule => !oldGranted.includes(rule.skillId));
-        const committedDao = Boolean(this.stateValue.character.buildFoundation?.battleDao?.mainDaoId && this.stateValue.character.buildFoundation?.battleDao?.committed && this.stateValue.character.buildFoundation?.progressionV125?.daoNatureCommitted);
-        for (const skillId of def.grantedSkillIds ?? []) {
-            if (!this.stateValue.character.knownSkillIds.includes(skillId))
-                continue;
-            if (!active.includes(skillId) && (committedDao || active.length < 6))
-                active.push(skillId);
-            if (active.includes(skillId) && !rules.some(x => x.skillId === skillId))
-                rules.push({ skillId, priority: 55, conditions: [{ type: 'always' }] });
-        }
-        if (this.stateValue.character.combatAiProfile)
-            this.setCombatLoadout(active, { ...this.stateValue.character.combatAiProfile, rules });
-        this.historyValue.append({ id: `technique.equip.${this.actionIndexValue}.${techniqueId}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: 'system', significance: 5, message: `Trang bị ${def.name} vào ${slot}${unlocked.length ? ` · lĩnh ngộ ${unlocked.length} chiêu` : ''}.`, locationId: this.stateValue.locationId, tags: ['Technique', 'Equip', String(slot)], data: { techniqueId } });
-        this.actionIndexValue += 1;
-        return this.techniqueManualSummary();
-    }
-    studyTechniqueManual(techniqueId, batches = 1) {
-        if (!this.stateValue.alive)
-            throw new Error('Đời hiện tại đã kết thúc.');
-        const def = this.registry.technique(techniqueId);
-        if (isV119BattleDaoTechniqueV125(def)) {
-            const f = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId);
-            if (!f.progressionV125?.daoNatureCommitted || !techniqueDaoEligibleV125(f, def))
-                throw new Error('Công Pháp này không thuộc Chủ Đạo/Phụ Đạo hiện tại.');
-            if (!f.progressionV125.restoredTechniqueIds.includes(def.id))
-                throw new Error('Công Pháp Bản Đạo chưa được phục nguyên đủ mảnh.');
-        }
-        const used = Math.max(1, Math.floor(batches));
-        const have = this.stateValue.inventory[TECHNIQUE_INSIGHT_RESOURCE_ID] ?? 0;
-        if (!this.stateValue.character.knownTechniqueIds.includes(techniqueId))
-            throw new Error('Chưa lĩnh ngộ công pháp này.');
-        if (have < used)
-            throw new Error(`Cần ${used} Bí Thuật Tàn Trang.`);
-        const result = studyTechniqueWithFragments(this.stateValue.character, def, used);
-        this.stateValue.inventory[TECHNIQUE_INSIGHT_RESOURCE_ID] = have - used;
-        const newlyUnlocked = isV119BattleDaoTechniqueV125(def) ? [] : unlockTechniqueGrantedSkills(this.stateValue.character, def);
-        for (const skillId of newlyUnlocked)
-            this.registry.skill(skillId);
-        const newlyUnlockedPassives = isV119BattleDaoTechniqueV125(def) ? syncBattleDaoV2ProgressionV78(this.stateValue.character, this.stateValue.realm.maxRealmOrder).grantedPassiveIds : [];
-        const isEquipped = Object.values({ inner: this.stateValue.character.activeTechniqueId, ...(this.stateValue.character.equippedTechniqueIds ?? {}) }).includes(techniqueId);
-        if (isEquipped && newlyUnlocked.length && this.stateValue.character.combatAiProfile) {
-            let active = [...this.stateValue.character.activeSkillIds], rules = [...(this.stateValue.character.combatAiProfile.rules ?? [])];
-            const committedDao = Boolean(this.stateValue.character.buildFoundation?.battleDao?.mainDaoId && this.stateValue.character.buildFoundation?.battleDao?.committed && this.stateValue.character.buildFoundation?.progressionV125?.daoNatureCommitted);
-            for (const skillId of newlyUnlocked) {
-                if (!active.includes(skillId) && (committedDao || active.length < 6))
-                    active.push(skillId);
-                if (active.includes(skillId) && !rules.some(x => x.skillId === skillId))
-                    rules.push({ skillId, priority: 55, conditions: [{ type: 'always' }] });
-            }
-            this.setCombatLoadout(active, { ...this.stateValue.character.combatAiProfile, rules });
-        }
-        this.historyValue.append({ id: `technique.study.${this.actionIndexValue}.${techniqueId}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: 'cultivation', significance: result.after >= 100 ? 18 : 6, message: `Tham ngộ ${def.name}: ${result.before.toFixed(1)}% → ${result.after.toFixed(1)}% · ${result.stage}${newlyUnlocked.length ? ` · mở ${newlyUnlocked.length} chiêu` : ''}${newlyUnlockedPassives.length ? ` · lĩnh ngộ ${newlyUnlockedPassives.length} Bị Động` : ''}.`, locationId: this.stateValue.locationId, tags: ['Technique', 'Mastery', result.stage], data: { techniqueId, used, before: result.before, after: result.after, newlyUnlockedCount: newlyUnlocked.length } });
-        this.actionIndexValue += 1;
-        return { result, summary: this.techniqueManualSummary() };
-    }
-    setTechniqueVariantsV119(variantIds) {
-        const ids = [...new Set(variantIds)];
-        const defs = ids.map(id => this.registry.daoVariantV118(id));
-        const foundation = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId);
-        if (ids.length > 0 && (!foundation.battleDao.committed || !foundation.progressionV125?.daoNatureCommitted))
-            throw new Error('Chưa hoàn tất Định Đạo; không thể trang bị Biến Thức Bản Đạo.');
-        for (const def of defs)
-            if (!isCurrentDaoEligibleV125(foundation, def.dao))
-                throw new Error(`Biến Thức ${def.name} không thuộc Chủ Đạo/Phụ Đạo hiện tại.`);
-        const known = foundation.unlockedVariantIdsV119 ?? [];
-        for (const id of ids)
-            if (!known.includes(id))
-                throw new Error(`Chưa lĩnh ngộ Biến Thức: ${id}`);
-        setSkillVariantsV118(foundation, ids);
-        this.stateValue.character.buildFoundation = foundation;
-        this.historyValue.append({ id: `technique.variants.v119.${this.actionIndexValue}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: 'system', significance: 5, message: `Trang bị ${ids.length}/4 Biến Thức Công Pháp.`, locationId: this.stateValue.locationId, tags: ['Technique', 'VariantV119'], data: { count: ids.length } });
-        this.actionIndexValue += 1;
-        return this.techniqueManualSummary();
-    }
+    learnTechnique() { return this.legacyTechniqueRetiredV144('Học Công Pháp V103/V119'); }
+    useTechnique() { return this.legacyTechniqueRetiredV144('Kích hoạt Tâm Pháp V103/V119'); }
+    equipTechniqueManual() { return this.legacyTechniqueRetiredV144('Trang bị Công Pháp V103/V119'); }
+    studyTechniqueManual() { return this.legacyTechniqueRetiredV144('Tham ngộ mastery V103/V119'); }
+    setTechniqueVariantsV119() { return this.legacyTechniqueRetiredV144('Biến Thức phụ thuộc Công Pháp V119'); }
     techniqueManualSummary() {
-        const equipped = { inner: this.stateValue.character.activeTechniqueId, ...(this.stateValue.character.equippedTechniqueIds ?? {}) };
-        const known = this.stateValue.character.knownTechniqueIds.map(id => { const def = this.registry.technique(id); return techniqueMasteryReport(def, this.stateValue.character.techniqueMastery[id] ?? 0, Object.values(equipped).includes(id)); });
-        const catalog = [...this.registry.techniques.values()].map(def => techniqueMasteryReport(def, this.stateValue.character.techniqueMastery[def.id] ?? 0, Object.values(equipped).includes(def.id))).sort((a, b) => a.requiredRealmOrder - b.requiredRealmOrder || a.name.localeCompare(b.name));
-        const foundation = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId);
-        return { schema: 'technique-manuals.v119', resourceId: TECHNIQUE_INSIGHT_RESOURCE_ID, fragments: this.stateValue.inventory[TECHNIQUE_INSIGHT_RESOURCE_ID] ?? 0, equipped, known, catalog, learnedPassiveIds: [...(foundation.learnedDaoPassiveIdsV118 ?? [])], unlockedVariantIds: [...(foundation.unlockedVariantIdsV119 ?? [])], activeVariantIds: [...(foundation.skillLoadout.buildPassiveIds ?? [])], trueMeaningIds: [...(foundation.techniqueTrueMeaningIdsV119 ?? [])] };
+        return { schema: 'technique-manuals.v144.retired', retired: true, canonicalSchema: 'manual-progression.v127.production', note: 'V103/V119 chỉ còn dữ liệu save tương thích; không tạo sức mạnh, loot hay progression.' };
     }
     collectionSummaryV12316(nowUnixMs = Date.now()) {
         return deriveCollectionSummaryV12316(this.stateValue, nowUnixMs);
@@ -3964,21 +3801,15 @@ export class SimulationSession {
         const mainDao = f.battleDao.mainDaoId;
         const secondaryDao = f.battleDao.secondaryDaoId;
         const skills = this.stateValue.character.knownSkillIds.filter(id => this.registry.skills.has(id) && isBattleDaoSkillV125(this.registry.skill(id)) && battleDaoOfSkillV125(this.registry.skill(id)) === mainDao).map(id => { const skill = this.registry.skill(id); const practice = skillPracticeProfileV125(f, id); const growth = battleDaoSkillGrowthProfileV126(skill, practice.tier); const level = skillLevelV12317(f, id), grade = skillGradeV12317(f, id), specificFragments = skillProgV12317.skillSpecificFragmentsV12317?.[id] ?? 0; return { id, name: skill.name, dao: battleDaoOfSkillV125(skill), slot: skill.runtimeV117?.slotClass ?? 'active', realmGate: battleDaoSkillPreviewV125(mainDao, [...this.registry.skills.values()]).find(x => x.id === id)?.realmGate ?? 0, ...practice, levelV12317: level, gradeV12317: grade, gradeLabelV12317: SKILL_GRADE_LABEL_V12317[grade], levelCostV12317: level < 20 ? skillLevelCostV12317(level) : 0, specificFragmentsV12317: specificFragments, advanceCostV12317: level >= 20 ? skillAdvanceCostV12317(grade) : undefined, scalingSummaryV12317: skillScalingSummaryV12317(skill), growthRoleV126: growth?.roleName, growthSummaryV126: battleDaoSkillGrowthCurrentSummaryV126(skill, practice.tier) }; });
-        const battleManuals = [...this.registry.techniques.values()].filter(def => isV119BattleDaoTechniqueV125(def) && techniqueDaoEligibleV125(f, def)).map(def => ({
             id: def.id, name: def.name, grade: def.grade ?? 'mundane', requiredRealmOrder: def.requiredRealmOrder ?? 0, fragments: p.techniqueFragments[def.id] ?? 0, restoreRequired: techniqueRestoreFragmentRequirementV125(def), restored: p.restoredTechniqueIds.includes(def.id), known: this.stateValue.character.knownTechniqueIds.includes(def.id), mastery: this.stateValue.character.techniqueMastery[def.id] ?? 0, v2SkillGate: false,
         })).sort((a, b) => a.requiredRealmOrder - b.requiredRealmOrder || a.name.localeCompare(b.name));
         const passiveDaos = [...(mainDao ? [mainDao] : []), ...(secondaryDao ? [secondaryDao] : [])];
         const learned = new Set(f.learnedDaoPassiveIdsV118 ?? []);
         const passives = passiveDaos.flatMap(dao => battleDaoV2Passives(dao)).filter(def => learned.has(def.id)).map(def => { const level = p.passiveLevels[def.id] ?? 1; const grade = heartMethodGradeV12317(f, def.id); return { id: def.id, name: def.name, dao: def.dao, description: def.summary, level, realm: def.realm, realmGate: BATTLE_DAO_V2_REALM_ORDER[def.realm], sourceRole: def.dao === mainDao ? 'main' : 'secondary', effectStrengthPct: 100, v2: true, upgradeEnabled: false, gradeV12317: grade, gradeLabelV12317: SKILL_GRADE_LABEL_V12317[grade], statSummaryV12317: heartMethodStatSummaryV12317(def.id, level, grade), effectSummaryV126: level >= 20 ? def.lv20 : def.lv1, lv10SummaryV126: def.summary, lv20SummaryV126: def.lv20, sources: [] }; }).sort((a, b) => a.realmGate - b.realmGate || a.name.localeCompare(b.name));
         const core = mainDao ? battleDaoV2Catalog(mainDao).core : undefined;
-        return { ...base, v2: true, activeSlotsUnlocked: battleDaoV2ActiveSlotsUnlocked(realmOrder, BATTLE_DAO_ACTIVE_LOADOUT_SLOTS_V125), core: core ? { ...core, unlocked: realmOrder >= 10, ownership: 'main-only' } : undefined, skillSystemV12317: { schema: 'skill-heart-method.v2.production.v78', learnFirstFree: true, skillGenericFragments: skillProgV12317.skillGenericFragmentsV12317 ?? 0, gradeOrder: SKILL_GRADE_ORDER_V12317.map(id => ({ id, label: SKILL_GRADE_LABEL_V12317[id] })), notes: ['Trúc Cơ nhận ngay Basic + Active I + Passive I + Core + Ultimate của Chủ Đạo.', 'Active II–VIII mở theo cảnh giới 18/34/46/62/74/90/102 và học Lv1 miễn phí; Công Pháp legacy không còn khóa skill V2.', 'Phụ Đạo chỉ mở Tâm Pháp đúng Đạo phụ, hiệu lực 100%; không nhận Core/Basic/Active/Ultimate.'] }, skills, battleManuals, passives };
+        return { ...base, v2: true, activeSlotsUnlocked: battleDaoV2ActiveSlotsUnlocked(realmOrder, BATTLE_DAO_ACTIVE_LOADOUT_SLOTS_V125), core: core ? { ...core, unlocked: realmOrder >= 10, ownership: 'main-only' } : undefined, skillSystemV12317: { schema: 'skill-heart-method.v2.production.v78', learnFirstFree: true, skillGenericFragments: skillProgV12317.skillGenericFragmentsV12317 ?? 0, gradeOrder: SKILL_GRADE_ORDER_V12317.map(id => ({ id, label: SKILL_GRADE_LABEL_V12317[id] })), notes: ['Trúc Cơ nhận ngay Basic + Active I + Passive I + Core + Ultimate của Chủ Đạo.', 'Active II–VIII mở theo cảnh giới 18/34/46/62/74/90/102 và học Lv1 miễn phí; Công Pháp legacy không còn khóa skill V2.', 'Phụ Đạo chỉ mở Tâm Pháp đúng Đạo phụ, hiệu lực 100%; không nhận Core/Basic/Active/Ultimate.'] }, skills, passives };
     }
-    addTechniqueFragmentsV125(techniqueId, amount) { const def = this.registry.technique(techniqueId); if (!isV119BattleDaoTechniqueV125(def))
-        throw new Error('Chỉ Công Pháp Bản Đạo v1.19 dùng mảnh riêng ở hệ này.'); return addTechniqueFragmentsV125(this.stateValue.character, techniqueId, amount); }
-    restoreTechniqueManualV125(techniqueId) { const def = this.registry.technique(techniqueId); if (!isV119BattleDaoTechniqueV125(def))
-        throw new Error('Công Pháp này không dùng cơ chế phục nguyên mảnh v1.25.'); const result = restoreTechniqueManualV125(this.stateValue.character, def); if (!this.stateValue.character.knownTechniqueIds.includes(def.id))
-        learnTechniqueManual(this.stateValue.character, def, 0); this.actionIndexValue += 1; return result; }
-    upgradeDaoPassiveV125(passiveId, sourceTechniqueId) { const result = passiveUpgradeV125(this.stateValue.character, passiveId, this.registry.technique(sourceTechniqueId)); this.actionIndexValue += 1; return result; }
+    upgradeDaoPassiveV125() { return this.legacyTechniqueRetiredV144('Nâng Bị Động qua Công Pháp legacy'); }
     upgradeBattleDaoSkillV12317(skillId) { if (!this.stateValue.character.knownSkillIds.includes(skillId))
         throw new Error('Chưa học kỹ năng này.'); const skill = this.registry.skill(skillId); if (!isBattleDaoSkillV125(skill))
         throw new Error('Chỉ kỹ năng Bản Đạo dùng tiến trình Skill V23.17.'); const f = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId); ensureSkillHeartProgressionV12317(f.progressionV125); const result = upgradeSkillLevelV12317(f, skillId); this.stateValue.character.buildFoundation = f; this.actionIndexValue += 1; return result; }

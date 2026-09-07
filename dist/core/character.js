@@ -88,7 +88,6 @@ function applyFateBuildStatsV4(stats, modifiers = {}) {
 }
 export function applyCharacterToEntity(entity, state, registry, techniquePassiveMultiplier = 1, suppressLegacyBirthOrigins = false) {
     const root = registry.spiritualRoot(state.spiritualRootId);
-    const technique = registry.technique(state.activeTechniqueId);
     const modifiers = {};
     const tags = new Set(entity.tags);
     const triggers = [...(entity.triggers ?? [])];
@@ -96,33 +95,9 @@ export function applyCharacterToEntity(entity, state, registry, techniquePassive
         tags.add(tag);
     if (!suppressLegacyBirthOrigins)
         combineCombat(modifiers, root.combat);
-    const mastery = clamp(state.techniqueMastery[state.activeTechniqueId] ?? 0, 0, 100) / 100;
-    for (const tag of technique.tags)
-        tags.add(tag);
-    combineCombat(modifiers, technique.combat, masteryStrength(mastery * 100, technique.masteryFloor ?? 0.6) * techniqueSchoolSynergy(technique, state) * Math.max(0, techniquePassiveMultiplier));
-    triggers.push(...(technique.grantedTriggers ?? []));
-    // v1.03: equipped secondary manuals contribute real passives/triggers. Only the inner method drives cultivation throughput.
-    const equipped = state.equippedTechniqueIds ?? {};
-    for (const slot of ['art', 'movement', 'secret']) {
-        const id = equipped[slot];
-        if (!id || id === state.activeTechniqueId)
-            continue;
-        let secondary;
-        try {
-            secondary = registry.technique(id);
-        }
-        catch {
-            continue;
-        }
-        const secondaryMastery = clamp(state.techniqueMastery[id] ?? 0, 0, 100);
-        const strength = masteryStrength(secondaryMastery, secondary.masteryFloor ?? 0.25) * techniqueSchoolSynergy(secondary, state) * Math.max(0, techniquePassiveMultiplier);
-        combineCombat(modifiers, secondary.combat, strength);
-        triggers.push(...(secondary.grantedTriggers ?? []));
-        for (const tag of secondary.tags)
-            tags.add(tag);
-    }
+    // V144: V103/V119 manual combat packages are retired. Keep only a neutral runtime object
+    // because CombatKernel modules still import the compatibility helper surface.
     const techniqueRuntimeV119 = resolveTechniqueRuntimeV119(state, id => registry.technique(id));
-    combineCombat(modifiers, { maxSpiritMultiplier: 1 + techniqueRuntimeV119.staticMaxSpiritPct / 100, actionSpeedMultiplier: 1 + techniqueRuntimeV119.staticActionSpeedPct / 100 });
     if (!suppressLegacyBirthOrigins) {
         for (const id of state.physiqueIds) {
             const physique = registry.characterPhysique(id);
@@ -247,8 +222,6 @@ export function characterStatSourceStagesV129(entity, state, registry, technique
         stages.push({ id, name, entity: current, meta });
     };
     const root = registry.spiritualRoot(state.spiritualRootId);
-    const technique = registry.technique(state.activeTechniqueId);
-
     // Linh Căn bẩm sinh (legacy birth roots are intentionally suppressed on authoritative-birth saves).
     let rootStats = current.stats;
     if (!suppressLegacyBirthOrigins && root.combat) {
@@ -258,28 +231,9 @@ export function characterStatSourceStagesV129(entity, state, registry, technique
     }
     push('character.spiritual_root', 'Linh Căn', rootStats, { sourceId: state.spiritualRootId, suppressed: suppressLegacyBirthOrigins });
 
-    // Bí Thuật & Võ Học: active + equipped secondary manuals + their static runtime package.
-    const techniqueModifiers = {};
-    const mastery = clamp(state.techniqueMastery[state.activeTechniqueId] ?? 0, 0, 100) / 100;
-    combineCombat(techniqueModifiers, technique.combat, masteryStrength(mastery * 100, technique.masteryFloor ?? 0.6) * techniqueSchoolSynergy(technique, state) * Math.max(0, techniquePassiveMultiplier));
-    const equipped = state.equippedTechniqueIds ?? {};
-    const equippedIds = [state.activeTechniqueId];
-    for (const slot of ['art', 'movement', 'secret']) {
-        const id = equipped[slot];
-        if (!id || id === state.activeTechniqueId)
-            continue;
-        let secondary;
-        try { secondary = registry.technique(id); } catch { continue; }
-        equippedIds.push(id);
-        const secondaryMastery = clamp(state.techniqueMastery[id] ?? 0, 0, 100);
-        const strength = masteryStrength(secondaryMastery, secondary.masteryFloor ?? 0.25) * techniqueSchoolSynergy(secondary, state) * Math.max(0, techniquePassiveMultiplier);
-        combineCombat(techniqueModifiers, secondary.combat, strength);
-    }
+    // V144: legacy manual stats remain visible only as a zero-delta provenance marker for migrated saves.
     const techniqueRuntimeV119 = resolveTechniqueRuntimeV119(state, id => registry.technique(id));
-    combineCombat(techniqueModifiers, { maxSpiritMultiplier: 1 + techniqueRuntimeV119.staticMaxSpiritPct / 100, actionSpeedMultiplier: 1 + techniqueRuntimeV119.staticActionSpeedPct / 100 });
-    const techniqueStats = applyCombatModifiers(current.stats, techniqueModifiers);
-    // staticDodge/staticSpiritRegen are intentionally applied later, after Đạo Tính, exactly like applyCharacterToEntity().
-    push('character.techniques', 'Bí Thuật & Võ Học · chỉ số nền', techniqueStats, { sourceIds: equippedIds });
+    push('character.techniques', 'Công Pháp legacy V103/V119 · đã nghỉ', current.stats, { retired: true });
 
     // Thể Chất.
     const physiqueModifiers = {};
@@ -329,7 +283,7 @@ export function characterStatSourceStagesV129(entity, state, registry, technique
     techniqueRuntimeStats.dodgeChancePct = combineStatPctV129('dodgeChancePct', techniqueRuntimeStats.dodgeChancePct ?? 0, techniqueRuntimeV119.staticDodgeFlatPct);
     if ((techniqueRuntimeStats.spiritRegenStandardPctPerSecond ?? 0) > 0)
         techniqueRuntimeStats.spiritRegenStandardPctPerSecond = (techniqueRuntimeStats.spiritRegenStandardPctPerSecond ?? 0) * (1 + techniqueRuntimeV119.staticSpiritRegenPct / 100);
-    push('character.technique_runtime', 'Bí Thuật & Võ Học · hiệu ứng tĩnh', techniqueRuntimeStats, {
+    push('character.technique_runtime', 'Runtime Công Pháp legacy · trung tính', techniqueRuntimeStats, { retired: true,
         dodgeFlatPct: techniqueRuntimeV119.staticDodgeFlatPct,
         spiritRegenPct: techniqueRuntimeV119.staticSpiritRegenPct,
     });

@@ -20,6 +20,11 @@ for (const token of [
   'bloodlineEssenceDrops',
   'bodyEssenceDrops',
   'bloodlineProtectionDrops',
+  'TECHNIQUE_INSIGHT_RESOURCE_ID',
+  'techniqueFragmentDrops',
+  'daoTechniqueFragment',
+  'learnTechniqueManual',
+  'battleDaoTechniqueFragmentTargetsV125',
 ]) {
   assert.ok(!fight.includes(token), `Hunt must not own dedicated-system reward ${token}`);
 }
@@ -28,7 +33,6 @@ for (const token of [
 for (const token of [
   'settleRealHuntEquipmentFragmentsV142',
   'trueBloodResourceId',
-  'TECHNIQUE_INSIGHT_RESOURCE_ID',
   'rootQualityMaterialDropsFromHuntV131',
 ]) {
   assert.ok(fight.includes(token), `intentional Hunt reward lane missing: ${token}`);
