@@ -1,0 +1,49 @@
+name: V142 Equipment Closure Patch
+
+on:
+  push:
+    branches:
+      - feature/v142-equipment-hunt
+    paths:
+      - 'qa/tools/apply-v142-closure-patch.mjs'
+      - '.github/workflows/v142-closure-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-closure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: feature/v142-equipment-hunt
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply V142 closure patch
+        run: node qa/tools/apply-v142-closure-patch.mjs
+      - name: Verify closure integrity
+        run: |
+          node --check dist/core/gameplay.js
+          node --check dist/core/session.js
+          node --check dist/core/equipment.js
+          node --check app.js
+          node qa/tests/v142-equipment-legacy-lane-test.js
+          node qa/tests/v129-frontend-performance-test.js
+          node qa/runners/v142-equipment-hunt-gate.js
+      - name: Commit patched runtime
+        run: |
+          if git diff --quiet; then
+            echo "No closure runtime changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist/core/gameplay.js dist/core/session.js dist/core/equipment.js app.js
+          git commit -m "fix(v142): close retired equipment lanes and static graph"
+          git push origin HEAD:feature/v142-equipment-hunt
