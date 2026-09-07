@@ -1,0 +1,42 @@
+name: Reincarnation V4 Phase 1 Closure
+
+on:
+  push:
+    branches:
+      - feature/reincarnation-cultivation-r3
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reincarnation-v4-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  closure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: ''
+      - name: Runtime syntax
+        run: |
+          node --check dist/core/reincarnation-progression-v1102.js
+          node --check dist/core/reincarnation-fate-build-v4.js
+      - name: R3 plus V4 root cost invariant
+        run: node qa/tests/reincarnation-cultivation-r3-cost-invariant-test.js
+      - name: R3 plus V4 root gameplay contract
+        run: node qa/tests/reincarnation-cultivation-r3-test.js
+      - name: Fate build V4 contract
+        run: node qa/tests/reincarnation-fate-build-v4-test.js
+      - name: V140 cultivation core regression
+        run: node qa/tests/v140-cultivation-core-test.js
+      - name: V140 cultivation transport regression
+        run: node qa/tests/v140-cultivation-transport-test.js
+      - name: Backend fast gate
+        run: node qa/runners/v140-backend-gates.js fast
