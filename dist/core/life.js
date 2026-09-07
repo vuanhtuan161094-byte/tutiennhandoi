@@ -738,7 +738,6 @@ export function buildReincarnatedState(previous, world, registry, meta, birth, w
         dao: createDaoState(),
         tribulation: createTribulationState(),
         immortal: createImmortalState(),
-        fateEmbryo: createFateEmbryoState(meta, birth, meta.completedLives + 1, plan.orientationId ?? 'balanced'),
         flow: createPlayerFlowState(),
         endlessHunt: createEndlessHuntState(),
         professions: (() => {

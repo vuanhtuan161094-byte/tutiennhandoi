@@ -7,7 +7,7 @@ export const reincarnationOrientations = {
     chaos_embryo: { id: 'chaos_embryo', name: 'Hỗn Độn Thai', description: 'Mệnh Thai hiếm, hợp Hỗn Độn và đa hệ; chi phí chuyển sinh rất cao.', requiredSeal: 7, cpCost: 95, capacityModifiers: { chaos: 32, body: 8, soul: 8, bloodline: 8, creation: -6 }, basePotentialModifier: 4, manifestationBonus: 1 },
     creation_embryo: { id: 'creation_embryo', name: 'Sáng Thế Nguyên Thai', description: 'Mệnh Thai hướng Sáng Thế; mạnh nhất khi tài khoản đã có Sáng Thế Căn Nguyên.', requiredSeal: 9, cpCost: 140, capacityModifiers: { creation: 38, dao: 12, soul: 8, chaos: 8 }, basePotentialModifier: 6, manifestationBonus: 2 },
 };
-const sealThresholds = [0, 80, 220, 480, 900, 1500, 2300, 3350, 4700, 6400];
+const sealThresholds = [0, 500, 2000, 7500, 20000, 50000, 120000, 250000, 500000, 1000000];
 export function reincarnationSealLevel(xp) {
     let level = 0;
     for (let i = 1; i < sealThresholds.length; i++)

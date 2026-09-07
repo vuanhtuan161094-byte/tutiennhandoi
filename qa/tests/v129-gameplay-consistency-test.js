@@ -35,12 +35,13 @@ test('EventHistory counts alternative semantic tags once per event', () => {
   assert.equal(h.countAnyTag('FirstClear','FirstClearLike'), 2);
 });
 
-test('legacy Săn Yêu FirstClearLike event unlocks Tọa Hóa', () => {
+test('legacy Săn Yêu FirstClearLike event is no longer a Tọa Hóa requirement', () => {
   const ev = { id:'legacy.hunt.first', worldTimeYears:20, ageYears:30, type:'combat', significance:34, message:'Boss cleared', tags:['EndlessHunt','Victory','FloorBoss','FirstClearLike'] };
   assert.equal(session(1299101, readyState(), [ev]).voluntaryPassingEligibility().ok, true);
+  assert.equal(session(1299105, readyState(), []).voluntaryPassingEligibility().ok, true);
 });
 
-test('Săn Yêu boss-clear state repairs old saves even when history tag is missing', () => {
+test('Săn Yêu clear state is independent from voluntary Tọa Hóa eligibility', () => {
   const state = readyState();
   state.endlessHunt = createEndlessHuntState();
   state.endlessHunt.totalBossKills = 1;
@@ -48,15 +49,15 @@ test('Săn Yêu boss-clear state repairs old saves even when history tag is miss
   state.endlessHunt.highestClearedByMajor = { '1': 1 };
   const gate = session(1299102, state, []).voluntaryPassingEligibility();
   assert.equal(gate.ok, true);
-  assert.ok(gate.firstClears >= 1);
+  assert.equal(gate.firstClears, undefined);
 });
 
-test('Phó Bản cleared-state evidence also repairs an old missing-history save', () => {
+test('Phó Bản clear state is independent from voluntary Tọa Hóa eligibility', () => {
   const state = readyState();
   state.dungeons.highestClearedFloor['dungeon.spirit_gathering_cave'] = 2;
   const gate = session(1299103, state, []).voluntaryPassingEligibility();
   assert.equal(gate.ok, true);
-  assert.ok(gate.firstClears >= 2);
+  assert.equal(gate.firstClears, undefined);
 });
 
 test('new Săn Yêu boss event is authored as canonical FirstClear while retaining legacy compatibility tag', () => {
@@ -85,11 +86,13 @@ test('playtest telemetry counts canonical and legacy Săn Yêu first-clear tags'
   assert.equal(out.combat.firstClears, 1);
 });
 
-test('Tọa Hóa blocker message names concrete player actions instead of unexplained First Clear jargon', () => {
-  const gate = session(1299104, readyState(), []).voluntaryPassingEligibility();
-  assert.equal(gate.ok, false);
-  assert.match(gate.reason, /Boss Săn Yêu|Phó Bản/);
-  assert.doesNotMatch(gate.reason, /First Clear/);
+test('Tọa Hóa V4 has no age, realm or First Clear blocker when energy is sufficient', () => {
+  const state=createPlayableAdventureState();
+  state.ageYears=1; state.realm.maxRealmOrder=0; state.realm.realmId='realm.mortal';
+  const gate=session(1299104,state,[]).voluntaryPassingEligibility();
+  assert.equal(gate.ok,true);
+  assert.equal(gate.reason,undefined);
+  assert.ok(gate.energyCost>0);
 });
 
 
@@ -134,7 +137,7 @@ test('frontend does not call runtime actions explicitly retired by current produ
 });
 
 
-test('Luân Hồi read-model exposes Tọa Hóa as available after a legacy Săn Yêu clear', () => {
+test('Luân Hồi read-model exposes Tọa Hóa from energy, independent of First Clear', () => {
   const state = readyState();
   state.endlessHunt = createEndlessHuntState();
   state.endlessHunt.totalBossKills = 1;
@@ -143,10 +146,10 @@ test('Luân Hồi read-model exposes Tọa Hóa as available after a legacy Săn
   const ss = session(1299105, state, []);
   const hub = new GameplayFacade(ss, registry, thanhHaWorld).reincarnationHub();
   assert.equal(hub.lifeEnd.canEnd, true);
-  assert.ok(hub.lifeEnd.firstClears >= 1);
+  assert.equal(hub.lifeEnd.firstClears, undefined);
 });
 
-test('player-facing perform path can actually execute Tọa Hóa once the repaired gate is satisfied', () => {
+test('player-facing perform path executes voluntary Tọa Hóa without a First Clear gate', () => {
   const state = readyState();
   state.endlessHunt = createEndlessHuntState();
   state.endlessHunt.totalBossKills = 1;
@@ -161,7 +164,7 @@ test('player-facing perform path can actually execute Tọa Hóa once the repair
 });
 
 
-test('legacy Săn Yêu clear survives the complete Tọa Hóa → Thí Luyện → Chuyển Sinh player flow', () => {
+test('complete V4 flow is Tọa Hóa → Tổng Kết Nhất Kiếp → Chuyển Sinh without synthetic trials', () => {
   const state = readyState();
   state.endlessHunt = createEndlessHuntState();
   state.endlessHunt.totalBossKills = 1;
@@ -171,10 +174,6 @@ test('legacy Săn Yêu clear survives the complete Tọa Hóa → Thí Luyện �
   const api = new LocalGameApplicationApi(new GameplayFacade(ss, registry, thanhHaWorld));
   const passing = api.perform({ type:'meditativePassing' });
   assert.equal(passing.ok, true);
-  const offense = api.runReincarnationTrialV2('offense', 1_000);
-  const survival = api.runReincarnationTrialV2('survival', 2_000);
-  assert.equal(offense.durationSeconds, 60);
-  assert.equal(survival.durationSeconds, 60);
   const reward = api.finalizeReincarnationRewardsV2(true, 3_000);
   assert.ok(reward.reincarnationPoints >= 0);
   const rebirth = api.reincarnate({});
@@ -186,7 +185,7 @@ test('legacy Săn Yêu clear survives the complete Tọa Hóa → Thí Luyện �
   assert.equal(ss.stateValue.endlessHunt?.totalBossKills ?? 0, 0);
 });
 
-test('a new life must earn its own first clear before voluntary Tọa Hóa becomes available again', () => {
+test('a new life can voluntarily Tọa Hóa without First Clear once Energy is sufficient', () => {
   const state = readyState();
   state.endlessHunt = createEndlessHuntState();
   state.endlessHunt.totalBossKills = 1;
@@ -195,19 +194,14 @@ test('a new life must earn its own first clear before voluntary Tọa Hóa becom
   const ss = session(1299108, state, []);
   const api = new LocalGameApplicationApi(new GameplayFacade(ss, registry, thanhHaWorld));
   assert.equal(api.perform({ type:'meditativePassing' }).ok, true);
-  api.runReincarnationTrialV2('offense', 1_000);
-  api.runReincarnationTrialV2('survival', 2_000);
   api.finalizeReincarnationRewardsV2(true, 3_000);
   assert.equal(api.reincarnate({}).ok, true);
-  // Recreate the non-clear requirements in life 2; prior-life clears must not leak through meta/history.
-  ss.stateValue.realm.realmId = 'realm.foundation.early';
-  ss.stateValue.realm.maxRealmOrder = 10;
-  ss.stateValue.ageYears = 60;
-  ss.stateValue.lifespanYears = Math.max(240, ss.stateValue.lifespanYears ?? 0);
+  // Energy remains the only voluntary Tọa Hóa gate in life 2.
+  ss.metaValue.reincarnationProgress.energy.current = 300;
   const gate = ss.voluntaryPassingEligibility();
-  assert.equal(gate.ok, false);
-  assert.equal(gate.firstClears, 0);
-  assert.match(gate.reason, /Boss Săn Yêu|Phó Bản/);
+  assert.equal(gate.ok, true);
+  assert.equal(gate.firstClears, undefined);
+  assert.ok(gate.energyCost > 0);
 });
 
 console.log(`V129 GAMEPLAY CONSISTENCY: ${passed}/15 PASS`);

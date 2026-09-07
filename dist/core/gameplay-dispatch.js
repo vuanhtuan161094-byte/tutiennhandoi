@@ -18,7 +18,6 @@ import './save-stability.js';
 import './combat-roles.js';
 import './birth-randomness.js';
 import './realtime-balance.js';
-import { bundleSummaryLines } from './birth-origins-v101.js';
 import { economyMaterialDefinition, heavenlyTreasureDefinitions } from './economy-v111.js';
 import './build-foundation-v113.js';
 import './specialization-skill-progression-v125.js';
@@ -558,12 +557,12 @@ export function dispatchGameplayCommand(command) {
                 }
                 case 'reincarnate': {
                     const report = this.session.reincarnate(command.plan ?? {});
+                    const progress = this.session.meta.reincarnationProgress;
                     return this.result(command.type, beforeYear, [
                         `Chuyển sinh sang đời ${report.currentLife.lifeNumber}.`,
-                        ...(report.currentLife.birth.originsV101 ? bundleSummaryLines(report.currentLife.birth.originsV101).slice(0, 3) : [`${report.currentLife.birth.family} · ${report.currentLife.birth.spiritualRoot}.`]),
-                        `CP còn lại: ${this.session.meta.currentCp}.`,
-                        `Mệnh Cơ: ${(this.session.meta.mingJi ?? 0).toFixed(2)} · Mệnh Thai đời mới base ${this.session.fateEmbryoSummary().basePotential.toFixed(1)}.`,
-                        `${this.session.reincarnationSummary().sealName} · ${this.session.reincarnationSummary().xp.toFixed(0)} XP · hướng ${report.currentLife.reincarnation?.orientationId ?? 'balanced'}.`,
+                        `Xuất Thân: ${report.currentLife.birth.family}.`,
+                        `Điểm Luân Hồi tích lũy: ${Math.floor(progress?.tree?.lifetimePointsEarned ?? 0)} RP.`,
+                        `Năng Lượng Luân Hồi: ${Math.floor(progress?.energy?.current ?? 0)}/300.`,
                     ], report, 'reincarnated');
                 }
                 case 'recoverArtifactRelic': {
