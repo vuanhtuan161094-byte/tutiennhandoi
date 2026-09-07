@@ -10,6 +10,7 @@ const tests = [
   'qa/tests/v142-equipment-dungeon-conversion-test.js',
   'qa/tests/v142-equipment-hunt-runtime-integration-test.js',
   'qa/tests/v142-equipment-combat-live-test.js',
+  'qa/tests/v142-equipment-ui-transport-test.js',
 ];
 
 for (const file of tests) {
