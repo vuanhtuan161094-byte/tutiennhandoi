@@ -1,0 +1,10 @@
+import { readFile, writeFile } from 'node:fs/promises';
+const path = 'qa/tools/v145-apply-patch.mjs';
+let s = await readFile(path, 'utf8');
+const from = `  const anchor = "import { createBuildFoundationV113, elementQualityMultiplier, rootEffectivenessPct } from './build-foundation-v113.js';\\n";`;
+const to = `  const anchor = "import { cloneBuildFoundationV113, createBuildFoundationV113, elementQualityMultiplier, rootEffectivenessPct } from './build-foundation-v113.js';\\n";`;
+const count = s.split(from).length - 1;
+if (count !== 1) throw new Error(`V145 fixer expected 1 character anchor, got ${count}`);
+s = s.replace(from, to);
+await writeFile(path, s, 'utf8');
+console.log('V145 patcher character import guard aligned.');
