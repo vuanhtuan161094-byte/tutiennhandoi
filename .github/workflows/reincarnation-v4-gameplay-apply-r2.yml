@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Harden staged patch R3
+      - name: Harden staged patch R4
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -33,7 +33,6 @@ jobs:
           new="function fateOutgoingDamageMultiplierV4(source,target){ const fate=source?.combatBuildV117?.fateV4??{},general=Math.max(0,Number(fate.damagePct)||0),bossPct=Math.max(0,Number(fate.bossDamagePct)||0),boss=target?.tags?.some(tag=>['boss','dungeonguardian','bosslike'].includes(String(tag).toLowerCase())); return (1+general/100)*(boss?1+bossPct/100:1); }"
           if old not in s: raise SystemExit('missing Fate damage helper anchor')
           s=s.replace(old,new,1).replace('fateBossDamageMultiplierV4(source,target)','fateOutgoingDamageMultiplierV4(source,target)')
-          # Also patch the legacy combat path used by the production mortal profile.
           combat_anchor="# 5) Session: sync chosen Fate to character runtime, Bế Quan/offline/Tài Mệnh, and new RP inputs."
           combat_insert="""\n# 4b) Production mortal currently uses legacy CombatEngine path; Fate damage must apply there too.\np='dist/core/combat.js'; s=read(p)\ns=rep(s,\n\"        let damage = raw * defenseFactor(srcStats.attack, dstStats.defense, 0);\",\n\"        let damage = raw * fateOutgoingDamageMultiplierV4(source,target) * defenseFactor(srcStats.attack, dstStats.defense, 0);\",'legacy fate outgoing damage')\nwrite(p,s)\n\n"""
           if combat_anchor not in s: raise SystemExit('missing combat legacy insertion anchor')
@@ -55,6 +54,16 @@ jobs:
           PY
       - name: Apply patch
         run: python3 qa/reincarnation-v4-gameplay-patch.py
+      - name: Align V140 baseline test with explicit Fate source
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('qa/tests/v140-cultivation-core-test.js'); s=p.read_text()
+          old="const s=makeAt(0); const a=s.advanceRealtimeCultivationV140(14); assert.equal(a.gained,0); assert.equal(s.stateValue.cultivation.tuVi,0);\n  const b=s.advanceRealtimeCultivationV140(1); assert.equal(b.gained,10); assert.equal(s.stateValue.cultivation.tuVi,10);"
+          new="const s=makeAt(0); const rate=cultivationRateV140(s.stateValue,0); assert.equal(rate.baseTuViPer15s,10); const a=s.advanceRealtimeCultivationV140(14); assert.equal(a.gained,0); assert.equal(s.stateValue.cultivation.tuVi,0);\n  const b=s.advanceRealtimeCultivationV140(1); assert.equal(b.gained,rate.finalTuViPer15s); assert.equal(s.stateValue.cultivation.tuVi,rate.finalTuViPer15s);"
+          if old not in s: raise SystemExit('missing V140 tick invariant anchor')
+          p.write_text(s.replace(old,new,1))
+          PY
       - name: Syntax + dedicated
         run: |
           for f in dist/core/reincarnation-progression-v1102.js dist/core/character.js dist/core/cultivation-v140.js dist/core/combat.js dist/core/personal-power.js dist/core/session.js; do node --check "$f"; done
