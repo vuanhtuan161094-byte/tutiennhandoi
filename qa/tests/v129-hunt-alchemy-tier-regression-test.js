@@ -9,8 +9,11 @@ import { EQUIPMENT_SLOTS_V142, equipmentBaseStatsForRankV142, equipmentRankNameV
 
 let pass=0; const ok=(v,m)=>{if(!v)throw new Error(m);pass++;console.log(`✓ ${m}`)};
 const registry=buildRegistry();
-function seedSameRealmEquipment(st, realmOrder) {
-  const rankIndex = majorRealmIndexForRealmOrder(realmOrder);
+function seedRewardAuthorityFixtureEquipment(st, realmOrder) {
+  // This regression verifies reward-tier authority, not combat difficulty. Two-rank-over gear makes
+  // the fixture deterministic even when Hunt/Equipment curves are rebalanced, while the Hunt map
+  // and therefore reward tier remain Nhân Tiên (major 11).
+  const rankIndex = majorRealmIndexForRealmOrder(realmOrder) + 2;
   st.equipment.items = [];
   st.equipment.equipped = {};
   for (const [index, slot] of EQUIPMENT_SLOTS_V142.entries()) {
@@ -28,12 +31,12 @@ function make(seed){
   const st=createPlayableAdventureState();
   st.realm.realmId='realm.human_immortal.early'; st.realm.maxRealmOrder=46;
   registry.realm(st.realm.realmId);
-  // Mature-build fixture isolates Hunt reward tier authority. Same-realm V142 gear is fixture power, not pre-granted loot/material.
+  // Mature-build fixture isolates Hunt reward tier authority. No loot/material is pre-granted.
   st.character.corePotential.life.allocations={power:10000,body:10000,defense:10000};
   st.soul.awakened=true; st.soul.strength=500; st.soul.purity=100; st.soul.stability=100;
   st.dao.awakened=true; st.dao.known['dao.sword']={daoId:'dao.sword',depth:100,insight:1000,marks:15,interpretationId:'dao.sword.severance',contemplations:20};
   st.dao.mainDaoId='dao.sword'; st.dao.domain={active:true,daoId:'dao.sword',manifestedYears:50};
-  seedSameRealmEquipment(st, st.realm.maxRealmOrder);
+  seedRewardAuthorityFixtureEquipment(st, st.realm.maxRealmOrder);
   return new SimulationSession(registry,thanhHaWorld,adventureEnemies,playablePlayerProfile,seed,st);
 }
 const found=[];
