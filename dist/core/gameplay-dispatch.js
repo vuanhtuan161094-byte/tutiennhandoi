@@ -252,6 +252,22 @@ export function dispatchGameplayCommand(command) {
                     const item = this.session.state.equipment.items.find(candidate => candidate.id === command.itemId);
                     return this.result(command.type, beforeYear, [`Đã trang bị ${item.name} vào ô ${item.slot}.`], item);
                 }
+                case 'craftEquipmentV142': {
+                    const report = this.session.craftEquipmentV142(command.slot, command.rankIndex);
+                    return this.result(command.type, beforeYear, [`Luyện thành ${report.item.name}; tiêu ${report.fragmentCost} Mảnh Trang Bị.`], report);
+                }
+                case 'refineEquipmentFragmentsV142': {
+                    const report = this.session.refineEquipmentFragmentsV142(command.fromRank, command.batches ?? 1);
+                    return this.result(command.type, beforeYear, [`Tinh luyện Mảnh Trang Bị ${command.fromRank} → ${Number(command.fromRank)+1} theo tỷ lệ 3:1.`], report);
+                }
+                case 'mergeEquipmentV142': {
+                    const report = this.session.mergeEquipmentV142(command.mainItemId, command.fodderItemAId, command.fodderItemBId);
+                    return this.result(command.type, beforeYear, [`Hợp thành thành công: ${report.item.name}.`], report);
+                }
+                case 'engraveEquipmentSetV142': {
+                    const report = this.session.engraveEquipmentSetV142(command.itemId, command.setId);
+                    return this.result(command.type, beforeYear, [`Khắc Bộ ${report.setName} lên ${report.item.name}; tiêu ${report.cost} Tàn Ấn.`], report);
+                }
                 case 'enhanceEquipment': {
                     const report = this.session.enhanceEquipment(command.itemId, Boolean(command.useProtection));
                     const item = this.session.state.equipment.items.find(candidate => candidate.id === command.itemId);
