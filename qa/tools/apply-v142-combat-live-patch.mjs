@@ -92,4 +92,4 @@ patchEquipmentV142();
 patchEquipmentCore();
 patchCombat();
 console.log('V142 combat live patch applied');
-// Rerun marker: stacked set bonuses are isolated by the live QA test.
+// Rerun marker: live QA now accepts the V142 enhancement import alongside Set power.
