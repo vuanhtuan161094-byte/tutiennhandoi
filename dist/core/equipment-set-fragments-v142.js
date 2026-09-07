@@ -81,8 +81,9 @@ export function equipmentSetResonanceBonusForItemV143(item, setId, level) {
     else if (set.key === 'water') addBonus(bonus, 'shieldEffectPct', .025 * lv);
   }
   else if (set.key === 'huyen_nguyen') {
-    addBonus(bonus, 'spiritEfficiencyPct', .020 * lv);
-    addBonus(bonus, 'cooldownReductionPct', .015 * lv);
+    // CDR stays on the fixed 4-piece mechanic. Endless resonance only uses the globally bounded
+    // Chân Nguyên efficiency lane, avoiding a second independent CDR progression axis.
+    addBonus(bonus, 'spiritEfficiencyPct', .035 * lv);
   }
   else if (set.key === 'pha_gioi') {
     addBonus(bonus, 'armorPenPct', .020 * lv);
