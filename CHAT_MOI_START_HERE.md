@@ -1,62 +1,83 @@
 # CHAT MỚI — START HERE
 
-Source of truth is the current HEAD of branch:
+Source of truth là **current HEAD** của branch:
 
-`feature/reincarnation-cultivation-r3`
+`feature/v142-equipment-hunt`
 
-Read `CURRENT_CHECKPOINT.md` immediately after this file. Do not use old V141 handoff text that says Luân Hồi had not been coded yet; this feature branch has moved past that point.
+Đọc theo thứ tự:
 
-## Current state
+1. `CHAT_MOI_START_HERE.md`
+2. `CURRENT_CHECKPOINT.md`
+3. `NEXT_CHAT_TASKS.md`
+4. live source của subsystem đang làm
 
-- V141 codebase optimization baseline: CLOSED.
-- V140 Tu Luyện V2: canonical and preserved.
-- Luân Hồi V4 / Mệnh Cách: current feature work exists in live source; continue it rather than restarting from old design notes.
-- **Săn Yêu × Tu Luyện V140: CLOSED / PASS.**
-- Gameplay/web version remains `1.40.0-alpha.24.0`.
-- No merge to `main` unless the user explicitly requests it.
+Không dùng branch `feature/reincarnation-cultivation-r3`, handoff V141 cũ, chat cũ hoặc file lịch sử làm source of truth nếu mâu thuẫn với current branch HEAD.
 
-## Canonical Tu Luyện contract
+## Trạng thái đã khóa
 
-`Tu Vi nền + valid sources → Tự Tu / Bế Quan → auto minor realm → deterministic Thăng Cảnh / Thiên Kiếp gate`
+- Gameplay/web version: `1.40.0-alpha.24.0`.
+- V140 Tu Luyện: CLOSED / canonical.
+- V141 Săn Yêu × Tu Luyện: CLOSED.
+- V142 Trang Bị × Hunt: CLOSED.
+- V143 Hunt reward authority + Set Resonance: CLOSED.
+- V144 retirement Công Pháp/Bí Thuật legacy V103/V119: CLOSED / canonical QA PASS.
+- Công Pháp V127 (`dist/core/manual-progression-v127.js`) là hệ Công Pháp progression duy nhất.
+- Không merge `main` nếu người dùng chưa yêu cầu.
 
-Do not restore retired cultivation mechanics simply because old tests/docs mention them.
+## Những invariant không được phá
 
-## Săn Yêu closure — do not reopen by default
+### Tu Luyện
 
-The closed Hunt contract is:
+- 118 realm orders: Phàm Nhân + 28 đại cảnh Luyện Khí → Sáng Thế Chủ.
+- tick 15 giây, auto tiểu cảnh, deterministic Thăng Cảnh / explicit Thiên Kiếp.
+- Bế Quan +3h bank/ngày, cap 9h.
+- Săn Yêu không cấp Tu Vi trực tiếp; Tu Luyện chạy song song 100%.
+- Không phục hồi Căn Cơ/Tổn Căn, Kinh Mạch, Tạp Chất/Thanh Tịnh, absorption/backlog/refining cũ, five cultivation methods, Thiêu Thọ hoặc RNG đại cảnh cũ.
 
-- 28 major-realm Hunt maps, Luyện Khí → Sáng Thế Chủ.
-- 800 floors per major realm (`8 vực × 100 tầng`).
-- one real Boss per floor; Boss victory opens the next floor.
-- cleared floors become Săn Ảo farm floors.
-- real Boss combat uses CombatKernel V2.
-- actual Săn Ảo settlement uses one representative CombatKernel V2 simulation to establish TTK, then aggregates the time batch O(1).
-- Săn Ảo preview is telemetry only and includes current generic outgoing Damage% such as Chiến Mệnh; Boss-only Damage% does not boost ordinary Săn Ảo.
-- preview and settlement use the same minimum TTK: **0.25 real seconds/kill**.
-- canonical 24h offline window therefore tops out theoretically at **345,600 kills**, below `OFFLINE_HUNT_MAX_FIGHTS = 350,000`.
-- Săn Yêu grants **no direct Tu Vi**.
-- Tu Luyện V140 runs **100% in parallel** while Săn Ảo runs.
-- farm rewards include Linh Thạch, Yêu Đan/beast-core and equipment; Tài Mệnh affects actual Linh Thạch settlement.
-- difficulty/reward progression is locked against reset/regression across 100-floor zone boundaries.
+### Săn Yêu
 
-Dedicated gate:
+- 28 major-realm maps.
+- 8 Vực × 100 tầng = 800 tầng/đại cảnh.
+- mỗi tầng 1 Boss thật; thắng mới mở tầng kế.
+- tầng đã clear trở thành Săn Ảo.
+- Boss thật + representative Săn Ảo TTK đều dựa trên CombatKernel V2.
+- Combat Power chỉ telemetry, không tự quyết định thắng hoặc mint kill.
+- minimum TTK 0.25s/kill.
+- Boss/difficulty authority lấy trần Boss cao nhất rồi scale xuống; không bảo đảm người chơi cùng cảnh phải clear hết 800 tầng.
 
-`node qa/tests/v141-hunt-cultivation-closure-test.js`
+### Trang Bị
 
-Final Hunt runtime/test checkpoint before documentation refresh:
+- identity: Slot + `equipmentRankIndex` + Enhancement + Affixes + optional SetId.
+- legacy Grade/Quality/Tier/Gem/Đạo Văn không phải progression axis V142.
+- +15 là cap V142.
+- 50 mảnh cùng bậc → 1 món; 3 mảnh bậc dưới → 1 mảnh bậc trên; 3 món cùng slot+bậc → main +1 bậc.
+- raw stat trang bị theo curve dài hạn/infinite; Chân Nguyên và utility không được nổ theo cùng raw curve.
+- 5 Ngũ Hành attire Sets + 4 jewelry Sets; Tàn Ấn + Set Resonance là live.
 
-`0999ab37e0a97fc4938b9dd64995cdb9f922f78c`
+### Công Pháp
 
-GitHub Actions run `34087201830`: **SUCCESS**, including V140 core/transport/zero-legacy, V141 Hunt closure, backend fast/full and frontend fast/full.
+- V127 là authority duy nhất: 29 realm stages × 9 archetypes = 261 Công Pháp, max Lv1000.
+- V103/V119 manual mastery/equip/study/Hunt fragment/combat source đã retired.
+- các save field cũ chỉ được tồn tại inert compatibility, không được tạo reward/progression/combat power.
+- Battle Đạo V2 vẫn live và realm-driven.
 
-## Read next
+## Việc tiếp theo đã được người dùng chọn: V145 — LINH CĂN × NGŨ HÀNH CLOSURE
 
-1. `CURRENT_CHECKPOINT.md`
-2. `NEXT_CHAT_TASKS.md`
-3. relevant live source for the subsystem the user asks to continue
-4. `V141_CODEBASE_OPTIMIZATION_CLOSURE_REPORT.md` only when structural history is needed
-5. `V140_CULTIVATION_CLOSURE_REPORT.md` / `docs/CULTIVATION_V140_BALANCE.csv` when cultivation pacing is relevant
+Không hỏi lại hướng chung. Bắt đầu bằng audit live source của Linh Căn/Ngũ Hành rồi đóng thành **một authority duy nhất**.
 
-## Working rule for next chat
+Mục tiêu V145:
 
-Do not automatically audit every remaining system in sequence. Work module-by-module from the user's newest request. When touching a system, inspect backend + frontend + save + economy/content consumers + targeted tests together. Preserve Săn Yêu closure unless the requested feature genuinely needs an explicit integration change.
+1. xác định chính xác những module/field/UI/runtime nào đang đại diện Linh Căn, Ngũ Hành, Hành Ấn/Element Seal hoặc hệ tương tự;
+2. phân loại: live canonical / compatibility inert / duplicate legacy;
+3. chốt progression 5 Hành Kim–Mộc–Thủy–Hỏa–Thổ và nguồn nguyên liệu thật;
+4. giữ Hunt chỉ cho loot Linh Căn nào có chủ đích; không để chức năng có nhưng không có nguồn nguyên liệu;
+5. nối stat/effect Linh Căn vào CombatKernel thật, không display-only;
+6. kiểm tra elemental interaction với Battle Đạo, Set, Boss Ngũ Hành và skill `primaryRoot` hiện tại;
+7. dùng cap/soft-cap hợp lý cho stat utility, không cho Linh Căn phá balance raw-stat/infinite progression;
+8. dọn backend + frontend + save + economy/content + tests của lane legacy nếu trùng;
+9. thêm targeted V145 QA rồi chạy canonical V140 workflow đầy đủ;
+10. chỉ gọi V145 CLOSED sau khi full canonical QA SUCCESS.
+
+## Working rule
+
+Làm module-by-module, source-first. Khi chạm một hệ phải rà đủ backend + frontend + save + resource source/sink + CombatKernel consumer + tests. Không re-audit toàn game từ đầu và không mở lại các closure trước nếu V145 không thật sự cần integration change.
