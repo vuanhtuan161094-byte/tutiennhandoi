@@ -1,0 +1,49 @@
+name: V144 One-shot Technique Retirement
+
+on:
+  push:
+    branches:
+      - feature/v142-equipment-hunt
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: "startsWith(github.event.head_commit.message, 'chore(v144): stage technique retirement')"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apply V144 retirement patch
+        run: node qa/tools/apply-v144-technique-retirement.mjs
+      - name: Focused V144 smoke gates
+        run: |
+          node qa/tests/v127-manual-progression-test.js
+          node qa/tests/v143-hunt-reward-authority-test.js
+          node qa/tests/v144-technique-v103-retirement-test.js
+          node qa/tests/v141-hunt-cultivation-closure-test.js
+          node qa/runners/v142-equipment-hunt-gate.js
+      - name: Verify retired surface is absent
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -RIn --exclude-dir=.git --exclude='*.map' "technique-progression-v103" dist qa web src 2>/dev/null
+          ! grep -n "TECHNIQUE_INSIGHT_RESOURCE_ID\|techniqueFragmentDrops\|daoTechniqueFragment" dist/core/session.js
+          ! grep -n "getTechniqueManuals\|equipTechniqueManual\|getElementSealsV133" dist/core/game-api.js
+      - name: Commit V144 cleanup
+        run: |
+          git config user.name "vuanhtuan161094-byte"
+          git config user.email "vuanhtuan161094@gmail.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No V144 changes to commit."
+            exit 1
+          fi
+          git commit -m "feat(v144): retire V103 V119 manual progression"
+          git push origin HEAD:feature/v142-equipment-hunt
