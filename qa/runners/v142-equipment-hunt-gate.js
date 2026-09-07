@@ -14,6 +14,7 @@ const tests = [
   'qa/tests/v142-equipment-combat-live-test.js',
   'qa/tests/v142-equipment-ui-transport-test.js',
   'qa/tests/v142-equipment-legacy-lane-test.js',
+  'qa/tests/v143-hunt-equipment-resource-closure-test.js',
 ];
 
 for (const file of tests) {
@@ -21,4 +22,4 @@ for (const file of tests) {
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
-console.log('V142 equipment x Hunt gate PASS');
+console.log('V143 equipment x Hunt gate PASS');

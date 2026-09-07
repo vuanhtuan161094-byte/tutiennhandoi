@@ -1,61 +1,69 @@
 import assert from 'node:assert/strict';
-import { playableMortalCultivator } from '../../dist/content/entities.js';
 import { ENDLESS_HUNT_FLOOR_POWER_GROWTH } from '../../dist/content/endless-hunt.js';
 import {
+  HUNT_BOSS_APEX_EFFECTIVE_SCALE_V143,
+  HUNT_BOSS_FLOOR1_SHARE_V143,
   HUNT_EQUIPMENT_MAJOR_GROWTH_V142,
+  HUNT_GRADE_SHARE_OF_BOSS_V143,
   HUNT_MAJOR_REALM_EQUIPMENT_SHARE_V142,
+  HUNT_ZONE_REWARD_PER_KILL_V143,
+  huntBossAuthorityShareV143,
+  huntBossEffectiveScaleV143,
+  huntGradeEffectiveScaleV143,
   huntMajorRealmPowerScaleV142,
+  huntZoneRewardPerKillV143,
   realmMapDefinitionForFloor,
 } from '../../dist/content/realm-maps.js';
-import { enhancementBonusPct } from '../../dist/core/equipment.js';
-import {
-  EQUIPMENT_SANG_THE_INDEX_V142,
-  EQUIPMENT_SLOTS_V142,
-  equipmentBaseStatsForRankV142,
-} from '../../dist/core/equipment-v142.js';
+import { EQUIPMENT_SANG_THE_INDEX_V142 } from '../../dist/core/equipment-v142.js';
 
-function fullGearAttack(rankIndex, enhancementLevel = 15) {
-  const enhance = 1 + enhancementBonusPct(enhancementLevel) / 100;
-  let total = 0;
-  for (const slot of EQUIPMENT_SLOTS_V142) {
-    const attack = equipmentBaseStatsForRankV142(slot, rankIndex).attack;
-    if (typeof attack === 'number') total += Math.round(attack * enhance);
-  }
-  return total;
+assert.equal(ENDLESS_HUNT_FLOOR_POWER_GROWTH, 1.0005, 'intrinsic generator floor growth remains tiny; map authority owns final difficulty');
+assert.equal(HUNT_EQUIPMENT_MAJOR_GROWTH_V142, 3);
+assert.equal(HUNT_MAJOR_REALM_EQUIPMENT_SHARE_V142, 1, 'V143 enemy authority follows full x3 major-realm backbone');
+assert.equal(HUNT_BOSS_APEX_EFFECTIVE_SCALE_V143, 6, 'floor-800 Boss is a deliberate wall, not same-realm guaranteed content');
+assert.equal(HUNT_BOSS_FLOOR1_SHARE_V143, .24);
+assert.deepEqual(HUNT_GRADE_SHARE_OF_BOSS_V143, { common: .20, enhanced: .30, elite: .50, boss: 1 });
+assert.deepEqual(HUNT_ZONE_REWARD_PER_KILL_V143, [1, 1.30, 1.70, 2.20, 2.90, 3.80, 5.00, 6.50]);
+
+assert.equal(huntBossAuthorityShareV143(1), .24);
+assert.equal(huntBossAuthorityShareV143(800), 1);
+const sameRealmBossWall = huntBossEffectiveScaleV143(1, 800) / huntBossEffectiveScaleV143(1, 1);
+assert.ok(sameRealmBossWall > 4.15 && sameRealmBossWall < 4.18, `floor 1→800 Boss wall=${sameRealmBossWall}`);
+
+// Every non-Boss grade is explicitly derived downward from the Boss authority.
+for (const floor of [1, 100, 400, 800]) {
+  const boss = huntGradeEffectiveScaleV143(7, floor, 'boss');
+  assert.equal(huntGradeEffectiveScaleV143(7, floor, 'elite'), boss * .50);
+  assert.equal(huntGradeEffectiveScaleV143(7, floor, 'enhanced'), boss * .30);
+  assert.equal(huntGradeEffectiveScaleV143(7, floor, 'common'), boss * .20);
 }
 
-assert.equal(ENDLESS_HUNT_FLOOR_POWER_GROWTH, 1.0005);
-assert.equal(HUNT_EQUIPMENT_MAJOR_GROWTH_V142, 3);
-assert.equal(HUNT_MAJOR_REALM_EQUIPMENT_SHARE_V142, .705);
-const intraFloorGrowth = Math.pow(ENDLESS_HUNT_FLOOR_POWER_GROWTH, 799);
-assert.ok(intraFloorGrowth > 1.45 && intraFloorGrowth < 1.55, `1→800 raw floor growth=${intraFloorGrowth}`);
-
-// 800 tầng trong cùng đại cảnh vẫn khoảng 3.4x: +15 + affix + Set + các hệ build khác phải có đất phát huy.
-const firstMap = realmMapDefinitionForFloor(1);
-const lastMap = realmMapDefinitionForFloor(800);
-const sameRealmBossGrowth = intraFloorGrowth * lastMap.powerByGrade.boss / firstMap.powerByGrade.boss;
-assert.ok(sameRealmBossGrowth > 3.2 && sameRealmBossGrowth < 3.6, `same-realm Boss growth=${sameRealmBossGrowth}`);
-
-// Major-realm Hunt follows the new x3 raw equipment ladder. 0.705 share is calibrated against
-// the fixed 113 Công player base + full same-realm +15 V142 package (40 Phàm-base Công).
-const baseAttack = playableMortalCultivator.stats.attack;
-const firstRealmProxy = baseAttack + fullGearAttack(1, 15);
-let previousMajorScale = 0;
+// Major realms are an exact x3 backbone all the way to Sáng Thế.
+let prior = 0;
 for (let major = 1; major <= EQUIPMENT_SANG_THE_INDEX_V142; major++) {
   const scale = huntMajorRealmPowerScaleV142(major);
-  assert.ok(scale > previousMajorScale, `Hunt major ${major} must be stronger than previous major`);
-  previousMajorScale = scale;
-  const map = realmMapDefinitionForFloor((major - 1) * 800 + 1);
-  assert.ok(Math.abs(map.majorPowerScale - scale) < 1e-9 * Math.max(1, scale), `map major scale drift at ${major}`);
-  const playerProxyRatio = (baseAttack + fullGearAttack(major, 15)) / firstRealmProxy;
-  const alignment = scale / playerProxyRatio;
-  assert.ok(alignment >= .999 && alignment <= 1.001, `major ${major} Hunt/player alignment=${alignment}`);
+  assert.equal(scale, 3 ** (major - 1));
+  assert.ok(scale > prior);
+  prior = scale;
+  const first = realmMapDefinitionForFloor((major - 1) * 800 + 1);
+  const apex = realmMapDefinitionForFloor(major * 800);
+  assert.equal(first.majorPowerScale, scale);
+  assert.equal(apex.bossAuthority.currentShareOfApex, 1);
+  assert.equal(apex.bossAuthority.apexEffectiveScale, scale * HUNT_BOSS_APEX_EFFECTIVE_SCALE_V143);
 }
+const sangTheMajor = huntMajorRealmPowerScaleV142(28);
+assert.equal(sangTheMajor, 3 ** 27);
+assert.ok(huntBossEffectiveScaleV143(28, 800) > 4e13, 'Sáng Thế apex Boss must remain in the intended trillion-scale wall band');
 
-// Sáng Thế floor 1 must live in the same trillion-scale progression band as Sáng Thế equipment.
-const sangTheScale = huntMajorRealmPowerScaleV142(28);
-assert.ok(sangTheScale > 5e12 && sangTheScale < 5.5e12, `Sáng Thế major scale=${sangTheScale}`);
-const sangTheFirst = realmMapDefinitionForFloor((28 - 1) * 800 + 1);
-assert.ok(sangTheFirst.powerByGrade.boss / firstMap.powerByGrade.boss > 5e12);
+// Reward-per-kill rises by Vực, but this never mints kills; TTK still comes from CombatKernel/Săn Ảo.
+let last = 0;
+for (let zone = 1; zone <= 8; zone++) {
+  const start = huntZoneRewardPerKillV143(zone, 1);
+  const end = huntZoneRewardPerKillV143(zone, 100);
+  assert.ok(start > last, `zone ${zone} reward/kill must exceed prior zone start`);
+  assert.ok(end > start, `zone ${zone} should progress smoothly inside 100 floors`);
+  last = start;
+}
+assert.equal(huntZoneRewardPerKillV143(1, 1), 1);
+assert.equal(huntZoneRewardPerKillV143(8, 1), 6.5);
 
-console.log('V142 equipment-aligned Hunt balance PASS');
+console.log('V143 Boss-authority Hunt balance PASS');
