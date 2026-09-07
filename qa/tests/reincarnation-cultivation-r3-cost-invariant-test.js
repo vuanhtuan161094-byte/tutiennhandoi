@@ -40,7 +40,7 @@ const deriveRankCost = (base, costClass, rank) => {
 const deriveNodeCost = node => {
   const baseCost = node.maxRank === 20 ? twentyRankBaseCost : manualRankBaseCost;
   let total = 0;
-  for (let rank = 1; rank <= node.maxRank; rank += 1) total += deriveRankCost(baseCost(rank), node.costClass, rank);
+  for (let rank = 1; rank <= node.maxRank; rank += 1) total += deriveRankCost(baseCost(rank), node.costClass, rank) * (node.costScale ?? 1);
   if (node.id === 'manual.grand_completion') total += 120;
   return total;
 };
@@ -81,7 +81,7 @@ const manualByClass = Object.fromEntries(
   ]),
 );
 
-assert.deepEqual(reincarnationByClass, { core: 76_000, high: 47_500 });
+assert.deepEqual(reincarnationByClass, { core: 342_000, high: 190_000 });
 assert.deepEqual(cultivationByClass, { rare: 85_500, high: 190_000, normal: 19_000 });
 assert.deepEqual(manualByClass, { normal: 205_000, high: 153_750, rare: 184_500, core: 164_120 });
 
@@ -90,10 +90,10 @@ const cultivationTotal = cultivation.reduce((sum, node) => sum + deriveNodeCost(
 const manualTotal = manual.reduce((sum, node) => sum + deriveNodeCost(node), 0);
 const grandTotal = reincarnationTotal + cultivationTotal + manualTotal;
 
-assert.equal(reincarnationTotal, 123_500);
+assert.equal(reincarnationTotal, 532_000);
 assert.equal(cultivationTotal, 294_500);
 assert.equal(manualTotal, 707_370);
-assert.equal(grandTotal, 1_125_370);
+assert.equal(grandTotal, 1_533_870);
 assert.equal(REINCARNATION_TREE_MAX_TOTAL_COST_V127, grandTotal);
 assert.equal(reincarnationTreeNodesV136.filter(node => node.treeId === 'cultivation').length, 12, 'No 13th Tu Luyện node may be counted');
 

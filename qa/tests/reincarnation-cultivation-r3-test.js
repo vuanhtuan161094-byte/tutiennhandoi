@@ -22,8 +22,8 @@ assert.equal(cultivation.length,12);assert(cultivation.every(x=>x.maxRank===20))
 const by=id=>cultivation.find(x=>x.id===id);
 const rootBy=id=>root.find(x=>x.id===id);
 assert.equal(cultivation.reduce((s,x)=>s+nodeSpentPoints(x,20),0),294500);
-assert.equal(root.reduce((s,x)=>s+nodeSpentPoints(x,20),0),123500);
-assert.equal(totalTreeMaxCostV127(),REINCARNATION_TREE_MAX_TOTAL_COST_V127);assert.equal(REINCARNATION_TREE_MAX_TOTAL_COST_V127,1125370);
+assert.equal(root.reduce((s,x)=>s+nodeSpentPoints(x,20),0),532000);
+assert.equal(totalTreeMaxCostV127(),REINCARNATION_TREE_MAX_TOTAL_COST_V127);assert.equal(REINCARNATION_TREE_MAX_TOTAL_COST_V127,1533870);
 assert.equal(REINCARNATION_ENERGY_CAP,300);
 assert.equal(REINCARNATION_PERMANENT_POTENTIAL_MAX_PCT_V127,10);
 assert.equal(nodeModifierValue({ranks:{'cultivation.base_gain':20}},'cultivation.baseGainPct'),25);
@@ -41,8 +41,8 @@ assert.equal(permanentPotentialConversionPctV127(rootMax),10);
 assert.equal(lifePotentialGainPctV4(rootMax),25);
 assert.equal(reincarnationEnergyCostReductionPctV127(rootMax),25);
 assert.equal(reincarnationPointsGainPctV4(rootMax),25);
-assert.equal(nodeSpentPoints(rootBy('reincarnation.permanent_potential'),20),38000);
-assert.equal(nodeSpentPoints(rootBy('reincarnation.rp_gain'),20),38000);
+assert.equal(nodeSpentPoints(rootBy('reincarnation.permanent_potential'),20),152000);
+assert.equal(nodeSpentPoints(rootBy('reincarnation.rp_gain'),20),190000);
 
 const w=lingGuangWeightsR3(20);assert.deepEqual(w,{2:10,3:3.5,4:1.2,5:.5,6:.2,7:.08,8:.04,9:.02,10:.01});
 assert.deepEqual(heavenRewardProfileR3(20),{thresholdTicks:80,bonusTicks:8});assert.deepEqual(retreatInsightProfileR3(20),{small:18,medium:6,great:1});assert.deepEqual(retreatRefundProfileR3(20),{chancePct:20,hours:.5});

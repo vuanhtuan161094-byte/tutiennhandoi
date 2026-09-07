@@ -91,7 +91,8 @@ test('Luân Hồi Tu Luyện R3 has 12 independent 20-rank nodes with the approv
   assert.equal(nodeModifierValue(max,'cultivation.skipOldStageChancePct'),5);
   assert.equal(nodeModifierValue(max,'cultivation.newRecordGainPct'),20);
   assert.equal(nodeModifierValue(max,'cultivation.perfectStageGainPct'),40);
-  for(const retired of ['cultivation.retreatGainPct','cultivation.protectorEffectPct','cultivation.tribulationSuccessPct','cultivation.cultivationPillGainPct','cultivation.lifePotentialGainPct','cultivation.permanentPotentialBonusPct','cultivation.lifespanPct','cultivation.daoDecayRateReductionPct','cultivation.offlineRewardPct','cultivation.offlineCapHoursBonus','cultivation.injuryRecoveryPct','cultivation.injuryGainReductionPct','cultivation.reincarnationEnergyCostReductionPct']) assert.equal(nodeModifierValue(max,retired),0,retired+' must be retired from Tu Luyện tree');
+  for(const retired of ['cultivation.retreatGainPct','cultivation.protectorEffectPct','cultivation.tribulationSuccessPct','cultivation.cultivationPillGainPct','cultivation.lifespanPct','cultivation.daoDecayRateReductionPct','cultivation.offlineRewardPct','cultivation.offlineCapHoursBonus','cultivation.injuryRecoveryPct','cultivation.injuryGainReductionPct']) assert.equal(nodeModifierValue(max,retired),0,retired+' must be retired from Tu Luyện tree');
+  for(const moved of ['cultivation.lifePotentialGainPct','cultivation.permanentPotentialBonusPct','cultivation.reincarnationEnergyCostReductionPct']) assert.equal(cultivation.some(x=>x.modifierKey===moved||(x.additionalModifiers??[]).some(m=>m.modifierKey===moved)),false,moved+' belongs to Gốc Luân Hồi V4, not Tu Luyện R3');
 });
 
 test('V129 Luân Hồi combat memories use real CombatEntity consumers without hidden global total-damage scalar',()=>{
