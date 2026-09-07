@@ -105,6 +105,7 @@ export function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {
         recordActiveArtifactBattle(this.stateValue.artifacts, won, this.stateValue.worldTimeYears, guardian.name);
         let rewards = {};
         let equipmentDropIds = [];
+        let equipmentFragmentDrops = [];
         let artifactDropIds = [];
         let battleInsightGain = 0;
         let daoNaturePointGain = 0;
@@ -120,6 +121,7 @@ export function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {
             const loot = grantDungeonGuardianLoot(this.stateValue, dungeon, floor, this.registry, seed ^ 0xa5a5a5a5, firstClear, this.currentLifeValue.lifeId);
             rewards = loot.rewards;
             equipmentDropIds = loot.equipmentDrops.map(item => item.id);
+            equipmentFragmentDrops = loot.equipmentFragmentDrops ?? [];
             artifactDropIds = loot.artifactDrops.map(item => item.id);
             if (isResourcePveDungeonV12329(dungeonId)) {
                 const collectionState = ensureCollectionProgressStateV12316(this.stateValue);
@@ -176,6 +178,7 @@ export function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {
                 this.stateValue.character.techniqueMastery[id] = Math.min(100, before + battleInsightGain * .35);
             }
         }
+        const equipmentFragmentText = equipmentFragmentDrops.length ? ` Thu ${equipmentFragmentDrops.map(drop => drop.kind === 'setFragmentV142' ? `Tàn Ấn ${drop.setName} +${drop.amount}` : `Mảnh Trang Bị ${drop.rankName} +${drop.amount}`).join(' · ')}.` : '';
         const event = {
             id: `dungeon.challenge.${seed}.${dungeonId}.${floor}`,
             worldTimeYears: this.stateValue.worldTimeYears,
@@ -183,7 +186,7 @@ export function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {
             type: 'dungeon',
             significance: won ? (firstClear ? Math.min(65, 22 + floor * 6 + dungeon.tier * 4) : 10 + floor * 2) + (extremeUpset ? 16 : upsetVictory ? 8 : 0) : 18 + floor * 2,
             message: won
-                ? `${firstClear ? 'Lần đầu công phá' : 'Tái chiến'} ${dungeon.name} tầng ${floor}; đánh bại ${guardianBase.name} sau ${battle.duration.toFixed(1)}s.${resourcePve ? ` Thu ${resourcePve.material} ${resourcePve.materialName}${resourcePve.breakthrough > 0 ? ` và ${resourcePve.breakthrough} ${resourcePve.breakthroughName}` : ''}; không rơi Mảnh Riêng.` : ''}${upsetVictory ? ` Nghịch phạt đối thủ có Chiến Lực cao hơn (${readiness.ratio.toFixed(2)}×).` : ''}${economyAwards.length ? ` ${economyAwards.map(x => `${x.label}: Tiên Ngọc Khóa +${x.boundJade}`).join(' · ')}.` : ''}`
+                ? `${firstClear ? 'Lần đầu công phá' : 'Tái chiến'} ${dungeon.name} tầng ${floor}; đánh bại ${guardianBase.name} sau ${battle.duration.toFixed(1)}s.${equipmentFragmentText}${resourcePve ? ` Thu ${resourcePve.material} ${resourcePve.materialName}${resourcePve.breakthrough > 0 ? ` và ${resourcePve.breakthrough} ${resourcePve.breakthroughName}` : ''}; không rơi Mảnh Riêng.` : ''}${upsetVictory ? ` Nghịch phạt đối thủ có Chiến Lực cao hơn (${readiness.ratio.toFixed(2)}×).` : ''}${economyAwards.length ? ` ${economyAwards.map(x => `${x.label}: Tiên Ngọc Khóa +${x.boundJade}`).join(' · ')}.` : ''}`
                 : `Khiêu chiến ${dungeon.name} tầng ${floor} thất bại trước ${guardianBase.name}.`,
             locationId: this.stateValue.locationId,
             actorId: playerCombat.id,
@@ -194,7 +197,7 @@ export function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {
                 firstClear, playerDamage: playerAnalytics.damageDealt, playerHealing: playerAnalytics.healingDone,
                 playerDodges: playerAnalytics.dodges, guardianDamage: guardianAnalytics.damageDealt,
                 signatureSkillId: signature.skillId ?? '', signatureSkillDamage: signature.damage, readinessRatio: readiness.ratio, personalUpset: upsetVictory,
-                equipmentDrops: equipmentDropIds.length, artifactDrops: artifactDropIds.length, battleInsightGain, skillPracticeXp: skillPractice.reduce((a, x) => a + x.xpGain, 0), daoNaturePointGain, daoNatureXpGain, milestoneLootProtected, resourcePveCategory: resourcePve?.category ?? '', resourcePveMaterial: resourcePve?.material ?? 0, resourcePveBreakthrough: resourcePve?.breakthrough ?? 0, boundJadeAward: economyAwards.reduce((a, x) => a + x.boundJade, 0), guardianMechanicId: mechanic?.id ?? '', phaseTransitions: phaseTransitions.length, counterWindowSuccesses: counterWindowSuccesses.length, counterWindowFailures: counterWindowFailures.length,
+                equipmentDrops: equipmentDropIds.length, equipmentFragmentDrops: equipmentFragmentDrops.reduce((sum, drop) => sum + Number(drop.amount ?? 0), 0), artifactDrops: artifactDropIds.length, battleInsightGain, skillPracticeXp: skillPractice.reduce((a, x) => a + x.xpGain, 0), daoNaturePointGain, daoNatureXpGain, milestoneLootProtected, resourcePveCategory: resourcePve?.category ?? '', resourcePveMaterial: resourcePve?.material ?? 0, resourcePveBreakthrough: resourcePve?.breakthrough ?? 0, boundJadeAward: economyAwards.reduce((a, x) => a + x.boundJade, 0), guardianMechanicId: mechanic?.id ?? '', phaseTransitions: phaseTransitions.length, counterWindowSuccesses: counterWindowSuccesses.length, counterWindowFailures: counterWindowFailures.length,
             },
         };
         this.historyValue.append(event);
@@ -204,7 +207,7 @@ export function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {
         return {
             seed, dungeonId, floor, guardianId: guardianBase.id, guardianName: guardianBase.name,
             won, firstClear, elapsedYears, battleDuration: battle.duration, rewards,
-            equipmentDropIds, artifactDropIds, signatureSkillId: signature.skillId, battleInsightGain, skillPractice, daoNaturePointGain, daoNatureXpGain, milestoneLootProtected, readiness, mechanic, phaseTransitions, counterWindowSuccesses, counterWindowFailures, combatTimeline, resourcePve, economyAwards, event,
+            equipmentDropIds, equipmentFragmentDrops, artifactDropIds, signatureSkillId: signature.skillId, battleInsightGain, skillPractice, daoNaturePointGain, daoNatureXpGain, milestoneLootProtected, readiness, mechanic, phaseTransitions, counterWindowSuccesses, counterWindowFailures, combatTimeline, resourcePve, economyAwards, event,
             state: this.state,
         };
     

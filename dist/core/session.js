@@ -72,7 +72,7 @@ import { challengePvpV91, joinPvpV91, pvpViewV91, refreshPvpDefenseV91, replayPv
 import { endlessHuntFarmRecommendationsV123, evaluateHuntBossMechanicV123, huntFarmRewardEfficiencyV123 } from './pve-progression-v123.js';
 import { buildHuntProductionV110 } from './hunt-production-v110.js';
 import { huntEquipmentFragmentPreviewV142, settleRealHuntEquipmentFragmentsV142, settleVirtualHuntEquipmentFragmentsV142 } from './equipment-hunt-v142.js';
-import { craftRankedEquipmentV142, equipmentCraftingSummaryV142, mergeRankedEquipmentV142, refineRankedEquipmentFragmentsV142 } from './equipment-crafting-v142.js';
+import { craftRankedEquipmentV142, engraveRankedEquipmentSetV142, equipmentCraftingSummaryV142, mergeRankedEquipmentV142, refineRankedEquipmentFragmentsV142 } from './equipment-crafting-v142.js';
 import { buildEndlessHuntCombatStreamFromKernelV2 } from './hunt-combat-stream.js';
 import { formatLogMagnitude } from './endless-number.js';
 import { SeededRng } from './rng.js';
@@ -3563,6 +3563,12 @@ export class SimulationSession {
         const maxRank = this.stateValue.realm.maxRealmOrder >= 1 ? majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder) : 0;
         if ((main.equipmentRankIndex ?? 0) + 1 > maxRank) throw new Error('Không thể hợp trang bị vượt quá đại cảnh đã đạt.');
         const result = mergeRankedEquipmentV142(this.stateValue.equipment, mainItemId, fodderItemAId, fodderItemBId);
+        this.actionIndexValue += 1;
+        return result;
+    }
+    engraveEquipmentSetV142(itemId, setId) {
+        if (!this.stateValue.alive) throw new Error('Đời hiện tại đã kết thúc.');
+        const result = engraveRankedEquipmentSetV142(this.stateValue, this.stateValue.equipment, itemId, setId);
         this.actionIndexValue += 1;
         return result;
     }

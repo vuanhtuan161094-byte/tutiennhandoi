@@ -1,4 +1,5 @@
 import { SeededRng } from './rng.js';
+import { settleDungeonEquipmentEventsV142 } from './equipment-dungeon-v142.js';
 import { addEquipment, buildEquipmentInstance, equipmentQualityName, equipmentTierName } from './equipment.js';
 import { addArtifact, artifactQualityName, artifactTierName, buildArtifactInstance } from './artifact.js';
 import { ensureCollectionProgressStateV12316 } from './collection-progression-v12316.js';
@@ -193,9 +194,10 @@ export function grantDungeonGuardianLoot(state, dungeon, floor, registry, seed, 
     const rng = new SeededRng(seed);
     const rewards = {};
     const equipmentDrops = [];
+    const equipmentFragmentDrops = [];
     const artifactDrops = [];
     if (!table)
-        return { rewards, equipmentDrops, artifactDrops };
+        return { rewards, equipmentDrops, equipmentFragmentDrops, artifactDrops };
     for (const reward of (table.resources ?? []).filter(rule => (rule.minFloor ?? 1) <= floor && (rule.maxFloor ?? Number.MAX_SAFE_INTEGER) >= floor)) {
         const guaranteed = firstClear && reward.firstClearGuaranteed;
         const chancePct = reward.chancePct ?? 100;
@@ -210,16 +212,13 @@ export function grantDungeonGuardianLoot(state, dungeon, floor, registry, seed, 
     const rolledEquipmentRules = guaranteedEquipment.length > 0
         ? guaranteedEquipment
         : (equipmentRules.length > 0 && rng.chance(firstClear ? 62 : (table.equipmentRepeatChancePct ?? 28)) ? [weightedLootRule(rng, equipmentRules)].filter((x) => Boolean(x)) : []);
-    for (let guaranteedIndex = 0; guaranteedIndex < rolledEquipmentRules.length; guaranteedIndex++) {
-        const rule = rolledEquipmentRules[guaranteedIndex];
-        // First-clear gear should feel like a milestone, not a guaranteed low-quality junk roll.
-        // A key early floor may deliberately guarantee several same-slot sidegrades so the player chooses a build.
-        const rolledQuality = rollQuality(rng, spec.qualityBias + (firstClear ? 0.10 : 0));
-        const quality = firstClear ? qualityAtLeast(rolledQuality, dungeon.tier <= 1 ? 'high' : 'mid') : rolledQuality;
-        const itemSeed = (seed ^ 0x6ac690c5 ^ Math.imul(guaranteedIndex + 1, 0x9e3779b1) ^ rng.nextUint32()) >>> 0;
-        const item = buildEquipmentInstance(registry.equipmentTemplate(rule.templateId), spec.equipmentTier, quality, floor, { kind: 'dungeon', dungeonId: dungeon.id, floor, seed: itemSeed }, state.worldTimeYears);
-        addEquipment(state.equipment, item);
-        equipmentDrops.push(item);
+    if (rolledEquipmentRules.length > 0) {
+        const settlement = settleDungeonEquipmentEventsV142(state, {
+            dungeonId: dungeon.id, floor, requiredRealmOrder: spec.requiredRealmOrder,
+            equipmentEvents: rolledEquipmentRules.length, firstClear,
+            source: `dungeon.guardian.${dungeon.id}.${floor}`,
+        });
+        equipmentFragmentDrops.push(...settlement.drops);
     }
     const artifactRules = (table.artifactLoot ?? []).filter(rule => (rule.minFloor ?? 1) <= floor && (rule.maxFloor ?? Number.MAX_SAFE_INTEGER) >= floor);
     const guaranteedArtifact = firstClear ? artifactRules.find(rule => rule.firstClearGuaranteed) : undefined;
@@ -234,7 +233,7 @@ export function grantDungeonGuardianLoot(state, dungeon, floor, registry, seed, 
             artifactDrops.push(item);
         }
     }
-    return { rewards, equipmentDrops, artifactDrops };
+    return { rewards, equipmentDrops, equipmentFragmentDrops, artifactDrops };
 }
 export class DungeonEngine {
     run(state, dungeon, years, seed, efficiency = 1, floor = 1, registry) {
@@ -247,6 +246,7 @@ export class DungeonEngine {
         }
         const rewards = {};
         const equipmentDrops = [];
+        const equipmentFragmentDrops = [];
         const artifactDrops = [];
         for (const reward of dungeon.rewards.filter(rule => (rule.minFloor ?? 1) <= floor && (rule.maxFloor ?? Number.MAX_SAFE_INTEGER) >= floor)) {
             // Long idle periods stay predictable, while a small seeded variance keeps runs from feeling mechanical.
@@ -272,43 +272,27 @@ export class DungeonEngine {
                     rewards[resourcePveVirtualBreakIdV12329(farm.category)] = (rewards[resourcePveVirtualBreakIdV12329(farm.category)] ?? 0) + farm.breakthrough;
             }
         }
-        if (registry && dungeon.equipmentLoot && dungeon.equipmentLoot.length > 0 && safeYears > 0) {
-            const eligible = dungeon.equipmentLoot.filter(rule => (rule.minFloor ?? 1) <= floor && (rule.maxFloor ?? Number.MAX_SAFE_INTEGER) >= floor);
+        if (dungeon.equipmentLoot && dungeon.equipmentLoot.length > 0 && safeYears > 0) {
             const workerRate = Math.max(0, dungeon.workerEquipmentRatePerYear ?? 0);
+            let equipmentEvents = 0;
             if (workerRate > 0) {
-                // Target-loot workers are time-based instead of call-count based. Splitting one offline span into
-                // many short syncs therefore does not create a higher expected Set income.
                 const expected = safeYears * Math.max(0, safeEfficiency) * workerRate;
                 const whole = Math.floor(expected);
-                const count = whole + (rng.chance(Math.max(0, Math.min(1, expected - whole)) * 100) ? 1 : 0);
-                for (let i = 0; i < count; i++) {
-                    const rule = weightedLootRule(rng, eligible);
-                    if (!rule)
-                        break;
-                    const template = registry.equipmentTemplate(rule.templateId);
-                    const quality = rollQuality(rng, floorSpec.qualityBias);
-                    const itemSeed = (seed ^ Math.imul(i + 1, 0x27d4eb2d) ^ rng.nextUint32()) >>> 0;
-                    const item = buildEquipmentInstance(template, floorSpec.equipmentTier, quality, floor, { kind: 'dungeon', dungeonId: dungeon.id, floor, seed: itemSeed }, state.worldTimeYears);
-                    addEquipment(state.equipment, item);
-                    equipmentDrops.push(item);
-                }
+                equipmentEvents = whole + (rng.chance(Math.max(0, Math.min(1, expected - whole)) * 100) ? 1 : 0);
             }
             else {
                 const opportunities = Math.min(5, Math.max(1, Math.ceil(Math.log2(1 + safeYears * Math.max(0.2, safeEfficiency)))));
-                for (let i = 0; i < opportunities && equipmentDrops.length < 3; i++) {
+                for (let i = 0; i < opportunities; i++) {
                     const chance = Math.min(0.95, floorSpec.equipmentDropChance * Math.min(1, safeEfficiency));
-                    if (!rng.chance(chance * 100))
-                        continue;
-                    const rule = weightedLootRule(rng, eligible);
-                    if (!rule)
-                        continue;
-                    const template = registry.equipmentTemplate(rule.templateId);
-                    const quality = rollQuality(rng, floorSpec.qualityBias);
-                    const itemSeed = (seed ^ Math.imul(i + 1, 0x27d4eb2d) ^ rng.nextUint32()) >>> 0;
-                    const item = buildEquipmentInstance(template, floorSpec.equipmentTier, quality, floor, { kind: 'dungeon', dungeonId: dungeon.id, floor, seed: itemSeed }, state.worldTimeYears);
-                    addEquipment(state.equipment, item);
-                    equipmentDrops.push(item);
+                    if (rng.chance(chance * 100)) equipmentEvents += 1;
                 }
+            }
+            if (equipmentEvents > 0) {
+                const settlement = settleDungeonEquipmentEventsV142(state, {
+                    dungeonId: dungeon.id, floor, requiredRealmOrder: floorSpec.requiredRealmOrder,
+                    equipmentEvents, firstClear: false, source: `dungeon.worker.${dungeon.id}.${floor}`,
+                });
+                equipmentFragmentDrops.push(...settlement.drops);
             }
         }
         if (registry && dungeon.artifactLoot && dungeon.artifactLoot.length > 0 && safeYears > 0) {
@@ -344,11 +328,12 @@ export class DungeonEngine {
             elapsedYears: safeYears,
             rewards,
             equipmentDrops,
+            equipmentFragmentDrops,
             artifactDrops,
             summaryLines: [
                 `${dungeon.name} · Tầng ${floor}: ${formatNumber(safeYears)} năm${safeEfficiency !== 1 ? ` @${formatNumber(safeEfficiency * 100)}%` : ''}.`,
                 rewardText.length > 0 ? `Thu hoạch: ${rewardText}.` : 'Không có thu hoạch đáng kể.',
-                ...(equipmentDrops.length > 0 ? [`Trang bị đáng chú ý: ${equipmentDrops.map(item => `${equipmentTierName(item.tier)} ${equipmentQualityName(item.quality)} ${registry?.equipmentTemplate(item.templateId).name ?? item.name}`).join(', ')}.`] : []),
+                ...(equipmentFragmentDrops.length > 0 ? [`Mảnh trang bị: ${equipmentFragmentDrops.map(drop => drop.kind === 'setFragmentV142' ? `Tàn Ấn ${drop.setName} +${drop.amount}` : `${drop.rankName} +${drop.amount}`).join(', ')}.`] : []),
                 ...(artifactDrops.length > 0 ? [`Pháp bảo xuất thế: ${artifactDrops.map(item => `${artifactTierName(item.tier)} ${artifactQualityName(item.quality)} ${registry?.artifactTemplate(item.templateId).name ?? item.name}`).join(', ')}.`] : []),
             ],
         };
