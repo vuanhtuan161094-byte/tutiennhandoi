@@ -1,0 +1,325 @@
+name: One-shot Reincarnation V4 Lifecycle Patch
+
+on:
+  push:
+    branches:
+      - feature/reincarnation-cultivation-r3
+
+permissions:
+  contents: write
+
+concurrency:
+  group: reincarnation-v4-lifecycle-patch
+  cancel-in-progress: true
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/reincarnation-cultivation-r3
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Patch lifecycle, shared RP, Fate state, and retire Mệnh Thai flow
+        shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          # ---------- reincarnation progression ----------
+          p=Path('dist/core/reincarnation-progression-v1102.js')
+          s=p.read_text()
+          if not s.startswith("import { createFateBuildStateV4"):
+              s="import { createFateBuildStateV4, cloneFateBuildStateV4 } from './reincarnation-fate-build-v4.js';\n"+s
+          s=s.replace(
+          "export function createReincarnationProgressStateV1102(nowUnixMs=0){ return { energy:{current:REINCARNATION_ENERGY_CAP,lastUpdatedUnixMs:nowUnixMs}, permanentPotential:{unspent:0,lifetimeEarned:0,allocations:emptyAllocation()}, alchemyPermanentStats:emptyAllocation(), alchemyLegacy:{highestRank:1,highestTurn:1,bestMasteryByRecipe:{},knownRecipeIds:[]}, tree:{lifetimePointsEarned:0,ranks:{},highestAchievementTierByTree:{},cultivationR3:true}, rewardHistory:[] }; }",
+          "export function createReincarnationProgressStateV1102(nowUnixMs=0){ return { energy:{current:REINCARNATION_ENERGY_CAP,lastUpdatedUnixMs:nowUnixMs}, permanentPotential:{unspent:0,lifetimeEarned:0,allocations:emptyAllocation()}, alchemyPermanentStats:emptyAllocation(), alchemyLegacy:{highestRank:1,highestTurn:1,bestMasteryByRecipe:{},knownRecipeIds:[]}, tree:{lifetimePointsEarned:0,sharedSpentPoints:0,ranks:{},highestAchievementTierByTree:{},cultivationR3:true}, fateBuild:createFateBuildStateV4(), rewardHistory:[] }; }"
+          )
+          old="return { energy:{current:clamp(Number(value?.energy?.current??base.energy.current)||0,0,REINCARNATION_ENERGY_CAP),lastUpdatedUnixMs:Math.max(0,Math.floor(Number(value?.energy?.lastUpdatedUnixMs??nowUnixMs)))}, permanentPotential:{unspent:Math.max(0,Math.floor(Number(value?.permanentPotential?.unspent)||Math.max(0,earned-spent))),lifetimeEarned:earned,allocations:p}, alchemyPermanentStats:{...emptyAllocation(),...(value?.alchemyPermanentStats??{})}, alchemyLegacy:{highestRank:Math.max(1,Math.min(9,Math.floor(Number(value?.alchemyLegacy?.highestRank)||1))),highestTurn:Math.max(1,Math.min(9,Math.floor(Number(value?.alchemyLegacy?.highestTurn)||1))),bestMasteryByRecipe:{...(value?.alchemyLegacy?.bestMasteryByRecipe??{})},knownRecipeIds:[...new Set(value?.alchemyLegacy?.knownRecipeIds??[])]}, tree:{lifetimePointsEarned:Math.max(0,Math.floor(Number(value?.tree?.lifetimePointsEarned)||0)),ranks,highestAchievementTierByTree:{...(value?.tree?.highestAchievementTierByTree??{})},cultivationR3:true}, pendingTrial:pending, rewardHistory:(value?.rewardHistory??[]).map(x=>({...x})) };"
+          new="return { energy:{current:clamp(Number(value?.energy?.current??base.energy.current)||0,0,REINCARNATION_ENERGY_CAP),lastUpdatedUnixMs:Math.max(0,Math.floor(Number(value?.energy?.lastUpdatedUnixMs??nowUnixMs)))}, permanentPotential:{unspent:Math.max(0,Math.floor(Number(value?.permanentPotential?.unspent)||Math.max(0,earned-spent))),lifetimeEarned:earned,allocations:p}, alchemyPermanentStats:{...emptyAllocation(),...(value?.alchemyPermanentStats??{})}, alchemyLegacy:{highestRank:Math.max(1,Math.min(9,Math.floor(Number(value?.alchemyLegacy?.highestRank)||1))),highestTurn:Math.max(1,Math.min(9,Math.floor(Number(value?.alchemyLegacy?.highestTurn)||1))),bestMasteryByRecipe:{...(value?.alchemyLegacy?.bestMasteryByRecipe??{})},knownRecipeIds:[...new Set(value?.alchemyLegacy?.knownRecipeIds??[])]}, tree:{lifetimePointsEarned:Math.max(0,Math.floor(Number(value?.tree?.lifetimePointsEarned)||0)),sharedSpentPoints:Math.max(0,Math.floor(Number(value?.tree?.sharedSpentPoints)||0)),ranks,highestAchievementTierByTree:{...(value?.tree?.highestAchievementTierByTree??{})},cultivationR3:true}, fateBuild:cloneFateBuildStateV4(value?.fateBuild??base.fateBuild), rewardHistory:(value?.rewardHistory??[]).map(x=>({...x})) };"
+          if old not in s: raise SystemExit('clone progress anchor missing')
+          s=s.replace(old,new)
+          # Replace trial-based reward with actual-life achievement score bonus. Keep function name for transport compatibility.
+          pat=r"export function previewReincarnationV2Reward\(args\)\{.*?\n\}\n\nfunction baseRankCost"
+          repl="""export function lifeAchievementBonusPctV4(totalScore){ const score=Math.max(0,Number(totalScore)||0); return Math.min(35,Math.round(Math.sqrt(score)*0.45)); }
+export function previewReincarnationV2Reward(args){
+  const info=depthInfoForRealmOrder(args.realmOrder),cfg=REINCARNATION_DEPTH_CONFIG[info.tierIndex];
+  const lifePotential=Math.max(0,Math.floor(Number(args.lifePotentialEarned)||lifePotentialMilestonesThroughRealmOrder(args.realmOrder).reduce((sum,x)=>sum+x.amount,0)));
+  const conversionPct=clamp(Number(args.permanentPotentialConversionPct)||REINCARNATION_PERMANENT_POTENTIAL_BASE_PCT_V127,REINCARNATION_PERMANENT_POTENTIAL_BASE_PCT_V127,REINCARNATION_PERMANENT_POTENTIAL_MAX_PCT_V127);
+  const permanentBase=Math.max(0,Math.round(lifePotential*conversionPct/100));
+  const energyReduction=clamp(Number(args.energyCostReductionPct)||0,0,25), energyCost=Math.max(1,Math.ceil(cfg.energyCost*(1-energyReduction/100)));
+  const rpGainPct=clamp(Number(args.reincarnationPointsGainPct)||0,0,25), achievementBonusPct=lifeAchievementBonusPctV4(args.lifeScore);
+  return {lifeId:args.lifeId,depthTier:info.tierId,depthTierIndex:info.tierIndex,depthStage:info.stage,reincarnationPoints:Math.round(cfg.reincarnationPoints*(1+achievementBonusPct/100)*(1+rpGainPct/100)),reincarnationPointsBase:cfg.reincarnationPoints,permanentPotentialBase:permanentBase,permanentPotentialConversionPct:conversionPct,achievementBonusPct,reincarnationPointsGainPct:rpGainPct,permanentPotentialGain:permanentBase,energyCost,energyCostBase:cfg.energyCost,finalizedAtUnixMs:args.nowUnixMs??Date.now()};
+}
+
+function baseRankCost"""
+          s,n=re.subn(pat,repl,s,flags=re.S)
+          if n!=1: raise SystemExit(f'reward patch count={n}')
+          s=s.replace("export function availableTreePoints(state,definitions=starterReincarnationTreeNodes){ return Math.max(0,state.lifetimePointsEarned-totalAllTreeSpentPoints(state,definitions)); }",
+                      "export function availableTreePoints(state,definitions=starterReincarnationTreeNodes){ return Math.max(0,state.lifetimePointsEarned-totalAllTreeSpentPoints(state,definitions)-Math.max(0,Math.floor(Number(state.sharedSpentPoints)||0))); }")
+          s=s.replace("const next={lifetimePointsEarned:state.lifetimePointsEarned,ranks:{...state.ranks},highestAchievementTierByTree:{...state.highestAchievementTierByTree},cultivationR3:true};",
+                      "const next={lifetimePointsEarned:state.lifetimePointsEarned,sharedSpentPoints:Math.max(0,Math.floor(Number(state.sharedSpentPoints)||0)),ranks:{...state.ranks},highestAchievementTierByTree:{...state.highestAchievementTierByTree},cultivationR3:true};")
+          p.write_text(s)
+
+          # ---------- Luân Hồi Ấn becomes a projection of lifetime RP ----------
+          p=Path('dist/core/reincarnation.js'); s=p.read_text()
+          s=s.replace("const sealThresholds = [0, 80, 220, 480, 900, 1500, 2300, 3350, 4700, 6400];",
+                      "const sealThresholds = [0, 500, 2000, 7500, 20000, 50000, 120000, 250000, 500000, 1000000];")
+          p.write_text(s)
+
+          # ---------- life: retire Mệnh Thai from new-life state ----------
+          p=Path('dist/core/life.js'); s=p.read_text()
+          s=s.replace("        fateEmbryo: createFateEmbryoState(meta, birth, meta.completedLives + 1, plan.orientationId ?? 'balanced'),\n","")
+          p.write_text(s)
+
+          # ---------- session lifecycle ----------
+          p=Path('dist/core/session.js'); s=p.read_text()
+          # imports
+          s=s.replace("import { applyCombatDeathLifespanPenalty, realSecondsUntilNaturalDeath } from './offline.js';","import { realSecondsUntilNaturalDeath } from './offline.js';")
+          s=s.replace("import { LifeSettlementEngine, applySettlement, birthSummary, buildReincarnatedState, cloneCurrentLifeMeta, carryPersistentBirthOrigins, cloneMetaProgressState, createInitialLifeMetaForCharacter, createMetaProgressState, rollBirth, spendReincarnationCp } from './life.js';",
+                      "import { LifeSettlementEngine, applySettlement, birthSummary, buildReincarnatedState, cloneCurrentLifeMeta, carryPersistentBirthOrigins, cloneMetaProgressState, createInitialLifeMetaForCharacter, createMetaProgressState, rollBirth } from './life.js';")
+          s=s.replace("import { applyFateEmbryoToEntity, createFateEmbryoState, effectiveManifestationCapacity, summarizeFateEmbryo } from './fate-embryo.js';\n","")
+          s=s.replace("import { birthPreviewCountForSeal, boundRelicSlotsForSeal, buildMemoryFragments, karmaInheritanceSlotsForSeal, nextSealXp, reincarnationSealName } from './reincarnation.js';",
+                      "import { birthPreviewCountForSeal, boundRelicSlotsForSeal, buildMemoryFragments, karmaInheritanceSlotsForSeal, nextSealXp, reincarnationSealLevel, reincarnationSealName } from './reincarnation.js';")
+          s=s.replace("import { REINCARNATION_TREE_TIER_INVESTMENT, availableTreePoints, buildTrialResult, cloneReincarnationProgressStateV1102, corePotentialDefinitions, depthInfoForRealmOrder, ensureLifePotentialForRealm, nodeModifierValue, permanentPotentialConversionPctV127, previewReincarnationV2Reward, rankCost, rechargeReincarnationEnergy, reincarnationEnergyCostReductionPctV127, reincarnationPointsGainPctV4, reincarnationTreeRuntimeModifierV136, resetReincarnationTreeRanks, spendLifeCorePotential, spendPermanentCorePotential, spendReincarnationTreeRank, starterReincarnationTreeNodes, syncReincarnationTreeRuntimeOriginsV136, totalTreeMaxCostV127, totalTreeSpentPoints } from './reincarnation-progression-v1102.js';",
+                      "import { REINCARNATION_TREE_TIER_INVESTMENT, availableTreePoints, cloneReincarnationProgressStateV1102, corePotentialDefinitions, depthInfoForRealmOrder, ensureLifePotentialForRealm, nodeModifierValue, permanentPotentialConversionPctV127, previewReincarnationV2Reward, rankCost, rechargeReincarnationEnergy, reincarnationEnergyCostReductionPctV127, reincarnationPointsGainPctV4, reincarnationTreeRuntimeModifierV136, resetReincarnationTreeRanks, spendLifeCorePotential, spendPermanentCorePotential, spendReincarnationTreeRank, starterReincarnationTreeNodes, syncReincarnationTreeRuntimeOriginsV136, totalTreeMaxCostV127, totalTreeSpentPoints } from './reincarnation-progression-v1102.js';")
+          if "from './reincarnation-fate-build-v4.js'" not in s:
+              anchor="import { runSessionGuidanceV141 } from './session-guidance.js';"
+              fateimp="import { FATE_BUILD_TOTAL_UNLOCK_COST_V4, activeFateBuildV4, cloneFateBuildStateV4, fateBuildUnlockPreviewV4, selectActiveFateBuildV4 as selectActiveFateBuildStateV4, unlockFateBuildV4 as unlockFateBuildStateV4 } from './reincarnation-fate-build-v4.js';\n"
+              s=s.replace(anchor,fateimp+anchor)
+          # constructor: derived seal from lifetime RP, no Mệnh Thai creation
+          anchor="        this.metaValue.reincarnationProgress = cloneReincarnationProgressStateV1102(this.metaValue.reincarnationProgress);"
+          s=s.replace(anchor,anchor+"\n        this.metaValue.reincarnation.xp = this.metaValue.reincarnationProgress.tree.lifetimePointsEarned;\n        this.metaValue.reincarnation.sealLevel = reincarnationSealLevel(this.metaValue.reincarnationProgress.tree.lifetimePointsEarned);")
+          s=s.replace("        if (!this.stateValue.fateEmbryo)\n            this.stateValue.fateEmbryo = createFateEmbryoState(this.metaValue, this.currentLifeValue.birth, this.currentLifeValue.lifeNumber, this.currentLifeValue.reincarnation?.orientationId ?? 'balanced');\n","")
+          s=s.replace("        synchronizeImmortalForRealm(this.stateValue.immortal, this.stateValue.realm.maxRealmOrder, this.stateValue.fateEmbryo?.manifestationBonusSlots ?? 0);",
+                      "        synchronizeImmortalForRealm(this.stateValue.immortal, this.stateValue.realm.maxRealmOrder, 0);")
+          # current life Fate fixed for life; migration fills old saves
+          anchor="        this.currentLifeValue = cloneCurrentLifeMeta(currentLife ?? createInitialLifeMetaForCharacter(rootSeed, this.stateValue, registry));"
+          s=s.replace(anchor,anchor+"\n        if (!this.currentLifeValue.activeFateId) this.currentLifeValue.activeFateId = this.metaValue.reincarnationProgress.fateBuild.activeFateId;")
+          # retire fate embryo summary body, leave compatibility method not gameplay
+          pat=r"    fateEmbryoSummary\(\) \{.*?\n    \}\n    syncReincarnationMemories\(\) \{"
+          repl="""    fateEmbryoSummary() {
+        return { schema: 'fate-embryo.retired.v4', retired: true, message: 'Mệnh Thai đã được loại khỏi gameplay Luân Hồi V4.' };
+    }
+    syncReincarnationMemories() {"""
+          s,n=re.subn(pat,repl,s,flags=re.S)
+          if n!=1: raise SystemExit(f'fate summary patch count={n}')
+          # combat pipeline: remove fate embryo amplification
+          s=s.replace("        const immortal = applyImmortalToEntity(great, state.immortal, state.realm, effectiveManifestationCapacity(state.immortal.manifestationCapacity, state.fateEmbryo));\n        const fate = applyFateEmbryoToEntity(immortal, state.fateEmbryo, this.fateEmbryoSummary());\n        const born = applyBirthCombatOrigins(applyReincarnationCombatTalents(fate, state.inheritedOrigins), state.inheritedOrigins);",
+                      "        const immortal = applyImmortalToEntity(great, state.immortal, state.realm, state.immortal.manifestationCapacity);\n        const born = applyBirthCombatOrigins(applyReincarnationCombatTalents(immortal, state.inheritedOrigins), state.inheritedOrigins);")
+          s=s.replace("        const capacity = effectiveManifestationCapacity(this.stateValue.immortal.manifestationCapacity, this.stateValue.fateEmbryo);",
+                      "        const capacity = this.stateValue.immortal.manifestationCapacity;")
+          s=s.replace("        const fate = applyFateEmbryoToEntity(immortal, this.stateValue.fateEmbryo, this.fateEmbryoSummary());\n        const talents = applyReincarnationCombatTalents(fate, this.stateValue.inheritedOrigins);",
+                      "        const talents = applyReincarnationCombatTalents(immortal, this.stateValue.inheritedOrigins);")
+          s=s.replace("        synchronizeImmortalForRealm(this.stateValue.immortal, next.order, this.stateValue.fateEmbryo?.manifestationBonusSlots ?? 0);",
+                      "        synchronizeImmortalForRealm(this.stateValue.immortal, next.order, 0);")
+          s=s.replace("        const cap = effectiveManifestationCapacity(this.stateValue.immortal.manifestationCapacity, this.stateValue.fateEmbryo);",
+                      "        const cap = this.stateValue.immortal.manifestationCapacity;")
+          s=s.replace("        return { summary: `Active Manifestation ${ids.length}/${cap}: ${ids.join(' · ') || 'không'}${this.stateValue.fateEmbryo?.manifestationBonusSlots ? ` · Mệnh Thai +${this.stateValue.fateEmbryo.manifestationBonusSlots} slot` : ''}.`, state: this.state };",
+                      "        return { summary: `Active Manifestation ${ids.length}/${cap}: ${ids.join(' · ') || 'không'}.`, state: this.state };")
+          # derived seal summary + Fate shared-RP API
+          pat=r"    reincarnationSummary\(\) \{.*?\n    \}\n    reincarnationTalentSummary\(\) \{"
+          repl="""    reincarnationSummary() {
+        const r = this.metaValue.reincarnation;
+        const lifetimeRp = Math.max(0, this.metaValue.reincarnationProgress?.tree?.lifetimePointsEarned ?? 0);
+        const sealLevel = reincarnationSealLevel(lifetimeRp);
+        r.xp = lifetimeRp; r.sealLevel = sealLevel;
+        return { sealLevel, sealName: reincarnationSealName(sealLevel), lifetimeRp, nextSealLifetimeRp: nextSealXp(sealLevel), effectiveLives: r.effectiveLives, totalReincarnations: r.totalReincarnations, birthPreviewCount: birthPreviewCountForSeal(sealLevel), fateLockSlots: 0, karmaSlots: karmaInheritanceSlotsForSeal(sealLevel), relicSlots: boundRelicSlotsForSeal(sealLevel), daoSeeds: r.daoSeeds.map(x => ({ id: x.id, daoId: x.daoId, strength: x.strength })), memories: r.memoryArchives.map(x => ({ id: x.id, title: x.title, maxRealmOrder: x.maxRealmOrder })), current: this.currentLifeValue.reincarnation ? structuredClone(this.currentLifeValue.reincarnation) : undefined };
+    }
+    fateBuildSummaryV4() {
+        const rp=this.metaValue.reincarnationProgress, state=cloneFateBuildStateV4(rp.fateBuild), availableRp=availableTreePoints(rp.tree);
+        return { schema:'reincarnation-fate-build.v4', activeThisLifeId:this.currentLifeValue.activeFateId, selectedNextLifeId:state.activeFateId, active:activeFateBuildV4(state), availableRp, totalUnlockCostRp:FATE_BUILD_TOTAL_UNLOCK_COST_V4, paths: ['cultivation','combat','body','wealth','idle'].map(pathId=>({pathId,nodes:[...state.unlockedIds].length>=0?undefined:undefined})), unlockedIds:[...state.unlockedIds] };
+    }
+    unlockFateBuildV4(id) {
+        if (this.stateValue.alive) throw new Error('Chỉ mở Mệnh Cách giữa hai đời để không đổi build giữa kiếp.');
+        const rp=this.metaValue.reincarnationProgress, available=availableTreePoints(rp.tree);
+        const result=unlockFateBuildStateV4(rp.fateBuild,id,available);
+        rp.fateBuild=result.state; rp.tree.sharedSpentPoints=Math.max(0,Math.floor(Number(rp.tree.sharedSpentPoints)||0))+result.spentRp;
+        this.actionIndexValue+=1; return {spentRp:result.spentRp,availableRp:availableTreePoints(rp.tree),state:cloneFateBuildStateV4(rp.fateBuild)};
+    }
+    selectFateBuildV4(id) {
+        if (this.stateValue.alive) throw new Error('Mệnh Cách của đời hiện tại đã định; chỉ đổi lựa chọn giữa hai đời.');
+        this.metaValue.reincarnationProgress.fateBuild=selectActiveFateBuildStateV4(this.metaValue.reincarnationProgress.fateBuild,id);
+        this.actionIndexValue+=1; return this.fateBuildSummaryV4();
+    }
+    reincarnationTalentSummary() {"""
+          s,n=re.subn(pat,repl,s,flags=re.S)
+          if n!=1: raise SystemExit(f'reincarnation summary patch count={n}')
+          # progress summary uses actual life score and shared Fate sink; no pending trial
+          old="const currentDepthReward = previewReincarnationV2Reward({ lifeId: this.currentLifeValue.lifeId, realmOrder: this.stateValue.realm.maxRealmOrder, lifePotentialEarned: this.stateValue.character.corePotential?.life?.lifetimeEarned ?? 0, permanentPotentialConversionPct: permanentPotentialConversionPctV127(rp.tree), energyCostReductionPct: reincarnationEnergyCostReductionPctV127(rp.tree), reincarnationPointsGainPct: reincarnationPointsGainPctV4(rp.tree), offense: rp.pendingTrial?.offenseBest, survival: rp.pendingTrial?.survivalBest, nowUnixMs });\n        return { schema: 'reincarnation-progression.v1102', depth, currentDepthReward, energy: { ...energy, cap: 300, rechargePer24h: 100 }, tree: { lifetimePointsEarned: rp.tree.lifetimePointsEarned, availablePoints, maxAllPoints: totalTreeMaxCostV127(), ranks: { ...rp.tree.ranks }, highestAchievementTierByTree: { ...rp.tree.highestAchievementTierByTree }, nodes }, permanentPotential: this.permanentPotentialSummary(), pendingTrial: rp.pendingTrial ? structuredClone(rp.pendingTrial) : undefined };"
+          new="const lifeScore = this.previewCurrentLifeSettlement().totalScore;\n        const currentDepthReward = previewReincarnationV2Reward({ lifeId: this.currentLifeValue.lifeId, realmOrder: this.stateValue.realm.maxRealmOrder, lifePotentialEarned: this.stateValue.character.corePotential?.life?.lifetimeEarned ?? 0, permanentPotentialConversionPct: permanentPotentialConversionPctV127(rp.tree), energyCostReductionPct: reincarnationEnergyCostReductionPctV127(rp.tree), reincarnationPointsGainPct: reincarnationPointsGainPctV4(rp.tree), lifeScore, nowUnixMs });\n        return { schema: 'reincarnation-progression.v4', depth, currentDepthReward, energy: { ...energy, cap: 300, rechargePer24h: 100 }, tree: { lifetimePointsEarned: rp.tree.lifetimePointsEarned, sharedSpentPoints:rp.tree.sharedSpentPoints??0, availablePoints, maxAllPoints: totalTreeMaxCostV127()+FATE_BUILD_TOTAL_UNLOCK_COST_V4, ranks: { ...rp.tree.ranks }, highestAchievementTierByTree: { ...rp.tree.highestAchievementTierByTree }, nodes }, fateBuild:this.fateBuildSummaryV4(), permanentPotential: this.permanentPotentialSummary() };"
+          if old not in s: raise SystemExit('progress summary anchor missing')
+          s=s.replace(old,new)
+          # combat death: injury only, never lifespan/life end
+          pat=r"    /\*\* v1\.10\.1: True combat death.*?\n    applyCombatDeathPenalty\(context = 'combat'\) \{.*?\n    \}\n    offlineLootCache\(\) \{"
+          repl="""    /** Luân Hồi V4: combat defeat is recoverable and can never end a life or reduce lifespan. */
+    applyCombatDeathPenalty(context = 'combat') {
+        const lifespanBefore=Math.max(0,Number(this.stateValue.lifespanYears)||0), injuryBefore=Math.max(0,Number(this.stateValue.injury)||0);
+        this.stateValue.injury=Math.min(100,injuryBefore+15);
+        const result={applied:true,lifeEnded:false,lostYears:0,lifespanBefore,lifespanAfter:lifespanBefore,injuryBefore,injuryAfter:this.stateValue.injury};
+        const event={id:`combat.death.penalty.${this.currentLifeValue.lifeId}.${this.actionIndexValue}`,worldTimeYears:this.stateValue.worldTimeYears,ageYears:this.stateValue.ageYears,type:'injury',significance:28,message:`Chiến bại: Thương Thế ${injuryBefore.toFixed(0)} → ${this.stateValue.injury.toFixed(0)}. Thọ nguyên không giảm và đời hiện tại không kết thúc.`,actorId:this.profile.combatEntity.id,locationId:this.stateValue.locationId,tags:['CombatDeath','Injury','Revival'],data:{context,...result}};
+        this.historyValue.append(event); this.actionIndexValue+=1; return result;
+    }
+    offlineLootCache() {"""
+          s,n=re.subn(pat,repl,s,flags=re.S)
+          if n!=1: raise SystemExit(f'combat death patch count={n}')
+          # voluntary Tọa Hóa gate = alive + enough energy only
+          pat=r"    voluntaryPassingEligibility\(\) \{.*?\n    \}\n    enterMeditativePassing\(\) \{.*?\n    \}\n    reincarnationBuildFingerprint\(\) \{.*?\n    previewCurrentLifeSettlement\(\) \{"
+          repl="""    voluntaryPassingEligibility(nowUnixMs = Date.now()) {
+        if (!this.stateValue.alive) return { ok:false, reason:'Đời hiện tại đã kết thúc.' };
+        const rp=this.metaValue.reincarnationProgress;
+        rp.energy=rechargeReincarnationEnergy(rp.energy,nowUnixMs);
+        const preview=previewReincarnationV2Reward({lifeId:this.currentLifeValue.lifeId,realmOrder:this.stateValue.realm.maxRealmOrder,lifePotentialEarned:this.stateValue.character.corePotential?.life?.lifetimeEarned??0,permanentPotentialConversionPct:permanentPotentialConversionPctV127(rp.tree),energyCostReductionPct:reincarnationEnergyCostReductionPctV127(rp.tree),reincarnationPointsGainPct:reincarnationPointsGainPctV4(rp.tree),lifeScore:this.previewCurrentLifeSettlement().totalScore,nowUnixMs});
+        if(rp.energy.current+1e-9<preview.energyCost) return {ok:false,reason:`Không đủ Năng Lượng Luân Hồi: cần ${preview.energyCost}, hiện có ${rp.energy.current.toFixed(1)}/300.`,energyCost:preview.energyCost,energy:rp.energy.current};
+        return {ok:true,energyCost:preview.energyCost,energy:rp.energy.current,projectedRp:preview.reincarnationPoints};
+    }
+    enterMeditativePassing(nowUnixMs = Date.now()) {
+        const gate=this.voluntaryPassingEligibility(nowUnixMs); if(!gate.ok) throw new Error(gate.reason??'Chưa thể Tọa Hóa.');
+        const realm=this.registry.realm(this.stateValue.realm.realmId);
+        const event={id:`life.meditative-passing.${this.currentLifeValue.lifeId}.${this.actionIndexValue}`,worldTimeYears:this.stateValue.worldTimeYears,ageYears:this.stateValue.ageYears,type:'system',significance:70,message:`Ngươi chủ động Tọa Hóa tại ${realm.name}, khép lại đời ${this.currentLifeValue.lifeNumber} và đưa toàn bộ thành tựu thật sự vào Luân Hồi.`,locationId:this.stateValue.locationId,tags:['LifeEnd','VoluntaryPassing','MeditativePassing'],data:{realmOrder:this.stateValue.realm.maxRealmOrder,lifeNumber:this.currentLifeValue.lifeNumber,energyCost:gate.energyCost}};
+        this.historyValue.append(event); this.stateValue.alive=false; this.actionIndexValue+=1; return {summary:event.message,event,state:this.state};
+    }
+    previewReincarnationV2Reward(nowUnixMs = Date.now()) {
+        const settlement=this.previewCurrentLifeSettlement(), rp=this.metaValue.reincarnationProgress;
+        return previewReincarnationV2Reward({lifeId:this.currentLifeValue.lifeId,realmOrder:this.stateValue.realm.maxRealmOrder,lifePotentialEarned:this.stateValue.character.corePotential?.life?.lifetimeEarned??0,permanentPotentialConversionPct:permanentPotentialConversionPctV127(rp.tree),energyCostReductionPct:reincarnationEnergyCostReductionPctV127(rp.tree),reincarnationPointsGainPct:reincarnationPointsGainPctV4(rp.tree),lifeScore:settlement.totalScore,nowUnixMs});
+    }
+    finalizeReincarnationRewards(_confirmedBuildReady = true, nowUnixMs = Date.now()) {
+        if(this.stateValue.alive) throw new Error('Đời hiện tại chưa kết thúc.');
+        const rp=this.metaValue.reincarnationProgress;
+        const existing=rp.rewardHistory.find(x=>x.lifeId===this.currentLifeValue.lifeId); if(existing) return {...existing};
+        const settlement=this.settleCurrentLife();
+        rp.energy=rechargeReincarnationEnergy(rp.energy,nowUnixMs);
+        const reward=previewReincarnationV2Reward({lifeId:this.currentLifeValue.lifeId,realmOrder:this.stateValue.realm.maxRealmOrder,lifePotentialEarned:this.stateValue.character.corePotential?.life?.lifetimeEarned??0,permanentPotentialConversionPct:permanentPotentialConversionPctV127(rp.tree),energyCostReductionPct:reincarnationEnergyCostReductionPctV127(rp.tree),reincarnationPointsGainPct:reincarnationPointsGainPctV4(rp.tree),lifeScore:settlement.totalScore,nowUnixMs});
+        const lifeEnd=[...this.historyValue.all()].reverse().find(e=>e.tags?.includes('LifeEnd'));
+        const voluntary=Boolean(lifeEnd?.tags?.includes('VoluntaryPassing'));
+        if(voluntary&&rp.energy.current+1e-9<reward.energyCost) throw new Error(`Không đủ Năng Lượng Luân Hồi: cần ${reward.energyCost}, hiện có ${rp.energy.current.toFixed(1)}/300.`);
+        const energySpent=voluntary?reward.energyCost:0; if(energySpent>0) rp.energy.current=Math.max(0,rp.energy.current-energySpent);
+        rp.tree.lifetimePointsEarned+=reward.reincarnationPoints;
+        const cultivationTier=depthInfoForRealmOrder(this.stateValue.realm.maxRealmOrder).tierIndex;
+        rp.tree.highestAchievementTierByTree.cultivation=Math.max(rp.tree.highestAchievementTierByTree.cultivation??0,cultivationTier);
+        rp.permanentPotential.unspent+=reward.permanentPotentialGain; rp.permanentPotential.lifetimeEarned+=reward.permanentPotentialGain;
+        this.metaValue.reincarnation.xp=rp.tree.lifetimePointsEarned; this.metaValue.reincarnation.sealLevel=reincarnationSealLevel(rp.tree.lifetimePointsEarned);
+        const finalized={...reward,energySpent,forcedPassing:!voluntary,lifeScore:settlement.totalScore,grade:settlement.grade};
+        rp.rewardHistory.push(finalized); if(rp.rewardHistory.length>200)rp.rewardHistory.splice(0,rp.rewardHistory.length-200);
+        this.actionIndexValue+=1; return {...finalized};
+    }
+    previewCurrentLifeSettlement() {"""
+          s,n=re.subn(pat,repl,s,flags=re.S)
+          if n!=1: raise SystemExit(f'lifecycle block patch count={n}')
+          # prevent old seal/talent currency minting at settlement while retaining memories/dao seed
+          old="        const settlement = this.metaValue.reincarnationProgress ? {\n            ...rawSettlement, cpBase: 0, cpBonus: 0, cpEarned: 0, mingJiGain: 0, mingJiDomainGains: {},\n        } : rawSettlement;"
+          new="        const settlement = this.metaValue.reincarnationProgress ? {\n            ...rawSettlement, cpBase:0,cpBonus:0,cpEarned:0,mingJiGain:0,mingJiDomainGains:{},talentPointGain:0,reincarnationLegacy:rawSettlement.reincarnationLegacy?{...rawSettlement.reincarnationLegacy,xp:0,effective:false}:rawSettlement.reincarnationLegacy,\n        } : rawSettlement;"
+          if old not in s: raise SystemExit('settlement zero-mint anchor missing')
+          s=s.replace(old,new)
+          # reincarnate opener: any realm can voluntarily pass, no synthetic trials
+          pat=r"    reincarnate\(plan = \{\}\) \{\n        if \(this\.stateValue\.alive\) \{.*?\n        const progressionReward = \{ \.\.\.this\.metaValue\.reincarnationProgress\.pendingTrial\.finalizedReward \};"
+          repl="""    reincarnate(plan = {}) {
+        if (this.stateValue.alive) this.enterMeditativePassing(plan.nowUnixMs ?? Date.now());
+        const progressionReward = this.finalizeReincarnationRewards(true, plan.nowUnixMs ?? Date.now());"""
+          s,n=re.subn(pat,repl,s,flags=re.S)
+          if n!=1: raise SystemExit(f'reincarnate opener patch count={n}')
+          # CP spending retired; validate control slots using derived seal instead
+          old="        const cpCost = spendReincarnationCp(this.metaValue, plan);"
+          new="""        const seal=this.metaValue.reincarnation.sealLevel;
+        const birthCandidate=Math.max(1,Math.floor(Number(plan.birthCandidate)||1));
+        if(birthCandidate>birthPreviewCountForSeal(seal)) throw new Error(`${reincarnationSealName(seal)} chỉ soi được ${birthPreviewCountForSeal(seal)} đời mới.`);
+        if((plan.inheritKarmaNpcIds??[]).length>karmaInheritanceSlotsForSeal(seal)) throw new Error(`${reincarnationSealName(seal)} chưa đủ ô Nhân Quả.`);
+        if((plan.bindRelicArtifactIds??[]).length>boundRelicSlotsForSeal(seal)) throw new Error(`${reincarnationSealName(seal)} chưa đủ ô Di Vật.`);
+        if(plan.memoryArchiveId&&seal<2) throw new Error('Ký Ức Tiền Kiếp yêu cầu Luân Hồi Ấn II.');
+        if(plan.daoSeedId&&seal<4) throw new Error('Đạo Chủng yêu cầu Luân Hồi Ấn IV.');
+        const cpCost={totalCpCost:0,fateLockCount:0,retired:true};"""
+          if old not in s: raise SystemExit('cp spend anchor missing')
+          s=s.replace(old,new)
+          # force balanced old orientation and attach selected Fate to the new life
+          s=s.replace("const inheritance = { orientationId: plan.orientationId ?? 'balanced', selectedDaoSeedId: selectedSeed?.id, inheritedKarmaNpcIds: [...new Set(plan.inheritKarmaNpcIds ?? [])], boundRelicArtifactIds: selectedRelicIds, memoryFragments, fateLocksUsed: cpCost.fateLockCount };",
+                      "const inheritance = { orientationId:'balanced', selectedDaoSeedId:selectedSeed?.id, inheritedKarmaNpcIds:[...new Set(plan.inheritKarmaNpcIds??[])], boundRelicArtifactIds:selectedRelicIds, memoryFragments, fateLocksUsed:0 };")
+          # currentLife construction: add active fate after object creation anchor
+          anchor="        this.currentLifeValue = {"
+          # only replace last occurrence in reincarnate region by inserting property after opening if unique in file
+          idx=s.rfind(anchor)
+          if idx<0: raise SystemExit('currentLife object anchor missing')
+          pos=idx+len(anchor)
+          s=s[:pos]+"\n            activeFateId: this.metaValue.reincarnationProgress.fateBuild.activeFateId,"+s[pos:]
+          # sanitize start event CP wording
+          s=s.replace("previousLifeId: previousLife.lifeId, cpSpent: cpCost.totalCpCost, reincarnationSeal: this.metaValue.reincarnation.sealLevel, orientation: inheritance.orientationId, fateLocks: inheritance.fateLocksUsed, karmaThreads: inheritance.inheritedKarmaNpcIds.length, boundRelics: inheritance.boundRelicArtifactIds.length,",
+                      "previousLifeId:previousLife.lifeId,reincarnationSeal:this.metaValue.reincarnation.sealLevel,activeFateId:this.currentLifeValue.activeFateId,karmaThreads:inheritance.inheritedKarmaNpcIds.length,boundRelics:inheritance.boundRelicArtifactIds.length,")
+          # old inheritance event only if actual inheritance; no orientation/fatelock/cp
+          pat=r"        if \(inheritance\.orientationId !== 'balanced'.*?\n        \}\n        this\.syncReincarnationMemories\(\);"
+          repl="""        if (inheritance.selectedDaoSeedId || inheritance.inheritedKarmaNpcIds.length || inheritance.boundRelicArtifactIds.length || inheritance.memoryFragments.length) {
+            this.historyValue.append({id:`reincarnation.inheritance.${this.currentLifeValue.lifeId}`,worldTimeYears:this.stateValue.worldTimeYears,ageYears:this.stateValue.ageYears,type:'system',significance:24,message:`${reincarnationSealName(this.metaValue.reincarnation.sealLevel)} giữ lại ${inheritance.memoryFragments.length} ký ức · ${inheritance.inheritedKarmaNpcIds.length} nhân quả · ${inheritance.boundRelicArtifactIds.length} di vật.`,locationId:this.stateValue.locationId,tags:['Reincarnation','Inheritance','PastLifeMemory'],data:{seal:this.metaValue.reincarnation.sealLevel}});
+        }
+        this.syncReincarnationMemories();"""
+          s,n=re.subn(pat,repl,s,flags=re.S)
+          if n!=1: raise SystemExit(f'inheritance event patch count={n}')
+          p.write_text(s)
+
+          # ---------- focused V4 lifecycle contract ----------
+          Path('qa/tests/reincarnation-v4-lifecycle-contract-test.js').write_text(r'''import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {
+  REINCARNATION_ENERGY_CAP,
+  availableTreePoints,
+  createReincarnationProgressStateV1102,
+  lifeAchievementBonusPctV4,
+  previewReincarnationV2Reward,
+} from '../../dist/core/reincarnation-progression-v1102.js';
+import { FATE_BUILD_TOTAL_UNLOCK_COST_V4, unlockFateBuildV4 } from '../../dist/core/reincarnation-fate-build-v4.js';
+
+assert.equal(REINCARNATION_ENERGY_CAP,300);
+const rp=createReincarnationProgressStateV1102(0);
+assert.equal(rp.energy.current,300);
+assert.equal(rp.fateBuild.unlockedIds.length,5);
+rp.tree.lifetimePointsEarned=100000;
+assert.equal(availableTreePoints(rp.tree),100000);
+const f=unlockFateBuildV4(rp.fateBuild,'fate.v4.combat.hundred_battles',availableTreePoints(rp.tree));
+rp.fateBuild=f.state; rp.tree.sharedSpentPoints+=f.spentRp;
+assert.equal(f.spentRp,3000);
+assert.equal(availableTreePoints(rp.tree),97000,'Mệnh Cách phải tiêu cùng một quỹ RP với Cây Luân Hồi.');
+assert.equal(FATE_BUILD_TOTAL_UNLOCK_COST_V4,310000);
+assert.equal(lifeAchievementBonusPctV4(0),0);
+assert(lifeAchievementBonusPctV4(2500)>lifeAchievementBonusPctV4(100));
+const low=previewReincarnationV2Reward({lifeId:'x',realmOrder:18,lifeScore:0,lifePotentialEarned:20});
+const high=previewReincarnationV2Reward({lifeId:'x',realmOrder:18,lifeScore:2500,lifePotentialEarned:20});
+assert(high.reincarnationPoints>low.reincarnationPoints,'Thành tựu thật trong đời phải tăng RP.');
+assert.equal(high.trialBonusPct,undefined,'Reward V4 không được phụ thuộc Thí Luyện giả.');
+
+const session=fs.readFileSync(new URL('../../dist/core/session.js',import.meta.url),'utf8');
+assert(!session.includes('const minimumAge = 60'));
+assert(!session.includes('const minimumRealmOrder = 10'));
+assert(!session.includes('Cần hoàn thành cả Cọc Gỗ'));
+assert(!session.includes('applyCombatDeathLifespanPenalty(this.stateValue)'));
+assert(session.includes("tags:['CombatDeath','Injury','Revival']"));
+assert(session.includes("const voluntary=Boolean(lifeEnd?.tags?.includes('VoluntaryPassing'))"));
+assert(session.includes('const energySpent=voluntary?reward.energyCost:0'));
+assert(!session.includes('applyFateEmbryoToEntity('));
+assert(!session.includes('effectiveManifestationCapacity('));
+console.log('REINCARNATION V4 LIFECYCLE CONTRACT — PASS');
+''')
+          PY
+      - name: Verify focused contracts
+        run: |
+          node --check dist/core/reincarnation-progression-v1102.js
+          node --check dist/core/reincarnation-fate-build-v4.js
+          node --check dist/core/life.js
+          node --check dist/core/session.js
+          node qa/tests/reincarnation-v4-lifecycle-contract-test.js
+          node qa/tests/reincarnation-cultivation-r3-cost-invariant-test.js
+          node qa/tests/reincarnation-cultivation-r3-test.js
+          node qa/tests/reincarnation-fate-build-v4-test.js
+          node qa/tests/v140-cultivation-core-test.js
+          node qa/tests/v140-cultivation-transport-test.js
+          node qa/runners/v140-backend-gates.js fast
+      - name: Commit and push
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add dist/core/reincarnation-progression-v1102.js dist/core/reincarnation.js dist/core/life.js dist/core/session.js qa/tests/reincarnation-v4-lifecycle-contract-test.js
+          git diff --cached --quiet && exit 0
+          git commit -m "feat: rebuild reincarnation v4 lifecycle"
+          git push origin HEAD:feature/reincarnation-cultivation-r3
