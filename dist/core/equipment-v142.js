@@ -10,7 +10,9 @@ import { EQUIPMENT_AFFIX_DEFINITIONS_V114, EQUIPMENT_AFFIX_MIN_ROLL_PCT_V114, EQ
  * - 6 attire slots own uncapped/long-growth Set stats; 4 jewelry slots own bounded utility Set stats.
  * - no live Grade/Quality/Star/Gem/Đạo Văn layer in V142 items.
  * - Enhancement is finite (+15); Affix Tinh Luyện/Tái Luyện stays a separate deterministic lane.
- * - visible base item stats are integers. Realm growth is anchored to x2160 at Sáng Thế instead of compounding x1.55 28 times.
+ * - visible item stats are integers.
+ * - raw core stats (Công/HP/Phòng) are the long-run number engine: x3 per major realm, matching the 3->1 merge ladder.
+ * - resource/utility stats are deliberately decoupled from raw growth. Chân Nguyên and utility grow slowly so they never explode with the MU-like core curve.
  */
 export const EQUIPMENT_V142_SCHEMA = 'equipment.v142';
 export const EQUIPMENT_FRAGMENT_RESOURCE_V142 = 'resource.equipment.fragment.v142';
@@ -26,9 +28,15 @@ export const EQUIPMENT_REALM_NAMES_V142 = Object.freeze([
   'Cực Hạn', 'Cực Đạo Chân Cảnh', 'Hỗn Độn Cảnh', 'Hồng Mông Cảnh', 'Khai Thiên Cảnh', 'Thế Giới Chủ', 'Vĩnh Sinh Cảnh', 'Sáng Thế Chủ',
 ]);
 export const EQUIPMENT_SANG_THE_INDEX_V142 = EQUIPMENT_REALM_NAMES_V142.length - 1;
-export const EQUIPMENT_SANG_THE_POWER_MULTIPLIER_V142 = 2160;
-export const EQUIPMENT_DAO_CHUYEN_GROWTH_V142 = 1.12;
-export const EQUIPMENT_MAJOR_REALM_GROWTH_V142 = Math.pow(EQUIPMENT_SANG_THE_POWER_MULTIPLIER_V142, 1 / EQUIPMENT_SANG_THE_INDEX_V142);
+
+/** 3 món/mảnh bậc trước -> 1 bậc sau, nên core stat cũng x3 mỗi đại cảnh: giá trị vật liệu và sức mạnh cùng một nhịp. */
+export const EQUIPMENT_MAJOR_REALM_GROWTH_V142 = 3;
+export const EQUIPMENT_SANG_THE_POWER_MULTIPLIER_V142 = EQUIPMENT_MAJOR_REALM_GROWTH_V142 ** EQUIPMENT_SANG_THE_INDEX_V142;
+/** Sau Sáng Thế vẫn tăng vô hạn, nhưng chậm hơn để giữ headroom số học lâu dài. */
+export const EQUIPMENT_DAO_CHUYEN_GROWTH_V142 = 1.25;
+/** Utility không chạy exponential x3: mỗi đại cảnh chỉ cộng thêm 25% baseline Phàm. */
+export const EQUIPMENT_UTILITY_MAJOR_STEP_V142 = 0.25;
+export const EQUIPMENT_UTILITY_DAO_CHUYEN_GROWTH_V142 = 1.04;
 
 export const EQUIPMENT_ATTIRE_SLOTS_V142 = Object.freeze(['weapon', 'head', 'robe', 'belt', 'gloves', 'boots']);
 export const EQUIPMENT_JEWELRY_SLOTS_V142 = Object.freeze(['necklace', 'ring', 'bracelet', 'talisman']);
@@ -39,22 +47,24 @@ export const EQUIPMENT_SLOT_LABELS_V142 = Object.freeze({
 });
 
 /**
- * Phàm baseline is intentionally easy to read and budgeted against the mortal combat entity:
- * full +0 set = Công 34 / HP 250 / Phòng 20 / Chân Nguyên 40 plus utility.
- * Only long-scaling/raw stats live in item bases. Bounded % utility belongs to Affix/Jewelry Set.
+ * Phàm baseline. Full +0 package = Công 40 / HP 300 / Phòng 30 / Chân Nguyên 8 plus light utility.
+ * Chân Nguyên is intentionally tiny: it is a resource stat, not part of the raw-number treadmill.
  */
 export const EQUIPMENT_SLOT_BASE_STATS_V142 = Object.freeze({
   weapon: Object.freeze({ attack: 20 }),
-  head: Object.freeze({ maxSpirit: 10, resolve: 5 }),
-  robe: Object.freeze({ maxHp: 100, defense: 10 }),
-  belt: Object.freeze({ maxHp: 70, maxSpirit: 8 }),
-  gloves: Object.freeze({ attack: 8, accuracy: 6 }),
-  boots: Object.freeze({ mobility: 8, resolve: 4 }),
-  necklace: Object.freeze({ maxSpirit: 12, controlPower: 5 }),
-  ring: Object.freeze({ attack: 6, maxSpirit: 10 }),
-  bracelet: Object.freeze({ maxHp: 80, defense: 10 }),
-  talisman: Object.freeze({ resolve: 6, controlPower: 5 }),
+  head: Object.freeze({ maxSpirit: 1, defense: 5, resolve: 3 }),
+  robe: Object.freeze({ maxHp: 120, defense: 10 }),
+  belt: Object.freeze({ maxHp: 80, maxSpirit: 1 }),
+  gloves: Object.freeze({ attack: 8, accuracy: 4 }),
+  boots: Object.freeze({ mobility: 5, resolve: 2 }),
+  necklace: Object.freeze({ attack: 4, maxSpirit: 2, controlPower: 3 }),
+  ring: Object.freeze({ attack: 8, maxSpirit: 2 }),
+  bracelet: Object.freeze({ maxHp: 100, defense: 10 }),
+  talisman: Object.freeze({ maxSpirit: 2, defense: 5, resolve: 2, controlPower: 3 }),
 });
+
+export const EQUIPMENT_CORE_RAW_STAT_KEYS_V142 = Object.freeze(['attack', 'maxHp', 'defense']);
+const CORE_RAW_STAT_SET_V142 = new Set(EQUIPMENT_CORE_RAW_STAT_KEYS_V142);
 
 const ATTIRE_SETS = [
   {
@@ -172,16 +182,23 @@ export function equipmentRealmMultiplierV142(rankIndex) {
   const i = Math.max(0, Math.floor(Number(rankIndex) || 0));
   const canonical = Math.min(EQUIPMENT_SANG_THE_INDEX_V142, i);
   const endless = Math.max(0, i - EQUIPMENT_SANG_THE_INDEX_V142);
-  const canonicalMultiplier = canonical === EQUIPMENT_SANG_THE_INDEX_V142
-    ? EQUIPMENT_SANG_THE_POWER_MULTIPLIER_V142
-    : Math.pow(EQUIPMENT_MAJOR_REALM_GROWTH_V142, canonical);
-  return canonicalMultiplier * Math.pow(EQUIPMENT_DAO_CHUYEN_GROWTH_V142, endless);
+  return (EQUIPMENT_MAJOR_REALM_GROWTH_V142 ** canonical) * (EQUIPMENT_DAO_CHUYEN_GROWTH_V142 ** endless);
+}
+export function equipmentUtilityRealmMultiplierV142(rankIndex) {
+  const i = Math.max(0, Math.floor(Number(rankIndex) || 0));
+  const canonical = Math.min(EQUIPMENT_SANG_THE_INDEX_V142, i);
+  const endless = Math.max(0, i - EQUIPMENT_SANG_THE_INDEX_V142);
+  return (1 + EQUIPMENT_UTILITY_MAJOR_STEP_V142 * canonical) * (EQUIPMENT_UTILITY_DAO_CHUYEN_GROWTH_V142 ** endless);
 }
 export function equipmentBaseStatsForRankV142(slot, rankIndex) {
   const base = EQUIPMENT_SLOT_BASE_STATS_V142[slot];
   if (!base) throw new Error(`Ô trang bị V142 không hợp lệ: ${slot}`);
-  const multiplier = equipmentRealmMultiplierV142(rankIndex);
-  return Object.fromEntries(Object.entries(base).map(([key, value]) => [key, Math.max(1, Math.round(value * multiplier))]));
+  const coreMultiplier = equipmentRealmMultiplierV142(rankIndex);
+  const utilityMultiplier = equipmentUtilityRealmMultiplierV142(rankIndex);
+  return Object.fromEntries(Object.entries(base).map(([key, value]) => {
+    const multiplier = CORE_RAW_STAT_SET_V142.has(key) ? coreMultiplier : utilityMultiplier;
+    return [key, Math.max(1, Math.round(value * multiplier))];
+  }));
 }
 export function equipmentAffixCountForRankV142(rankIndex) {
   const i = Math.max(0, Math.floor(Number(rankIndex) || 0));
