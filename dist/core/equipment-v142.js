@@ -10,6 +10,7 @@ import { EQUIPMENT_AFFIX_DEFINITIONS_V114, EQUIPMENT_AFFIX_MIN_ROLL_PCT_V114, EQ
  * - 6 attire slots own uncapped/long-growth Set stats; 4 jewelry slots own bounded utility Set stats.
  * - no live Grade/Quality/Star/Gem/Đạo Văn layer in V142 items.
  * - Enhancement is finite (+15); Affix Tinh Luyện/Tái Luyện stays a separate deterministic lane.
+ * - visible base item stats are integers. Realm growth is anchored to x2160 at Sáng Thế instead of compounding x1.55 28 times.
  */
 export const EQUIPMENT_V142_SCHEMA = 'equipment.v142';
 export const EQUIPMENT_FRAGMENT_RESOURCE_V142 = 'resource.equipment.fragment.v142';
@@ -25,6 +26,9 @@ export const EQUIPMENT_REALM_NAMES_V142 = Object.freeze([
   'Cực Hạn', 'Cực Đạo Chân Cảnh', 'Hỗn Độn Cảnh', 'Hồng Mông Cảnh', 'Khai Thiên Cảnh', 'Thế Giới Chủ', 'Vĩnh Sinh Cảnh', 'Sáng Thế Chủ',
 ]);
 export const EQUIPMENT_SANG_THE_INDEX_V142 = EQUIPMENT_REALM_NAMES_V142.length - 1;
+export const EQUIPMENT_SANG_THE_POWER_MULTIPLIER_V142 = 2160;
+export const EQUIPMENT_DAO_CHUYEN_GROWTH_V142 = 1.12;
+export const EQUIPMENT_MAJOR_REALM_GROWTH_V142 = Math.pow(EQUIPMENT_SANG_THE_POWER_MULTIPLIER_V142, 1 / EQUIPMENT_SANG_THE_INDEX_V142);
 
 export const EQUIPMENT_ATTIRE_SLOTS_V142 = Object.freeze(['weapon', 'head', 'robe', 'belt', 'gloves', 'boots']);
 export const EQUIPMENT_JEWELRY_SLOTS_V142 = Object.freeze(['necklace', 'ring', 'bracelet', 'talisman']);
@@ -34,18 +38,22 @@ export const EQUIPMENT_SLOT_LABELS_V142 = Object.freeze({
   necklace: 'Ngọc Bội', ring: 'Đạo Giới', bracelet: 'Linh Trạc', talisman: 'Hộ Phù',
 });
 
-/** Only long-scaling/raw stats live in item bases. Bounded utility belongs to Affix/Jewelry Set. */
+/**
+ * Phàm baseline is intentionally easy to read and budgeted against the mortal combat entity:
+ * full +0 set = Công 34 / HP 250 / Phòng 20 / Chân Nguyên 40 plus utility.
+ * Only long-scaling/raw stats live in item bases. Bounded % utility belongs to Affix/Jewelry Set.
+ */
 export const EQUIPMENT_SLOT_BASE_STATS_V142 = Object.freeze({
-  weapon: Object.freeze({ attack: 18 }),
-  head: Object.freeze({ maxSpirit: 18, resolve: 6 }),
-  robe: Object.freeze({ maxHp: 92, defense: 10 }),
-  belt: Object.freeze({ maxHp: 58, maxSpirit: 10 }),
-  gloves: Object.freeze({ attack: 8, accuracy: 5 }),
-  boots: Object.freeze({ mobility: 7, resolve: 4 }),
-  necklace: Object.freeze({ maxSpirit: 22, controlPower: 5 }),
+  weapon: Object.freeze({ attack: 20 }),
+  head: Object.freeze({ maxSpirit: 10, resolve: 5 }),
+  robe: Object.freeze({ maxHp: 100, defense: 10 }),
+  belt: Object.freeze({ maxHp: 70, maxSpirit: 8 }),
+  gloves: Object.freeze({ attack: 8, accuracy: 6 }),
+  boots: Object.freeze({ mobility: 8, resolve: 4 }),
+  necklace: Object.freeze({ maxSpirit: 12, controlPower: 5 }),
   ring: Object.freeze({ attack: 6, maxSpirit: 10 }),
-  bracelet: Object.freeze({ maxHp: 44, defense: 5 }),
-  talisman: Object.freeze({ resolve: 7, controlPower: 5 }),
+  bracelet: Object.freeze({ maxHp: 80, defense: 10 }),
+  talisman: Object.freeze({ resolve: 6, controlPower: 5 }),
 });
 
 const ATTIRE_SETS = [
@@ -164,7 +172,16 @@ export function equipmentRealmMultiplierV142(rankIndex) {
   const i = Math.max(0, Math.floor(Number(rankIndex) || 0));
   const canonical = Math.min(EQUIPMENT_SANG_THE_INDEX_V142, i);
   const endless = Math.max(0, i - EQUIPMENT_SANG_THE_INDEX_V142);
-  return Math.pow(1.55, canonical) * Math.pow(1.12, endless);
+  const canonicalMultiplier = canonical === EQUIPMENT_SANG_THE_INDEX_V142
+    ? EQUIPMENT_SANG_THE_POWER_MULTIPLIER_V142
+    : Math.pow(EQUIPMENT_MAJOR_REALM_GROWTH_V142, canonical);
+  return canonicalMultiplier * Math.pow(EQUIPMENT_DAO_CHUYEN_GROWTH_V142, endless);
+}
+export function equipmentBaseStatsForRankV142(slot, rankIndex) {
+  const base = EQUIPMENT_SLOT_BASE_STATS_V142[slot];
+  if (!base) throw new Error(`Ô trang bị V142 không hợp lệ: ${slot}`);
+  const multiplier = equipmentRealmMultiplierV142(rankIndex);
+  return Object.fromEntries(Object.entries(base).map(([key, value]) => [key, Math.max(1, Math.round(value * multiplier))]));
 }
 export function equipmentAffixCountForRankV142(rankIndex) {
   const i = Math.max(0, Math.floor(Number(rankIndex) || 0));
@@ -283,12 +300,6 @@ function rollAffixesV142(slot, rankIndex, seed) {
   }
   return result;
 }
-function baseStatsForRank(slot, rankIndex) {
-  const base = EQUIPMENT_SLOT_BASE_STATS_V142[slot];
-  if (!base) throw new Error(`Ô trang bị V142 không hợp lệ: ${slot}`);
-  const m = equipmentRealmMultiplierV142(rankIndex);
-  return Object.fromEntries(Object.entries(base).map(([key, value]) => [key, Math.round(value * m * 1000) / 1000]));
-}
 function removeEquipmentByIds(equipmentState, ids) {
   const remove = new Set(ids);
   equipmentState.items = equipmentState.items.filter(item => !remove.has(item.id));
@@ -309,7 +320,7 @@ export function craftEquipmentFromFragmentsV142(state, equipmentState, slot, ran
     id, templateId: `equipment.v142.${slot}`, name: `${equipmentRankNameV142(rank)} · ${EQUIPMENT_SLOT_LABELS_V142[slot]}`,
     slot, equipmentRankIndex: rank, equipmentRankName: equipmentRankNameV142(rank),
     enhancementLevel: 0, affixes: rollAffixesV142(slot, rank, seed >>> 0), reforgeCount: 0,
-    stats: baseStatsForRank(slot, rank), tags: ['EquipmentV142', `EquipmentRank:${equipmentRankNameV142(rank)}`],
+    stats: equipmentBaseStatsForRankV142(slot, rank), tags: ['EquipmentV142', `EquipmentRank:${equipmentRankNameV142(rank)}`],
     source: { kind: 'craft', recipeId: 'equipment.v142.fragments', floor: rank + 1, seed: seed >>> 0 }, acquiredWorldYear,
   };
   equipmentState.items.push(item);
@@ -329,7 +340,7 @@ export function mergeEquipmentRankV142(state, mainItemId, fodderItemAId, fodderI
   main.equipmentRankIndex = nextRank;
   main.equipmentRankName = equipmentRankNameV142(nextRank);
   main.name = `${main.setId ? `${equipmentSetDefinitionV142(main.setId)?.name ?? 'Bộ'} · ` : ''}${main.equipmentRankName} · ${EQUIPMENT_SLOT_LABELS_V142[main.slot]}`;
-  main.stats = baseStatsForRank(main.slot, nextRank);
+  main.stats = equipmentBaseStatsForRankV142(main.slot, nextRank);
   main.tags = [...new Set([...(main.tags ?? []).filter(x => !String(x).startsWith('EquipmentRank:')), `EquipmentRank:${main.equipmentRankName}`])];
   return { item: main, consumedItemIds: [a.id, b.id], nextRankIndex: nextRank, nextRankName: main.equipmentRankName };
 }
