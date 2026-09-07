@@ -55,9 +55,9 @@ jobs:
         run: node qa/runners/v140-frontend-gates.js fast
 
       - name: Backend closure
-        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/feature/')
         run: node qa/runners/v140-backend-gates.js closure
 
       - name: Frontend closure
-        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/feature/')
         run: node qa/runners/v140-frontend-gates.js closure
