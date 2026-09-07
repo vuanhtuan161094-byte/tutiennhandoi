@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Harden staged patch R5
+      - name: Harden staged patch R6
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -54,7 +54,7 @@ jobs:
           PY
       - name: Apply patch
         run: python3 qa/reincarnation-v4-gameplay-patch.py
-      - name: Isolate V140 baseline from Fate build
+      - name: Align baseline ownership tests
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -62,6 +62,21 @@ jobs:
           anchor="  session.stateValue.inheritedOrigins = { ...(session.stateValue.inheritedOrigins||{}), 'birth.cultivation.multiplier': 1 };"
           if anchor not in s: raise SystemExit('missing V140 fixture anchor')
           s=s.replace(anchor,anchor+"\n  session.stateValue.character.fateModifiersV4 = {};",1)
+          p.write_text(s)
+
+          p=Path('qa/tests/v129-global-build-balance-test.js'); s=p.read_text()
+          old="import { applyCorePotentialStats, corePotentialDefinitions } from '../../dist/core/reincarnation-progression-v1102.js';"
+          new="import { applyCorePotentialStats, corePotentialDefinitions, corePotentialPercentBonusV4 } from '../../dist/core/reincarnation-progression-v1102.js';"
+          if old not in s: raise SystemExit('missing potential import anchor')
+          s=s.replace(old,new,1)
+          old="check(corePotentialDefinitions.find(x=>x.id==='defense')?.perPoint?.includes('Phòng Ngự +3'),'V108 preserves canonical Potential Defense = +3 defense per point; no extra buff added');"
+          new="check(corePotentialDefinitions.find(x=>x.id==='defense')?.perPoint?.includes('Phòng Ngự +3'),'V4 preserves canonical Potential Defense flat = +3 defense per point before soft scaling');"
+          if old not in s: raise SystemExit('missing potential flat invariant anchor')
+          s=s.replace(old,new,1)
+          old="check(potApplied.defense===130&&potApplied.attack===100,'V108 Defense Potential modifies canonical combat defense and does not leak into attack');"
+          new="const expectedDefense=130*(1+corePotentialPercentBonusV4(10)/100);\ncheck(Math.abs(potApplied.defense-expectedDefense)<1e-9&&potApplied.attack===100,'V4 Defense Potential keeps +3 flat, applies its own soft scaling, and does not leak into attack');"
+          if old not in s: raise SystemExit('missing potential runtime invariant anchor')
+          s=s.replace(old,new,1)
           p.write_text(s)
           PY
       - name: Syntax + dedicated
