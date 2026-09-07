@@ -27,11 +27,9 @@ import {
   syncEquipmentSetResonanceItemsV143,
 } from './equipment-set-fragments-v142.js';
 
-const COMPAT_GRADES_V142 = Object.freeze(['mundane', 'spirit', 'mystic', 'earth', 'heaven', 'immortal', 'extreme', 'breaker']);
-/** Hidden transport-only Grade. It is never a V142 progression axis or player-facing quality label. */
-export function equipmentCompatGradeForRankV142(rankIndex) {
-  const rank = Math.max(0, Math.floor(Number(rankIndex) || 0));
-  return COMPAT_GRADES_V142[Math.min(COMPAT_GRADES_V142.length - 1, Math.floor(rank / 4))];
+/** Hidden transport-only Grade. V142 progression is exclusively equipmentRankIndex. */
+export function equipmentCompatGradeForRankV142(_rankIndex) {
+  return 'mundane';
 }
 
 function hash01(seed, salt) {
