@@ -1,0 +1,38 @@
+name: V143 One-shot Hunt Source Cleanup
+
+on:
+  push:
+    branches:
+      - feature/v142-equipment-hunt
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: startsWith(github.event.head_commit.message, 'chore(v143): stage Hunt source cleanup')
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apply deterministic source patch
+        run: node qa/tools/apply-v143-hunt-source-cleanup.mjs
+      - name: Smoke Hunt gates
+        run: |
+          node qa/tests/v141-hunt-cultivation-closure-test.js
+          node qa/runners/v142-equipment-hunt-gate.js
+      - name: Commit patched source
+        run: |
+          git config user.name "vuanhtuan161094-byte"
+          git config user.email "vuanhtuan161094@gmail.com"
+          git add dist/core/session.js
+          if git diff --cached --quiet; then
+            echo "No source changes to commit."
+            exit 0
+          fi
+          git commit -m "feat(v143): retire duplicated Hunt system-resource rewards"
+          git push origin HEAD:feature/v142-equipment-hunt
