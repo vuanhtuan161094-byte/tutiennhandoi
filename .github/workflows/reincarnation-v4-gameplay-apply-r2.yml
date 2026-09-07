@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Harden staged patch R4
+      - name: Harden staged patch R5
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -54,15 +54,15 @@ jobs:
           PY
       - name: Apply patch
         run: python3 qa/reincarnation-v4-gameplay-patch.py
-      - name: Align V140 baseline test with explicit Fate source
+      - name: Isolate V140 baseline from Fate build
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p=Path('qa/tests/v140-cultivation-core-test.js'); s=p.read_text()
-          old="const s=makeAt(0); const a=s.advanceRealtimeCultivationV140(14); assert.equal(a.gained,0); assert.equal(s.stateValue.cultivation.tuVi,0);\n  const b=s.advanceRealtimeCultivationV140(1); assert.equal(b.gained,10); assert.equal(s.stateValue.cultivation.tuVi,10);"
-          new="const s=makeAt(0); const rate=cultivationRateV140(s.stateValue,0); assert.equal(rate.baseTuViPer15s,10); const a=s.advanceRealtimeCultivationV140(14); assert.equal(a.gained,0); assert.equal(s.stateValue.cultivation.tuVi,0);\n  const b=s.advanceRealtimeCultivationV140(1); assert.equal(b.gained,rate.finalTuViPer15s); assert.equal(s.stateValue.cultivation.tuVi,rate.finalTuViPer15s);"
-          if old not in s: raise SystemExit('missing V140 tick invariant anchor')
-          p.write_text(s.replace(old,new,1))
+          anchor="  session.stateValue.inheritedOrigins = { ...(session.stateValue.inheritedOrigins||{}), 'birth.cultivation.multiplier': 1 };"
+          if anchor not in s: raise SystemExit('missing V140 fixture anchor')
+          s=s.replace(anchor,anchor+"\n  session.stateValue.character.fateModifiersV4 = {};",1)
+          p.write_text(s)
           PY
       - name: Syntax + dedicated
         run: |
