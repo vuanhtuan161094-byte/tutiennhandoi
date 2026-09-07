@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 
 const tests = [
+  'qa/tests/v142-equipment-core-test.js',
   'qa/tests/v142-equipment-fragment-economy-test.js',
 ];
 
