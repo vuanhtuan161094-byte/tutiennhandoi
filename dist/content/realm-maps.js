@@ -28,6 +28,18 @@ const gradeRewards = {
     elite: { spiritStoneMultiplier: 5.5, equipmentChancePct: 15, cultivationPillChancePct: 2.4 },
     boss: { spiritStoneMultiplier: 18, equipmentChancePct: 30, cultivationPillChancePct: 20 },
 };
+/**
+ * V142 major-realm combat scale follows the same 28-realm order as Equipment, but only 45% of the
+ * raw gear-rank delta is placed on the enemy. The fixed character base accounts for the remaining
+ * share, making a full +15 same-realm equipment package track floor-1 enemy growth very closely.
+ */
+export const HUNT_EQUIPMENT_MAJOR_GROWTH_V142 = Math.pow(2160, 1 / 28);
+export const HUNT_MAJOR_REALM_EQUIPMENT_SHARE_V142 = .45;
+export function huntMajorRealmPowerScaleV142(majorRealmIndex) {
+    const major = Math.max(1, Math.min(majorRealmNames.length, Math.floor(Number(majorRealmIndex) || 1)));
+    const relativeGearScale = Math.pow(HUNT_EQUIPMENT_MAJOR_GROWTH_V142, major - 1);
+    return 1 + (relativeGearScale - 1) * HUNT_MAJOR_REALM_EQUIPMENT_SHARE_V142;
+}
 export function majorRealmIndexForRealmOrder(realmOrder) {
     const order = Math.max(1, Math.floor(realmOrder));
     return order <= 9 ? 1 : Math.min(majorRealmNames.length, 2 + Math.floor((order - 10) / 4));
@@ -78,7 +90,8 @@ export function realmMapDefinition(realmOrder, realmName, zone, zoneFloor = 1) {
     const spiritStoneRewardScale = .90 + 3.35 * Math.pow(globalDepth01, 1.02);
     const primaryElement = primaryElementForZoneFloor(zone, zf);
     const elementPool = elementPoolForZoneFloor(zone, zf);
-    return { id: `realm-map.${majorRealmIndex}.${zone}`, realmOrder: majorStart, majorRealmIndex, realmName: majorRealmNameForIndex(majorRealmIndex) || realmName, biomeName: biomes[majorRealmIndex - 1] ?? majorRealmNameForIndex(majorRealmIndex), name: `${biomes[majorRealmIndex - 1] ?? majorRealmNameForIndex(majorRealmIndex)} · ${majorRealmNameForIndex(majorRealmIndex)}`, description: `${z.description} Mỗi vực có 100 tầng; mỗi tầng là một Boss thật. Hạ Boss để mở tầng kế và biến tầng vừa vượt thành bãi Săn Ảo; sức mạnh build quyết định tốc độ farm. Chủ hệ đổi sau mỗi 20 tầng.`, zone, zoneName: z.name, zoneGradeId: z.grade, equipmentGrade: z.equipmentGrade, floor, zoneFloor: zf, localFloor, floorsPerZone: REALM_MAP_FLOORS_PER_ZONE, powerMultiplier: z.power, powerByGrade: { ...z.powerByGrade }, rewardMultiplier: generalRewardScale, rewardDepthMultiplier: spiritStoneRewardScale, gradeWeights: { ...z.gradeWeights }, elementPool, primaryElement, maxMonsterElements: z.maxMonsterElements };
+    const majorPowerScale = huntMajorRealmPowerScaleV142(majorRealmIndex);
+    return { id: `realm-map.${majorRealmIndex}.${zone}`, realmOrder: majorStart, majorRealmIndex, realmName: majorRealmNameForIndex(majorRealmIndex) || realmName, biomeName: biomes[majorRealmIndex - 1] ?? majorRealmNameForIndex(majorRealmIndex), name: `${biomes[majorRealmIndex - 1] ?? majorRealmNameForIndex(majorRealmIndex)} · ${majorRealmNameForIndex(majorRealmIndex)}`, description: `${z.description} Mỗi vực có 100 tầng; mỗi tầng là một Boss thật. Hạ Boss để mở tầng kế và biến tầng vừa vượt thành bãi Săn Ảo; sức mạnh build quyết định tốc độ farm. Chủ hệ đổi sau mỗi 20 tầng.`, zone, zoneName: z.name, zoneGradeId: z.grade, equipmentGrade: z.equipmentGrade, floor, zoneFloor: zf, localFloor, floorsPerZone: REALM_MAP_FLOORS_PER_ZONE, majorPowerScale, powerMultiplier: z.power * majorPowerScale, powerByGrade: Object.fromEntries(Object.entries(z.powerByGrade).map(([grade, value]) => [grade, value * majorPowerScale])), rewardMultiplier: generalRewardScale, rewardDepthMultiplier: spiritStoneRewardScale, gradeWeights: { ...z.gradeWeights }, elementPool, primaryElement, maxMonsterElements: z.maxMonsterElements };
 }
 export function realmMapDefinitionForFloor(floor) {
     const order = realmOrderForMapFloor(floor);
