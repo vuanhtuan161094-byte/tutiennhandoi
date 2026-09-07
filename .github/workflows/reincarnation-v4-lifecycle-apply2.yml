@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Fold Fate V4 into existing eager reincarnation core
+      - name: Fold Fate V4 and enforce read-model purity
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -30,6 +30,7 @@ jobs:
           fate_path=Path('dist/core/reincarnation-fate-build-v4.js')
           progress_path=Path('dist/core/reincarnation-progression-v1102.js')
           session_path=Path('dist/core/session.js')
+          contract_path=Path('qa/tests/reincarnation-v4-lifecycle-contract-test.js')
 
           fate_src=fate_path.read_text()
           progress=progress_path.read_text()
@@ -62,11 +63,32 @@ jobs:
                   "from './reincarnation-fate-build-v4.js';",
                   "from './reincarnation-progression-v1102.js';"
               )
-              session_path.write_text(session)
 
               fate_path.write_text("""// Compatibility barrel: Fate V4 implementation lives in reincarnation-progression-v1102.js\nexport {\n  FATE_V4_TIERS, FATE_V4_TIER_NAMES, FATE_V4_UNLOCK_COST_BY_TIER,\n  FATE_BUILD_DEFINITIONS_V4, FATE_BUILD_BY_ID_V4, FATE_BUILD_PATHS_V4, FATE_BUILD_TOTAL_UNLOCK_COST_V4,\n  createFateBuildStateV4, cloneFateBuildStateV4, fateBuildDefinitionV4, fateBuildUnlockPreviewV4,\n  unlockFateBuildV4, selectActiveFateBuildV4, activeFateBuildV4, activeFateBuildModifiersV4,\n} from './reincarnation-progression-v1102.js';\n""")
-          else:
-              print('Fate V4 already folded; no-op')
+
+          # V4 read-model rule: checking Tọa Hóa eligibility must never write recharge timestamps/energy into save.
+          a=session.index('    voluntaryPassingEligibility(')
+          b=session.index('    enterMeditativePassing(', a)
+          eligibility=session[a:b]
+          eligibility=eligibility.replace(
+              '        rp.energy=rechargeReincarnationEnergy(rp.energy,nowUnixMs);',
+              '        const energyState=rechargeReincarnationEnergy(rp.energy,nowUnixMs);'
+          )
+          eligibility=eligibility.replace('rp.energy.current','energyState.current')
+          if 'rp.energy=' in eligibility:
+              raise SystemExit('voluntaryPassingEligibility still mutates RP energy')
+          if 'const energyState=rechargeReincarnationEnergy' not in eligibility:
+              raise SystemExit('read-only energy preview was not installed')
+          session=session[:a]+eligibility+session[b:]
+          session_path.write_text(session)
+
+          # Lock the purity rule into the dedicated lifecycle contract.
+          contract=contract_path.read_text()
+          marker="assert(!session.includes('effectiveManifestationCapacity('));"
+          purity="""const eligibilityBlock=session.slice(session.indexOf('    voluntaryPassingEligibility('),session.indexOf('    enterMeditativePassing('));\nassert(eligibilityBlock.includes('const energyState=rechargeReincarnationEnergy'));\nassert(!eligibilityBlock.includes('rp.energy='),'Tọa Hóa eligibility/read preview must not mutate Energy state.');"""
+          if purity not in contract:
+              contract=contract.replace(marker,marker+'\n'+purity)
+          contract_path.write_text(contract)
           PY
 
       - name: Remove temporary V4 tooling from closure worktree
