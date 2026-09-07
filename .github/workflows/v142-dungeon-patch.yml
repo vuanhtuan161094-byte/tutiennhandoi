@@ -1,0 +1,50 @@
+name: V142 Dungeon Patch
+
+on:
+  push:
+    branches:
+      - feature/v142-equipment-hunt
+    paths:
+      - 'qa/tools/apply-v142-dungeon-patch.mjs'
+      - '.github/workflows/v142-dungeon-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-dungeon:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: feature/v142-equipment-hunt
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Apply V142 dungeon patch
+        run: node qa/tools/apply-v142-dungeon-patch.mjs
+
+      - name: Verify syntax and V142 gates
+        run: |
+          node --check dist/core/dungeon.js
+          node --check dist/core/session-dungeon.js
+          node --check dist/core/session.js
+          node qa/runners/v142-equipment-hunt-gate.js
+
+      - name: Commit patched runtime
+        run: |
+          if git diff --quiet; then
+            echo "No dungeon runtime changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist/core/dungeon.js dist/core/session-dungeon.js dist/core/session.js
+          git commit -m "feat(v142): convert dungeon equipment loot to fragments"
+          git push origin HEAD:feature/v142-equipment-hunt
