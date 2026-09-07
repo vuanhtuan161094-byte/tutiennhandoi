@@ -23,7 +23,16 @@ import {
   ensureEquipmentSetFragmentWalletV142,
   equipmentSetFragmentBalanceV142,
   spendEquipmentSetFragmentsV142,
+  settleEquipmentSetResonanceV143,
+  syncEquipmentSetResonanceItemsV143,
 } from './equipment-set-fragments-v142.js';
+
+const COMPAT_GRADES_V142 = Object.freeze(['mundane', 'spirit', 'mystic', 'earth', 'heaven', 'immortal', 'extreme', 'breaker']);
+/** Hidden transport-only Grade. It is never a V142 progression axis or player-facing quality label. */
+export function equipmentCompatGradeForRankV142(rankIndex) {
+  const rank = Math.max(0, Math.floor(Number(rankIndex) || 0));
+  return COMPAT_GRADES_V142[Math.min(COMPAT_GRADES_V142.length - 1, Math.floor(rank / 4))];
+}
 
 function hash01(seed, salt) {
   let x = ((seed >>> 0) ^ Math.imul((salt + 1) >>> 0, 0x9e3779b1)) >>> 0;
@@ -83,9 +92,8 @@ export function craftRankedEquipmentV142(state, equipmentState, input) {
     slot,
     equipmentRankIndex: rankIndex,
     equipmentRankName: rankName,
-    // Compatibility-only fields for the current combat/equipment transport. They are not progression axes.
     tier: 0,
-    grade: 'mundane',
+    grade: equipmentCompatGradeForRankV142(rankIndex),
     quality: 'mid',
     enhancementLevel: 0,
     traitIds: [],
@@ -115,8 +123,11 @@ export function mergeRankedEquipmentV142(equipmentState, mainId, fodderAId, fodd
   const set = main.setId ? equipmentSetDefinitionV142(main.setId) : undefined;
   main.name = `${set ? `${set.name} · ` : ''}${main.equipmentRankName} · ${EQUIPMENT_SLOT_LABELS_V142[main.slot]}`;
   main.itemLevel = main.equipmentRankIndex * 1000;
+  main.grade = equipmentCompatGradeForRankV142(main.equipmentRankIndex);
   main.stats = equipmentBaseStatsForRankV142(main.slot, main.equipmentRankIndex);
   main.tags = [...new Set([...(main.tags ?? []).filter(tag => !String(tag).startsWith('EquipmentRank:')), `EquipmentRank:${main.equipmentRankName}`])];
+  // Rank-up rebuilds base stats, so reapply the persistent Set Resonance exactly once afterwards.
+  if (main.setId) syncEquipmentSetResonanceItemsV143(equipmentState, main.setId, main.setResonanceLevelV143 ?? 0);
   return { item: main, consumedItemIds: [a.id, b.id], nextRankIndex: main.equipmentRankIndex, nextRankName: main.equipmentRankName };
 }
 
@@ -140,12 +151,15 @@ export function engraveRankedEquipmentSetV142(state, equipmentState, itemId, set
   item.setId = set.id;
   item.name = `${set.name} · ${item.equipmentRankName ?? equipmentRankNameV142(item.equipmentRankIndex)} · ${EQUIPMENT_SLOT_LABELS_V142[item.slot]}`;
   item.tags = [...new Set([...(item.tags ?? []).filter(tag => !String(tag).startsWith('SetV142:')), `SetV142:${set.key}`])];
+  // Completing the last distinct Set slot unlocks endless Tàn Ấn -> Cộng Hưởng conversion.
+  const resonance = settleEquipmentSetResonanceV143(state, equipmentState, set.id);
   return {
     item,
     setId: set.id,
     setName: set.name,
     cost: EQUIPMENT_SET_FRAGMENT_ENGRAVE_COST_V142,
     balance: equipmentSetFragmentBalanceV142(state, set.id),
+    resonance,
   };
 }
 
@@ -153,13 +167,16 @@ export function equipmentCraftingSummaryV142(state, equipmentState) {
   const wallet = ensureEquipmentFragmentWalletV142(state);
   const setWallet = ensureEquipmentSetFragmentWalletV142(state);
   return {
-    schema: 'equipment-crafting.v142',
+    schema: 'equipment-crafting.v143',
     craftCostPerItem: EQUIPMENT_FRAGMENT_CRAFT_COST_V142,
     setEngraveCostPerItem: EQUIPMENT_SET_FRAGMENT_ENGRAVE_COST_V142,
     fragmentWallet: { ...wallet.byRank },
     setFragmentWallet: { ...setWallet.bySetId },
+    setResonanceBySetId: { ...setWallet.resonanceBySetId },
+    setResonanceUnlockedSetIds: [...setWallet.resonanceUnlockedSetIds],
     v142Items: equipmentState.items.filter(item => item.schema === EQUIPMENT_V142_SCHEMA).map(item => ({
-      id: item.id, name: item.name, slot: item.slot, rankIndex: item.equipmentRankIndex, rankName: item.equipmentRankName, enhancementLevel: item.enhancementLevel ?? 0, setId: item.setId ?? '',
+      id: item.id, name: item.name, slot: item.slot, rankIndex: item.equipmentRankIndex, rankName: item.equipmentRankName,
+      enhancementLevel: item.enhancementLevel ?? 0, setId: item.setId ?? '', setResonanceLevel: item.setResonanceLevelV143 ?? 0,
     })),
   };
 }
