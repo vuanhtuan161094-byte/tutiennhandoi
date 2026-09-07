@@ -1,6 +1,14 @@
 // V77: each floor is one real Boss. Ordinary monsters are virtual farm presentation only.
 export const ENDLESS_HUNT_KILLS_PER_FLOOR = 0;
-export const ENDLESS_HUNT_FLOOR_POWER_GROWTH = 1.0075;
+/**
+ * V142 Equipment × Hunt balance:
+ * 800 floors are progression INSIDE one major realm, not 800 extra realms.
+ * 1.0005^799 ~= 1.49; together with Phàm→Phá zone pressure the floor-800 Boss is
+ * roughly 3.4x the floor-1 Boss of the same major realm. That is intentionally in
+ * reach of +15 + Affix + Set + the player's other systems, unlike the retired
+ * 1.0075 curve (~x397 before zone pressure).
+ */
+export const ENDLESS_HUNT_FLOOR_POWER_GROWTH = 1.0005;
 export const endlessHuntGrades = {
     common: { id: 'common', name: 'Thường', description: 'Quái phổ thông của tầng.', weight: 72, powerMultiplier: 1, cultivationPct: 0, spiritStoneMultiplier: 1, equipmentChancePct: 1.5, trainingLogGain: 0.00005 },
     enhanced: { id: 'enhanced', name: 'Cường Hóa', description: 'Cá thể mạnh hơn, thưởng cao hơn.', weight: 21, powerMultiplier: 1.55, cultivationPct: 0, spiritStoneMultiplier: 2.2, equipmentChancePct: 9, trainingLogGain: 0.00012 },
