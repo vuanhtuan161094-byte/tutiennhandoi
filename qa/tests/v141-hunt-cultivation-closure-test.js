@@ -17,14 +17,17 @@ import {
   resolveEndlessHuntFight,
 } from '../../dist/core/endless-hunt.js';
 import {
+  HUNT_VIRTUAL_FARM_MIN_SECONDS_PER_KILL_V77,
   HUNT_VIRTUAL_FARM_MODEL_VERSION_V141,
   huntVirtualFarmPlayerDpsLog10V77,
+  huntVirtualFarmProfileV77,
 } from '../../dist/core/hunt-virtual-farm-v77.js';
 import {
   HUNT_CULTIVATION_CLOSURE_V141,
   buildHuntProductionV110,
 } from '../../dist/core/hunt-production-v110.js';
 import { economyBandScale } from '../../dist/core/economy-v111.js';
+import { OFFLINE_BASE_CAP_REAL_HOURS, OFFLINE_HUNT_MAX_FIGHTS } from '../../dist/core/offline.js';
 
 let passed = 0;
 const test = (name, fn) => { fn(); passed++; console.log(`✓ ${name}`); };
@@ -95,6 +98,16 @@ test('Preview Săn Ảo phản ánh Damage% của Chiến Mệnh nhưng không d
   const c = huntVirtualFarmPlayerDpsLog10V77(bossOnly);
   assert(Math.abs((10 ** (b - a)) - 1.2) < 1e-9, `${10 ** (b - a)}`);
   assert(Math.abs(c - a) < 1e-12, `${a} -> ${c}`);
+});
+
+test('Preview và settlement Săn Ảo dùng cùng hard floor 0.25s; 24h không vượt safety cap', () => {
+  assert.equal(HUNT_VIRTUAL_FARM_MIN_SECONDS_PER_KILL_V77, .25);
+  const preview = huntVirtualFarmProfileV77({ floor: 1, playerDpsLog10: 12, mobHpLog10: 0, eliteChancePct: 0 });
+  assert.equal(preview.secondsPerKill, .25);
+  assert.equal(preview.killsPerHour, 14_400);
+  const theoreticalMax = OFFLINE_BASE_CAP_REAL_HOURS * 3600 / HUNT_VIRTUAL_FARM_MIN_SECONDS_PER_KILL_V77;
+  assert.equal(theoreticalMax, 345_600);
+  assert(theoreticalMax <= OFFLINE_HUNT_MAX_FIGHTS, `${theoreticalMax} > ${OFFLINE_HUNT_MAX_FIGHTS}`);
 });
 
 test('Settlement Săn Ảo lấy TTK từ CombatKernel V2 đại diện, không lấy preview Power Score', () => {
