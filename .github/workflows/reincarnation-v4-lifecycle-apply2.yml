@@ -26,7 +26,6 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
 
           fate_path=Path('dist/core/reincarnation-fate-build-v4.js')
           progress_path=Path('dist/core/reincarnation-progression-v1102.js')
@@ -36,35 +35,35 @@ jobs:
           progress=progress_path.read_text()
           session=session_path.read_text()
 
-          # Idempotent: only fold while progression still imports the standalone Fate module.
           import_line="import { createFateBuildStateV4, cloneFateBuildStateV4 } from './reincarnation-fate-build-v4.js';\n"
           if import_line in progress:
               embedded=fate_src
-              # Rename file-local helpers so the merged implementation cannot collide with existing progression helpers.
-              renames={
-                  'fate':'fateV4Node',
-                  'cultivation':'fateV4Cultivation',
-                  'combat':'fateV4Combat',
-                  'body':'fateV4Body',
-                  'wealth':'fateV4Wealth',
-                  'idle':'fateV4Idle',
-                  'raw':'fateV4Raw',
-                  'starterIds':'fateV4StarterIds',
-              }
-              for old,new in renames.items():
-                  embedded=re.sub(rf'\b{re.escape(old)}\b',new,embedded)
+              # Rename only JS identifiers/declarations. Never rewrite path ids or player-facing strings.
+              embedded=embedded.replace('const fate = (pathId, pathName, tier, order, id, name, summary, modifiers, passive) => ({',
+                                        'const fateV4Node = (pathId, pathName, tier, order, id, name, summary, modifiers, passive) => ({')
+              embedded=embedded.replace("\n  fate(", "\n  fateV4Node(")
+              embedded=embedded.replace('const cultivation = [', 'const fateV4Cultivation = [')
+              embedded=embedded.replace('const combat = [', 'const fateV4Combat = [')
+              embedded=embedded.replace('const body = [', 'const fateV4Body = [')
+              embedded=embedded.replace('const wealth = [', 'const fateV4Wealth = [')
+              embedded=embedded.replace('const idle = [', 'const fateV4Idle = [')
+              embedded=embedded.replace('const raw = [...cultivation, ...combat, ...body, ...wealth, ...idle];',
+                                        'const fateV4Raw = [...fateV4Cultivation, ...fateV4Combat, ...fateV4Body, ...fateV4Wealth, ...fateV4Idle];')
+              embedded=embedded.replace('const ordered = raw.filter(', 'const ordered = fateV4Raw.filter(')
+              embedded=embedded.replace('Object.freeze(raw.map(', 'Object.freeze(fateV4Raw.map(')
+              embedded=embedded.replace('const starterIds = () =>', 'const fateV4StarterIds = () =>')
+              embedded=embedded.replace('starterIds()', 'fateV4StarterIds()')
+
               progress=progress.replace(import_line,'')
               progress=embedded.rstrip()+"\n\n"+progress.lstrip()
               progress_path.write_text(progress)
 
-              # Session already imports progression eagerly; point Fate symbols at the same module.
               session=session.replace(
                   "from './reincarnation-fate-build-v4.js';",
                   "from './reincarnation-progression-v1102.js';"
               )
               session_path.write_text(session)
 
-              # Keep the public/test module as a thin compatibility barrel. It is no longer in the app initial graph.
               fate_path.write_text("""// Compatibility barrel: Fate V4 implementation lives in reincarnation-progression-v1102.js\nexport {\n  FATE_V4_TIERS, FATE_V4_TIER_NAMES, FATE_V4_UNLOCK_COST_BY_TIER,\n  FATE_BUILD_DEFINITIONS_V4, FATE_BUILD_BY_ID_V4, FATE_BUILD_PATHS_V4, FATE_BUILD_TOTAL_UNLOCK_COST_V4,\n  createFateBuildStateV4, cloneFateBuildStateV4, fateBuildDefinitionV4, fateBuildUnlockPreviewV4,\n  unlockFateBuildV4, selectActiveFateBuildV4, activeFateBuildV4, activeFateBuildModifiersV4,\n} from './reincarnation-progression-v1102.js';\n""")
           else:
               print('Fate V4 already folded; no-op')
