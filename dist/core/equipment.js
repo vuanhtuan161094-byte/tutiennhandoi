@@ -2,7 +2,7 @@ import { equipmentAffixPowerV114, equipmentAffixCountV114, formatEquipmentAffixV
 import { activeEquipmentSetMechanicsV116, equipmentSetMechanicTagsV116, isEquipmentSetV116, isLiveEquipmentSetV12310, RETIRED_EQUIPMENT_SET_IDS_V12310, EQUIPMENT_SET_MAX_BUILD_AFFIXES_V116 } from './equipment-set-v116.js';
 import { daoInscriptionPowerV128, equipmentGemEffectV128, equipmentGemSocketCountV128 } from './equipment-inscription-gem-v128.js';
 import { boundedStatCapV129, combineBoundedPct, combineStatPctV129 } from './combat-rules.js';
-import { equipmentSetPowerV142 } from './equipment-v142.js';
+import { EQUIPMENT_MAX_ENHANCEMENT_V142, equipmentSetPowerV142 } from './equipment-v142.js';
 export const CANONICAL_EQUIPMENT_SLOTS = [
     'weapon', 'head', 'robe', 'belt', 'bracelet', 'gloves', 'boots', 'necklace', 'ring', 'talisman',
 ];
@@ -306,8 +306,9 @@ export function attemptEquipmentEnhancement(state, itemId, roll01, downgradeRoll
     if (!item)
         throw new Error(`Unknown equipment instance: ${itemId}`);
     const beforeLevel = clampEnhancement(item.enhancementLevel ?? 0);
-    if (beforeLevel >= EQUIPMENT_MAX_ENHANCEMENT)
-        throw new Error('Trang bị đã đạt +20.');
+    const maxEnhancement = item.schema === 'equipment.v142' ? EQUIPMENT_MAX_ENHANCEMENT_V142 : EQUIPMENT_MAX_ENHANCEMENT;
+    if (beforeLevel >= maxEnhancement)
+        throw new Error(`Trang bị đã đạt +${maxEnhancement}.`);
     const targetLevel = beforeLevel + 1;
     const essenceCost = enhancementEssenceCost(item, targetLevel);
     const ownedEssence = inventory[EQUIPMENT_ENHANCE_ESSENCE_RESOURCE] ?? 0;

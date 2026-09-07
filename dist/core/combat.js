@@ -227,6 +227,7 @@ export class CombatEngine {
         const practice = skillPracticeProfileFromTierV125(practiceTier);
         const authoredGrowth = battleDaoSkillGrowthProfileV126(skill, practiceTier);
         const reductionSources = [
+            stats.cooldownReductionPct ?? 0,
             stats.cooldownReductionBySkillPct?.[skill.id] ?? 0,
             techniqueCooldownReductionPctV119(actor, skill, now),
             practice.cooldownReductionPct,
@@ -965,11 +966,17 @@ export class CombatEngine {
         // Alpha.23.18: readable Ngũ Hành Set bonuses. They are global build stats and do not require an elemental meter.
         raw *= 1 + simpleSetParamV12318(source, 'simple_fire_damage', 'damageBonusPct') / 100;
         if (ctx.sourceTag === 'DoT')
-            raw *= 1 + simpleSetParamV12318(source, 'simple_wood_dot_damage', 'dotDamagePct') / 100;
+            raw *= 1 + (simpleSetParamV12318(source, 'simple_wood_dot_damage', 'dotDamagePct') + Math.max(0, srcStats.dotDamagePct ?? 0)) / 100;
         if (ctx.sourceTag === 'Counter')
-            raw *= 1 + simpleSetParamV12318(source, 'simple_earth_counter_damage', 'counterDamagePct') / 100;
+            raw *= 1 + (simpleSetParamV12318(source, 'simple_earth_counter_damage', 'counterDamagePct') + Math.max(0, srcStats.counterDamagePct ?? 0)) / 100;
         if (target.breakDebuffUntil > now)
-            raw *= 1 + simpleSetParamV12318(source, 'simple_metal_broken_damage', 'damageBonusPct') / 100;
+            raw *= 1 + (simpleSetParamV12318(source, 'simple_metal_broken_damage', 'damageBonusPct') + Math.max(0, srcStats.brokenTargetDamagePct ?? 0)) / 100;
+        const trueEssenceScalingPct = Math.max(0, srcStats.trueEssenceScalingPct ?? 0);
+        if (trueEssenceScalingPct > 0) {
+            const spiritStandard = Math.max(1, combatSpiritStandard(srcStats));
+            const spiritRatio = Math.max(0, Math.min(1, source.spirit / spiritStandard));
+            raw *= 1 + trueEssenceScalingPct * spiritRatio / 100;
+        }
         raw *= 1 + Math.max(0, ctx.runtimeEffectBonusPct) / 100;
         raw *= 1 + Math.max(0, ctx.cooldownDamageBonusPct) / 100;
         raw *= battleDaoV2OutgoingMultiplier(source, target, now, ctx.sourceTag);

@@ -5,7 +5,7 @@ import { EQUIPMENT_AFFIX_DEFINITIONS_V114, EQUIPMENT_AFFIX_MIN_ROLL_PCT_V114, EQ
  *
  * Design locks:
  * - one equipment rank axis only: Phàm -> 28 cultivation major realms -> endless Đạo Chuyển.
- * - one universal Equipment Fragment currency. A Phàm item costs 50 fragments; every next rank costs x3.
+ * - one ranked fragment wallet: every item costs 50 fragments of its own rank; 3 lower-rank fragments refine into 1 next-rank fragment.
  * - Hunt/dungeon equipment loot is converted to fragments. Finished gear is deliberately crafted/merged.
  * - 6 attire slots own uncapped/long-growth Set stats; 4 jewelry slots own bounded utility Set stats.
  * - no live Grade/Quality/Star/Gem/Đạo Văn layer in V142 items.
@@ -53,7 +53,7 @@ const ATTIRE_SETS = [
     id: 'set.v142.attire.metal', key: 'metal', name: 'Thái Bạch Canh Kim Phá Giới Bộ', category: 'attire', element: 'Metal',
     bonuses: [
       { pieces: 2, name: 'Kim · Sát Phạt', statMultipliers: { attack: 0.08 } },
-      { pieces: 4, name: 'Kim · Phá Thế', flatStats: { breakPowerPct: 18 } },
+      { pieces: 4, name: 'Kim · Phá Thế', flatStats: { breakEffectPct: 18 } },
       { pieces: 6, name: 'Kim · Trảm Thất Thế', flatStats: { brokenTargetDamagePct: 30 } },
     ],
   },
