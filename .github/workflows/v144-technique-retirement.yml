@@ -20,7 +20,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Adjust V144 patcher retry matcher
+      - name: Adjust V144 patcher retry2 matchers
         run: node qa/tools/fix-v144-patcher-r1.mjs
       - name: Apply V144 retirement patch
         run: node qa/tools/apply-v144-technique-retirement.mjs
@@ -42,6 +42,7 @@ jobs:
         run: |
           git config user.name "vuanhtuan161094-byte"
           git config user.email "vuanhtuan161094@gmail.com"
+          rm -f qa/tools/fix-v144-patcher-r1.mjs
           git add -A
           if git diff --cached --quiet; then
             echo "No V144 changes to commit."
