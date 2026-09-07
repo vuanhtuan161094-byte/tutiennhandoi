@@ -4,11 +4,10 @@ import {
   EQUIPMENT_JEWELRY_SLOTS_V142,
   EQUIPMENT_SLOTS_V142,
   EQUIPMENT_SLOT_LABELS_V142,
-  EQUIPMENT_SLOT_BASE_STATS_V142,
   EQUIPMENT_V142_SCHEMA,
   equipmentAffixCountForRankV142,
+  equipmentBaseStatsForRankV142,
   equipmentRankNameV142,
-  equipmentRealmMultiplierV142,
   equipmentSetDefinitionV142,
 } from './equipment-v142.js';
 import {
@@ -57,12 +56,6 @@ function rollAffixes(slot, rankIndex, seed) {
   }
   return result;
 }
-function baseStats(slot, rankIndex) {
-  const base = EQUIPMENT_SLOT_BASE_STATS_V142[slot];
-  if (!base) throw new Error(`Ô trang bị V142 không hợp lệ: ${slot}`);
-  const multiplier = equipmentRealmMultiplierV142(rankIndex);
-  return Object.fromEntries(Object.entries(base).map(([key, value]) => [key, Math.round(value * multiplier * 1000) / 1000]));
-}
 function removeItems(equipmentState, ids) {
   const removed = new Set(ids);
   equipmentState.items = equipmentState.items.filter(item => !removed.has(item.id));
@@ -100,7 +93,7 @@ export function craftRankedEquipmentV142(state, equipmentState, input) {
     reforgeCount: 0,
     gemSockets: [],
     itemLevel: rankIndex * 1000,
-    stats: baseStats(slot, rankIndex),
+    stats: equipmentBaseStatsForRankV142(slot, rankIndex),
     tags: ['EquipmentV142', `EquipmentRank:${rankName}`],
     source: { kind: 'craft', recipeId: 'equipment.v142.ranked-fragments', floor: rankIndex + 1, seed },
     acquiredWorldYear: Number(input.acquiredWorldYear) || 0,
@@ -122,7 +115,7 @@ export function mergeRankedEquipmentV142(equipmentState, mainId, fodderAId, fodd
   const set = main.setId ? equipmentSetDefinitionV142(main.setId) : undefined;
   main.name = `${set ? `${set.name} · ` : ''}${main.equipmentRankName} · ${EQUIPMENT_SLOT_LABELS_V142[main.slot]}`;
   main.itemLevel = main.equipmentRankIndex * 1000;
-  main.stats = baseStats(main.slot, main.equipmentRankIndex);
+  main.stats = equipmentBaseStatsForRankV142(main.slot, main.equipmentRankIndex);
   main.tags = [...new Set([...(main.tags ?? []).filter(tag => !String(tag).startsWith('EquipmentRank:')), `EquipmentRank:${main.equipmentRankName}`])];
   return { item: main, consumedItemIds: [a.id, b.id], nextRankIndex: main.equipmentRankIndex, nextRankName: main.equipmentRankName };
 }
