@@ -1,9 +1,9 @@
-# CURRENT CHECKPOINT — FEATURE GAMEPLAY / V144 CLEANUP
+# CURRENT CHECKPOINT — FEATURE GAMEPLAY / V144 FINAL QA
 
-**Date:** 2026-09-07  
+**Date:** 2026-09-08  
 **Branch:** `feature/v142-equipment-hunt`  
 **Gameplay/web version:** `1.40.0-alpha.24.0`  
-**Status:** V142 Equipment × Hunt + V143 reward authority + V144 Công Pháp legacy retirement implemented; canonical full QA running.  
+**Status:** V142 Equipment × Hunt + V143 reward authority CLOSED; V144 Công Pháp legacy retirement source complete, final normal V140 Canonical QA running.  
 **Rule:** use current branch HEAD as source of truth. Do not merge to `main` unless the user explicitly asks.
 
 ## 1. Tu Luyện V140 — CANONICAL / KEEP
@@ -76,9 +76,9 @@ V144 retired the duplicate V103/V119 manual gameplay lane:
 - removed Hunt legacy technique fragment and complete-manual minting;
 - retired old 0–100 technique mastery progression as a power source;
 - retired old manual equip/study/restore/player-facing APIs;
-- retired manual-driven Hành Ấn selection;
+- retired manual-driven Hành Ấn selection, including the stale client snapshot surface;
 - retired dungeon mastery gains for the dead manual system;
-- removed V103/V119 manual stats/triggers/passives from live character combat;
+- removed V103/V119 manual stats/triggers/passives from live character combat and stat provenance;
 - kept `technique-runtime-v119.js` only as a neutral compatibility boundary because combat modules still import its helper API;
 - retained authored skill elemental identity such as `primaryRoot` damage coefficients;
 - Battle Đạo V2 remains live and realm-driven; do not reintroduce legacy manual gates for Battle Đạo skills/passives.
@@ -87,10 +87,26 @@ Old save fields such as `knownTechniqueIds`, `techniqueMastery`, `activeTechniqu
 
 V144 closure regression: `qa/tests/v144-technique-v103-retirement-test.js`.
 
-Implementation commit: `cd4be634842d05f9185c6c5c8782fcb29ccc6fd2` (`feat(v144): retire V103 V119 manual progression`).
+Primary retirement commit: `cd4be634842d05f9185c6c5c8782fcb29ccc6fd2` (`feat(v144): retire V103 V119 manual progression`).
+Final source closure commit: `5f49003b0324059929a5181ff1ff8f10d595b053` (`fix(v144): close technique retirement cleanup`).
 
-## 6. Current QA rule
+## 6. Balance closure caused by retiring legacy manual combat
 
-Do not mark V144 CLOSED until the normal `V140 Canonical QA` workflow passes on a commit containing the V144 gameplay source. Focused one-shot smoke gates passing is not a substitute for canonical full QA.
+Removing V103/V119 combat power changed the shared CombatKernel balance envelope, so V144 recalibrates the live systems rather than restoring dead manual bonuses:
 
-After canonical QA passes, update this checkpoint to PASS and continue from the current branch HEAD. Do not reopen retired V103/V119 gameplay because obsolete tests or historical files mention it; update/remove obsolete tests instead if their sole purpose is the retired system.
+- Hỏa Set immortal-grade curve adjusted minimally to keep the five live elemental Sets inside the existing 15% aggregate role envelope.
+- Battle Đạo V2 representative Dao Hanh 70 shared-kernel coefficients recalibrated; no PvP-only or Boss-only tuning was introduced.
+- `qa/tests/v129-global-build-balance-test.js` passes with all eight Main Đạo inside the canonical 35–65% representative round-robin envelope.
+
+## 7. QA closure state
+
+Temporary finalization run `34146988121` completed SUCCESS on the exact repaired source and passed:
+
+- V144 focused retirement gate;
+- V140 cultivation core / transport / zero-legacy;
+- V141 Hunt × Cultivation closure;
+- V142/V143 Equipment × Hunt gate;
+- backend fast + frontend fast;
+- backend full closure + frontend full closure.
+
+The temporary finalization workflow deleted itself before committing source. This documentation commit exists specifically to trigger the normal `V140 Canonical QA` on final V144 source. Mark V144 CLOSED only after that normal workflow reports SUCCESS.
