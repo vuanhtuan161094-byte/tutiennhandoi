@@ -1,9 +1,9 @@
-# CURRENT CHECKPOINT — FEATURE GAMEPLAY / V144 FINAL QA
+# CURRENT CHECKPOINT — FEATURE GAMEPLAY / V144 CLOSED
 
 **Date:** 2026-09-08  
 **Branch:** `feature/v142-equipment-hunt`  
 **Gameplay/web version:** `1.40.0-alpha.24.0`  
-**Status:** V142 Equipment × Hunt + V143 reward authority CLOSED; V144 Công Pháp legacy retirement source complete, final normal V140 Canonical QA running.  
+**Status:** V142 Equipment × Hunt + V143 reward authority + V144 Công Pháp legacy retirement **CLOSED / canonical QA PASS**.  
 **Rule:** use current branch HEAD as source of truth. Do not merge to `main` unless the user explicitly asks.
 
 ## 1. Tu Luyện V140 — CANONICAL / KEEP
@@ -98,15 +98,25 @@ Removing V103/V119 combat power changed the shared CombatKernel balance envelope
 - Battle Đạo V2 representative Dao Hanh 70 shared-kernel coefficients recalibrated; no PvP-only or Boss-only tuning was introduced.
 - `qa/tests/v129-global-build-balance-test.js` passes with all eight Main Đạo inside the canonical 35–65% representative round-robin envelope.
 
-## 7. QA closure state
+## 7. V144 CANONICAL QA — PASS / LOCKED
 
-Temporary finalization run `34146988121` completed SUCCESS on the exact repaired source and passed:
+Normal `V140 Canonical QA` run `34147106838` completed **SUCCESS** on commit `c54100bdf6839415162ab0b99db448f266bf46ed`, containing final V144 gameplay source.
 
-- V144 focused retirement gate;
-- V140 cultivation core / transport / zero-legacy;
+PASS gates:
+
+- Codebase health scan;
+- V140 cultivation core;
+- V140 cultivation transport;
+- V140 zero legacy;
 - V141 Hunt × Cultivation closure;
-- V142/V143 Equipment × Hunt gate;
-- backend fast + frontend fast;
-- backend full closure + frontend full closure.
+- V142 Equipment × Hunt;
+- backend fast gate;
+- frontend fast gate;
+- backend closure;
+- frontend closure.
 
-The temporary finalization workflow deleted itself before committing source. This documentation commit exists specifically to trigger the normal `V140 Canonical QA` on final V144 source. Mark V144 CLOSED only after that normal workflow reports SUCCESS.
+The temporary V144 patch/finalization workflows were removed. V144 is closed. Do not reopen V103/V119 manual gameplay because obsolete tests, old saves or historical content mention it; only compatibility data may remain inert until a later explicit migration.
+
+## 8. Next work
+
+Continue from current branch HEAD and the next user-selected gameplay module. Preserve V140 cultivation, V141 Hunt, V142/V143 equipment-reward authority and V144 single-Công-Pháp invariants unless the user explicitly changes a design rule.
