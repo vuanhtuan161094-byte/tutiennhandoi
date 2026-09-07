@@ -28,8 +28,7 @@ test('Character provenance exposes real authored stages instead of one opaque Nh
   const ids=new Set(p.statProvenance.stats.flatMap(x=>x.sources.map(y=>y.id)));
   assert(ids.has('character.potential'),'canonical core Potential must be traceable');
   assert(!ids.has('character.legacy_potential'),'retired legacy Potential must never be invented');
-  const crit=stat(p,'critChancePct');
-  assert(crit.sources.some(x=>x.id==='character.techniques'),'live Bí Thuật contribution must be traceable when it changes Crit');
+  assert(!ids.has('character.techniques'),'retired V103/V119 Công Pháp combat source must not survive in provenance');
 });
 
 test('Effective HP provenance uses combatMaxHp and never double-counts physique conversion', () => {

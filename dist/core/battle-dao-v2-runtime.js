@@ -645,14 +645,14 @@ export function remainingDaoPassiveBonusesV2(entity, now) {
 // identities at representative midgame (Dao Hanh 70) and endgame (Dao Hanh 100).
 // This is NOT PvP-specific: the same multiplier is consumed by every CombatKernel V2 mode.
 export const BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_MID = Object.freeze({
-    sword: 1.50,
+    sword: 1.73,
     fist: 1.05,
     body: 1.15,
-    spell: 2.20,
-    poison: 1.00,
-    artifact: 1.10,
-    formation: 1.50,
-    mind: 2.80,
+    spell: 1.75,
+    poison: 0.88,
+    artifact: 1.15,
+    formation: 1.75,
+    mind: 2.70,
 });
 export const BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_ENDGAME = Object.freeze({
     sword: 1.45,
