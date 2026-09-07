@@ -22,6 +22,54 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Fold Fate V4 into existing eager reincarnation core
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          fate_path=Path('dist/core/reincarnation-fate-build-v4.js')
+          progress_path=Path('dist/core/reincarnation-progression-v1102.js')
+          session_path=Path('dist/core/session.js')
+
+          fate_src=fate_path.read_text()
+          progress=progress_path.read_text()
+          session=session_path.read_text()
+
+          # Idempotent: only fold while progression still imports the standalone Fate module.
+          import_line="import { createFateBuildStateV4, cloneFateBuildStateV4 } from './reincarnation-fate-build-v4.js';\n"
+          if import_line in progress:
+              embedded=fate_src
+              # Rename file-local helpers so the merged implementation cannot collide with existing progression helpers.
+              renames={
+                  'fate':'fateV4Node',
+                  'cultivation':'fateV4Cultivation',
+                  'combat':'fateV4Combat',
+                  'body':'fateV4Body',
+                  'wealth':'fateV4Wealth',
+                  'idle':'fateV4Idle',
+                  'raw':'fateV4Raw',
+                  'starterIds':'fateV4StarterIds',
+              }
+              for old,new in renames.items():
+                  embedded=re.sub(rf'\b{re.escape(old)}\b',new,embedded)
+              progress=progress.replace(import_line,'')
+              progress=embedded.rstrip()+"\n\n"+progress.lstrip()
+              progress_path.write_text(progress)
+
+              # Session already imports progression eagerly; point Fate symbols at the same module.
+              session=session.replace(
+                  "from './reincarnation-fate-build-v4.js';",
+                  "from './reincarnation-progression-v1102.js';"
+              )
+              session_path.write_text(session)
+
+              # Keep the public/test module as a thin compatibility barrel. It is no longer in the app initial graph.
+              fate_path.write_text("""// Compatibility barrel: Fate V4 implementation lives in reincarnation-progression-v1102.js\nexport {\n  FATE_V4_TIERS, FATE_V4_TIER_NAMES, FATE_V4_UNLOCK_COST_BY_TIER,\n  FATE_BUILD_DEFINITIONS_V4, FATE_BUILD_BY_ID_V4, FATE_BUILD_PATHS_V4, FATE_BUILD_TOTAL_UNLOCK_COST_V4,\n  createFateBuildStateV4, cloneFateBuildStateV4, fateBuildDefinitionV4, fateBuildUnlockPreviewV4,\n  unlockFateBuildV4, selectActiveFateBuildV4, activeFateBuildV4, activeFateBuildModifiersV4,\n} from './reincarnation-progression-v1102.js';\n""")
+          else:
+              print('Fate V4 already folded; no-op')
+          PY
+
       - name: Remove temporary V4 tooling from closure worktree
         run: |
           rm -f .github/workflows/reincarnation-v4-closure.yml
