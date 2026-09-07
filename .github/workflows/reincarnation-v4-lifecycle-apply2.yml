@@ -34,8 +34,21 @@ jobs:
           Path('/tmp/reincarnation-v4-lifecycle-patch.py').write_text('\n'.join(body)+'\n')
           PY
           python3 /tmp/reincarnation-v4-lifecycle-patch.py
-          echo '--- remaining Mệnh Thai calls ---'
-          grep -n -C 4 'applyFateEmbryoToEntity\|effectiveManifestationCapacity\|fateEmbryo' dist/core/session.js || true
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('dist/core/session.js')
+          s=p.read_text()
+          old="""            const immortalPlayer = applyImmortalToEntity(greatPlayer, this.stateValue.immortal, this.stateValue.realm, effectiveManifestationCapacity(this.stateValue.immortal.manifestationCapacity, this.stateValue.fateEmbryo));
+            const fatePlayer = applyFateEmbryoToEntity(immortalPlayer, this.stateValue.fateEmbryo, this.fateEmbryoSummary());
+            const talentedPlayer = applyReincarnationCombatTalents(fatePlayer, this.stateValue.inheritedOrigins);"""
+          new="""            const immortalPlayer = applyImmortalToEntity(greatPlayer, this.stateValue.immortal, this.stateValue.realm, this.stateValue.immortal.manifestationCapacity);
+            const talentedPlayer = applyReincarnationCombatTalents(immortalPlayer, this.stateValue.inheritedOrigins);"""
+          if old not in s:
+              raise SystemExit('remaining fate embryo combat hook anchor missing')
+          p.write_text(s.replace(old,new))
+          PY
+          echo '--- remaining Mệnh Thai runtime hooks ---'
+          grep -n -C 3 'applyFateEmbryoToEntity\|effectiveManifestationCapacity' dist/core/session.js || true
       - name: Verify lifecycle closure
         run: |
           node --check dist/core/reincarnation-progression-v1102.js
