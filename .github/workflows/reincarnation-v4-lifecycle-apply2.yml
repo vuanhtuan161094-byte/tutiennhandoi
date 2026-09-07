@@ -1,4 +1,4 @@
-name: Reincarnation V4 Lifecycle Apply R2
+name: Reincarnation V4 Final Closure
 
 on:
   push:
@@ -9,10 +9,10 @@ permissions:
   contents: write
 
 jobs:
-  apply:
+  closure:
     if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,11 +22,19 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Apply lifecycle finalizer
-        run: python3 qa/reincarnation-v4-finalize.py
-
-      - name: Verify lifecycle closure
+      - name: Remove temporary V4 tooling from closure worktree
         run: |
+          rm -f .github/workflows/reincarnation-v4-closure.yml
+          rm -f .github/workflows/reincarnation-v4-finalize.yml
+          rm -f .github/workflows/reincarnation-v4-lifecycle-apply2.yml
+          rm -f .github/workflows/reincarnation-v4-lifecycle-patch.yml
+          rm -f .github/workflows/reincarnation-v4-lifecycle-run.yml
+          rm -f .github/workflows/reincarnation-v4-rebirth-diagnostic.yml
+          rm -f qa/reincarnation-v4-finalize.py
+
+      - name: Runtime syntax and dedicated contracts
+        run: |
+          node --check app.js
           node --check dist/core/reincarnation-progression-v1102.js
           node --check dist/core/reincarnation-fate-build-v4.js
           node --check dist/core/reincarnation.js
@@ -39,13 +47,25 @@ jobs:
           node qa/tests/reincarnation-fate-build-v4-test.js
           node qa/tests/v140-cultivation-core-test.js
           node qa/tests/v140-cultivation-transport-test.js
-          node qa/runners/v140-backend-gates.js fast
+          node qa/tests/v140-zero-legacy-test.js
 
-      - name: Commit validated runtime
+      - name: Backend fast
+        run: node qa/runners/v140-backend-gates.js fast
+
+      - name: Frontend fast
+        run: node qa/runners/v140-frontend-gates.js fast
+
+      - name: Backend closure
+        run: node qa/runners/v140-backend-gates.js closure
+
+      - name: Frontend closure
+        run: node qa/runners/v140-frontend-gates.js closure
+
+      - name: Commit clean closure
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add dist/core/reincarnation-progression-v1102.js dist/core/reincarnation.js dist/core/life.js dist/core/session.js dist/core/gameplay-dispatch.js qa/tests/reincarnation-v4-lifecycle-contract-test.js qa/tests/v129-gameplay-consistency-test.js
+          git add -A
           git diff --cached --quiet && exit 0
-          git commit -m "feat: rebuild reincarnation v4 lifecycle"
+          git commit -m "chore: close reincarnation v4 lifecycle workspace"
           git push origin HEAD:feature/reincarnation-cultivation-r3
