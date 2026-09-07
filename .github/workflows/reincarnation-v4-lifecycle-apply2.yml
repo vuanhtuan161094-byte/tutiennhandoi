@@ -41,14 +41,11 @@ jobs:
           p=Path('dist/core/session.js')
           s=p.read_text()
 
-          # Remove any last Mệnh Thai combat wrapper in boss/combat paths.
           pattern=r"(?P<indent>[ \t]*)const immortalPlayer = applyImmortalToEntity\(greatPlayer, this\.stateValue\.immortal, this\.stateValue\.realm, effectiveManifestationCapacity\(this\.stateValue\.immortal\.manifestationCapacity, this\.stateValue\.fateEmbryo\)\);\s*const fatePlayer = applyFateEmbryoToEntity\(immortalPlayer, this\.stateValue\.fateEmbryo, this\.fateEmbryoSummary\(\)\);\s*const talentedPlayer = applyReincarnationCombatTalents\(fatePlayer, this\.stateValue\.inheritedOrigins\);"
           def repl(m):
               i=m.group('indent')
               return f"{i}const immortalPlayer = applyImmortalToEntity(greatPlayer, this.stateValue.immortal, this.stateValue.realm, this.stateValue.immortal.manifestationCapacity);\n{i}const talentedPlayer = applyReincarnationCombatTalents(immortalPlayer, this.stateValue.inheritedOrigins);"
           s,_=re.subn(pattern,repl,s)
-
-          # personalPowerSummary must not keep a deleted Mệnh Thai stage or variable.
           s=s.replace(
               "        const capacity = effectiveManifestationCapacity(this.stateValue.immortal.manifestationCapacity, this.stateValue.fateEmbryo);",
               "        const capacity = this.stateValue.immortal.manifestationCapacity;"
@@ -60,7 +57,6 @@ jobs:
           s=s.replace("            { id: 'fate_embryo', name: 'Mệnh Thai / Mệnh Cơ', entity: fate },\n", "")
           p.write_text(s)
 
-          # V129 regression owned the removed First-Clear Tọa Hóa gate. Rewrite it to assert V4 semantics.
           p=Path('qa/tests/v129-gameplay-consistency-test.js')
           t=p.read_text()
           t=t.replace("test('legacy Săn Yêu FirstClearLike event unlocks Tọa Hóa', () => {\n  const ev = { id:'legacy.hunt.first', worldTimeYears:20, ageYears:30, type:'combat', significance:34, message:'Boss cleared', tags:['EndlessHunt','Victory','FloorBoss','FirstClearLike'] };\n  assert.equal(session(1299101, readyState(), [ev]).voluntaryPassingEligibility().ok, true);\n});",
@@ -71,6 +67,17 @@ jobs:
           "test('Phó Bản clear state is independent from voluntary Tọa Hóa eligibility', () => {\n  const state = readyState();\n  state.dungeons.highestClearedFloor['dungeon.spirit_gathering_cave'] = 2;\n  const gate = session(1299103, state, []).voluntaryPassingEligibility();\n  assert.equal(gate.ok, true);\n  assert.equal(gate.firstClears, undefined);\n});")
           t=t.replace("test('Tọa Hóa blocker message names concrete player actions instead of unexplained First Clear jargon', () => {\n  const gate = session(1299104, readyState(), []).voluntaryPassingEligibility();\n  assert.equal(gate.ok, false);\n  assert.match(gate.reason, /Boss Săn Yêu|Phó Bản/);\n  assert.doesNotMatch(gate.reason, /First Clear/);\n});",
           "test('Tọa Hóa V4 has no age, realm or First Clear blocker when energy is sufficient', () => {\n  const state=createPlayableAdventureState();\n  state.ageYears=1; state.realm.maxRealmOrder=0; state.realm.realmId='realm.mortal';\n  const gate=session(1299104,state,[]).voluntaryPassingEligibility();\n  assert.equal(gate.ok,true);\n  assert.equal(gate.reason,undefined);\n  assert.ok(gate.energyCost>0);\n});")
+
+          # Remaining read-model and full-flow assertions must also reflect V4 ownership.
+          t=t.replace("test('Luân Hồi read-model exposes Tọa Hóa as available after a legacy Săn Yêu clear', () => {", "test('Luân Hồi read-model exposes Tọa Hóa from energy, independent of First Clear', () => {")
+          t=t.replace("  assert.ok(hub.lifeEnd.firstClears >= 1);", "  assert.equal(hub.lifeEnd.firstClears, undefined);")
+          t=t.replace("test('player-facing perform path can actually execute Tọa Hóa once the repaired gate is satisfied', () => {", "test('player-facing perform path executes voluntary Tọa Hóa without a First Clear gate', () => {")
+          t=t.replace("test('legacy Săn Yêu clear survives the complete Tọa Hóa → Thí Luyện → Chuyển Sinh player flow', () => {", "test('complete V4 flow is Tọa Hóa → Tổng Kết Nhất Kiếp → Chuyển Sinh without synthetic trials', () => {")
+          t=t.replace("  const offense = api.runReincarnationTrialV2('offense', 1_000);\n  const survival = api.runReincarnationTrialV2('survival', 2_000);\n  assert.equal(offense.durationSeconds, 60);\n  assert.equal(survival.durationSeconds, 60);\n", "")
+          t=t.replace("test('a new life must earn its own first clear before voluntary Tọa Hóa becomes available again', () => {", "test('a new life may voluntarily Tọa Hóa again while enough Luân Hồi Energy remains', () => {")
+          t=t.replace("  api.runReincarnationTrialV2('offense', 1_000);\n  api.runReincarnationTrialV2('survival', 2_000);\n", "")
+          t=t.replace("  // Recreate the non-clear requirements in life 2; prior-life clears must not leak through meta/history.\n  ss.stateValue.realm.realmId = 'realm.foundation.early';\n  ss.stateValue.realm.maxRealmOrder = 10;\n  ss.stateValue.ageYears = 60;\n  ss.stateValue.lifespanYears = Math.max(240, ss.stateValue.lifespanYears ?? 0);\n  const gate = ss.voluntaryPassingEligibility();\n  assert.equal(gate.ok, false);\n  assert.equal(gate.firstClears, 0);\n  assert.match(gate.reason, /Boss Săn Yêu|Phó Bản/);",
+          "  const gate = ss.voluntaryPassingEligibility();\n  assert.equal(gate.ok, true);\n  assert.equal(gate.firstClears, undefined);\n  assert.ok(gate.energyCost > 0);")
           p.write_text(t)
           PY
           echo '--- remaining Mệnh Thai runtime hooks ---'
