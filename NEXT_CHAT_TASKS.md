@@ -1,171 +1,104 @@
 # NEXT CHAT TASKS — GAME TU TIÊN NHÀN DỖI
 
-**Canonical checkpoint:** `V141_CODEBASE_OPTIMIZED`
+**Date:** 2026-09-07  
+**Canonical branch:** `feature/reincarnation-cultivation-r3`  
 **Gameplay/web version:** `1.40.0-alpha.24.0`
-**Date:** 2026-09-06
 
-## 0. Quy tắc bắt buộc khi mở chat mới
+## 0. Quy tắc bắt buộc
 
-1. Dùng source V141 codebase-optimized hiện tại làm **source of truth duy nhất**. V141 là structural refactor trên gameplay V140, không phải thiết kế gameplay mới.
-2. Đọc theo thứ tự:
-   - `CHAT_MOI_START_HERE.md`
-   - `CURRENT_CHECKPOINT.md`
-   - `V141_CODEBASE_OPTIMIZATION_CLOSURE_REPORT.md`
-   - `V140_CULTIVATION_CLOSURE_REPORT.md`
-   - `docs/CULTIVATION_V140_BALANCE.csv`
-   - `docs/PROJECT_STRUCTURE.md`
-3. Không phục hồi mechanic Tu Luyện V129 chỉ vì memory/chat/test/tài liệu cũ nhắc tới.
-4. Không thêm một hệ mới chỉ để giải quyết một vấn đề mà hệ hiện tại đã có thể xử lý.
-5. Khi sửa hệ nào: audit backend + frontend + save + content + economy + test cùng lúc; không sửa riêng UI.
-6. Sau mỗi hệ phải có: source-of-truth rõ, zero-zombie scan, targeted test và regression liên quan.
-7. Không đảo ngược các module boundary V141 chỉ để tiện vá nhanh; nếu cần thay đổi boundary phải chứng minh consumer/QA rõ ràng.
+1. Dùng **current branch HEAD** làm source of truth.
+2. Đọc `CHAT_MOI_START_HERE.md` rồi `CURRENT_CHECKPOINT.md` trước.
+3. Không dùng kế hoạch V141 cũ để kết luận Luân Hồi chưa được code; branch hiện tại đã có Luân Hồi V4 work.
+4. Không phục hồi mechanic Tu Luyện đã bị V140 loại bỏ chỉ vì file/test cũ nhắc tới.
+5. Làm từng chức năng theo yêu cầu mới nhất của người dùng; không tự vẽ sẵn hàng loạt nhánh/hệ chưa được thiết kế.
+6. Khi sửa một hệ, kiểm tra consumer backend + frontend + save + economy/content + test liên quan.
+7. Không merge `main` nếu người dùng chưa yêu cầu.
 
-## 1. A. Tu Luyện Cốt Lõi — CLOSED / KHÔNG THIẾT KẾ LẠI
+## 1. Tu Luyện V140 — CLOSED
 
-V140 đã khóa và V141 giữ nguyên:
+Giữ nguyên canonical hiện tại:
 
-- 118 tiểu cảnh / 29 đại cảnh tới Sáng Thế Chủ.
-- Một nguồn canonical: `dist/core/cultivation-v140.js`.
-- `Tu Vi nền -> target time -> required Tu Vi`.
-- Base Tu Vi không giảm khi lên cảnh.
-- Tự Tu commit số nguyên mỗi 15 giây.
-- Tiểu cảnh tự thăng khi đầy Tu Vi.
-- Đại cảnh dùng `Thăng Cảnh` deterministic.
-- Orders 41–45 là cửa Thiên Kiếp riêng, không auto-skip.
-- Bế Quan +3h bank/ngày, tối đa 9h; reward theo % requirement rồi quy ra số Tu Vi thực.
-- Nguồn Tu Vi phải có provenance: base + flat cụ thể + % base hiếm.
-- Thương Thế là trạng thái tổn thương cultivation duy nhất; không làm giảm Tự Tu, nhưng thương nặng có thể chặn Bế Quan/Thăng Cảnh.
-- Thọ Nguyên / Đạo Suy giữ là life-cycle systems riêng.
+- 118 realm orders.
+- Phàm Nhân order 0 + 28 đại cảnh tu luyện Luyện Khí → Sáng Thế Chủ.
+- tick 15 giây.
+- auto tiểu cảnh.
+- deterministic Thăng Cảnh / explicit Thiên Kiếp gate.
+- Bế Quan +3h bank/ngày, cap 9h.
 
-Đã xóa khỏi production và **không được phục hồi**:
+Không tái tạo pipeline cultivation cũ.
 
-- Căn Cơ / Tổn Căn.
-- Kinh Mạch cultivation.
-- Tạp Chất / Độ Thanh Tịnh.
-- Hấp Thu / Thông Lượng / Backlog / Luyện Hóa / Tinh Thuần pipeline.
-- 5 phương thức Tu Luyện.
-- Thiêu Thọ.
-- Phá Cảnh RNG / Preparation / quality / failure engine.
-- Phá Cảnh Đan.
-- giảm Tu Vi requirement của cảnh giới.
-- late-game realm catalyst.
+## 2. Luân Hồi V4 — CURRENT FEATURE WORK
 
-Các từ "breakthrough" thuộc **Linh Căn / Pháp Bảo / Thể Chất** nếu là nâng phẩm riêng của hệ đó không đồng nghĩa với Phá Cảnh cảnh giới và không được xóa nhầm.
+Luân Hồi V4 đã có implementation trên branch. Khi người dùng tiếp tục phần này, đọc live source trước, đặc biệt:
 
-## 2. V141 Codebase Optimization — CLOSED
+- `dist/core/reincarnation-progression-v1102.js`
+- `dist/core/reincarnation-fate-build-v4.js`
+- `dist/core/life.js`
+- `dist/core/session.js`
+- `qa/tests/reincarnation-fate-build-v4-test.js`
+- `qa/tests/reincarnation-v4-gameplay-balance-test.js`
 
-V141 chỉ tối ưu cấu trúc code, giữ nguyên gameplay V140. Các trách nhiệm lớn đã được tách khỏi monolith gồm gameplay dispatch/flow, combat decision/effect resolution, session guidance, dungeon challenge, alchemy-pill use và content-event effect application. Vạn Thế read-model được gộp vào gameplay-flow để không làm tăng initial static graph vượt performance budget.
+Nguyên tắc hiện tại:
 
-Closure cuối:
+- xây theo từng module thực tế, không dựng trước 7 nhánh speculative;
+- Mệnh Cách là lựa chọn build deterministic cho đời hiện tại, không gacha/reroll;
+- RP là currency tiến triển/spend của Luân Hồi V4;
+- exact values/formulas phải lấy từ source hiện tại, không lấy từ chat cũ nếu source đã thay đổi.
 
-- Cultivation core: **11/11 PASS**.
-- Transport/API: **4/4 PASS**.
-- Zero legacy: **4510/4510 PASS** trên 205 production files.
-- Backend closure: **47/47 PASS**.
-- Frontend closure: **19/19 PASS**.
-- Frontend performance architecture gate: **PASS**.
-- Health scan: **0 unresolved relative imports; 0 risky-pattern hits**.
+## 3. Săn Yêu × Tu Luyện V140 — CLOSED / KHÔNG RE-AUDIT
 
-## 3. Việc tiếp theo — B. LUÂN HỒI
+### Gameplay đã khóa
 
-### Mục tiêu
+- 28 major maps.
+- 800 tầng/major (`8 vực × 100`).
+- mỗi tầng một Boss thật.
+- Boss thắng → mở tầng kế → tầng vừa qua thành Săn Ảo.
+- Boss thật dùng CombatKernel V2.
+- Săn Ảo settlement dùng representative CombatKernel V2 để lấy TTK rồi aggregate batch O(1).
+- preview Săn Ảo là telemetry nhẹ nhưng đã phản ánh generic Damage% hiện tại như Chiến Mệnh.
+- Boss-only Damage% không tăng farm mob thường.
+- Hunt không cấp Tu Vi trực tiếp.
+- Tu Luyện V140 chạy 100% song song.
+- reward chính: Linh Thạch, Yêu Đan/beast-core, trang bị và các Hunt loot hợp lệ đang có trong source.
+- Tài Mệnh tác động Linh Thạch Săn Ảo thật.
+- difficulty và reward không reset/regress ở biên 100 tầng.
 
-Không code ngay. Trước tiên phải audit toàn bộ Luân Hồi trong source V141 hiện tại để xác định hệ đang quá phức tạp, quá mỏng hay trùng vai trò với hệ khác.
+### QA authority
 
-### Audit phải trả lời đủ
+`qa/tests/v141-hunt-cultivation-closure-test.js`
 
-1. Điều kiện kết thúc một đời / Tọa Hóa hiện tại.
-2. Điều kiện first-clear hoặc các gate còn tồn tại.
-3. Điểm Luân Hồi kiếm từ đâu, công thức bao nhiêu.
-4. Cây Luân Hồi hiện có bao nhiêu node, từng node làm gì, cost curve thế nào.
-5. Node nào vừa được V140 đổi khỏi Phá Cảnh/Kinh Mạch/Tạp Chất và consumer thật của chúng ở đâu.
-6. Tiềm Năng vĩnh viễn còn tác dụng gì và có trùng với Tiềm Năng đời hiện tại không.
-7. Mệnh Thai đời mới: roll/chọn gì, tác động gameplay thật ra sao.
-8. Kế thừa qua đời mới: giữ gì, mất gì, phần nào gây snowball.
-9. Vạn Thế / lịch sử các đời có gameplay hay chỉ read-model.
-10. Luân Hồi tác động tới Tu Vi V140 bằng **flat hay % base**, budget tổng hiện tại bao nhiêu.
-11. Luân Hồi tác động tới Thọ Nguyên / Đạo Suy / Thiên Kiếp / offline / Bế Quan ra sao.
-12. UI Luân Hồi hiện cho người chơi quyết định gì thực sự.
-13. Những field/node/reward nào tồn tại nhưng không có consumer.
-14. Có hệ nào trùng với Công Pháp, Huyết Mạch, Thể Chất, Linh Căn, Mệnh Cách hoặc Thành Tựu không.
+Hunt closure code checkpoint:
 
-### Đầu ra thiết kế B
+`0e93a012bfb8c580726744f854a8004b7358261b`
 
-Làm theo đúng mẫu:
+GitHub Actions run:
 
-`HIỆN TRẠNG -> GAMEPLAY LOOP -> KEEP -> XÓA/GỘP -> CẢI TIẾN -> BALANCE -> UI -> FINAL DESIGN`
+`34087108557` — PASS
 
-Mỗi mechanic phải được kết luận một trong:
+Đã PASS:
 
-- `KEEP`
-- `DEEPEN`
-- `SIMPLIFY`
-- `MERGE/REMOVE`
+- codebase health;
+- V140 cultivation core;
+- V140 cultivation transport;
+- V140 zero legacy;
+- V141 Hunt × Cultivation closure;
+- backend fast;
+- frontend fast;
+- backend full closure;
+- frontend full closure.
 
-Chỉ sau khi người dùng chốt B mới code.
+Không sửa lại Săn Yêu chỉ để “tối ưu thêm” nếu không có yêu cầu mới hoặc integration mới thực sự cần.
 
-## 4. Sau Luân Hồi
+## 4. Việc tiếp theo trong chat mới
 
-Tiếp tục audit từng hệ, không làm đồng thời nhiều hệ:
+Không có một danh sách cứng phải làm tuần tự. Hỏi/đọc yêu cầu mới nhất của người dùng rồi tiếp tục đúng subsystem đó từ source thật.
 
-1. Nhân vật / các stat nền còn lại.
-2. Đạo + kỹ năng.
-3. Công Pháp.
-4. Tâm Pháp.
-5. Trang Bị.
-6. Linh Căn / Ngũ Hành / Căn Nguyên.
-7. Huyết Mạch.
-8. Thể Chất.
-9. Pháp Bảo / Chí Bảo.
-10. Linh Thú.
-11. Tri Kỷ.
-12. Phân Thân.
-13. Săn Yêu.
-14. Boss / Phó Bản / Bí Cảnh.
-15. Đan Dược / Dược Viên.
-16. Động Phủ.
-17. Economy / Phường Thị / Gacha.
-18. PvP.
-19. Tông Môn.
-20. NPC / Nhân Duyên / Gia đình.
-21. Thế giới / bản đồ / sự kiện.
-22. UI/UX tổng thể sau khi gameplay systems ổn định hơn.
+Nếu người dùng muốn tiếp tục Luân Hồi/Mệnh Cách, làm tiếp V4 hiện tại. Nếu người dùng chuyển sang Linh Căn, Công Pháp, Đan, Pháp Bảo, Linh Thú, Economy... thì audit đúng subsystem đó và chỉ khi integration thực sự liên quan mới mở lại Hunt/Tu Luyện.
 
-## 5. Quy tắc economy Tu Vi cho các hệ sau
+## 5. QA sau mỗi thay đổi
 
-Khi audit Công Pháp / Pháp Bảo / Linh Căn / Đan / Luân Hồi / hoạt động:
+Tối thiểu chạy targeted test của subsystem + canonical V140/Hunt regressions liên quan. Workflow `.github/workflows/v140-ci.yml` hiện chạy trên `feature/**` và có full backend/frontend closure cho feature branches.
 
-- Permanent bonus thông thường: **số Tu Vi cụ thể**.
-- Designer có thể author số đó từ một % budget của Tu Vi nền target realm, nhưng player thấy số cụ thể.
-- Flat bonus không tự scale theo cảnh giới hiện tại.
-- % Tu Vi nền chỉ dành cho effect hiếm như tăng sao, set, milestone lớn, Chí Bảo hoặc Luân Hồi đặc biệt.
-- Reward tức thời từ Đan/Event/Activity có thể author theo `TIME_EQUIVALENT` hoặc `% requirement`, sau đó runtime đổi ra số Tu Vi thực.
-- Mỗi hệ phải có budget riêng để tổng nguồn Tu Vi không nổ theo số lượng hệ thống.
+Câu mở đầu gợi ý cho chat mới:
 
-## 6. QA canonical hiện tại
-
-Các gate V140 vẫn là gameplay regression authority của V141:
-
-```bash
-node qa/tests/v140-cultivation-core-test.js
-node qa/tests/v140-cultivation-transport-test.js
-node qa/tests/v140-zero-legacy-test.js
-node qa/runners/v140-backend-gates.js fast
-node qa/runners/v140-frontend-gates.js fast
-node qa/runners/v140-backend-gates.js closure
-node qa/runners/v140-frontend-gates.js closure
-```
-
-Closure V141 đã ghi nhận:
-
-- Cultivation core: 11/11 PASS.
-- Transport/API: 4/4 PASS.
-- Zero legacy: 4510/4510 PASS.
-- Backend closure: 47/47 PASS.
-- Frontend closure: 19/19 PASS.
-- Frontend performance architecture: PASS.
-- Health scan: no unresolved relative imports / no risky patterns.
-
-## 7. Câu mở đầu đề nghị cho chat mới
-
-> Tiếp tục Game Tu Tiên Nhàn Dỗi từ V141 codebase-optimized source. Đọc `CHAT_MOI_START_HERE.md`, `CURRENT_CHECKPOINT.md`, `V141_CODEBASE_OPTIMIZATION_CLOSURE_REPORT.md` và `NEXT_CHAT_TASKS.md` trước. V140 Tu Luyện V2 vẫn là gameplay canonical; V141 chỉ refactor cấu trúc code. Bây giờ audit chi tiết **B. Luân Hồi** từ source thật theo mẫu HIỆN TRẠNG → GAMEPLAY LOOP → KEEP → XÓA/GỘP → CẢI TIẾN → BALANCE → UI → FINAL DESIGN. Chưa code cho tới khi tôi chốt thiết kế.
+> Tiếp tục Game Tu Tiên Nhàn Dỗi từ branch `feature/reincarnation-cultivation-r3`. Đọc `CHAT_MOI_START_HERE.md`, `CURRENT_CHECKPOINT.md`, `NEXT_CHAT_TASKS.md` trước. Săn Yêu × Tu Luyện V140 đã CLOSED/PASS; không audit lại trừ khi có integration mới. Dùng current branch HEAD làm source of truth và tiếp tục subsystem tôi yêu cầu tiếp theo.
