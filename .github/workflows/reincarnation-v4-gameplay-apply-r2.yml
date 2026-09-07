@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Harden staged patch R6
+      - name: Harden staged patch R7
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -54,6 +54,47 @@ jobs:
           PY
       - name: Apply patch
         run: python3 qa/reincarnation-v4-gameplay-patch.py
+      - name: Rebalance Potential as global resonance
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('dist/core/reincarnation-progression-v1102.js'); s=p.read_text()
+          old="""export const CORE_POTENTIAL_SOFT_CAP_MAX_PCT_V4=35;
+          export const CORE_POTENTIAL_HALF_SATURATION_V4=1500;
+          export function corePotentialPercentBonusV4(points){ const p=Math.max(0,Number(points)||0); return CORE_POTENTIAL_SOFT_CAP_MAX_PCT_V4*p/(p+CORE_POTENTIAL_HALF_SATURATION_V4); }
+          export function applyCorePotentialStats(stats,runtime){
+            if(!runtime) return {...stats};
+            const life=cloneLifeCorePotentialState(runtime.life).allocations, permanent={...emptyAllocation(),...(runtime.permanent??{})};
+            const power=life.power+Math.max(0,permanent.power||0),body=life.body+Math.max(0,permanent.body||0),defense=life.defense+Math.max(0,permanent.defense||0);
+            const attackFlat=Math.max(0,(Number(stats.attack)||0)+power), attack=attackFlat*(1+corePotentialPercentBonusV4(power)/100);
+            const defenseFlat=Math.max(0,(Number(stats.defense)||0)+defense*3), finalDefense=defenseFlat*(1+corePotentialPercentBonusV4(defense)/100);
+            const basePhysique=Number.isFinite(stats.physique)?Math.max(0,stats.physique):Math.max(0,(Number(stats.maxHp)||0)/20);
+            const physiqueFlat=basePhysique+body, physique=physiqueFlat*(1+corePotentialPercentBonusV4(body)/100);
+            return {...stats,attack,defense:finalDefense,physique,maxHp:physique*20};
+          }"""
+          new="""export const CORE_POTENTIAL_SOFT_CAP_MAX_PCT_V4=35;
+          export const CORE_POTENTIAL_HALF_SATURATION_V4=4500;
+          export function corePotentialPercentBonusV4(points){ const p=Math.max(0,Number(points)||0); return CORE_POTENTIAL_SOFT_CAP_MAX_PCT_V4*p/(p+CORE_POTENTIAL_HALF_SATURATION_V4); }
+          export function applyCorePotentialStats(stats,runtime){
+            if(!runtime) return {...stats};
+            const life=cloneLifeCorePotentialState(runtime.life).allocations, permanent={...emptyAllocation(),...(runtime.permanent??{})};
+            const power=life.power+Math.max(0,permanent.power||0),body=life.body+Math.max(0,permanent.body||0),defense=life.defense+Math.max(0,permanent.defense||0);
+            const resonance=1+corePotentialPercentBonusV4(power+body+defense)/100;
+            const attack=Math.max(0,(Number(stats.attack)||0)+power)*resonance;
+            const finalDefense=Math.max(0,(Number(stats.defense)||0)+defense*3)*resonance;
+            const basePhysique=Number.isFinite(stats.physique)?Math.max(0,stats.physique):Math.max(0,(Number(stats.maxHp)||0)/20);
+            const physique=(basePhysique+body)*resonance;
+            return {...stats,attack,defense:finalDefense,physique,maxHp:physique*20};
+          }"""
+          if old not in s: raise SystemExit('missing axis soft-cap block')
+          p.write_text(s.replace(old,new,1))
+
+          p=Path('qa/tests/reincarnation-v4-gameplay-balance-test.js'); s=p.read_text()
+          old="const balanced3=Math.floor(perLife3*lives/3),balanced10=Math.floor(perLife10*lives/3);\n    const p3=corePotentialPercentBonusV4(balanced3),p10=corePotentialPercentBonusV4(balanced10);\n    rows.push({lives,permanent3:perLife3*lives,balancedBonus3Pct:Number(p3.toFixed(2)),permanent10:perLife10*lives,balancedBonus10Pct:Number(p10.toFixed(2))});"
+          new="const balanced3=Math.floor(perLife3*lives/3),balanced10=Math.floor(perLife10*lives/3);\n    const p3=corePotentialPercentBonusV4(perLife3*lives),p10=corePotentialPercentBonusV4(perLife10*lives);\n    rows.push({lives,permanent3:perLife3*lives,resonanceBonus3Pct:Number(p3.toFixed(2)),permanent10:perLife10*lives,resonanceBonus10Pct:Number(p10.toFixed(2))});"
+          if old not in s: raise SystemExit('missing potential simulation rows')
+          p.write_text(s.replace(old,new,1))
+          PY
       - name: Align baseline ownership tests
         run: |
           python3 - <<'PY'
@@ -70,11 +111,11 @@ jobs:
           if old not in s: raise SystemExit('missing potential import anchor')
           s=s.replace(old,new,1)
           old="check(corePotentialDefinitions.find(x=>x.id==='defense')?.perPoint?.includes('Phòng Ngự +3'),'V108 preserves canonical Potential Defense = +3 defense per point; no extra buff added');"
-          new="check(corePotentialDefinitions.find(x=>x.id==='defense')?.perPoint?.includes('Phòng Ngự +3'),'V4 preserves canonical Potential Defense flat = +3 defense per point before soft scaling');"
+          new="check(corePotentialDefinitions.find(x=>x.id==='defense')?.perPoint?.includes('Phòng Ngự +3'),'V4 preserves canonical Potential Defense flat = +3 defense per point before resonance');"
           if old not in s: raise SystemExit('missing potential flat invariant anchor')
           s=s.replace(old,new,1)
           old="check(potApplied.defense===130&&potApplied.attack===100,'V108 Defense Potential modifies canonical combat defense and does not leak into attack');"
-          new="const expectedDefense=130*(1+corePotentialPercentBonusV4(10)/100);\ncheck(Math.abs(potApplied.defense-expectedDefense)<1e-9&&potApplied.attack===100,'V4 Defense Potential keeps +3 flat, applies its own soft scaling, and does not leak into attack');"
+          new="const expectedResonance=1+corePotentialPercentBonusV4(10)/100;\ncheck(Math.abs(potApplied.defense-130*expectedResonance)<1e-9&&Math.abs(potApplied.attack-100*expectedResonance)<1e-9,'V4 Potential keeps +3 Defense flat and applies one global resonance without axis leakage');"
           if old not in s: raise SystemExit('missing potential runtime invariant anchor')
           s=s.replace(old,new,1)
           p.write_text(s)
