@@ -1,56 +1,104 @@
-# CURRENT CHECKPOINT — V141 CODEBASE OPTIMIZATION CLOSURE
+# CURRENT CHECKPOINT — FEATURE GAMEPLAY / V141 HUNT CLOSURE
 
-**Structural checkpoint:** `V141`  
-**Gameplay/web version preserved:** `1.40.0-alpha.24.0`  
-**Date:** 2026-09-06  
-**Status:** PASS / canonical source for next work.
+**Date:** 2026-09-07  
+**Branch:** `feature/reincarnation-cultivation-r3`  
+**Gameplay/web version:** `1.40.0-alpha.24.0`  
+**Status:** PASS on canonical QA.  
+**Rule:** use the current branch HEAD as source of truth; do not merge to `main` unless the user explicitly asks.
 
-V141 is a **codebase/architecture optimization closure only**. It does not redesign, rebalance, restore, or remove any V140 gameplay mechanic. The canonical Tu Luyện rules below remain exactly the V140 contract.
+This branch sits on top of the V141 codebase-optimization baseline and preserves the V140 Tu Luyện contract. It also contains the current Luân Hồi V4 work and the completed Săn Yêu × Tu Luyện closure described below. Older V141 handoff text that says “audit Luân Hồi before coding” is superseded on this branch.
 
-## V141 structural closure
+## 1. Tu Luyện V140 — CANONICAL / KEEP
 
-- Large runtime responsibilities were split from the monolithic facade/session/combat shells into focused modules while preserving public behavior and save/API contracts.
-- `SimulationSession` extractions include guidance, dungeon challenge, alchemy-pill use, and content-event effect application.
-- Combat decision handling and effect-resolution responsibilities are isolated from the main combat shell.
-- Gameplay dispatch/flow responsibilities are isolated; Vạn Thế read-model assembly is consolidated into the existing gameplay-flow module so the initial static graph does not grow past the performance budget.
-- Frontend action binding was structurally split without changing player-facing behavior.
-- Dead local functions/imports found by the V141 safe-prune passes were removed only when mechanically unreferenced.
-- Final health scan reports no unresolved relative imports and no risky-pattern hits.
-- Final hotspot snapshot: `dist/core/session.js` 471,518 bytes / 5,450 lines; `dist/core/gameplay.js` 108,087 bytes / 1,253 lines; `dist/core/combat.js` 116,149 bytes / 1,713 lines; `app.js` 492,932 bytes / 2,804 lines.
+- `dist/core/cultivation-v140.js` remains the single cultivation authority.
+- 118 realm orders: Phàm Nhân order 0 + 28 cultivation major realms from Luyện Khí through Sáng Thế Chủ.
+- Realtime cultivation commits every 15 seconds.
+- Minor realms auto-advance when full.
+- Major transitions are deterministic `Thăng Cảnh`; Thiên Kiếp gates remain explicit.
+- Bế Quan uses +3h bank/day, max 9h.
+- Săn Yêu does not mint direct Tu Vi and therefore does not compete with or inflate the V140 cultivation clock.
 
-## Canonical Tu Luyện V2
+Do not restore the retired V140 cultivation clutter just because legacy files/tests mention it: cultivation Căn Cơ/Tổn Căn, cultivation Kinh Mạch, Tạp Chất/Thanh Tịnh, Hấp Thu/Thông Lượng/Backlog/Luyện Hóa/Tinh Thuần pipeline, five cultivation methods, Thiêu Thọ, or the old RNG realm-breakthrough preparation/quality/failure pipeline.
 
-- 118 realm orders / 29 major realms through Sáng Thế Chủ.
-- One source of truth: `dist/core/cultivation-v140.js`.
-- Realm requirement is authored from `baseTuViPer15s × targetSeconds / 15`.
-- Base Tu Vi never decreases as realm order increases.
-- Realtime cultivation commits integer Tu Vi every 15 seconds.
-- Minor realms auto-advance when Tu Vi is full.
-- Major-realm transition is deterministic `Thăng Cảnh`.
-- Orders 41–45 are explicit Thiên Kiếp challenge gates and cannot auto-skip.
-- Bế Quan: +3h bank/day, max 9h; reward is a realm-specific percent converted to concrete Tu Vi; near-cap usage consumes only needed bank time.
-- Tu Vi provenance: base + concrete flat sources + rare percent-of-base sources.
-- Thương Thế is the single cultivation-related bodily damage state. It does not reduce passive Tu Vi; heavy injury blocks Bế Quan/Thăng Cảnh.
-- Thọ Nguyên / Đạo Suy remain separate life-cycle systems.
+## 2. Luân Hồi V4 — CURRENT FEATURE WORK
 
-## Removed from production
+The current branch already contains Luân Hồi V4 implementation work. Do not revert to the old instruction “audit first, no code”. Read the live source before changing it, especially:
 
-No production consumer/state/API/UI remains for: Căn Cơ/Tổn Căn, cultivation Kinh Mạch, Tạp Chất/Độ Thanh Tịnh, Hấp Thu/Thông Lượng/Backlog/Luyện Hóa/Tinh Thuần pipeline, five cultivation methods, Thiêu Thọ, realm Phá Cảnh RNG/Preparation/quality/failure engine, Phá Cảnh Đan, realm-requirement reduction, or late-game realm catalyst.
+- `dist/core/reincarnation-progression-v1102.js`
+- `dist/core/reincarnation-fate-build-v4.js`
+- `dist/core/life.js`
+- `dist/core/session.js`
+- `qa/tests/reincarnation-fate-build-v4-test.js`
+- `qa/tests/reincarnation-v4-gameplay-balance-test.js`
 
-Old related pills/rewards were removed or converted to valid Tu Vi/Thương Thế mechanics. Linh Căn/Pháp Bảo/Thể Chất "breakthrough" terminology that means their own upgrade system is not the retired realm-transition system.
+Current direction remains module-by-module: do not pre-build seven speculative branches. Mệnh Cách is deterministic current-life build selection; RP is the Luân Hồi spend/progression currency in the V4 work. Exact live formulas in source override old chat notes.
 
-## QA closure
+## 3. Săn Yêu × Tu Luyện V140 — CLOSED
 
-Final V141 structural source was validated with the unchanged V140 canonical gates:
+Săn Yêu is now closed as a gameplay subsystem for the current scope.
 
-- V140 cultivation core: **11/11 PASS**.
-- V140 cultivation transport/API: **4/4 PASS**.
-- Production zero-legacy: **4510/4510 PASS** over 205 production files.
-- Backend full regression closure: **47/47 PASS**.
-- Frontend/transport full regression closure: **19/19 PASS**.
-- Frontend performance architecture gate: **PASS**, including the existing initial-static-graph module budget.
-- Health scan: **0 unresolved relative imports; 0 risky-pattern hits**.
+### Structure
 
-Historical tests whose only purpose was to lock obsolete V1–V8 UI or V103/V106/V108/V127/V129 cultivation contracts remain excluded from current QA rather than keeping compatibility code alive.
+- 28 Săn Yêu major-realm maps, matching the 28 cultivation major realms Luyện Khí → Sáng Thế Chủ.
+- Each major realm has `8 vực × 100 tầng = 800 tầng`.
+- Each floor is one real Boss challenge; victory opens the next floor.
+- A cleared floor becomes a Săn Ảo farm floor.
+- Five elemental Boss mechanic families remain authored: Wood / Fire / Earth / Metal / Water, each exposing readable counter lanes.
 
-See `V141_CODEBASE_OPTIMIZATION_CLOSURE_REPORT.md` for the structural closure record.
+### Combat authority
+
+- Real Boss fights use canonical CombatKernel V2.
+- Săn Ảo settlement is O(1): one deterministic representative ordinary monster is resolved with CombatKernel V2 in simulation mode to establish real TTK, then the batch reward is aggregated.
+- The lightweight Săn Ảo preview is telemetry only. V141 closure fixed it so current `fateV4.damagePct` (e.g. Chiến Mệnh) affects preview throughput, while `bossDamagePct` intentionally does not affect ordinary Săn Ảo mobs.
+- Generic Combat Power never directly declares farm kills or Boss victory.
+
+### Cultivation contract
+
+- Săn Yêu grants **0 direct Tu Vi**.
+- Hunt `cultivationPct = 0` and hidden hunt training growth remains disabled.
+- Tu Luyện V140 continues at 100% while Săn Ảo runs.
+- Therefore Hunt is a resource/combat progression loop, not a second cultivation engine.
+
+### Rewards
+
+Current Săn Ảo reward loop includes:
+
+- Linh Thạch;
+- Yêu Đan / beast-core material;
+- equipment rolls, with overflow converted to equipment essence;
+- existing eligible Hunt/economy rewards consumed by the live source.
+
+Tài Mệnh's Linh Thạch modifier is consumed by actual Săn Ảo settlement. Reward depth scales smoothly across local floors 1→800; low-floor farming uses progression-gap efficiency rather than current Combat Power.
+
+### Closure invariants
+
+`qa/tests/v141-hunt-cultivation-closure-test.js` locks:
+
+1. V140 118 orders map to exactly 28 Hunt major realms.
+2. 800 floors per major realm.
+3. effective Hunt difficulty does not reset at 100-floor zone boundaries.
+4. reward profiles do not regress at zone boundaries.
+5. Hunt never mints direct Tu Vi.
+6. Săn Ảo preview reflects current-life generic Damage% but not Boss-only Damage%.
+7. actual Săn Ảo settlement uses representative CombatKernel V2 TTK.
+8. Linh Thạch major-realm scaling is finite and hard-capped.
+
+## 4. Canonical QA at Hunt closure
+
+The Hunt closure code checkpoint `0e93a012bfb8c580726744f854a8004b7358261b` passed GitHub Actions run `34087108557` with:
+
+- Codebase health scan: PASS.
+- V140 cultivation core: PASS.
+- V140 cultivation transport: PASS.
+- V140 zero legacy: PASS.
+- V141 Hunt × Cultivation closure: PASS.
+- Backend fast gate: PASS.
+- Frontend fast gate: PASS.
+- Backend full closure: PASS.
+- Frontend full closure: PASS.
+
+The CI workflow now runs canonical QA on `feature/**` branches and runs full backend/frontend closure on feature branches as well.
+
+## 5. Next-chat rule
+
+Start from current branch HEAD and read `CHAT_MOI_START_HERE.md` plus this file. Do not re-open Săn Yêu design unless the user explicitly requests a change. Continue the next requested gameplay module from live source, preserving the Săn Yêu closure invariants above.
