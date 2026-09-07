@@ -1,4 +1,5 @@
-export const HUNT_PRODUCTION_V110_VERSION='1.0.0';
+export const HUNT_PRODUCTION_V110_VERSION='1.1.0';
+export const HUNT_CULTIVATION_CLOSURE_V141='closed';
 
 function uniqueRows(rows=[]){
   const seen=new Set();
@@ -46,10 +47,10 @@ export function buildHuntProductionV110({bossReady=true,canFight=true,injury=0,c
     ?{kind:'zone',label:'Kết vực',floor:100,description:'Vượt Boss tầng 100 để hoàn tất vực và mở vực kế tiếp.'}
     :{kind:'element',label:'Đổi chủ hệ',floor:Math.min(100,nextElementMilestone),description:`Mỗi 20 tầng đổi chủ hệ; chuẩn bị counter cho mốc T${Math.min(100,nextElementMilestone)}.`};
   const reasonToClimb=bossReady
-    ?`Hạ Boss T${zoneFloor} để mở tầng kế và biến T${zoneFloor} thành bãi Săn Ảo. Tầng sâu tăng giá trị mỗi kill nhưng cũng tăng HP quái; throughput thực được tính theo DPS build.`
+    ?`Hạ Boss T${zoneFloor} để mở tầng kế và biến T${zoneFloor} thành bãi Săn Ảo. Tầng sâu tăng giá trị mỗi kill nhưng cũng tăng HP quái; throughput thực được chốt bằng CombatKernel V2 theo build hiện tại.`
     :`T${zoneFloor} đã là bãi Săn Ảo. Chọn Boss chưa vượt để tiếp tục đẩy tiến độ, hoặc giữ tầng farm hiệu quả hơn cho build hiện tại.`;
   return {
-    schema:'hunt-production.v110',version:HUNT_PRODUCTION_V110_VERSION,
+    schema:'hunt-production.v110',version:HUNT_PRODUCTION_V110_VERSION,cultivationClosure:HUNT_CULTIVATION_CLOSURE_V141,
     boss:{
       floor:currentFloor,zoneFloor,ready:Boolean(bossReady),readiness,powerDeltaLog10:Number(delta.toFixed(4)),
       mechanic:bossMechanic?{id:bossMechanic.id,name:bossMechanic.name,description:bossMechanic.description,counterHint:bossMechanic.counterHint,coveragePct:coverage,counters,missing:missing.map(x=>x.label)}:undefined,
@@ -57,7 +58,7 @@ export function buildHuntProductionV110({bossReady=true,canFight=true,injury=0,c
     },
     farm:{
       available:Boolean(farm?.available),currentFloor:Number(farm?.floor||0),highestClearedFloor:Number(highestClearedFloor||0),
-      rule:'Boss thật để mở tầng; Săn Ảo theo thời gian để farm. Tu Luyện vẫn chạy 100% song song.',
+      rule:'Boss thật để mở tầng; Săn Ảo theo thời gian để farm. Săn Yêu không cấp Tu Vi trực tiếp; Tu Luyện V140 vẫn chạy 100% song song. Preview dùng telemetry nhẹ, còn settlement Săn Ảo dùng CombatKernel V2 đại diện.',
       recommendations,
       candidates:rows.map(row=>({floor:row.floor,zoneName:row.zoneName,floorName:row.floorName,killsPerHour:row.killsPerHour,spiritStonesPerHour:row.spiritStonesPerHour,demonCoresPerHour:row.demonCoresPerHour,equipmentRollsPerHour:row.equipmentRollsPerHour,current:Number(row.floor)===Number(farm?.floor)})),
     },
