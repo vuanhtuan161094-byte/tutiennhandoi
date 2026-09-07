@@ -12,30 +12,36 @@ jobs:
   finalize:
     if: "startsWith(github.event.head_commit.message, 'chore(v144): finalize retirement closure')"
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Apply V144 candidate calibration
+      - name: Apply final V144 source repairs
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
+
           path=Path('dist/core/session.js'); s=path.read_text(encoding='utf-8')
           s,n=re.compile(r"(?m)^\s{12}id: def\.id, name: def\.name, grade: def\.grade \?\? 'mundane'.*\n\s{8}\}\)\)\.sort\(.*\);\n").subn('',s,count=1)
           if n!=1: raise SystemExit(f'session residue count={n}')
           path.write_text(s,encoding='utf-8')
+
           path=Path('dist/core/client-shell.js'); s=path.read_text(encoding='utf-8')
           old='spiritualRoots: api.getSpiritualRootsV131(), elementSeals: api.getElementSealsV133(), collection'
           if old not in s: raise SystemExit('client-shell residue missing')
           path.write_text(s.replace(old,'spiritualRoots: api.getSpiritualRootsV131(), collection',1),encoding='utf-8')
+
           path=Path('qa/tests/v129-stat-provenance-test.js'); s=path.read_text(encoding='utf-8')
           old="  const crit=stat(p,'critChancePct');\n  assert(crit.sources.some(x=>x.id==='character.techniques'),'live Bí Thuật contribution must be traceable when it changes Crit');"
           if old not in s: raise SystemExit('provenance residue missing')
           path.write_text(s.replace(old,"  assert(!ids.has('character.techniques'),'retired V103/V119 Công Pháp combat source must not survive in provenance');",1),encoding='utf-8')
+
           path=Path('dist/core/equipment-set-v116.js'); s=path.read_text(encoding='utf-8')
           pairs=[
             ('export const SET_V129_FIRE_DAMAGE = [5, 6, 7, 8, 9, 10, 12, 14];','export const SET_V129_FIRE_DAMAGE = [5, 6, 7, 8, 9, 9, 12, 14];'),
@@ -45,6 +51,7 @@ jobs:
             if old not in s: raise SystemExit(f'Fire marker missing: {old}')
             s=s.replace(old,new,1)
           path.write_text(s,encoding='utf-8')
+
           path=Path('dist/core/battle-dao-v2-runtime.js'); s=path.read_text(encoding='utf-8')
           pairs=[
             ('    sword: 1.50,','    sword: 1.73,'),
@@ -58,5 +65,44 @@ jobs:
             s=s.replace(old,new,1)
           path.write_text(s,encoding='utf-8')
           PY
-      - name: Diagnose V129 round robin
-        run: node qa/tests/v129-global-build-balance-test.js
+          node --check dist/core/session.js
+          node --check dist/core/client-shell.js
+          node --check dist/core/equipment-set-v116.js
+          node --check dist/core/battle-dao-v2-runtime.js
+          node --check qa/tests/v129-stat-provenance-test.js
+
+      - name: V144 focused retirement gate
+        run: |
+          node qa/tests/v127-manual-progression-test.js
+          node qa/tests/v129-stat-provenance-test.js
+          node qa/tests/v129-global-build-balance-test.js
+          node qa/tests/v143-hunt-reward-authority-test.js
+          node qa/tests/v144-technique-v103-retirement-test.js
+          node qa/tests/v141-hunt-cultivation-closure-test.js
+          node qa/runners/v142-equipment-hunt-gate.js
+
+      - name: Full V140 canonical gates
+        run: |
+          node qa/tests/v140-cultivation-core-test.js
+          node qa/tests/v140-cultivation-transport-test.js
+          node qa/tests/v140-zero-legacy-test.js
+          node qa/tests/v141-hunt-cultivation-closure-test.js
+          node qa/runners/v142-equipment-hunt-gate.js
+          node qa/runners/v140-backend-gates.js fast
+          node qa/runners/v140-frontend-gates.js fast
+          node qa/runners/v140-backend-gates.js closure
+          node qa/runners/v140-frontend-gates.js closure
+
+      - name: Commit closed V144 source
+        shell: bash
+        run: |
+          git config user.name "vuanhtuan161094-byte"
+          git config user.email "vuanhtuan161094@gmail.com"
+          rm -f .github/workflows/v144-finalize-retirement.yml
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No V144 source changes to commit"
+            exit 1
+          fi
+          git commit -m "fix(v144): close technique retirement cleanup"
+          git push origin HEAD:feature/v142-equipment-hunt
