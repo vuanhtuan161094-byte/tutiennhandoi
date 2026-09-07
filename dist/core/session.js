@@ -71,6 +71,8 @@ import { runCombatKernelV2 } from './combat-kernel-v2.js';
 import { challengePvpV91, joinPvpV91, pvpViewV91, refreshPvpDefenseV91, replayPvpV91, setPvpTacticalV94, settlePvpSeasonV94, recordPvpRewardIntegrityV94, recordPvpSeasonRewardIntegrityV94 } from './pvp-v91.js';
 import { endlessHuntFarmRecommendationsV123, evaluateHuntBossMechanicV123, huntFarmRewardEfficiencyV123 } from './pve-progression-v123.js';
 import { buildHuntProductionV110 } from './hunt-production-v110.js';
+import { huntEquipmentFragmentPreviewV142, settleRealHuntEquipmentFragmentsV142, settleVirtualHuntEquipmentFragmentsV142 } from './equipment-hunt-v142.js';
+import { craftRankedEquipmentV142, equipmentCraftingSummaryV142, mergeRankedEquipmentV142, refineRankedEquipmentFragmentsV142 } from './equipment-crafting-v142.js';
 import { buildEndlessHuntCombatStreamFromKernelV2 } from './hunt-combat-stream.js';
 import { formatLogMagnitude } from './endless-number.js';
 import { SeededRng } from './rng.js';
@@ -908,7 +910,9 @@ export class SimulationSession {
         const demonCoreChancePct = Math.min(36, 9 + map.zone * 1.35 + Math.log10(1 + map.localFloor) * 1.2);
         const loot = birthLootMultiplierFromOrigins(this.stateValue.inheritedOrigins);
         const equipmentChancePct = Math.min(7.5, huntEconomyDropChances('common', loot).equipmentChancePct * .32 * (1 + map.zone * .035));
-        return { ...base, available: true, floorName: `Tầng ${map.zoneFloor}`, zoneName: map.zoneName, mobName: mob.name, mobLevel: mob.level, mobHp: formatLogMagnitude({ log10: mobHpLog10 }), mobElements: [...mob.elements], mobTags: [...mob.tags], spiritStonesPerKill, spiritStonesPerHour: base.killsPerHour * spiritStonesPerKill, demonCoreChancePct, demonCoresPerHour: base.killsPerHour * demonCoreChancePct / 100 + base.elitePerHour * 1.5, equipmentChancePct, equipmentRollsPerHour: base.killsPerHour * equipmentChancePct / 100 };
+        const equipmentRollsPerHour = base.killsPerHour * equipmentChancePct / 100;
+        const fragmentPreviewV142 = huntEquipmentFragmentPreviewV142({ majorRealmIndex: map.majorRealmIndex, zone: map.zone, equipmentEventsPerHour: equipmentRollsPerHour });
+        return { ...base, available: true, floorName: `Tầng ${map.zoneFloor}`, zoneName: map.zoneName, mobName: mob.name, mobLevel: mob.level, mobHp: formatLogMagnitude({ log10: mobHpLog10 }), mobElements: [...mob.elements], mobTags: [...mob.tags], spiritStonesPerKill, spiritStonesPerHour: base.killsPerHour * spiritStonesPerKill, demonCoreChancePct, demonCoresPerHour: base.killsPerHour * demonCoreChancePct / 100 + base.elitePerHour * 1.5, equipmentChancePct, equipmentRollsPerHour, equipmentFragmentPreviewV142: fragmentPreviewV142 };
     }
     /**
      * V129 farm resolver: batch/offline delta only. One representative ordinary monster is resolved
@@ -968,29 +972,17 @@ export class SimulationSession {
         if (demonCores > 0)
             this.stateValue.inventory[demonCoreResourceId] = (this.stateValue.inventory[demonCoreResourceId] ?? 0) + demonCores;
         const equipmentRolls = deterministicBinomialV77(kills, farm.equipmentChancePct / 100, rng) + deterministicBinomialV77(eliteKills, .12, rng);
-        const materialize = Math.min(240, equipmentRolls), overflowEquipmentRolls = Math.max(0, equipmentRolls - materialize);
-        const equipmentDropIds = [], equipmentDropNames = [];
-        if (materialize > 0 && this.registry.equipmentTemplates.size > 0) {
-            const templates = [...this.registry.equipmentTemplates.values()].filter(template => !template.tags.includes('LegacySetV98') && (!template.tags.includes('SetV116') || isLiveEquipmentSetV12310(template.setId)));
-            for (let i = 0; i < materialize && templates.length; i++) {
-                const template = templates[Math.floor(rng.next() * templates.length)];
-                const tier = Math.max(0, Math.min(20, Math.floor(map.realmOrder / 5) + Math.floor((map.zone - 1) / 2)));
-                const q = rng.next();
-                const quality = q > .96 ? 'supreme' : q > .72 ? 'high' : q > .28 ? 'mid' : 'low';
-                const item = buildEquipmentInstance(template, tier, quality, map.zoneFloor, { kind: 'field', dungeonId: 'endless.hunt.virtual', floor: farm.floor, seed: rng.nextUint32() }, this.stateValue.worldTimeYears, map.equipmentGrade);
-                addEquipment(this.stateValue.equipment, item);
-                equipmentDropIds.push(item.id);
-                equipmentDropNames.push(item.name);
-            }
-        }
-        if (overflowEquipmentRolls > 0) {
-            const essenceId = economyMaterialResourceId('equipmentEssence', map.zone, 'essence');
-            this.stateValue.inventory[essenceId] = (this.stateValue.inventory[essenceId] ?? 0) + overflowEquipmentRolls * 2;
-        }
+        const fragmentSettlementV142 = settleVirtualHuntEquipmentFragmentsV142(this.stateValue, {
+            majorRealmIndex: map.majorRealmIndex, zone: map.zone, equipmentEvents: equipmentRolls,
+            seed: rng.nextUint32(), source: `hunt.virtual.${farm.floor}`,
+        });
+        const overflowEquipmentRolls = 0;
+        const equipmentDropIds = fragmentSettlementV142.drops.map(drop => drop.resourceId);
+        const equipmentDropNames = fragmentSettlementV142.drops.map(drop => `${drop.rankName} +${drop.amount}`);
         const economyAwards = recordEconomyActivityV89(ensureCollectionProgressStateV12316(this.stateValue), 'huntKills', kills).awards;
         this.actionIndexValue += 1;
-        const summaryLines = [`Săn ảo tầng ${map.zoneFloor}: ${kills.toLocaleString('vi-VN')} yêu thú${eliteKills ? ` · ${eliteKills.toLocaleString('vi-VN')} Tinh Anh` : ''}.`, `Linh Thạch +${spiritStones.toLocaleString('vi-VN')} · Yêu Đan +${demonCores.toLocaleString('vi-VN')} · ${equipmentRolls.toLocaleString('vi-VN')} lượt trang bị${overflowEquipmentRolls ? ` (${overflowEquipmentRolls} lượt dư tự đổi Tinh Hoa)` : ''}.`, ...economyAwards.map(x => `${x.label}: Tiên Ngọc Khóa +${x.boundJade}.`)];
-        return { schema: 'endless-hunt-farm-batch.v77', floor: farm.floor, realSeconds: seconds, kills, eliteKills, spiritStones, demonCores, demonCoreResourceId, equipmentRolls, equipmentDropIds, equipmentDropNames, overflowEquipmentRolls, farm, summaryLines, economyAwards };
+        const summaryLines = [`Săn ảo tầng ${map.zoneFloor}: ${kills.toLocaleString('vi-VN')} yêu thú${eliteKills ? ` · ${eliteKills.toLocaleString('vi-VN')} Tinh Anh` : ''}.`, `Linh Thạch +${spiritStones.toLocaleString('vi-VN')} · Yêu Đan +${demonCores.toLocaleString('vi-VN')} · Mảnh Trang Bị +${fragmentSettlementV142.totalFragments.toLocaleString('vi-VN')}.`, ...equipmentDropNames.slice(0, 5).map(name => `Mảnh: ${name}.`), ...economyAwards.map(x => `${x.label}: Tiên Ngọc Khóa +${x.boundJade}.`)];
+        return { schema: 'endless-hunt-farm-batch.v77', floor: farm.floor, realSeconds: seconds, kills, eliteKills, spiritStones, demonCores, demonCoreResourceId, equipmentRolls, equipmentDropIds, equipmentDropNames, overflowEquipmentRolls, fragmentSettlementV142, farm, summaryLines, economyAwards };
     }
     endlessHuntSummary() {
         const hunt = cloneEndlessHuntState(this.stateValue.endlessHunt ?? createEndlessHuntState());
@@ -1157,41 +1149,16 @@ export class SimulationSession {
             applyEconomyResourceDrops(this.stateValue.inventory, economyMaterialDrops);
             applyHeavenlyTreasureDrops(this.stateValue.economy, economyRareDrops);
             const equipmentChancePct = Math.min(100, economyLoot.equipmentChancePct + fateMods.equipmentChanceBonusPct);
-            if (this.registry.equipmentTemplates.size > 0 && rng.chance(equipmentChancePct)) {
-                const templates = [...this.registry.equipmentTemplates.values()].filter(template => !template.tags.includes('LegacySetV98') && (!template.tags.includes('SetV116') || isLiveEquipmentSetV12310(template.setId)));
-                const template = templates[Math.floor(rng.next() * templates.length)];
-                const tier = Math.max(0, Math.min(20, Math.floor(map.realmOrder / 5) + Math.floor((map.zone - 1) / 2)));
-                const r = rng.next();
-                let quality = 'low';
-                if (result.monster.grade === 'boss')
-                    quality = r > .86 ? 'perfect' : r > .32 ? 'supreme' : 'high';
-                else if (result.monster.grade === 'elite')
-                    quality = r > .86 ? 'supreme' : r > .28 ? 'high' : 'mid';
-                else if (result.monster.grade === 'enhanced')
-                    quality = r > .82 ? 'high' : r > .25 ? 'mid' : 'low';
-                else
-                    quality = r > .92 ? 'high' : r > .46 ? 'mid' : 'low';
-                const equipmentGradesByDepth = ['mundane', 'spirit', 'mystic', 'earth', 'heaven', 'immortal', 'extreme', 'breaker'];
-                let gradeIndex = Math.min(5, Math.max(0, map.zone - 1));
-                const gradeRoll = rng.next();
-                if (map.zone >= 7) {
-                    gradeIndex = 5;
-                    const extremeChance = map.zone === 7 ? (result.monster.grade === 'boss' ? 72 : result.monster.grade === 'elite' ? 48 : result.monster.grade === 'enhanced' ? 20 : 5) : (result.monster.grade === 'boss' ? 84 : result.monster.grade === 'elite' ? 62 : result.monster.grade === 'enhanced' ? 34 : 10);
-                    const breakerChance = map.zone === 8 ? (result.monster.grade === 'boss' ? 2 : result.monster.grade === 'elite' ? .8 : result.monster.grade === 'enhanced' ? .2 : .03) : (result.monster.grade === 'boss' ? .5 : 0);
-                    if (gradeRoll * 100 < breakerChance)
-                        gradeIndex = 7;
-                    else if (gradeRoll * 100 < breakerChance + extremeChance)
-                        gradeIndex = 6;
-                }
-                else if (result.monster.grade === 'boss' && gradeRoll > .78)
-                    gradeIndex = Math.min(6, gradeIndex + 1);
-                else if (result.monster.grade === 'elite' && gradeRoll > .90)
-                    gradeIndex = Math.min(6, gradeIndex + 1);
-                const forcedGrade = equipmentGradesByDepth[gradeIndex];
-                const item = buildEquipmentInstance(template, tier, quality, map.zoneFloor, { kind: 'field', dungeonId: `secret.${map.majorRealmIndex}.${map.zone}`, floor: result.monster.floor, seed: (seed ^ rng.nextUint32()) >>> 0 }, this.stateValue.worldTimeYears, forcedGrade);
-                addEquipment(this.stateValue.equipment, item);
-                equipmentDropId = item.id;
-                equipmentDropName = item.name;
+            const equipmentEventV142 = rng.chance(equipmentChancePct);
+            const fragmentSettlementV142 = settleRealHuntEquipmentFragmentsV142(this.stateValue, {
+                majorRealmIndex: map.majorRealmIndex, zone: map.zone, monsterGrade: result.monster.grade,
+                firstClear: Boolean(result.bossCleared), equipmentEvent: equipmentEventV142, rankRoll01: rng.next(),
+                source: `hunt.real.${result.monster.floor}`,
+            });
+            if (fragmentSettlementV142.totalFragments > 0) {
+                const drop = fragmentSettlementV142.drops[0];
+                equipmentDropId = drop.resourceId;
+                equipmentDropName = `Mảnh Trang Bị · ${drop.rankName} +${drop.amount}`;
             }
             // V85: new PvE drops use the canonical Alchemy pill families. Legacy resource.pill.* remains compatibility-only.
             if (rng.chance(Math.min(100, mapRewards.cultivationPillChancePct * effectiveLoot))) {
@@ -3469,6 +3436,9 @@ export class SimulationSession {
     enhanceEquipment(itemId, useProtection = false) {
         if (!this.stateValue.alive)
             throw new Error('Đời hiện tại đã kết thúc.');
+        const targetV142 = this.stateValue.equipment.items.find(candidate => candidate.id === itemId);
+        if (targetV142?.schema === 'equipment.v142' && Math.max(0, Math.floor(targetV142.enhancementLevel ?? 0)) >= 15)
+            throw new Error('Trang bị V142 đã đạt +15.');
         const seed = mixSeed(this.rootSeed ^ 0x98e11a9d, this.actionIndexValue + 1);
         const rng = new SeededRng(seed);
         const result = attemptEquipmentEnhancement(this.stateValue.equipment, itemId, rng.next(), rng.next(), useProtection, this.stateValue.inventory);
@@ -3564,6 +3534,35 @@ export class SimulationSession {
         const result = unsocketEquipmentGemV128(item, socketIndex, this.stateValue.inventory);
         const seed = mixSeed(this.rootSeed ^ 0x1286e03, this.actionIndexValue + 1);
         this.historyValue.append({ id: `equipment.gem.unsocket.v128.${seed}.${itemId}.${socketIndex}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: 'system', significance: 3, message: `Tháo Ngũ Hành Ngọc khỏi ${item.name} · ô ${result.socketIndex + 1}; hoàn ${result.refundedBlanks} Ngũ Hành Ngọc Phôi.`, locationId: this.stateValue.locationId, tags: ['Equipment', 'GemV128', 'Unsocket'], data: { itemId, socketIndex: result.socketIndex, refundedBlanks: result.refundedBlanks } });
+        this.actionIndexValue += 1;
+        return result;
+    }
+    equipmentV142Summary() {
+        return equipmentCraftingSummaryV142(this.stateValue, this.stateValue.equipment);
+    }
+    craftEquipmentV142(slot, rankIndex) {
+        if (!this.stateValue.alive) throw new Error('Đời hiện tại đã kết thúc.');
+        const rank = Math.max(0, Math.floor(Number(rankIndex) || 0));
+        const maxRank = this.stateValue.realm.maxRealmOrder >= 1 ? majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder) : 0;
+        if (rank > maxRank) throw new Error(`Chưa thể luyện trang bị ${rank}: cảnh giới hiện tại chỉ mở tới bậc ${maxRank}.`);
+        const seed = mixSeed(this.rootSeed ^ 0x142c0de, this.actionIndexValue + 1);
+        const result = craftRankedEquipmentV142(this.stateValue, this.stateValue.equipment, { slot, rankIndex: rank, seed, acquiredWorldYear: this.stateValue.worldTimeYears });
+        this.actionIndexValue += 1;
+        return result;
+    }
+    refineEquipmentFragmentsV142(fromRank, batches = 1) {
+        if (!this.stateValue.alive) throw new Error('Đời hiện tại đã kết thúc.');
+        const result = refineRankedEquipmentFragmentsV142(this.stateValue, fromRank, batches);
+        this.actionIndexValue += 1;
+        return result;
+    }
+    mergeEquipmentV142(mainItemId, fodderItemAId, fodderItemBId) {
+        if (!this.stateValue.alive) throw new Error('Đời hiện tại đã kết thúc.');
+        const main = this.stateValue.equipment.items.find(item => item.id === mainItemId);
+        if (!main || main.schema !== 'equipment.v142') throw new Error('Không tìm thấy trang bị V142 chính.');
+        const maxRank = this.stateValue.realm.maxRealmOrder >= 1 ? majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder) : 0;
+        if ((main.equipmentRankIndex ?? 0) + 1 > maxRank) throw new Error('Không thể hợp trang bị vượt quá đại cảnh đã đạt.');
+        const result = mergeRankedEquipmentV142(this.stateValue.equipment, mainItemId, fodderItemAId, fodderItemBId);
         this.actionIndexValue += 1;
         return result;
     }

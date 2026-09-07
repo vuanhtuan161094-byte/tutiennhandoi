@@ -2,6 +2,7 @@ import { equipmentAffixPowerV114, equipmentAffixCountV114, formatEquipmentAffixV
 import { activeEquipmentSetMechanicsV116, equipmentSetMechanicTagsV116, isEquipmentSetV116, isLiveEquipmentSetV12310, RETIRED_EQUIPMENT_SET_IDS_V12310, EQUIPMENT_SET_MAX_BUILD_AFFIXES_V116 } from './equipment-set-v116.js';
 import { daoInscriptionPowerV128, equipmentGemEffectV128, equipmentGemSocketCountV128 } from './equipment-inscription-gem-v128.js';
 import { boundedStatCapV129, combineBoundedPct, combineStatPctV129 } from './combat-rules.js';
+import { equipmentSetPowerV142 } from './equipment-v142.js';
 export const CANONICAL_EQUIPMENT_SLOTS = [
     'weapon', 'head', 'robe', 'belt', 'bracelet', 'gloves', 'boots', 'necklace', 'ring', 'talisman',
 ];
@@ -507,6 +508,11 @@ export function equipmentPower(state, sets) {
         activeSets.push({ setId, setName: first.setName, pieces: first.equippedPieces, activeBonuses: mechanics.map(m => `${m.pieces} món [${equipmentGrades[m.effectiveGrade].name}]: ${m.name} — ${m.summary}`) });
     }
     grantedTags.push(...equipmentSetMechanicTagsV116(activeSetMechanics));
+    const v142SetPower = equipmentSetPowerV142(state);
+    addPartialStats(flatStats, v142SetPower.flatStats);
+    for (const [key, value] of Object.entries(v142SetPower.statMultipliers))
+        statMultipliers[key] = (statMultipliers[key] ?? 0) + value;
+    activeSets.push(...v142SetPower.activeSets);
     return { flatStats, statMultipliers, elementalAffinities, elementalResistancesPct, activeSets, activeSetMechanics, triggers, grantedTags: [...new Set(grantedTags)] };
 }
 export function applyEquipmentToEntity(base, state, sets) {
