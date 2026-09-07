@@ -52,7 +52,10 @@ const bytes=graph.reduce((n,f)=>n+fs.statSync(f).size,0);
 ok('initial static graph excludes Hunt module',()=>assert.ok(!rel.includes('modules/hunt-combat-v2.js')));
 ok('initial static graph excludes DongFu Pixi module',()=>assert.ok(!rel.includes('modules/dongfu-pixi-scene-v139.js')));
 ok('initial static graph stays under 4.40 MiB',()=>assert.ok(bytes<=4.40*1024*1024,`initial graph ${(bytes/1024/1024).toFixed(2)} MiB`));
-ok('initial static graph stays at or below 185 modules',()=>assert.ok(graph.length<=185,`initial graph ${graph.length} modules`));
+// V142 deliberately decomposes the equipment economy into five small domain modules
+// (ranked fragments, Hunt bridge, crafting, Set fragments, dungeon bridge). Keep the
+// byte budget unchanged; allow exactly that modularity increase over the V129 baseline.
+ok('initial static graph stays at or below 190 modules',()=>assert.ok(graph.length<=190,`initial graph ${graph.length} modules`));
 const hunt=await import('../../modules/hunt-combat-v2.js');
 const dongfu=await import('../../modules/dongfu-pixi-scene-v139.js');
 ok('lazy Hunt module exports full route contract',()=>{for(const k of ['renderHuntCombatV2','mountHuntCombatV2','syncHuntCombatV2','stopHuntCombatV2'])assert.equal(typeof hunt[k],'function',k)});
