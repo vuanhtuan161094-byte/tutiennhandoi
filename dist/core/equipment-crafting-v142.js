@@ -1,5 +1,7 @@
 import { EQUIPMENT_AFFIX_DEFINITIONS_V114, EQUIPMENT_AFFIX_MIN_ROLL_PCT_V114, EQUIPMENT_AFFIX_MAX_ROLL_PCT_V114 } from './equipment-affix-v114.js';
 import {
+  EQUIPMENT_ATTIRE_SLOTS_V142,
+  EQUIPMENT_JEWELRY_SLOTS_V142,
   EQUIPMENT_SLOTS_V142,
   EQUIPMENT_SLOT_LABELS_V142,
   EQUIPMENT_SLOT_BASE_STATS_V142,
@@ -7,6 +9,7 @@ import {
   equipmentAffixCountForRankV142,
   equipmentRankNameV142,
   equipmentRealmMultiplierV142,
+  equipmentSetDefinitionV142,
 } from './equipment-v142.js';
 import {
   EQUIPMENT_FRAGMENT_CRAFT_COST_V142,
@@ -16,6 +19,12 @@ import {
   ensureEquipmentFragmentWalletV142,
   refineEquipmentFragmentsUpV142,
 } from './equipment-fragments-v142.js';
+import {
+  EQUIPMENT_SET_FRAGMENT_ENGRAVE_COST_V142,
+  ensureEquipmentSetFragmentWalletV142,
+  equipmentSetFragmentBalanceV142,
+  spendEquipmentSetFragmentsV142,
+} from './equipment-set-fragments-v142.js';
 
 function hash01(seed, salt) {
   let x = ((seed >>> 0) ^ Math.imul((salt + 1) >>> 0, 0x9e3779b1)) >>> 0;
@@ -81,7 +90,7 @@ export function craftRankedEquipmentV142(state, equipmentState, input) {
     slot,
     equipmentRankIndex: rankIndex,
     equipmentRankName: rankName,
-    // Compatibility fields for the current combat/equipment transport. They are not progression axes.
+    // Compatibility-only fields for the current combat/equipment transport. They are not progression axes.
     tier: 0,
     grade: 'mundane',
     quality: 'mid',
@@ -110,7 +119,8 @@ export function mergeRankedEquipmentV142(equipmentState, mainId, fodderAId, fodd
   removeItems(equipmentState, [a.id, b.id]);
   main.equipmentRankIndex += 1;
   main.equipmentRankName = equipmentRankNameV142(main.equipmentRankIndex);
-  main.name = `${main.equipmentRankName} · ${EQUIPMENT_SLOT_LABELS_V142[main.slot]}`;
+  const set = main.setId ? equipmentSetDefinitionV142(main.setId) : undefined;
+  main.name = `${set ? `${set.name} · ` : ''}${main.equipmentRankName} · ${EQUIPMENT_SLOT_LABELS_V142[main.slot]}`;
   main.itemLevel = main.equipmentRankIndex * 1000;
   main.stats = baseStats(main.slot, main.equipmentRankIndex);
   main.tags = [...new Set([...(main.tags ?? []).filter(tag => !String(tag).startsWith('EquipmentRank:')), `EquipmentRank:${main.equipmentRankName}`])];
@@ -121,14 +131,42 @@ export function refineRankedEquipmentFragmentsV142(state, fromRank, batches) {
   return refineEquipmentFragmentsUpV142(state, fromRank, batches);
 }
 
+export function engraveRankedEquipmentSetV142(state, equipmentState, itemId, setId) {
+  const item = equipmentState.items.find(candidate => candidate.id === itemId);
+  if (!item || item.schema !== EQUIPMENT_V142_SCHEMA) throw new Error('Không tìm thấy trang bị V142 để Khắc Bộ.');
+  const set = equipmentSetDefinitionV142(setId);
+  if (!set) throw new Error(`Bộ V142 không hợp lệ: ${setId}`);
+  const attire = EQUIPMENT_ATTIRE_SLOTS_V142.includes(item.slot);
+  const jewelry = EQUIPMENT_JEWELRY_SLOTS_V142.includes(item.slot);
+  if ((set.category === 'attire' && !attire) || (set.category === 'jewelry' && !jewelry)) {
+    throw new Error(`${set.name} chỉ dùng cho ${set.category === 'attire' ? '6 Y Trang' : '4 Trang Sức'}.`);
+  }
+  spendEquipmentSetFragmentsV142(state, set.id, EQUIPMENT_SET_FRAGMENT_ENGRAVE_COST_V142);
+  const wallet = ensureEquipmentSetFragmentWalletV142(state);
+  wallet.totalEngraved += 1;
+  item.setId = set.id;
+  item.name = `${set.name} · ${item.equipmentRankName ?? equipmentRankNameV142(item.equipmentRankIndex)} · ${EQUIPMENT_SLOT_LABELS_V142[item.slot]}`;
+  item.tags = [...new Set([...(item.tags ?? []).filter(tag => !String(tag).startsWith('SetV142:')), `SetV142:${set.key}`])];
+  return {
+    item,
+    setId: set.id,
+    setName: set.name,
+    cost: EQUIPMENT_SET_FRAGMENT_ENGRAVE_COST_V142,
+    balance: equipmentSetFragmentBalanceV142(state, set.id),
+  };
+}
+
 export function equipmentCraftingSummaryV142(state, equipmentState) {
   const wallet = ensureEquipmentFragmentWalletV142(state);
+  const setWallet = ensureEquipmentSetFragmentWalletV142(state);
   return {
     schema: 'equipment-crafting.v142',
     craftCostPerItem: EQUIPMENT_FRAGMENT_CRAFT_COST_V142,
+    setEngraveCostPerItem: EQUIPMENT_SET_FRAGMENT_ENGRAVE_COST_V142,
     fragmentWallet: { ...wallet.byRank },
+    setFragmentWallet: { ...setWallet.bySetId },
     v142Items: equipmentState.items.filter(item => item.schema === EQUIPMENT_V142_SCHEMA).map(item => ({
-      id: item.id, name: item.name, slot: item.slot, rankIndex: item.equipmentRankIndex, rankName: item.equipmentRankName, enhancementLevel: item.enhancementLevel ?? 0,
+      id: item.id, name: item.name, slot: item.slot, rankIndex: item.equipmentRankIndex, rankName: item.equipmentRankName, enhancementLevel: item.enhancementLevel ?? 0, setId: item.setId ?? '',
     })),
   };
 }
