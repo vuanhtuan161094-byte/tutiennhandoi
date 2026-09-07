@@ -118,6 +118,8 @@ export function selectActiveFateBuildV4(state,id){
 }
 export function activeFateBuildV4(state){ const next=cloneFateBuildStateV4(state); return fateBuildDefinitionV4(next.activeFateId); }
 export function activeFateBuildModifiersV4(state){ return { ...activeFateBuildV4(state).modifiers }; }
+export function fateBuildModifiersForIdV4(id){ return { ...fateBuildDefinitionV4(id).modifiers }; }
+export function applyFateSpiritStoneGainV4(amount,modifiers={}){ const base=Math.max(0,Math.floor(Number(amount)||0)),pct=Math.max(0,Number(modifiers?.spiritStoneGainPct)||0); return Math.max(0,Math.round(base*(1+pct/100))); }
 
 export const REINCARNATION_ENERGY_CAP = 300;
 export const REINCARNATION_ENERGY_RECHARGE_PER_24H = 100;
@@ -224,7 +226,7 @@ export function cloneLifeCorePotentialState(value){
   const spent=a.power+a.body+a.defense, earned=Math.max(spent,Math.floor(Number(value?.lifetimeEarned)||0));
   return { unspent:Math.max(0,Math.floor(Number(value?.unspent)||Math.max(0,earned-spent))), lifetimeEarned:earned, allocations:a, awardedMilestones:[...new Set(value?.awardedMilestones??[])] };
 }
-export function createReincarnationProgressStateV1102(nowUnixMs=0){ return { energy:{current:REINCARNATION_ENERGY_CAP,lastUpdatedUnixMs:nowUnixMs}, permanentPotential:{unspent:0,lifetimeEarned:0,allocations:emptyAllocation()}, alchemyPermanentStats:emptyAllocation(), alchemyLegacy:{highestRank:1,highestTurn:1,bestMasteryByRecipe:{},knownRecipeIds:[]}, tree:{lifetimePointsEarned:0,sharedSpentPoints:0,ranks:{},highestAchievementTierByTree:{},cultivationR3:true}, fateBuild:createFateBuildStateV4(), rewardHistory:[] }; }
+export function createReincarnationProgressStateV1102(nowUnixMs=0){ return { energy:{current:REINCARNATION_ENERGY_CAP,lastUpdatedUnixMs:nowUnixMs}, permanentPotential:{unspent:0,lifetimeEarned:0,allocations:emptyAllocation()}, alchemyPermanentStats:emptyAllocation(), alchemyLegacy:{highestRank:1,highestTurn:1,bestMasteryByRecipe:{},knownRecipeIds:[]}, tree:{lifetimePointsEarned:0,sharedSpentPoints:0,ranks:{},highestAchievementTierByTree:{},cultivationR3:true}, fateBuild:createFateBuildStateV4(), highestRealmOrderV4:0, bestCombatPowerByRealmOrderV4:{}, rewardHistory:[] }; }
 export function cloneReincarnationProgressStateV1102(value,nowUnixMs=0){
   const base=createReincarnationProgressStateV1102(nowUnixMs), p={...emptyAllocation(),...(value?.permanentPotential?.allocations??{})}; for(const k of Object.keys(p)) p[k]=Math.max(0,Math.floor(Number(p[k])||0));
   const spent=p.power+p.body+p.defense, earned=Math.max(spent,Math.floor(Number(value?.permanentPotential?.lifetimeEarned)||0));
@@ -239,7 +241,7 @@ const rawRanks={...(value?.tree?.ranks??{})};
     ranks[id]=clamp(Math.floor(Number(raw)||0),0,def.maxRank);
   }
   const pending=value?.pendingTrial?{...value.pendingTrial,offenseBest:value.pendingTrial.offenseBest?{...value.pendingTrial.offenseBest}:undefined,survivalBest:value.pendingTrial.survivalBest?{...value.pendingTrial.survivalBest}:undefined,finalizedReward:value.pendingTrial.finalizedReward?{...value.pendingTrial.finalizedReward}:undefined}:undefined;
-  return { energy:{current:clamp(Number(value?.energy?.current??base.energy.current)||0,0,REINCARNATION_ENERGY_CAP),lastUpdatedUnixMs:Math.max(0,Math.floor(Number(value?.energy?.lastUpdatedUnixMs??nowUnixMs)))}, permanentPotential:{unspent:Math.max(0,Math.floor(Number(value?.permanentPotential?.unspent)||Math.max(0,earned-spent))),lifetimeEarned:earned,allocations:p}, alchemyPermanentStats:{...emptyAllocation(),...(value?.alchemyPermanentStats??{})}, alchemyLegacy:{highestRank:Math.max(1,Math.min(9,Math.floor(Number(value?.alchemyLegacy?.highestRank)||1))),highestTurn:Math.max(1,Math.min(9,Math.floor(Number(value?.alchemyLegacy?.highestTurn)||1))),bestMasteryByRecipe:{...(value?.alchemyLegacy?.bestMasteryByRecipe??{})},knownRecipeIds:[...new Set(value?.alchemyLegacy?.knownRecipeIds??[])]}, tree:{lifetimePointsEarned:Math.max(0,Math.floor(Number(value?.tree?.lifetimePointsEarned)||0)),sharedSpentPoints:Math.max(0,Math.floor(Number(value?.tree?.sharedSpentPoints)||0)),ranks,highestAchievementTierByTree:{...(value?.tree?.highestAchievementTierByTree??{})},cultivationR3:true}, fateBuild:cloneFateBuildStateV4(value?.fateBuild??base.fateBuild), rewardHistory:(value?.rewardHistory??[]).map(x=>({...x})) };
+  return { energy:{current:clamp(Number(value?.energy?.current??base.energy.current)||0,0,REINCARNATION_ENERGY_CAP),lastUpdatedUnixMs:Math.max(0,Math.floor(Number(value?.energy?.lastUpdatedUnixMs??nowUnixMs)))}, permanentPotential:{unspent:Math.max(0,Math.floor(Number(value?.permanentPotential?.unspent)||Math.max(0,earned-spent))),lifetimeEarned:earned,allocations:p}, alchemyPermanentStats:{...emptyAllocation(),...(value?.alchemyPermanentStats??{})}, alchemyLegacy:{highestRank:Math.max(1,Math.min(9,Math.floor(Number(value?.alchemyLegacy?.highestRank)||1))),highestTurn:Math.max(1,Math.min(9,Math.floor(Number(value?.alchemyLegacy?.highestTurn)||1))),bestMasteryByRecipe:{...(value?.alchemyLegacy?.bestMasteryByRecipe??{})},knownRecipeIds:[...new Set(value?.alchemyLegacy?.knownRecipeIds??[])]}, tree:{lifetimePointsEarned:Math.max(0,Math.floor(Number(value?.tree?.lifetimePointsEarned)||0)),sharedSpentPoints:Math.max(0,Math.floor(Number(value?.tree?.sharedSpentPoints)||0)),ranks,highestAchievementTierByTree:{...(value?.tree?.highestAchievementTierByTree??{})},cultivationR3:true}, fateBuild:cloneFateBuildStateV4(value?.fateBuild??base.fateBuild), highestRealmOrderV4:clamp(Math.floor(Number(value?.highestRealmOrderV4)||0),0,117), bestCombatPowerByRealmOrderV4:Object.fromEntries(Object.entries(value?.bestCombatPowerByRealmOrderV4??{}).map(([k,v])=>[String(clamp(Math.floor(Number(k)||0),0,117)),Math.max(0,Number(v)||0)])), rewardHistory:(value?.rewardHistory??[]).map(x=>({...x})) };
 }
 
 export function depthInfoForRealmOrder(realmOrder){
@@ -253,22 +255,40 @@ export function ensureLifePotentialForRealm(state,realmOrder,gainPct=0){ const n
 export function grantLifeCorePotential(state,amount){ const next=cloneLifeCorePotentialState(state),gain=Math.max(0,Math.floor(Number(amount)||0)); if(gain>0){next.unspent+=gain;next.lifetimeEarned+=gain;} return next; }
 export function spendLifeCorePotential(state,id,points=1){ if(!['power','body','defense'].includes(id)) throw new Error('Thuộc tính Tiềm Năng không hợp lệ.'); const next=cloneLifeCorePotentialState(state),n=Math.max(1,Math.floor(points)); if(next.unspent<n) throw new Error(`Không đủ Điểm Tiềm Năng Đời: cần ${n}, hiện có ${next.unspent}.`); next.unspent-=n; next.allocations[id]+=n; return next; }
 export function spendPermanentCorePotential(state,id,points=1){ if(!['power','body','defense'].includes(id)) throw new Error('Thuộc tính Tiềm Năng không hợp lệ.'); const next={unspent:Math.max(0,Math.floor(state.unspent)),lifetimeEarned:Math.max(0,Math.floor(state.lifetimeEarned)),allocations:{...emptyAllocation(),...state.allocations}},n=Math.max(1,Math.floor(points)); if(next.unspent<n) throw new Error(`Không đủ Điểm Tiềm Năng Luân Hồi: cần ${n}, hiện có ${next.unspent}.`); next.unspent-=n; next.allocations[id]+=n; return next; }
-export function applyCorePotentialStats(stats,runtime){ if(!runtime) return {...stats}; const life=cloneLifeCorePotentialState(runtime.life).allocations, permanent={...emptyAllocation(),...(runtime.permanent??{})}; const power=life.power+Math.max(0,permanent.power||0),body=life.body+Math.max(0,permanent.body||0),defense=life.defense+Math.max(0,permanent.defense||0); const basePhysique=Number.isFinite(stats.physique)?Math.max(0,stats.physique):Math.max(0,stats.maxHp/20); const physique=basePhysique+body; return {...stats,attack:stats.attack+power,defense:stats.defense+defense*3,physique,maxHp:physique*20}; }
+export const CORE_POTENTIAL_SOFT_CAP_MAX_PCT_V4=35;
+export const CORE_POTENTIAL_HALF_SATURATION_V4=4500;
+export function corePotentialPercentBonusV4(points){ const p=Math.max(0,Number(points)||0); return CORE_POTENTIAL_SOFT_CAP_MAX_PCT_V4*p/(p+CORE_POTENTIAL_HALF_SATURATION_V4); }
+export function applyCorePotentialStats(stats,runtime){
+  if(!runtime) return {...stats};
+  const life=cloneLifeCorePotentialState(runtime.life).allocations, permanent={...emptyAllocation(),...(runtime.permanent??{})};
+  const power=life.power+Math.max(0,permanent.power||0),body=life.body+Math.max(0,permanent.body||0),defense=life.defense+Math.max(0,permanent.defense||0);
+  const resonance=1+corePotentialPercentBonusV4(power+body+defense)/100;
+  const attack=Math.max(0,(Number(stats.attack)||0)+power)*resonance;
+  const finalDefense=Math.max(0,(Number(stats.defense)||0)+defense*3)*resonance;
+  const basePhysique=Number.isFinite(stats.physique)?Math.max(0,stats.physique):Math.max(0,(Number(stats.maxHp)||0)/20);
+  const physique=(basePhysique+body)*resonance;
+  return {...stats,attack,defense:finalDefense,physique,maxHp:physique*20};
+}
 
 export function rechargeReincarnationEnergy(state,nowUnixMs=Date.now()){ const now=Math.max(state.lastUpdatedUnixMs,Math.floor(nowUnixMs)),elapsed=Math.max(0,now-state.lastUpdatedUnixMs),perMs=REINCARNATION_ENERGY_RECHARGE_PER_24H/(24*60*60*1000); return {current:Math.min(REINCARNATION_ENERGY_CAP,state.current+elapsed*perMs),lastUpdatedUnixMs:now}; }
 export function reincarnationEnergyCostForRealmOrder(realmOrder){ return depthConfigForRealmOrder(realmOrder).energyCost; }
 export function trialBonusPctForRatio(ratio){ const r=Math.max(0,Number(ratio)||0); if(r<.8)return 0;if(r<1)return 10;if(r<1.25)return 20;if(r<1.5)return 35;if(r<2)return 50;if(r<3)return 65;if(r<4)return 80;if(r<5)return 90;return 100; }
 export function combinedTrialBonusPct(offenseBonus,survivalBonus){ const o=clamp(Number(offenseBonus)||0,0,100),s=clamp(Number(survivalBonus)||0,0,100); const synergy=o>=80&&s>=80?20:o>=50&&s>=50?10:0; return Math.min(120,o*.5+s*.5+synergy); }
 export function buildTrialResult(kind,measured,benchmark,buildFingerprint,nowUnixMs=Date.now()){ const safe=Math.max(1e-9,benchmark),ratio=Math.max(0,measured)/safe; return {kind,measured:Math.max(0,measured),benchmark:safe,ratio,bonusPct:trialBonusPctForRatio(ratio),durationSeconds:REINCARNATION_TRIAL_DURATION_SECONDS,buildFingerprint,performedAtUnixMs:nowUnixMs}; }
-export function lifeAchievementBonusPctV4(totalScore){ const score=Math.max(0,Number(totalScore)||0); return Math.min(35,Math.round(Math.sqrt(score)*0.45)); }
+export const REINCARNATION_REALM_RECORD_BONUS_PCT_V4=15;
+export function reincarnationStageFactorV4(realmOrder){ const info=depthInfoForRealmOrder(realmOrder),span=Math.max(0,info.endOrder-info.startOrder); return span<=0?1:1+0.30*(Math.max(0,Math.min(span,Math.floor(Number(realmOrder)||0)-info.startOrder))/span); }
+export function reincarnationPowerBonusPctV4(power,benchmark){ const b=Math.max(0,Number(benchmark)||0); if(b<=0)return 0; const ratio=Math.max(0,Number(power)||0)/b; return ratio>=5?50:ratio>=3?40:ratio>=2?30:ratio>=1.5?20:ratio>=1.25?10:0; }
 export function previewReincarnationV2Reward(args){
-  const info=depthInfoForRealmOrder(args.realmOrder),cfg=REINCARNATION_DEPTH_CONFIG[info.tierIndex];
-  const lifePotential=Math.max(0,Math.floor(Number(args.lifePotentialEarned)||lifePotentialMilestonesThroughRealmOrder(args.realmOrder).reduce((sum,x)=>sum+x.amount,0)));
+  const realmOrder=clamp(Math.floor(Number(args.realmOrder)||0),0,117),info=depthInfoForRealmOrder(realmOrder),cfg=REINCARNATION_DEPTH_CONFIG[info.tierIndex];
+  const lifePotential=Math.max(0,Math.floor(Number(args.lifePotentialEarned)||lifePotentialMilestonesThroughRealmOrder(realmOrder).reduce((sum,x)=>sum+x.amount,0)));
   const conversionPct=clamp(Number(args.permanentPotentialConversionPct)||REINCARNATION_PERMANENT_POTENTIAL_BASE_PCT_V127,REINCARNATION_PERMANENT_POTENTIAL_BASE_PCT_V127,REINCARNATION_PERMANENT_POTENTIAL_MAX_PCT_V127);
   const permanentBase=Math.max(0,Math.round(lifePotential*conversionPct/100));
   const energyReduction=clamp(Number(args.energyCostReductionPct)||0,0,25), energyCost=Math.max(1,Math.ceil(cfg.energyCost*(1-energyReduction/100)));
-  const rpGainPct=clamp(Number(args.reincarnationPointsGainPct)||0,0,25), achievementBonusPct=lifeAchievementBonusPctV4(args.lifeScore);
-  return {lifeId:args.lifeId,depthTier:info.tierId,depthTierIndex:info.tierIndex,depthStage:info.stage,reincarnationPoints:Math.round(cfg.reincarnationPoints*(1+achievementBonusPct/100)*(1+rpGainPct/100)),reincarnationPointsBase:cfg.reincarnationPoints,permanentPotentialBase:permanentBase,permanentPotentialConversionPct:conversionPct,achievementBonusPct,reincarnationPointsGainPct:rpGainPct,permanentPotentialGain:permanentBase,energyCost,energyCostBase:cfg.energyCost,finalizedAtUnixMs:args.nowUnixMs??Date.now()};
+  const rpGainPct=clamp(Number(args.reincarnationPointsGainPct)||0,0,25),stageFactor=reincarnationStageFactorV4(realmOrder);
+  const combatPower=Math.max(0,Number(args.combatPower)||0),combatPowerBenchmark=Math.max(0,Number(args.combatPowerBenchmark)||0),powerRatio=combatPowerBenchmark>0?combatPower/combatPowerBenchmark:1;
+  const powerBonusPct=reincarnationPowerBonusPctV4(combatPower,combatPowerBenchmark),recordBonusPct=args.isNewRealmRecord?REINCARNATION_REALM_RECORD_BONUS_PCT_V4:0;
+  const earned=Math.round(cfg.reincarnationPoints*stageFactor*(1+(powerBonusPct+recordBonusPct)/100)*(1+rpGainPct/100));
+  return {lifeId:args.lifeId,realmOrder,depthTier:info.tierId,depthTierIndex:info.tierIndex,depthStage:info.stage,stageFactor,stageProgressPct:Math.round((stageFactor-1)/0.30*1000)/10,reincarnationPoints:earned,reincarnationPointsBase:cfg.reincarnationPoints,combatPower,combatPowerBenchmark,powerRatio,powerBonusPct,recordBonusPct,reincarnationPointsGainPct:rpGainPct,permanentPotentialBase:permanentBase,permanentPotentialConversionPct:conversionPct,permanentPotentialGain:permanentBase,energyCost,energyCostBase:cfg.energyCost,finalizedAtUnixMs:args.nowUnixMs??Date.now()};
 }
 
 function baseRankCost(rank){ const r=clamp(Math.floor(rank),1,50); return r<=10?50:r<=20?150:r<=30?400:r<=40?1000:2500; }

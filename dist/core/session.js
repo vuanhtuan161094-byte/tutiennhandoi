@@ -86,7 +86,7 @@ import { RESOURCE_PVE_DUNGEONS_V12329 } from './resource-pve-v12329.js';
 import { buyEconomyOfferV89, economyActivitySummaryV89, recordBoundJadeSpendV89, recordEconomyActivityV89, recordFirstClearBoundJadeV89, recordProgressionBoundJadeV89, recordPvpWinBoundJadeV91, recordPvpSeasonBoundJadeV94 } from './economy-activity-v89.js';
 import { buildEconomyProductionV111 } from './economy-production-v111.js';
 import { REINCARNATION_TREE_TIER_INVESTMENT, availableTreePoints, cloneReincarnationProgressStateV1102, corePotentialDefinitions, depthInfoForRealmOrder, ensureLifePotentialForRealm, nodeModifierValue, permanentPotentialConversionPctV127, previewReincarnationV2Reward, rankCost, rechargeReincarnationEnergy, reincarnationEnergyCostReductionPctV127, reincarnationPointsGainPctV4, reincarnationTreeRuntimeModifierV136, resetReincarnationTreeRanks, spendLifeCorePotential, spendPermanentCorePotential, spendReincarnationTreeRank, starterReincarnationTreeNodes, syncReincarnationTreeRuntimeOriginsV136, totalTreeMaxCostV127, totalTreeSpentPoints } from './reincarnation-progression-v1102.js';
-import { FATE_BUILD_TOTAL_UNLOCK_COST_V4, activeFateBuildV4, cloneFateBuildStateV4, fateBuildUnlockPreviewV4, selectActiveFateBuildV4 as selectActiveFateBuildStateV4, unlockFateBuildV4 as unlockFateBuildStateV4 } from './reincarnation-progression-v1102.js';
+import { FATE_BUILD_TOTAL_UNLOCK_COST_V4, activeFateBuildV4, cloneFateBuildStateV4, fateBuildDefinitionV4, applyFateSpiritStoneGainV4, fateBuildUnlockPreviewV4, selectActiveFateBuildV4 as selectActiveFateBuildStateV4, unlockFateBuildV4 as unlockFateBuildStateV4 } from './reincarnation-progression-v1102.js';
 import { runSessionGuidanceV141 } from './session-guidance.js';
 import { challengeSessionDungeonFloorV141 } from './session-dungeon.js';
 import { useSessionAlchemyPillV141 } from './session-alchemy-pill.js';
@@ -211,6 +211,7 @@ export class SimulationSession {
         }
         this.currentLifeValue = cloneCurrentLifeMeta(currentLife ?? createInitialLifeMetaForCharacter(rootSeed, this.stateValue, registry));
         if (!this.currentLifeValue.activeFateId) this.currentLifeValue.activeFateId = this.metaValue.reincarnationProgress.fateBuild.activeFateId;
+        this.syncCurrentLifeFateRuntimeV4();
         const rp = this.metaValue.reincarnationProgress;
         const lifePotentialPct = nodeModifierValue(rp.tree, 'cultivation.lifePotentialGainPct');
         const core = this.stateValue.character.corePotential ?? { life: undefined, permanent: { power: 0, body: 0, defense: 0 } };
@@ -519,8 +520,7 @@ export class SimulationSession {
             const lockReason = rank >= x.maxRank ? 'Đã đạt tối đa' : missingPrerequisites.length ? `Thiếu điều kiện ${missingPrerequisites.map(req => `${req.nodeId} ${req.minRank}/50`).join(', ')}` : undefined;
             return { ...x, rank, nextCost, structuralUnlocked, affordable: nextCost !== undefined && availablePoints >= nextCost, lockReason, milestoneBonus: { ...(x.milestoneBonus ?? {}) }, prerequisites: (x.prerequisites ?? []).map(y => ({ ...y })) };
         });
-        const lifeScore = this.previewCurrentLifeSettlement().totalScore;
-        const currentDepthReward = previewReincarnationV2Reward({ lifeId: this.currentLifeValue.lifeId, realmOrder: this.stateValue.realm.maxRealmOrder, lifePotentialEarned: this.stateValue.character.corePotential?.life?.lifetimeEarned ?? 0, permanentPotentialConversionPct: permanentPotentialConversionPctV127(rp.tree), energyCostReductionPct: reincarnationEnergyCostReductionPctV127(rp.tree), reincarnationPointsGainPct: reincarnationPointsGainPctV4(rp.tree), lifeScore, nowUnixMs });
+        const currentDepthReward = previewReincarnationV2Reward(this.reincarnationRewardArgsV4(nowUnixMs));
         return { schema: 'reincarnation-progression.v4', depth, currentDepthReward, energy: { ...energy, cap: 300, rechargePer24h: 100 }, tree: { lifetimePointsEarned: rp.tree.lifetimePointsEarned, sharedSpentPoints:rp.tree.sharedSpentPoints??0, availablePoints, maxAllPoints: totalTreeMaxCostV127()+FATE_BUILD_TOTAL_UNLOCK_COST_V4, ranks: { ...rp.tree.ranks }, highestAchievementTierByTree: { ...rp.tree.highestAchievementTierByTree }, nodes }, fateBuild:this.fateBuildSummaryV4(), permanentPotential: this.permanentPotentialSummary() };
     }
     spendReincarnationTreeNode(nodeId, ranks = 1) {
@@ -626,7 +626,7 @@ export class SimulationSession {
         }
         return { gained, unused: remaining, transitions, summary: this.cultivationSummaryV140() };
     }
-    advanceRealtimeCultivationV140(realSeconds) {
+    advanceRealtimeCultivationV140(realSeconds, extraSelfCultivationPctV4 = 0) {
         if (!this.stateValue.alive) return { realSeconds:0, gained:0, ticks:0, transitions:[], summary:this.cultivationSummaryV140() };
         const seconds = Math.max(0, Number(realSeconds) || 0);
         const total = Math.max(0, Number(this.stateValue.cultivation.commitRemainderSeconds)||0) + seconds;
@@ -637,7 +637,7 @@ export class SimulationSession {
             const order=this.stateValue.realm.maxRealmOrder,required=effectiveCultivationRequiredTuViV140(this.stateValue,order);
             if(required<=0)break;
             if((Number(this.stateValue.cultivation.tuVi)||0)+1e-9>=required && (isTribulationGateV140(order)||isMajorRealmGateV140(order)))break;
-            const rate=cultivationRateV140(this.stateValue,order).finalTuViPer15s; if(rate<=0)break;
+            const baseRate=cultivationRateV140(this.stateValue,order).finalTuViPer15s; const rate=Math.max(0,Math.round(baseRate*(1+Math.max(0,Number(extraSelfCultivationPctV4)||0)/100))); if(rate<=0)break;
             rt.selfTicks+=1; rt.heavenRewardProgressTicks+=1;
             const lingRank=cultivationR3Rank(this.stateValue,'cultivation.lingGuangRank');
             const rng=new SeededRng(mixSeed(this.rootSeed ^ 0x1a91f00d,rt.selfTicks*131+order*17));
@@ -670,7 +670,8 @@ export class SimulationSession {
         const requested=Math.max(0,Math.min(Number(realHours)||0,this.stateValue.cultivation.retreatBankHours)); if(requested<=0)throw new Error('Không còn giờ Bế Quan khả dụng.');
         const injury=Math.max(0,Math.min(100,Number(this.stateValue.injury)||0)); if(injury>60)throw new Error('Thương Thế trên 60/100: cần trị thương trước khi Bế Quan.');
         const injuryMultiplier=injury>40?0.75:injury>20?0.90:1; const retreatTalentPct=cultivationTalentBonuses(this.stateValue.inheritedOrigins).retreatGainPct;
-        const basePerHour=required*(row.retreat3hProgressPct/3)/100*injuryMultiplier*(1+retreatTalentPct/100);
+        const fateRetreatPct=Math.max(0,Number(this.stateValue.character?.fateModifiersV4?.retreatPct)||0);
+        const basePerHour=required*(row.retreat3hProgressPct/3)/100*injuryMultiplier*(1+retreatTalentPct/100)*(1+fateRetreatPct/100);
         const rt=ensureCultivationRuntimeR3(this.stateValue.cultivation),dayKey=bank.dayKey; if(rt.retreatRefundDayKey!==dayKey){rt.retreatRefundDayKey=dayKey;rt.retreatRefundedHours=0;}
         const insightRank=cultivationR3Rank(this.stateValue,'cultivation.retreatInsightRank'),refundRank=cultivationR3Rank(this.stateValue,'cultivation.retreatRefundRank');
         let remaining=requested,hoursUsed=0,totalGain=0,refunded=0; const insights=[];
@@ -791,6 +792,21 @@ export class SimulationSession {
         const sealLevel = reincarnationSealLevel(lifetimeRp);
         r.xp = lifetimeRp; r.sealLevel = sealLevel;
         return { sealLevel, sealName: reincarnationSealName(sealLevel), lifetimeRp, nextSealLifetimeRp: nextSealXp(sealLevel), effectiveLives: r.effectiveLives, totalReincarnations: r.totalReincarnations, birthPreviewCount: birthPreviewCountForSeal(sealLevel), fateLockSlots: 0, karmaSlots: karmaInheritanceSlotsForSeal(sealLevel), relicSlots: boundRelicSlotsForSeal(sealLevel), daoSeeds: r.daoSeeds.map(x => ({ id: x.id, daoId: x.daoId, strength: x.strength })), memories: r.memoryArchives.map(x => ({ id: x.id, title: x.title, maxRealmOrder: x.maxRealmOrder })), current: this.currentLifeValue.reincarnation ? structuredClone(this.currentLifeValue.reincarnation) : undefined };
+    }
+    syncCurrentLifeFateRuntimeV4() {
+        let id=this.currentLifeValue?.activeFateId;
+        let def;
+        try { def=fateBuildDefinitionV4(id); }
+        catch { id=this.metaValue.reincarnationProgress.fateBuild.activeFateId; this.currentLifeValue.activeFateId=id; def=fateBuildDefinitionV4(id); }
+        this.stateValue.character.fateModifiersV4={...def.modifiers};
+        return def;
+    }
+    fateSpiritStoneGainV4(amount,state=this.stateValue) { return applyFateSpiritStoneGainV4(amount,state?.character?.fateModifiersV4); }
+    reincarnationRewardArgsV4(nowUnixMs=Date.now()) {
+        const rp=this.metaValue.reincarnationProgress, realmOrder=this.stateValue.realm.maxRealmOrder;
+        const combatPower=Math.max(0,Number(this.personalPowerSummary().score)||0);
+        const prior=Number(rp.bestCombatPowerByRealmOrderV4?.[String(realmOrder)]??0);
+        return { lifeId:this.currentLifeValue.lifeId, realmOrder, lifePotentialEarned:this.stateValue.character.corePotential?.life?.lifetimeEarned??0, permanentPotentialConversionPct:permanentPotentialConversionPctV127(rp.tree), energyCostReductionPct:reincarnationEnergyCostReductionPctV127(rp.tree), reincarnationPointsGainPct:reincarnationPointsGainPctV4(rp.tree), combatPower, combatPowerBenchmark:prior>0?prior:combatPower, isNewRealmRecord:realmOrder>Math.max(0,Number(rp.highestRealmOrderV4)||0), nowUnixMs };
     }
     fateBuildSummaryV4() {
         const rp=this.metaValue.reincarnationProgress, state=cloneFateBuildStateV4(rp.fateBuild), availableRp=availableTreePoints(rp.tree);
@@ -945,7 +961,7 @@ export class SimulationSession {
         const eliteKills = deterministicBinomialV77(kills, farm.eliteChancePct / 100, rng);
         hunt.farmTotalEliteKills = Math.max(0, hunt.farmTotalEliteKills) + eliteKills;
         const confidant = collectionConfidantV87Summary(this.stateValue.collectionV12316), specialty = confidant.activeSpecialty, huntRewardPct = confidant.fortune.huntRewardPct + (specialty?.unlocked && specialty.id === 'hunt' ? specialty.strengthPct : 0), huntRewardMultiplier = 1 + huntRewardPct / 100;
-        const spiritStones = deterministicJitteredTotalV77((kills * farm.spiritStonesPerKill + eliteKills * farm.spiritStonesPerKill * 2.5) * huntRewardMultiplier * regularRewardMultiplier, rng, .075);
+        const spiritStones = this.fateSpiritStoneGainV4(deterministicJitteredTotalV77((kills * farm.spiritStonesPerKill + eliteKills * farm.spiritStonesPerKill * 2.5) * huntRewardMultiplier * regularRewardMultiplier, rng, .075));
         this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + spiritStones;
         const demonCoreResourceId = economyMaterialResourceId('beastCore', map.zone, 'beast');
         const demonCores = Math.max(0, Math.round((deterministicBinomialV77(kills, farm.demonCoreChancePct / 100, rng) + eliteKills * 2) * huntRewardMultiplier * regularRewardMultiplier));
@@ -1121,7 +1137,7 @@ export class SimulationSession {
             // The independent Tu Luyện stream keeps running at 100% while the player hunts.
             cultivationGain = 0;
             const confidant = collectionConfidantV87Summary(this.stateValue.collectionV12316), specialty = confidant.activeSpecialty, huntRewardPct = confidant.fortune.huntRewardPct + (specialty?.unlocked && specialty.id === 'hunt' ? specialty.strengthPct : 0), huntRewardMultiplier = 1 + huntRewardPct / 100;
-            spiritStones = Math.max(0, Math.round(result.spiritStones * map.rewardDepthMultiplier * economyBandScale(map.majorRealmIndex) * fateMods.rewardMultiplier * fateEvent.rewardMultiplier * farmReward.multiplier * huntRewardMultiplier)) + fateEvent.spiritStoneDelta;
+            spiritStones = this.fateSpiritStoneGainV4(Math.max(0, Math.round(result.spiritStones * map.rewardDepthMultiplier * economyBandScale(map.majorRealmIndex) * fateMods.rewardMultiplier * fateEvent.rewardMultiplier * farmReward.multiplier * huntRewardMultiplier)) + fateEvent.spiritStoneDelta);
             this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + spiritStones;
             const rng = new SeededRng((seed ^ 0x7f4a7c15) >>> 0);
             // V129: Hunt's pill tier follows the same 8-band economy mapping as Alchemy.
@@ -1274,7 +1290,7 @@ export class SimulationSession {
         }
         else {
             if (fateEvent.spiritStoneDelta > 0) {
-                spiritStones = fateEvent.spiritStoneDelta;
+                spiritStones = this.fateSpiritStoneGainV4(fateEvent.spiritStoneDelta);
                 this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + spiritStones;
             }
             this.stateValue.injury = Math.min(100, this.stateValue.injury + result.injuryGain + fateEvent.injuryDelta);
@@ -1658,7 +1674,7 @@ export class SimulationSession {
             if (this.stateValue.realm.maxRealmOrder < 1)
                 throw new Error('Phải bước vào Luyện Khí trước');
             this.unlockDungeon('dungeon.spirit_gathering_cave');
-            this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + 6;
+            this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + this.fateSpiritStoneGainV4(6);
             summary = 'Sau khi cảm ứng linh khí thành công, ngươi nhận được một tấm lệnh bài vào Tụ Linh Động và sáu viên linh thạch để chuẩn bị lần công phá đầu.';
             significance = 20;
             tags.push('Cultivation', 'DungeonHint');
@@ -1668,7 +1684,7 @@ export class SimulationSession {
                 throw new Error('Hãy first-clear Tụ Linh Động tầng 1 trước');
             if (!this.stateValue.knownLocationIds.includes('location.thanh_hu_sect'))
                 this.stateValue.knownLocationIds.push('location.thanh_hu_sect');
-            this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + 10;
+            this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + this.fateSpiritStoneGainV4(10);
             summary = 'Chiến tích tại Tụ Linh Động lọt vào mắt Thanh Hư Tông. Một phong thư dẫn nhập được gửi tới, kèm mười linh thạch.';
             significance = 28;
             tags.push('FirstClear', 'FactionInvitation');
@@ -1692,7 +1708,7 @@ export class SimulationSession {
             else {
                 if (!this.stateValue.knownLocationIds.includes('location.ancient_sword_cave'))
                     this.stateValue.knownLocationIds.push('location.ancient_sword_cave');
-                this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + 8;
+                this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + this.fateSpiritStoneGainV4(8);
                 summary = 'Ngươi từ chối danh ngạch tông môn và tiếp tục làm tán tu. Một tin đồn về Cổ Kiếm Động được ghi lại làm đầu mối riêng.';
                 significance = 32;
                 tags.push('Choice', 'WandererPath', 'Exploration');
@@ -1913,8 +1929,8 @@ export class SimulationSession {
             throw new Error(`Insufficient ${resourceId}: ${available}/${units}`);
         const transaction = sellToMarket(this.stateValue.economy, this.world.markets ?? {}, marketId, resourceId, units);
         this.stateValue.inventory[resourceId] = available - units;
-        this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + transaction.totalSpiritStones;
-        return this.finishMarketTrade('sell', transaction);
+        this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + this.fateSpiritStoneGainV4(transaction.totalSpiritStones);
+        return this.finishMarketTrade('sell', { ...transaction, totalSpiritStones:this.fateSpiritStoneGainV4(transaction.totalSpiritStones) });
     }
     /** v1.11 backend-first economy ledger + rotating Phường Thị. No frontend dependency. */
     alchemyTreeModifiers() {
@@ -2120,7 +2136,11 @@ export class SimulationSession {
         if (!this.stateValue.alive)
             throw new Error('Đời hiện tại đã kết thúc; không thể giao dịch Phường Thị.');
         const major = majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder);
+        const beforeStones=Math.max(0,Number(this.stateValue.inventory['resource.spirit_stone'])||0);
         const result = sellEconomyMaterial({ container: this.stateValue.economy, inventory: this.stateValue.inventory, resourceId, quantity, majorRealmIndex: major });
+        const baseGain=Math.max(0,(Number(this.stateValue.inventory['resource.spirit_stone'])||0)-beforeStones), adjustedGain=this.fateSpiritStoneGainV4(baseGain);
+        if(adjustedGain>baseGain)this.stateValue.inventory['resource.spirit_stone']+=adjustedGain-baseGain;
+        result.fateBonusSpiritStones=Math.max(0,adjustedGain-baseGain);
         this.actionIndexValue += 1;
         return { ...result, state: this.state };
     }
@@ -3142,9 +3162,10 @@ export class SimulationSession {
         const tags = ['Opportunity', 'PlayerChoice', ...opportunity.tags];
         if (choice === 'claim') {
             ws.opportunityClaims[opportunityId] = { opportunityId, claimantType: 'player', claimantId: this.currentLifeValue.lifeId, worldYear: this.stateValue.worldTimeYears };
-            this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + baseStones;
+            const awardedStones=this.fateSpiritStoneGainV4(baseStones);
+            this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + awardedStones;
             this.grantTuViV140(baseTuVi, 'world-opportunity');
-            rewards['resource.spirit_stone'] = baseStones;
+            rewards['resource.spirit_stone'] = awardedStones;
             rewards['cultivation.tuVi'] = baseTuVi;
             for (const definition of Object.values(this.world.npcs ?? {})) {
                 const npc = ws.npcs[definition.id];
@@ -3165,7 +3186,7 @@ export class SimulationSession {
         }
         else if (choice === 'share') {
             ws.opportunityClaims[opportunityId] = { opportunityId, claimantType: 'player', claimantId: this.currentLifeValue.lifeId, worldYear: this.stateValue.worldTimeYears };
-            const stones = Math.max(1, Math.round(baseStones * 0.45));
+            const stones = this.fateSpiritStoneGainV4(Math.max(1, Math.round(baseStones * 0.45)));
             const tuVi = Math.max(1, Math.round(baseTuVi * 0.45));
             this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + stones;
             this.grantTuViV140(tuVi, 'world-opportunity-share');
@@ -4712,7 +4733,8 @@ export class SimulationSession {
         const capHours = OFFLINE_CAP_REAL_HOURS; // R3: offline cap returns to the owner system; Luân Hồi does not own it.
         const rewardSeconds = Math.min(elapsedSeconds, capHours * 3600, realSecondsUntilNaturalDeath(this.stateValue));
         const beforeTuVi = this.stateValue.cultivation.tuVi;
-        if (rewardSeconds > 0) this.advanceRealtimeCultivationV140(rewardSeconds);
+        const fateOfflineBonusPct=Math.max(0,Number(this.stateValue.character?.fateModifiersV4?.offlineSelfCultivationPct)||0)+Math.max(0,Number(this.stateValue.character?.fateModifiersV4?.offlineRewardPct)||0);
+        if (rewardSeconds > 0) this.advanceRealtimeCultivationV140(rewardSeconds,fateOfflineBonusPct);
         const rewardCultivationGain = Math.max(0, this.stateValue.cultivation.tuVi - beforeTuVi);
         const clockRemainder = Math.max(0, elapsedSeconds - rewardSeconds);
         if (clockRemainder > 0 && this.stateValue.alive) {
@@ -4725,7 +4747,7 @@ export class SimulationSession {
         }
         const summaryLines = [`Offline ${(elapsedSeconds/3600).toFixed(2)} giờ · Tự Tu +${rewardCultivationGain.toLocaleString('vi-VN')} Tu Vi.`, `Cảnh hiện tại: ${this.cultivationSummaryV140(nowUnixMs).realm} · ${this.cultivationSummaryV140(nowUnixMs).progressPct.toFixed(1)}%.`];
         this.actionIndexValue += 1;
-        return { schema:'offline-return.v140', elapsedRealHours:elapsedSeconds/3600, processedRealHours:rewardSeconds/3600, capRealHours:capHours, cultivationGain:rewardCultivationGain, lifeEnded:!this.stateValue.alive, summaryLines, state:this.state };
+        return { schema:'offline-return.v140', elapsedRealHours:elapsedSeconds/3600, processedRealHours:rewardSeconds/3600, capRealHours:capHours, fateOfflineBonusPct, cultivationGain:rewardCultivationGain, lifeEnded:!this.stateValue.alive, summaryLines, state:this.state };
     }
 
     resolveOffline(plan, lastSeenUnixMs, nowUnixMs) {
@@ -4736,7 +4758,7 @@ export class SimulationSession {
         if (!this.stateValue.alive) return { ok:false, reason:'Đời hiện tại đã kết thúc.' };
         const rp=this.metaValue.reincarnationProgress;
         const energyState=rechargeReincarnationEnergy(rp.energy,nowUnixMs);
-        const preview=previewReincarnationV2Reward({lifeId:this.currentLifeValue.lifeId,realmOrder:this.stateValue.realm.maxRealmOrder,lifePotentialEarned:this.stateValue.character.corePotential?.life?.lifetimeEarned??0,permanentPotentialConversionPct:permanentPotentialConversionPctV127(rp.tree),energyCostReductionPct:reincarnationEnergyCostReductionPctV127(rp.tree),reincarnationPointsGainPct:reincarnationPointsGainPctV4(rp.tree),lifeScore:this.previewCurrentLifeSettlement().totalScore,nowUnixMs});
+        const preview=previewReincarnationV2Reward(this.reincarnationRewardArgsV4(nowUnixMs));
         if(energyState.current+1e-9<preview.energyCost) return {ok:false,reason:`Không đủ Năng Lượng Luân Hồi: cần ${preview.energyCost}, hiện có ${energyState.current.toFixed(1)}/300.`,energyCost:preview.energyCost,energy:energyState.current};
         return {ok:true,energyCost:preview.energyCost,energy:energyState.current,projectedRp:preview.reincarnationPoints};
     }
@@ -4747,8 +4769,7 @@ export class SimulationSession {
         this.historyValue.append(event); this.stateValue.alive=false; this.actionIndexValue+=1; return {summary:event.message,event,state:this.state};
     }
     previewReincarnationV2Reward(nowUnixMs = Date.now()) {
-        const settlement=this.previewCurrentLifeSettlement(), rp=this.metaValue.reincarnationProgress;
-        return previewReincarnationV2Reward({lifeId:this.currentLifeValue.lifeId,realmOrder:this.stateValue.realm.maxRealmOrder,lifePotentialEarned:this.stateValue.character.corePotential?.life?.lifetimeEarned??0,permanentPotentialConversionPct:permanentPotentialConversionPctV127(rp.tree),energyCostReductionPct:reincarnationEnergyCostReductionPctV127(rp.tree),reincarnationPointsGainPct:reincarnationPointsGainPctV4(rp.tree),lifeScore:settlement.totalScore,nowUnixMs});
+        return previewReincarnationV2Reward(this.reincarnationRewardArgsV4(nowUnixMs));
     }
     finalizeReincarnationRewards(_confirmedBuildReady = true, nowUnixMs = Date.now()) {
         if(this.stateValue.alive) throw new Error('Đời hiện tại chưa kết thúc.');
@@ -4756,17 +4777,19 @@ export class SimulationSession {
         const existing=rp.rewardHistory.find(x=>x.lifeId===this.currentLifeValue.lifeId); if(existing) return {...existing};
         const settlement=this.settleCurrentLife();
         rp.energy=rechargeReincarnationEnergy(rp.energy,nowUnixMs);
-        const reward=previewReincarnationV2Reward({lifeId:this.currentLifeValue.lifeId,realmOrder:this.stateValue.realm.maxRealmOrder,lifePotentialEarned:this.stateValue.character.corePotential?.life?.lifetimeEarned??0,permanentPotentialConversionPct:permanentPotentialConversionPctV127(rp.tree),energyCostReductionPct:reincarnationEnergyCostReductionPctV127(rp.tree),reincarnationPointsGainPct:reincarnationPointsGainPctV4(rp.tree),lifeScore:settlement.totalScore,nowUnixMs});
+        const reward=previewReincarnationV2Reward(this.reincarnationRewardArgsV4(nowUnixMs));
         const lifeEnd=[...this.historyValue.all()].reverse().find(e=>e.tags?.includes('LifeEnd'));
         const voluntary=Boolean(lifeEnd?.tags?.includes('VoluntaryPassing'));
         if(voluntary&&rp.energy.current+1e-9<reward.energyCost) throw new Error(`Không đủ Năng Lượng Luân Hồi: cần ${reward.energyCost}, hiện có ${rp.energy.current.toFixed(1)}/300.`);
         const energySpent=voluntary?reward.energyCost:0; if(energySpent>0) rp.energy.current=Math.max(0,rp.energy.current-energySpent);
         rp.tree.lifetimePointsEarned+=reward.reincarnationPoints;
+        rp.highestRealmOrderV4=Math.max(Math.max(0,Number(rp.highestRealmOrderV4)||0),reward.realmOrder);
+        rp.bestCombatPowerByRealmOrderV4??={}; rp.bestCombatPowerByRealmOrderV4[String(reward.realmOrder)]=Math.max(Number(rp.bestCombatPowerByRealmOrderV4[String(reward.realmOrder)]||0),reward.combatPower);
         const cultivationTier=depthInfoForRealmOrder(this.stateValue.realm.maxRealmOrder).tierIndex;
         rp.tree.highestAchievementTierByTree.cultivation=Math.max(rp.tree.highestAchievementTierByTree.cultivation??0,cultivationTier);
         rp.permanentPotential.unspent+=reward.permanentPotentialGain; rp.permanentPotential.lifetimeEarned+=reward.permanentPotentialGain;
         this.metaValue.reincarnation.xp=rp.tree.lifetimePointsEarned; this.metaValue.reincarnation.sealLevel=reincarnationSealLevel(rp.tree.lifetimePointsEarned);
-        const finalized={...reward,energySpent,forcedPassing:!voluntary,lifeScore:settlement.totalScore,grade:settlement.grade};
+        const finalized={...reward,energySpent,forcedPassing:!voluntary,grade:settlement.grade};
         rp.rewardHistory.push(finalized); if(rp.rewardHistory.length>200)rp.rewardHistory.splice(0,rp.rewardHistory.length-200);
         this.actionIndexValue+=1; return {...finalized};
     }
@@ -4848,6 +4871,7 @@ export class SimulationSession {
             reincarnation: inheritance,
             fateRuntime: createFateRuntimeState(),
         };
+        this.syncCurrentLifeFateRuntimeV4();
         this.metaValue.reincarnation.totalReincarnations += 1;
         this.metaValue.reincarnationProgress.pendingTrial = undefined;
         for (const old of inheritedKarmaSnapshots) {
@@ -5086,7 +5110,7 @@ export class SimulationSession {
                 continue;
             const spiritStones = typeof event.data?.playerRewardSpiritStones === 'number' ? Math.max(0, event.data.playerRewardSpiritStones) : 0;
             if (spiritStones > 0)
-                state.inventory['resource.spirit_stone'] = (state.inventory['resource.spirit_stone'] ?? 0) + spiritStones;
+                state.inventory['resource.spirit_stone'] = (state.inventory['resource.spirit_stone'] ?? 0) + this.fateSpiritStoneGainV4(spiritStones,state);
         }
         const genesisWorldEvents = genesisEvents.map((event, index) => ({
             id: `genesis.world.sync.${Math.floor(state.worldTimeYears * 1000)}.${index}`, worldTimeYears: state.worldTimeYears, ageYears: state.ageYears,

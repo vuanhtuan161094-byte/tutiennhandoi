@@ -24,6 +24,7 @@ function makeAt(order,seed=140001){
   st.inheritedOrigins = { ...(st.inheritedOrigins||{}), 'birth.cultivation.multiplier': 1 };
   const session=new SimulationSession(registry,thanhHaWorld,adventureEnemies,playablePlayerProfile,seed,st);
   session.stateValue.inheritedOrigins = { ...(session.stateValue.inheritedOrigins||{}), 'birth.cultivation.multiplier': 1 };
+  session.stateValue.character.fateModifiersV4 = {};
   return session;
 }
 

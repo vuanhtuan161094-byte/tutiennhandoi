@@ -42,9 +42,10 @@ export function cultivationRateV140(state, realmOrder){
   const base=row.baseTuViPer15s;
   const perfectStage=Boolean(row.nextRealmId)&&CULTIVATION_REALMS_V140[row.order+1]?.majorRealmIndex!==row.majorRealmIndex;
   const reincarnationPct=additiveSelfCultivationPctR3(state,row.order,CULTIVATION_REALMS_V140,perfectStage);
-  const pct=configuredPct+birthPct+reincarnationPct;
+  const fatePct=Math.max(0,Number(state?.character?.fateModifiersV4?.selfCultivationPct)||0);
+  const pct=configuredPct+birthPct+reincarnationPct+fatePct;
   const final=Math.max(0,Math.round(base+flat+base*pct/100));
-  return {baseTuViPer15s:base,flatTuViPer15s:flat,baseTuViBonusPct:pct,finalTuViPer15s:final,sources:[{id:'realm-base',label:`Nền ${row.name}`,kind:'base',value:base},...(flat?[{id:'flat',label:'Nguồn Tu Vi cố định',kind:'flat',value:flat}]:[]),...(birthPct?[{id:'birth',label:'Thiên phú / xuất thân',kind:'percent',value:birthPct}]:[]),...(configuredPct?[{id:'base-pct',label:'Nguồn % Tu Vi nền khác',kind:'percent',value:configuredPct}]:[]),...(reincarnationPct?[{id:'reincarnation-cultivation-r3',label:'Cây Luân Hồi · Tu Luyện',kind:'percent',value:reincarnationPct}]:[])]};
+  return {baseTuViPer15s:base,flatTuViPer15s:flat,baseTuViBonusPct:pct,finalTuViPer15s:final,sources:[{id:'realm-base',label:`Nền ${row.name}`,kind:'base',value:base},...(flat?[{id:'flat',label:'Nguồn Tu Vi cố định',kind:'flat',value:flat}]:[]),...(birthPct?[{id:'birth',label:'Thiên phú / xuất thân',kind:'percent',value:birthPct}]:[]),...(configuredPct?[{id:'base-pct',label:'Nguồn % Tu Vi nền khác',kind:'percent',value:configuredPct}]:[]),...(reincarnationPct?[{id:'reincarnation-cultivation-r3',label:'Cây Luân Hồi · Tu Luyện',kind:'percent',value:reincarnationPct}]:[]),...(fatePct?[{id:'fate-v4',label:'Mệnh Cách',kind:'percent',value:fatePct}]:[])]};
 }
 export function effectiveCultivationRequiredTuViV140(state,realmOrder){const row=cultivationRealmV140(realmOrder);const next=CULTIVATION_REALMS_V140[row.order+1];const majorGate=Boolean(row.nextRealmId)&&Boolean(next)&&next.majorRealmIndex!==row.majorRealmIndex;return effectiveMajorRequirementR3(state,row,majorGate);}
 export function cultivationProgressV140(state, realmOrder){
@@ -76,7 +77,8 @@ export function retreatRewardV140(state,realmOrder,hours){
   if(requested<=0||row.requiredTuVi<=0) return {hoursUsed:0,gained:0,progressPct:0};
   const perHourPct=row.retreat3hProgressPct/3;
   const missing=Math.max(0,row.requiredTuVi-(Number(state.cultivation.tuVi)||0));
-  const rawPerHour=row.requiredTuVi*perHourPct/100;
+  const fateRetreatPct=Math.max(0,Number(state?.character?.fateModifiersV4?.retreatPct)||0);
+  const rawPerHour=row.requiredTuVi*perHourPct/100*(1+fateRetreatPct/100);
   const neededHours=rawPerHour>0?missing/rawPerHour:0;
   const used=Math.min(requested,neededHours);
   const gain=Math.min(missing,rawPerHour*used);

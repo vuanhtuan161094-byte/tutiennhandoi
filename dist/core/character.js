@@ -73,6 +73,19 @@ function applyCombatModifiers(stats, modifiers) {
         actionSpeed: stats.actionSpeed * mul(modifiers.actionSpeedMultiplier),
     };
 }
+function applyFateBuildStatsV4(stats, modifiers = {}) {
+    const damagePct = Math.max(0, Number(modifiers.damagePct) || 0);
+    const maxHpPct = Math.max(0, Number(modifiers.maxHpPct) || 0);
+    const defensePct = Math.max(0, Number(modifiers.defensePct) || 0);
+    const damageReductionPct = Math.max(0, Number(modifiers.damageReductionPct) || 0);
+    let physique = stats.physique;
+    let maxHp = stats.maxHp;
+    if (maxHpPct > 0) {
+        if (Number.isFinite(physique)) { physique = physique * (1 + maxHpPct / 100); maxHp = physique * 20; }
+        else maxHp = Math.max(1, Number(maxHp) || 1) * (1 + maxHpPct / 100);
+    }
+    return { ...stats, attack: Math.max(0, Number(stats.attack) || 0), defense: Math.max(0, Number(stats.defense) || 0) * (1 + defensePct / 100), physique, maxHp, damageReductionPct: combineStatPctV129('damageReductionPct', stats.damageReductionPct ?? 0, damageReductionPct) };
+}
 export function applyCharacterToEntity(entity, state, registry, techniquePassiveMultiplier = 1, suppressLegacyBirthOrigins = false) {
     const root = registry.spiritualRoot(state.spiritualRootId);
     const technique = registry.technique(state.activeTechniqueId);
@@ -135,6 +148,7 @@ export function applyCharacterToEntity(entity, state, registry, techniquePassive
     const foundation = cloneBuildFoundationV113(state.buildFoundation, state.spiritualRootId);
     const legacyPotentialStats = applyPotentialStats(applyCombatModifiers(entity.stats, modifiers), state.potential);
     let finalStats = applyCorePotentialStats(legacyPotentialStats, state.corePotential);
+    finalStats = applyFateBuildStatsV4(finalStats, state.fateModifiersV4);
     const daoNatureApplied = applyDaoNatureStatsV125(finalStats, foundation);
     finalStats = daoNatureApplied.stats;
     finalStats.dodgeChancePct = combineStatPctV129('dodgeChancePct', finalStats.dodgeChancePct ?? 0, techniqueRuntimeV119.staticDodgeFlatPct);
@@ -197,6 +211,7 @@ export function applyCharacterToEntity(entity, state, registry, techniquePassive
         skillGradesV12317: { ...(foundation.progressionV125?.skillGradesV12317 ?? {}) },
         daoNatureBreakBonusPctV125: daoNatureApplied.breakPct,
         daoNatureShieldEffectPctV125: daoNatureApplied.shieldEffectPct,
+        fateV4: { ...(state.fateModifiersV4 ?? {}) },
     };
     return {
         ...entity,
@@ -299,6 +314,7 @@ export function characterStatSourceStagesV129(entity, state, registry, technique
         life: { ...(state.corePotential?.life?.allocations ?? {}) },
         permanent: { ...(state.corePotential?.permanent ?? {}) },
     });
+    push('character.fate_v4', 'Mệnh Cách', applyFateBuildStatsV4(current.stats, state.fateModifiersV4), { modifiers: { ...(state.fateModifiersV4 ?? {}) } });
 
     // These stages mirror applyCharacterToEntity() exactly after Potential.
     const foundation = cloneBuildFoundationV113(state.buildFoundation, state.spiritualRootId);
@@ -357,6 +373,7 @@ export function cloneCharacterSystemState(state) {
         } : undefined,
         potential: clonePotentialState(state.potential),
         corePotential: state.corePotential ? { life: cloneLifeCorePotentialState(state.corePotential.life), permanent: { ...state.corePotential.permanent } } : { life: createLifeCorePotentialState(), permanent: { power: 0, body: 0, defense: 0 } },
+        fateModifiersV4: { ...(state.fateModifiersV4 ?? {}) },
         buildFoundation: (() => { const foundation = cloneBuildFoundationV113(state.buildFoundation, state.spiritualRootId); foundation.techniqueLoadout = { inner: state.activeTechniqueId, dao: state.equippedTechniqueIds?.art, movement: state.equippedTechniqueIds?.movement, secret: state.equippedTechniqueIds?.secret }; return foundation; })(),
         savedCombatLoadouts: (state.savedCombatLoadouts ?? []).map(loadout => ({
             ...loadout, skillIds: [...loadout.skillIds], artifactIds: [...(loadout.artifactIds ?? [])], legacyArtifactIds: [...(loadout.legacyArtifactIds ?? [])], equipmentIds: { ...loadout.equipmentIds },
@@ -379,6 +396,7 @@ export function createCharacterSystemState(spiritualRootId = 'root.mixed', techn
         savedCombatLoadouts: [],
         potential: clonePotentialState(),
         corePotential: { life: createLifeCorePotentialState(), permanent: { power: 0, body: 0, defense: 0 } },
+        fateModifiersV4: {},
         buildFoundation: (() => { const foundation = createBuildFoundationV113(spiritualRootId); foundation.techniqueLoadout.inner = techniqueId; return foundation; })(),
     };
 }

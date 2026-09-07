@@ -12,7 +12,8 @@ export function combatPowerBreakdown(entity) {
     const pen = Math.min(100, Math.max(0, s.armorPenPct ?? 0));
     const speed = Math.max(.25, Math.min(3, s.actionSpeed ?? 1));
     // V129 axes are normalized to the same rough scale. They are guidance scores, never combat multipliers.
-    const offense = Math.sqrt(safe(s.attack)) * 10
+    const fateDamageMultiplierV4=1+Math.max(0,Number(entity?.combatBuildV117?.fateV4?.damagePct)||0)/100;
+    const offense = Math.sqrt(safe(s.attack)) * 10 * fateDamageMultiplierV4
         * Math.sqrt(Math.max(1, critExpected * heartExpected))
         * (1 + pen / 250)
         * Math.pow(speed, .20);

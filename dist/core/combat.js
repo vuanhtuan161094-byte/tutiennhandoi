@@ -17,6 +17,7 @@ import { handleCombatDecisionV141 } from './combat-decision.js';
 function simpleSetParamV12318(entity, mechanic, key) {
     return setMechanicV117(entity, mechanic)?.params[key] ?? 0;
 }
+function fateOutgoingDamageMultiplierV4(source,target){ const fate=source?.combatBuildV117?.fateV4??{},general=Math.max(0,Number(fate.damagePct)||0),bossPct=Math.max(0,Number(fate.bossDamagePct)||0),boss=target?.tags?.some(tag=>['boss','dungeonguardian','bosslike'].includes(String(tag).toLowerCase())); return (1+general/100)*(boss?1+bossPct/100:1); }
 export class CombatEngine {
     registry;
     seed;
@@ -107,6 +108,7 @@ export class CombatEngine {
                 techniqueRuntimeV119: cloneTechniqueCombatRuntimeV119(def.combatBuildV117.techniqueRuntimeV119),
                 skillPracticeTierV125: { ...(def.combatBuildV117.skillPracticeTierV125 ?? {}) },
                 passiveLevelsV125: { ...(def.combatBuildV117.passiveLevelsV125 ?? {}) },
+                fateV4: { ...(def.combatBuildV117.fateV4 ?? {}) },
                 skillLevelsV12317: { ...(def.combatBuildV117.skillLevelsV12317 ?? {}) },
                 skillGradesV12317: { ...(def.combatBuildV117.skillGradesV12317 ?? {}) },
             } : undefined,
@@ -875,7 +877,7 @@ export class CombatEngine {
         }
         const hpPart = Math.min(combatMaxHp(target.baseStats) * Math.max(0, ctx.targetMaxHpPct ?? 0) / 100, srcStats.attack * Math.max(0, ctx.targetMaxHpAttackCapCoefficient ?? 0));
         const raw = srcStats.attack * ctx.coefficient + hpPart;
-        let damage = raw * defenseFactor(srcStats.attack, dstStats.defense, 0);
+        let damage = raw * fateOutgoingDamageMultiplierV4(source,target) * defenseFactor(srcStats.attack, dstStats.defense, 0);
         let layers = 0;
         if (ctx.canCrit) {
             layers = critLayers(srcStats.critChancePct, this.rng.next());
@@ -971,6 +973,7 @@ export class CombatEngine {
         raw *= 1 + Math.max(0, ctx.runtimeEffectBonusPct) / 100;
         raw *= 1 + Math.max(0, ctx.cooldownDamageBonusPct) / 100;
         raw *= battleDaoV2OutgoingMultiplier(source, target, now, ctx.sourceTag);
+        raw *= fateOutgoingDamageMultiplierV4(source,target);
         if (ctx.sourceTag === 'ActiveHit' || ctx.sourceTag === 'Counter')
             raw *= swordV2DirectDamageMultiplier(source, now);
         const breakMarkUntil = target.pendingSetFlagsV117['swordV2BreakMarkUntil'] ?? 0;
@@ -1141,7 +1144,7 @@ export class CombatEngine {
     applyFlatNormalDamage(source, target, rawAmount, now, skillId) {
         const srcStats = effectiveStats(source, this.registry, now);
         const dstStats = effectiveStats(target, this.registry, now);
-        let damage = Math.max(0, rawAmount) * defenseFactor(srcStats.attack, dstStats.defense, srcStats.armorPenPct ?? 0);
+        let damage = Math.max(0, rawAmount) * fateOutgoingDamageMultiplierV4(source,target) * defenseFactor(srcStats.attack, dstStats.defense, srcStats.armorPenPct ?? 0);
         const adjustedReduction = Math.max(-80, Math.min(80, totalDamageReductionPct(dstStats) + techniqueDamageReductionAdjustmentPctV119(target, now)));
         damage *= adjustedReduction >= 0 ? 1 - adjustedReduction / 100 : 1 + (-adjustedReduction) / 100;
         const shieldDamage = this.absorbWithShields(source, target, damage, now, skillId, 'ProcHit');

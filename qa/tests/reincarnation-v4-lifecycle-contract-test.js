@@ -4,7 +4,6 @@ import {
   REINCARNATION_ENERGY_CAP,
   availableTreePoints,
   createReincarnationProgressStateV1102,
-  lifeAchievementBonusPctV4,
   previewReincarnationV2Reward,
 } from '../../dist/core/reincarnation-progression-v1102.js';
 import { FATE_BUILD_TOTAL_UNLOCK_COST_V4, unlockFateBuildV4 } from '../../dist/core/reincarnation-fate-build-v4.js';
@@ -20,12 +19,11 @@ rp.fateBuild=f.state; rp.tree.sharedSpentPoints+=f.spentRp;
 assert.equal(f.spentRp,3000);
 assert.equal(availableTreePoints(rp.tree),97000,'Mệnh Cách phải tiêu cùng một quỹ RP với Cây Luân Hồi.');
 assert.equal(FATE_BUILD_TOTAL_UNLOCK_COST_V4,310000);
-assert.equal(lifeAchievementBonusPctV4(0),0);
-assert(lifeAchievementBonusPctV4(2500)>lifeAchievementBonusPctV4(100));
-const low=previewReincarnationV2Reward({lifeId:'x',realmOrder:18,lifeScore:0,lifePotentialEarned:20});
-const high=previewReincarnationV2Reward({lifeId:'x',realmOrder:18,lifeScore:2500,lifePotentialEarned:20});
-assert(high.reincarnationPoints>low.reincarnationPoints,'Thành tựu thật trong đời phải tăng RP.');
+const low=previewReincarnationV2Reward({lifeId:'x',realmOrder:18,combatPower:100,combatPowerBenchmark:100,isNewRealmRecord:false,lifePotentialEarned:20});
+const high=previewReincarnationV2Reward({lifeId:'x',realmOrder:21,combatPower:200,combatPowerBenchmark:100,isNewRealmRecord:true,lifePotentialEarned:20});
+assert(high.reincarnationPoints>low.reincarnationPoints,'Realm + stage + Lực Chiến + record phải tăng RP.');
 assert.equal(high.trialBonusPct,undefined,'Reward V4 không được phụ thuộc Thí Luyện giả.');
+assert.equal(high.achievementBonusPct,undefined,'Reward V4 không được phụ thuộc lifeScore cũ.');
 
 const session=fs.readFileSync(new URL('../../dist/core/session.js',import.meta.url),'utf8');
 assert(!session.includes('const minimumAge = 60'));

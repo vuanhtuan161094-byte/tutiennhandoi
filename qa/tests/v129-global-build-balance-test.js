@@ -7,7 +7,7 @@ import { SimulationSession } from '../../dist/core/session.js';
 import { runCombatKernelV2 } from '../../dist/core/combat-kernel-v2.js';
 import { buildBalanceEntityV120, evaluateBuildV120, potentialGridV120, thematicAttireSetIdV120 } from '../simulations/balance-lab-v120.js';
 import { LIVE_EQUIPMENT_SET_CATALOG_V12310 } from '../../dist/core/equipment-set-v116.js';
-import { applyCorePotentialStats, corePotentialDefinitions } from '../../dist/core/reincarnation-progression-v1102.js';
+import { applyCorePotentialStats, corePotentialDefinitions, corePotentialPercentBonusV4 } from '../../dist/core/reincarnation-progression-v1102.js';
 import { BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_MID, BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_ENDGAME, BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V108, BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V82, battleDaoV2MainDamageTuningV129 } from '../../dist/core/battle-dao-v2-runtime.js';
 import { GLOBAL_BUILD_BALANCE_POLICY_V108, globalBuildBalanceSummaryV108 } from '../../dist/core/global-build-balance-v108.js';
 import { SPIRIT_BEAST_SPECIES_V86, SPIRIT_BEAST_COMBAT_TUNING_V108 } from '../../dist/core/spirit-beast-v86.js';
@@ -24,9 +24,10 @@ check(Math.abs(battleDaoV2MainDamageTuningV129({combatBuildV117:{daoHanhCurrentV
 const runtimeSource=fs.readFileSync('./dist/core/battle-dao-v2-runtime.js','utf8');
 check(runtimeSource.includes('battleDaoV2MainDamageTuningV129(entity, main)')&&!/pvp.*MAIN_DAMAGE_TUNING|boss.*MAIN_DAMAGE_TUNING/i.test(runtimeSource),'V129 Dao tuning is consumed once in shared CombatKernel runtime, not by PvP/Boss-specific tables');
 check(potentialGridV120(10).length===66&&GLOBAL_BUILD_BALANCE_POLICY_V108.potentialGridBuilds===66,'V108 keeps the canonical 66 three-axis Potential allocations at 10% steps');
-check(corePotentialDefinitions.find(x=>x.id==='defense')?.perPoint?.includes('Phòng Ngự +3'),'V108 preserves canonical Potential Defense = +3 defense per point; no extra buff added');
+check(corePotentialDefinitions.find(x=>x.id==='defense')?.perPoint?.includes('Phòng Ngự +3'),'V4 preserves canonical Potential Defense flat = +3 defense per point before resonance');
 const potApplied=applyCorePotentialStats({attack:100,defense:100,physique:100,maxHp:2000},{life:{unspent:0,lifetimeEarned:10,allocations:{power:0,body:0,defense:10},awardedMilestones:[]},permanent:{power:0,body:0,defense:0}});
-check(potApplied.defense===130&&potApplied.attack===100,'V108 Defense Potential modifies canonical combat defense and does not leak into attack');
+const expectedResonance=1+corePotentialPercentBonusV4(10)/100;
+check(Math.abs(potApplied.defense-130*expectedResonance)<1e-9&&Math.abs(potApplied.attack-100*expectedResonance)<1e-9,'V4 Potential keeps +3 Defense flat and applies one global resonance without axis leakage');
 check(LIVE_EQUIPMENT_SET_CATALOG_V12310.length===5&&LIVE_EQUIPMENT_SET_CATALOG_V12310.reduce((n,x)=>n+x.mechanics.length,0)===15,'V108 balance matrix covers exactly 5 live elemental Sets / 15 live 2-4-6 mechanics');
 
 // Role-aware Set envelope: same Dao/root/potential/resources, only the 6-piece elemental Set changes.
