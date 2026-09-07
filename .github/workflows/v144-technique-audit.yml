@@ -10,21 +10,21 @@ permissions:
 
 jobs:
   audit:
-    if: "startsWith(github.event.head_commit.message, 'chore(v144): audit technique legacy')"
+    if: "startsWith(github.event.head_commit.message, 'chore(v144): audit technique runtime')"
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Legacy technique references
+      - name: Runtime dependency map
         shell: bash
         run: |
           set -euo pipefail
-          echo '=== FILES IMPORTING technique-progression-v103 ==='
-          grep -RIl --exclude-dir=.git --exclude='*.map' "technique-progression-v103" dist qa web src 2>/dev/null || true
-          echo '=== V103 SYMBOL REFERENCES ==='
-          grep -RIn --exclude-dir=.git --exclude='*.map' -E "TECHNIQUE_INSIGHT_RESOURCE_ID|TECHNIQUE_GRADE_ORDER|equipManual\(|learnTechniqueManual\(|studyTechniqueWithFragments\(|techniqueMasteryReport\(|unlockTechniqueGrantedSkills\(" dist qa web src 2>/dev/null || true
-          echo '=== LEGACY STATE FIELDS ==='
-          grep -RIn --exclude-dir=.git --exclude='*.map' -E "techniqueMastery|equippedTechnique|activeTechniqueId|knownTechniqueIds" dist qa web src 2>/dev/null || true
-          echo '=== CANONICAL V127 MANUAL REFERENCES ==='
-          grep -RIn --exclude-dir=.git --exclude='*.map' -E "manual-progression-v127|MANUAL_LEVEL_MAX_V127|manualStrengthen|manualAdvance|manualCompose|collectionManual|manualV127" dist qa web src 2>/dev/null || true
-          echo '=== HUNT LEGACY TECHNIQUE REWARD REFERENCES ==='
-          grep -RIn --exclude-dir=.git --exclude='*.map' -E "techniqueFragmentDrops|learnedTechnique|daoTechniqueFragment" dist/core/session.js qa 2>/dev/null || true
+          echo '=== TECHNIQUE RUNTIME IMPORTS/REFERENCES ==='
+          grep -RIn --exclude-dir=.git --exclude='*.map' -E "technique-runtime-v119|resolveTechniqueRuntimeV119|techniqueModifierTotalV119|techniqueCastTimeV119|techniqueRecoveryTimeV119|techniqueCooldownV119|techniqueSpiritCostV119" dist qa web src 2>/dev/null || true
+          echo '=== ELEMENT SEAL IMPORTS/REFERENCES ==='
+          grep -RIn --exclude-dir=.git --exclude='*.map' -E "element-seal-v133|elementSealSummaryV133|setSkillElementSealV133|resolveAuthorizedSkillRootBindingsV133" dist qa web src 2>/dev/null || true
+          echo '=== V125 LEGACY MANUAL FRAGMENT REFERENCES ==='
+          grep -RIn --exclude-dir=.git --exclude='*.map' -E "battleDaoTechniqueFragmentTargetsV125|addTechniqueFragmentsV125|restoreTechniqueManualV125|techniqueRestoreFragmentRequirementV125|restoredTechniqueIds|techniqueFragments" dist qa web src 2>/dev/null || true
+          echo '=== LEGACY MANUAL PUBLIC API REFERENCES ==='
+          grep -RIn --exclude-dir=.git --exclude='*.map' -E "techniqueManualSummary|studyTechniqueManual|equipTechniqueManual|setTechniqueVariantsV119|setSkillElementSealV133|elementSealSummary" dist qa web src 2>/dev/null || true
+          echo '=== CHARACTER TECHNIQUE APPLY/GROWTH REFERENCES ==='
+          grep -RIn --exclude-dir=.git --exclude='*.map' -E "gainTechniqueMastery|techniquePassiveStrengthMultiplier|techniqueMasteryGainMultiplier" dist qa web src 2>/dev/null || true
