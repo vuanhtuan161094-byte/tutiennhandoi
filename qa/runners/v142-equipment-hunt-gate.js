@@ -5,6 +5,8 @@ const tests = [
   'qa/tests/v142-equipment-fragment-economy-test.js',
   'qa/tests/v142-equipment-fragment-drop-distribution-test.js',
   'qa/tests/v142-equipment-hunt-settlement-test.js',
+  'qa/tests/v142-equipment-crafting-test.js',
+  'qa/tests/v142-equipment-hunt-runtime-integration-test.js',
 ];
 
 for (const file of tests) {
