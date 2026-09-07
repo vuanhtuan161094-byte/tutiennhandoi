@@ -24,47 +24,39 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           import re
-
-          path = Path('dist/core/session.js')
-          s = path.read_text(encoding='utf-8')
-          s, n = re.compile(r"(?m)^\s{12}id: def\.id, name: def\.name, grade: def\.grade \?\? 'mundane'.*\n\s{8}\}\)\)\.sort\(.*\);\n").subn('', s, count=1)
-          if n != 1: raise SystemExit(f'session residue count={n}')
-          path.write_text(s, encoding='utf-8')
-
-          path = Path('dist/core/client-shell.js'); s = path.read_text(encoding='utf-8')
-          old = 'spiritualRoots: api.getSpiritualRootsV131(), elementSeals: api.getElementSealsV133(), collection'
+          path=Path('dist/core/session.js'); s=path.read_text(encoding='utf-8')
+          s,n=re.compile(r"(?m)^\s{12}id: def\.id, name: def\.name, grade: def\.grade \?\? 'mundane'.*\n\s{8}\}\)\)\.sort\(.*\);\n").subn('',s,count=1)
+          if n!=1: raise SystemExit(f'session residue count={n}')
+          path.write_text(s,encoding='utf-8')
+          path=Path('dist/core/client-shell.js'); s=path.read_text(encoding='utf-8')
+          old='spiritualRoots: api.getSpiritualRootsV131(), elementSeals: api.getElementSealsV133(), collection'
           if old not in s: raise SystemExit('client-shell residue missing')
-          path.write_text(s.replace(old, 'spiritualRoots: api.getSpiritualRootsV131(), collection', 1), encoding='utf-8')
-
-          path = Path('qa/tests/v129-stat-provenance-test.js'); s = path.read_text(encoding='utf-8')
-          old = "  const crit=stat(p,'critChancePct');\n  assert(crit.sources.some(x=>x.id==='character.techniques'),'live Bí Thuật contribution must be traceable when it changes Crit');"
-          new = "  assert(!ids.has('character.techniques'),'retired V103/V119 Công Pháp combat source must not survive in provenance');"
+          path.write_text(s.replace(old,'spiritualRoots: api.getSpiritualRootsV131(), collection',1),encoding='utf-8')
+          path=Path('qa/tests/v129-stat-provenance-test.js'); s=path.read_text(encoding='utf-8')
+          old="  const crit=stat(p,'critChancePct');\n  assert(crit.sources.some(x=>x.id==='character.techniques'),'live Bí Thuật contribution must be traceable when it changes Crit');"
           if old not in s: raise SystemExit('provenance residue missing')
-          path.write_text(s.replace(old, new, 1), encoding='utf-8')
-
-          path = Path('dist/core/equipment-set-v116.js'); s = path.read_text(encoding='utf-8')
-          pairs = [
-            ('export const SET_V129_FIRE_DAMAGE = [5, 6, 7, 8, 9, 10, 12, 14];', 'export const SET_V129_FIRE_DAMAGE = [5, 6, 7, 8, 9, 9, 12, 14];'),
-            ('export const SET_V129_FIRE_CRIT = [2, 3, 4, 5, 6, 7, 8, 10];', 'export const SET_V129_FIRE_CRIT = [2, 3, 4, 5, 6, 6, 8, 10];'),
-            ('export const SET_V129_FIRE_CRIT_DAMAGE = [12, 15, 18, 22, 26, 30, 35, 40];', 'export const SET_V129_FIRE_CRIT_DAMAGE = [12, 15, 18, 22, 26, 28, 35, 40];'),
-          ]
-          for old, new in pairs:
+          path.write_text(s.replace(old,"  assert(!ids.has('character.techniques'),'retired V103/V119 Công Pháp combat source must not survive in provenance');",1),encoding='utf-8')
+          path=Path('dist/core/equipment-set-v116.js'); s=path.read_text(encoding='utf-8')
+          pairs=[
+            ('export const SET_V129_FIRE_DAMAGE = [5, 6, 7, 8, 9, 10, 12, 14];','export const SET_V129_FIRE_DAMAGE = [5, 6, 7, 8, 9, 9, 12, 14];'),
+            ('export const SET_V129_FIRE_CRIT = [2, 3, 4, 5, 6, 7, 8, 10];','export const SET_V129_FIRE_CRIT = [2, 3, 4, 5, 6, 6, 8, 10];'),
+            ('export const SET_V129_FIRE_CRIT_DAMAGE = [12, 15, 18, 22, 26, 30, 35, 40];','export const SET_V129_FIRE_CRIT_DAMAGE = [12, 15, 18, 22, 26, 28, 35, 40];')]
+          for old,new in pairs:
             if old not in s: raise SystemExit(f'Fire marker missing: {old}')
-            s = s.replace(old, new, 1)
-          path.write_text(s, encoding='utf-8')
-
-          path = Path('dist/core/battle-dao-v2-runtime.js'); s = path.read_text(encoding='utf-8')
-          pairs = [
-            ('    sword: 1.50,', '    sword: 1.75,'),
-            ('    spell: 2.20,', '    spell: 1.75,'),
-            ('    poison: 1.00,', '    poison: 0.85,'),
-            ('    artifact: 1.10,', '    artifact: 1.15,'),
-            ('    formation: 1.50,', '    formation: 1.75,'),
-          ]
-          for old, new in pairs:
+            s=s.replace(old,new,1)
+          path.write_text(s,encoding='utf-8')
+          path=Path('dist/core/battle-dao-v2-runtime.js'); s=path.read_text(encoding='utf-8')
+          pairs=[
+            ('    sword: 1.50,','    sword: 1.75,'),
+            ('    spell: 2.20,','    spell: 1.75,'),
+            ('    poison: 1.00,','    poison: 0.87,'),
+            ('    artifact: 1.10,','    artifact: 1.15,'),
+            ('    formation: 1.50,','    formation: 1.75,'),
+            ('    mind: 2.80,','    mind: 2.70,')]
+          for old,new in pairs:
             if old not in s: raise SystemExit(f'Dao MID marker missing: {old}')
-            s = s.replace(old, new, 1)
-          path.write_text(s, encoding='utf-8')
+            s=s.replace(old,new,1)
+          path.write_text(s,encoding='utf-8')
           PY
       - name: Diagnose V129 round robin
         run: node qa/tests/v129-global-build-balance-test.js
