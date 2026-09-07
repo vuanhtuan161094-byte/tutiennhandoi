@@ -48,6 +48,9 @@ jobs:
       - name: V141 Hunt x Cultivation closure
         run: node qa/tests/v141-hunt-cultivation-closure-test.js
 
+      - name: V142 Equipment x Hunt
+        run: node qa/runners/v142-equipment-hunt-gate.js
+
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
 
