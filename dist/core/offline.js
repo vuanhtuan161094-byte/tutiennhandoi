@@ -1,7 +1,7 @@
 import { WORLD_YEARS_PER_REAL_HOUR } from './realtime-balance.js';
 export const OFFLINE_BASE_CAP_REAL_HOURS = 24;
 export const OFFLINE_HUNT_LOOT_CACHE_CAPACITY = 200;
-/** Safety ceiling above the theoretical 48h maximum at the resolver minimum 0.55s/fight. It must never truncate a valid capped offline window. */
+/** V141: safety ceiling above the 24h Hunt maximum at the canonical 0.25s/fight floor (345,600 fights). */
 export const OFFLINE_HUNT_MAX_FIGHTS = 350_000;
 export const OFFLINE_HUNT_MIN_BATCH = 25;
 export const OFFLINE_HUNT_MEDIUM_BATCH = 100;
