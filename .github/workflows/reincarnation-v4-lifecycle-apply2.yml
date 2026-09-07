@@ -36,16 +36,15 @@ jobs:
           python3 /tmp/reincarnation-v4-lifecycle-patch.py
           python3 - <<'PY'
           from pathlib import Path
+          import re
           p=Path('dist/core/session.js')
           s=p.read_text()
-          old="""            const immortalPlayer = applyImmortalToEntity(greatPlayer, this.stateValue.immortal, this.stateValue.realm, effectiveManifestationCapacity(this.stateValue.immortal.manifestationCapacity, this.stateValue.fateEmbryo));
-            const fatePlayer = applyFateEmbryoToEntity(immortalPlayer, this.stateValue.fateEmbryo, this.fateEmbryoSummary());
-            const talentedPlayer = applyReincarnationCombatTalents(fatePlayer, this.stateValue.inheritedOrigins);"""
-          new="""            const immortalPlayer = applyImmortalToEntity(greatPlayer, this.stateValue.immortal, this.stateValue.realm, this.stateValue.immortal.manifestationCapacity);
-            const talentedPlayer = applyReincarnationCombatTalents(immortalPlayer, this.stateValue.inheritedOrigins);"""
-          if old not in s:
-              raise SystemExit('remaining fate embryo combat hook anchor missing')
-          p.write_text(s.replace(old,new))
+          pattern=r"(?P<indent>[ \t]*)const immortalPlayer = applyImmortalToEntity\(greatPlayer, this\.stateValue\.immortal, this\.stateValue\.realm, effectiveManifestationCapacity\(this\.stateValue\.immortal\.manifestationCapacity, this\.stateValue\.fateEmbryo\)\);\s*const fatePlayer = applyFateEmbryoToEntity\(immortalPlayer, this\.stateValue\.fateEmbryo, this\.fateEmbryoSummary\(\)\);\s*const talentedPlayer = applyReincarnationCombatTalents\(fatePlayer, this\.stateValue\.inheritedOrigins\);"
+          def repl(m):
+              i=m.group('indent')
+              return f"{i}const immortalPlayer = applyImmortalToEntity(greatPlayer, this.stateValue.immortal, this.stateValue.realm, this.stateValue.immortal.manifestationCapacity);\n{i}const talentedPlayer = applyReincarnationCombatTalents(immortalPlayer, this.stateValue.inheritedOrigins);"
+          s,_=re.subn(pattern,repl,s)
+          p.write_text(s)
           PY
           echo '--- remaining Mệnh Thai runtime hooks ---'
           grep -n -C 3 'applyFateEmbryoToEntity\|effectiveManifestationCapacity' dist/core/session.js || true
