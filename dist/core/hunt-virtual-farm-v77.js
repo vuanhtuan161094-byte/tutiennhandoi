@@ -1,6 +1,8 @@
 import { critProfile, heartProfile } from './combat-rules.js';
 export const HUNT_VIRTUAL_FARM_BATCH_SECONDS_V77 = 30;
-export const HUNT_VIRTUAL_FARM_MIN_SECONDS_PER_KILL_V77 = 2;
+// V141 closure: preview uses the same 0.25s hard floor as the representative CombatKernel V2 batch resolver.
+// At the canonical 24h offline cap this is at most 345,600 kills, below OFFLINE_HUNT_MAX_FIGHTS=350,000.
+export const HUNT_VIRTUAL_FARM_MIN_SECONDS_PER_KILL_V77 = .25;
 export const HUNT_VIRTUAL_FARM_MAX_SECONDS_PER_KILL_V77 = 180;
 export const HUNT_VIRTUAL_FARM_ELITE_CHANCE_PCT_V77 = 1.5;
 export const HUNT_VIRTUAL_FARM_MODEL_VERSION_V141 = 'v141-build-parity';
