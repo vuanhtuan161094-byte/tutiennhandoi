@@ -3,20 +3,37 @@ import { thanhHaWorld } from '../../dist/content/world.js';
 import { adventureEnemies } from '../../dist/content/entities.js';
 import { createPlayableAdventureState, playablePlayerProfile } from '../../dist/content/adventure.js';
 import { SimulationSession } from '../../dist/core/session.js';
-import { mapStartFloorForRealm } from '../../dist/content/realm-maps.js';
+import { mapStartFloorForRealm, majorRealmIndexForRealmOrder } from '../../dist/content/realm-maps.js';
 import { parseAlchemyPillResourceId } from '../../dist/core/alchemy-v112.js';
+import { EQUIPMENT_SLOTS_V142, equipmentBaseStatsForRankV142, equipmentRankNameV142 } from '../../dist/core/equipment-v142.js';
 
 let pass=0; const ok=(v,m)=>{if(!v)throw new Error(m);pass++;console.log(`✓ ${m}`)};
 const registry=buildRegistry();
+function seedSameRealmEquipment(st, realmOrder) {
+  const rankIndex = majorRealmIndexForRealmOrder(realmOrder);
+  st.equipment.items = [];
+  st.equipment.equipped = {};
+  for (const [index, slot] of EQUIPMENT_SLOTS_V142.entries()) {
+    const id = `qa.v142.${rankIndex}.${slot}`;
+    st.equipment.items.push({
+      schema:'equipment.v142', id, templateId:`equipment.v142.${slot}`, name:`QA ${equipmentRankNameV142(rankIndex)} ${slot}`,
+      slot, equipmentRankIndex:rankIndex, equipmentRankName:equipmentRankNameV142(rankIndex),
+      tier:0, grade:'mundane', quality:'mid', enhancementLevel:15, traitIds:[], affixes:[], gemSockets:[], reforgeCount:0,
+      stats:equipmentBaseStatsForRankV142(slot,rankIndex), tags:['EquipmentV142'], source:{kind:'qa',floor:rankIndex+1,seed:index+1}, acquiredWorldYear:0,
+    });
+    st.equipment.equipped[slot]=id;
+  }
+}
 function make(seed){
   const st=createPlayableAdventureState();
   st.realm.realmId='realm.human_immortal.early'; st.realm.maxRealmOrder=46;
   registry.realm(st.realm.realmId);
-  // Mature-build fixture isolates Hunt reward tier authority. No loot/material is pre-granted.
+  // Mature-build fixture isolates Hunt reward tier authority. Same-realm V142 gear is fixture power, not pre-granted loot/material.
   st.character.corePotential.life.allocations={power:10000,body:10000,defense:10000};
   st.soul.awakened=true; st.soul.strength=500; st.soul.purity=100; st.soul.stability=100;
   st.dao.awakened=true; st.dao.known['dao.sword']={daoId:'dao.sword',depth:100,insight:1000,marks:15,interpretationId:'dao.sword.severance',contemplations:20};
   st.dao.mainDaoId='dao.sword'; st.dao.domain={active:true,daoId:'dao.sword',manifestedYears:50};
+  seedSameRealmEquipment(st, st.realm.maxRealmOrder);
   return new SimulationSession(registry,thanhHaWorld,adventureEnemies,playablePlayerProfile,seed,st);
 }
 const found=[];
