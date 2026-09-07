@@ -29,12 +29,13 @@ const gradeRewards = {
     boss: { spiritStoneMultiplier: 18, equipmentChancePct: 30, cultivationPillChancePct: 20 },
 };
 /**
- * V142 major-realm combat scale follows the same 28-realm order as Equipment, but only 45% of the
- * raw gear-rank delta is placed on the enemy. The fixed character base accounts for the remaining
- * share, making a full +15 same-realm equipment package track floor-1 enemy growth very closely.
+ * V142 major-realm combat scale follows the x3 core equipment ladder.
+ * 70.5% of the relative equipment delta is assigned to the enemy because the player's fixed 113 Công
+ * remains in the denominator at Luyện Khí. With a full same-realm +15 package (40 Phàm-base Công),
+ * this tracks player attack growth to within a tiny rounding margin across all 28 major realms.
  */
-export const HUNT_EQUIPMENT_MAJOR_GROWTH_V142 = Math.pow(2160, 1 / 28);
-export const HUNT_MAJOR_REALM_EQUIPMENT_SHARE_V142 = .45;
+export const HUNT_EQUIPMENT_MAJOR_GROWTH_V142 = 3;
+export const HUNT_MAJOR_REALM_EQUIPMENT_SHARE_V142 = .705;
 export function huntMajorRealmPowerScaleV142(majorRealmIndex) {
     const major = Math.max(1, Math.min(majorRealmNames.length, Math.floor(Number(majorRealmIndex) || 1)));
     const relativeGearScale = Math.pow(HUNT_EQUIPMENT_MAJOR_GROWTH_V142, major - 1);
