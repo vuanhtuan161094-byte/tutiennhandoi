@@ -35,14 +35,14 @@ jobs:
           Path('/tmp/apply-v4.sh').write_text('\n'.join(body)+'\n')
           PY
           bash /tmp/apply-v4.sh
-      - name: Print reincarnate failure
+      - name: Print raw reincarnate stack
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p=Path('qa/tests/v129-gameplay-consistency-test.js')
           s=p.read_text()
           needle="  const rebirth = api.reincarnate({});\n  assert.equal(rebirth.ok, true);"
-          repl="  const rebirth = api.reincarnate({});\n  console.log('V4_REBIRTH_DIAGNOSTIC', JSON.stringify(rebirth));\n  assert.equal(rebirth.ok, true);"
+          repl="  let rebirth; try { const raw = ss.reincarnate({}); console.log('V4_REBIRTH_RAW_OK', JSON.stringify({life:raw.currentLife?.lifeNumber,alive:raw.state?.alive})); rebirth={ok:true,data:raw}; } catch (error) { console.error('V4_REBIRTH_RAW_STACK', error?.stack ?? error); rebirth={ok:false}; }\n  assert.equal(rebirth.ok, true);"
           if needle not in s: raise SystemExit('diagnostic anchor missing')
           p.write_text(s.replace(needle,repl,1))
           PY
