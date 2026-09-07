@@ -57,6 +57,34 @@ jobs:
           s=s.replace("            { id: 'fate_embryo', name: 'Mệnh Thai / Mệnh Cơ', entity: fate },\n", "")
           p.write_text(s)
 
+          # Remove the last legacy reincarnation presentation layer: CP / Mệnh Cơ / Mệnh Thai / Seal XP.
+          p=Path('dist/core/gameplay-dispatch.js')
+          g=p.read_text()
+          g=g.replace("import { bundleSummaryLines } from './birth-origins-v101.js';\n", "")
+          old="""                case 'reincarnate': {
+                    const report = this.session.reincarnate(command.plan ?? {});
+                    return this.result(command.type, beforeYear, [
+                        `Chuyển sinh sang đời ${report.currentLife.lifeNumber}.`,
+                        ...(report.currentLife.birth.originsV101 ? bundleSummaryLines(report.currentLife.birth.originsV101).slice(0, 3) : [`${report.currentLife.birth.family} · ${report.currentLife.birth.spiritualRoot}.`]),
+                        `CP còn lại: ${this.session.meta.currentCp}.`,
+                        `Mệnh Cơ: ${(this.session.meta.mingJi ?? 0).toFixed(2)} · Mệnh Thai đời mới base ${this.session.fateEmbryoSummary().basePotential.toFixed(1)}.`,
+                        `${this.session.reincarnationSummary().sealName} · ${this.session.reincarnationSummary().xp.toFixed(0)} XP · hướng ${report.currentLife.reincarnation?.orientationId ?? 'balanced'}.`,
+                    ], report, 'reincarnated');
+                }"""
+          new="""                case 'reincarnate': {
+                    const report = this.session.reincarnate(command.plan ?? {});
+                    const progress = this.session.meta.reincarnationProgress;
+                    return this.result(command.type, beforeYear, [
+                        `Chuyển sinh sang đời ${report.currentLife.lifeNumber}.`,
+                        `Xuất Thân: ${report.currentLife.birth.family}.`,
+                        `Điểm Luân Hồi tích lũy: ${Math.floor(progress?.tree?.lifetimePointsEarned ?? 0)} RP.`,
+                        `Năng Lượng Luân Hồi: ${Math.floor(progress?.energy?.current ?? 0)}/300.`,
+                    ], report, 'reincarnated');
+                }"""
+          if old not in g:
+              raise SystemExit('gameplay-dispatch reincarnate legacy block missing')
+          p.write_text(g.replace(old,new))
+
           p=Path('qa/tests/v129-gameplay-consistency-test.js')
           t=p.read_text()
           t=t.replace("test('legacy Săn Yêu FirstClearLike event unlocks Tọa Hóa', () => {\n  const ev = { id:'legacy.hunt.first', worldTimeYears:20, ageYears:30, type:'combat', significance:34, message:'Boss cleared', tags:['EndlessHunt','Victory','FloorBoss','FirstClearLike'] };\n  assert.equal(session(1299101, readyState(), [ev]).voluntaryPassingEligibility().ok, true);\n});",
@@ -67,8 +95,6 @@ jobs:
           "test('Phó Bản clear state is independent from voluntary Tọa Hóa eligibility', () => {\n  const state = readyState();\n  state.dungeons.highestClearedFloor['dungeon.spirit_gathering_cave'] = 2;\n  const gate = session(1299103, state, []).voluntaryPassingEligibility();\n  assert.equal(gate.ok, true);\n  assert.equal(gate.firstClears, undefined);\n});")
           t=t.replace("test('Tọa Hóa blocker message names concrete player actions instead of unexplained First Clear jargon', () => {\n  const gate = session(1299104, readyState(), []).voluntaryPassingEligibility();\n  assert.equal(gate.ok, false);\n  assert.match(gate.reason, /Boss Săn Yêu|Phó Bản/);\n  assert.doesNotMatch(gate.reason, /First Clear/);\n});",
           "test('Tọa Hóa V4 has no age, realm or First Clear blocker when energy is sufficient', () => {\n  const state=createPlayableAdventureState();\n  state.ageYears=1; state.realm.maxRealmOrder=0; state.realm.realmId='realm.mortal';\n  const gate=session(1299104,state,[]).voluntaryPassingEligibility();\n  assert.equal(gate.ok,true);\n  assert.equal(gate.reason,undefined);\n  assert.ok(gate.energyCost>0);\n});")
-
-          # Remaining read-model and full-flow assertions must also reflect V4 ownership.
           t=t.replace("test('Luân Hồi read-model exposes Tọa Hóa as available after a legacy Săn Yêu clear', () => {", "test('Luân Hồi read-model exposes Tọa Hóa from energy, independent of First Clear', () => {")
           t=t.replace("  assert.ok(hub.lifeEnd.firstClears >= 1);", "  assert.equal(hub.lifeEnd.firstClears, undefined);")
           t=t.replace("test('player-facing perform path can actually execute Tọa Hóa once the repaired gate is satisfied', () => {", "test('player-facing perform path executes voluntary Tọa Hóa without a First Clear gate', () => {")
@@ -82,6 +108,8 @@ jobs:
           PY
           echo '--- remaining Mệnh Thai runtime hooks ---'
           grep -n -C 2 'applyFateEmbryoToEntity\|effectiveManifestationCapacity' dist/core/session.js || true
+          echo '--- remaining legacy reincarnation facade labels ---'
+          grep -n -E 'CP còn lại|Mệnh Cơ|Mệnh Thai đời mới|bundleSummaryLines' dist/core/gameplay-dispatch.js || true
       - name: Verify lifecycle closure
         run: |
           node --check dist/core/reincarnation-progression-v1102.js
@@ -89,6 +117,7 @@ jobs:
           node --check dist/core/reincarnation.js
           node --check dist/core/life.js
           node --check dist/core/session.js
+          node --check dist/core/gameplay-dispatch.js
           node qa/tests/reincarnation-v4-lifecycle-contract-test.js
           node qa/tests/reincarnation-cultivation-r3-cost-invariant-test.js
           node qa/tests/reincarnation-cultivation-r3-test.js
@@ -100,7 +129,7 @@ jobs:
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add dist/core/reincarnation-progression-v1102.js dist/core/reincarnation.js dist/core/life.js dist/core/session.js qa/tests/reincarnation-v4-lifecycle-contract-test.js qa/tests/v129-gameplay-consistency-test.js
+          git add dist/core/reincarnation-progression-v1102.js dist/core/reincarnation.js dist/core/life.js dist/core/session.js dist/core/gameplay-dispatch.js qa/tests/reincarnation-v4-lifecycle-contract-test.js qa/tests/v129-gameplay-consistency-test.js
           git diff --cached --quiet && exit 0
           git commit -m "feat: rebuild reincarnation v4 lifecycle"
           git push origin HEAD:feature/reincarnation-cultivation-r3
