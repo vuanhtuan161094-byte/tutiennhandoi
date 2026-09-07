@@ -59,7 +59,7 @@ export function majorRealmStartOrderForRealmOrder(order) { return majorRealmStar
 export function majorRealmNameForIndex(index) { return majorRealmNames[Math.max(1, Math.min(majorRealmNames.length, Math.floor(index))) - 1] ?? `Đại Cảnh ${index}`; }
 export function majorRealmIndexForMapFloor(floor) { return Math.floor((Math.max(1, Math.floor(floor)) - 1) / REALM_MAP_FLOORS_PER_MAJOR_REALM) + 1; }
 export function localFloorForMapFloor(floor) { return ((Math.max(1, Math.floor(floor)) - 1) % REALM_MAP_FLOORS_PER_MAJOR_REALM) + 1; }
-export function zoneForMapFloor(floor) { return (Math.floor((localFloorForMapFloor(floor) - 1) / REALM_MAP_FLOORS_PER_ZONE) + 1); }
+export function zoneForMapFloor(floor) { return Math.floor((localFloorForMapFloor(floor) - 1) / REALM_MAP_FLOORS_PER_ZONE) + 1; }
 export function zoneFloorForMapFloor(floor) { return ((localFloorForMapFloor(floor) - 1) % REALM_MAP_FLOORS_PER_ZONE) + 1; }
 export function realmOrderForMapFloor(floor) { return majorRealmStartOrderForIndex(majorRealmIndexForMapFloor(floor)); }
 export function mapFloorForRealmZone(realmOrder, zone, zoneFloor = 1) {
@@ -96,7 +96,6 @@ export function huntZoneRewardPerKillV143(zone, zoneFloor = 1) {
 }
 
 const ELEMENT_CYCLE = ['Wood', 'Fire', 'Earth', 'Metal', 'Water'];
-/** Five elements are distributed evenly across every 100-floor zone: 20 floors per primary element. */
 export function primaryElementForZoneFloor(zone, zoneFloor) {
     const band = Math.min(4, Math.floor((Math.max(1, Math.min(100, Math.floor(zoneFloor))) - 1) / 20));
     return ELEMENT_CYCLE[(band + (zone - 1)) % ELEMENT_CYCLE.length];
@@ -153,9 +152,13 @@ export function realmMapRewardProfile(grade, zone, zoneFloor = 1) {
     const base = gradeRewards[grade];
     const z = Math.max(1, Math.min(8, Math.floor(Number(zone) || 1)));
     const f = Math.max(1, Math.min(100, Math.floor(Number(zoneFloor) || 1)));
+    const local = (z - 1) * REALM_MAP_FLOORS_PER_ZONE + f;
+    const depth01 = (local - 1) / (REALM_MAP_FLOORS_PER_MAJOR_REALM - 1);
     const rewardPerKill = huntZoneRewardPerKillV143(z, f);
-    const equipmentScale = 1 + (z - 1) * .08 + ((f - 1) / 99) * .10;
-    const pillScale = 1 + (z - 1) * .12 + ((f - 1) / 99) * .08;
+    // Equipment/pill opportunity must never reset at a Vực boundary. Vực controls reward-per-kill;
+    // these chances use one continuous 1→800 depth curve so floor 101 can never be worse than 100.
+    const equipmentScale = 1 + .85 * Math.pow(depth01, .88);
+    const pillScale = 1 + 1.10 * Math.pow(depth01, .90);
     return {
         spiritStoneMultiplier: base.spiritStoneMultiplier * rewardPerKill,
         equipmentChancePct: Math.min(100, base.equipmentChancePct * equipmentScale),
