@@ -1,0 +1,30 @@
+name: V144 Technique Legacy Audit
+
+on:
+  push:
+    branches:
+      - feature/v142-equipment-hunt
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    if: "startsWith(github.event.head_commit.message, 'chore(v144): audit technique legacy')"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Legacy technique references
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== FILES IMPORTING technique-progression-v103 ==='
+          grep -RIl --exclude-dir=.git --exclude='*.map' "technique-progression-v103" dist qa web src 2>/dev/null || true
+          echo '=== V103 SYMBOL REFERENCES ==='
+          grep -RIn --exclude-dir=.git --exclude='*.map' -E "TECHNIQUE_INSIGHT_RESOURCE_ID|TECHNIQUE_GRADE_ORDER|equipManual\(|learnTechniqueManual\(|studyTechniqueWithFragments\(|techniqueMasteryReport\(|unlockTechniqueGrantedSkills\(" dist qa web src 2>/dev/null || true
+          echo '=== LEGACY STATE FIELDS ==='
+          grep -RIn --exclude-dir=.git --exclude='*.map' -E "techniqueMastery|equippedTechnique|activeTechniqueId|knownTechniqueIds" dist qa web src 2>/dev/null || true
+          echo '=== CANONICAL V127 MANUAL REFERENCES ==='
+          grep -RIn --exclude-dir=.git --exclude='*.map' -E "manual-progression-v127|MANUAL_LEVEL_MAX_V127|manualStrengthen|manualAdvance|manualCompose|collectionManual|manualV127" dist qa web src 2>/dev/null || true
+          echo '=== HUNT LEGACY TECHNIQUE REWARD REFERENCES ==='
+          grep -RIn --exclude-dir=.git --exclude='*.map' -E "techniqueFragmentDrops|learnedTechnique|daoTechniqueFragment" dist/core/session.js qa 2>/dev/null || true
