@@ -16,6 +16,7 @@ const tests = [
   'qa/tests/v142-equipment-legacy-lane-test.js',
   'qa/tests/v143-hunt-equipment-resource-closure-test.js',
   'qa/tests/v143-equipment-set-resonance-test.js',
+  'qa/tests/v143-hunt-reward-authority-test.js',
 ];
 
 for (const file of tests) {
