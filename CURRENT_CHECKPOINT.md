@@ -1,165 +1,232 @@
-# CURRENT CHECKPOINT — FEATURE GAMEPLAY / V144 CLOSED
+# CURRENT CHECKPOINT — V145 CLOSED
 
 **Date:** 2026-09-08  
 **Branch:** `feature/v142-equipment-hunt`  
 **Gameplay/web version:** `1.40.0-alpha.24.0`  
-**Status:** V142 Equipment × Hunt + V143 reward authority + V144 Công Pháp legacy retirement **CLOSED / canonical QA PASS**. V145 is **REDESIGN / NOT CLOSED**.  
-**Rule:** use current branch HEAD as source of truth. Do not merge to `main` unless the user explicitly asks.
+**Status:** V140–V145 **CLOSED / canonical QA PASS**.  
+**Rule:** current branch HEAD is source of truth. **Do not merge `main`** unless the user explicitly asks.
 
-## 1. Tu Luyện V140 — CANONICAL / KEEP
+## 1. Closed baseline
 
-- `dist/core/cultivation-v140.js` is the cultivation authority.
-- 118 realm orders: Phàm Nhân order 0 + 28 cultivation major realms from Luyện Khí through Sáng Thế Chủ.
-- Realtime cultivation commits every 15 seconds.
-- Minor realms auto-advance when full.
-- Major transitions are deterministic `Thăng Cảnh`; Thiên Kiếp gates remain explicit.
-- Bế Quan grants +3h bank/day, max 9h.
-- Săn Yêu grants 0 direct Tu Vi; Tu Luyện continues independently at 100%.
-- Do not restore retired cultivation clutter: cultivation Căn Cơ/Tổn Căn, Kinh Mạch, Tạp Chất/Thanh Tịnh, old absorption/backlog/refining pipeline, five cultivation methods, Thiêu Thọ, or RNG major-realm breakthrough preparation.
+- **V140 — Tu Luyện:** CLOSED.
+- **V141 — Săn Yêu × Tu Luyện:** CLOSED.
+- **V142 — Trang Bị × Hunt:** CLOSED.
+- **V143 — Hunt reward authority + Set Resonance:** CLOSED.
+- **V144 — retirement Công Pháp/Bí Thuật legacy V103/V119:** CLOSED.
+- **V145 — Linh Căn vô hạn + Căn Mạch + Căn Ngộ + combat core buff:** CLOSED.
 
-## 2. Luân Hồi V4 — KEEP LIVE SOURCE
+Do not reopen a closed subsystem because old chat, historical files, old save fields or retired tests still mention an older design. Reopen only for a real regression or an explicit new user requirement.
 
-Read live source before changing:
+## 2. V145 Linh Căn — canonical contract
 
-- `dist/core/reincarnation-progression-v1102.js`
-- `dist/core/reincarnation-fate-build-v4.js`
-- `dist/core/life.js`
-- `dist/core/session.js`
+### Identity and progression
 
-Mệnh Cách is deterministic current-life build selection. RP is Luân Hồi progression/spend currency. Live formulas override historical chat notes.
+- One canonical Linh Căn progression per character.
+- Linh Căn is **not** a Kim/Mộc/Thủy/Hỏa/Thổ system.
+- Level progression is **Lv1 → ∞**, no hard level cap and no prestige/reset loop inside Linh Căn.
+- Lv1–1000 retains the ten bands:
+  - Phàm Căn
+  - Linh Căn
+  - Huyền Căn
+  - Địa Căn
+  - Thiên Căn
+  - Chân Căn
+  - Đạo Căn
+  - Tiên Căn
+  - Thần Căn
+  - Cực Căn
+- Above Lv1000: `Vô Cực Căn · Chuyển N`, one Chuyển per 100 levels, indefinitely.
+- Every 100 levels is a Tiến Cấp gate.
+- Each successful Tiến Cấp grants:
+  - 1 Điểm Căn Mạch;
+  - 1 pending Căn Ngộ choice.
 
-## 3. Săn Yêu × Tu Luyện — CLOSED FOUNDATION
+### Core effects
 
-- 28 major-realm Hunt maps matching Luyện Khí → Sáng Thế Chủ.
-- Each major realm: 8 Vực × 100 tầng = 800 floors.
-- One real Boss challenge per floor; clear unlocks next floor.
-- Cleared floors become Săn Ảo farm floors.
-- Real Boss uses CombatKernel V2.
-- Săn Ảo uses deterministic representative CombatKernel V2 TTK then O(1) batch settlement.
-- Combat Power is telemetry; it does not declare Boss victory or directly mint farm kills.
-- Minimum real TTK is 0.25 s/kill, keeping 24h below the 350,000-fight safety ceiling.
-- Hunt remains a resource/combat loop, never a second Tu Vi engine.
-- Boss/difficulty progression uses the strongest Boss as authority and scales downward; same-realm players are not guaranteed to clear every floor.
+V145 owns two safe infinite lanes:
 
-## 4. Equipment V142 / V143 — CURRENT AUTHORITY
+1. **Tụ Linh / Tu Vi efficiency** — diminishing but unbounded growth, applied at canonical Tu Luyện authority; it does not multiply arbitrary instant Tu Vi rewards.
+2. **Combat core stats** — Công + HP + Phòng grow indefinitely with diminishing curves.
 
-Current equipment progression is the V142 ranked-item architecture, not legacy Tier/Grade/Quality progression.
+Unsafe utility stats remain bounded. Do not make CDR, DR, max Chân Nguyên, Phá Thế, Crit utility or similar cap-sensitive stats linearly infinite.
 
-- Canonical item identity: Slot + `equipmentRankIndex` + Enhancement + Affixes + optional Set identity.
-- Legacy `grade` is compatibility-only and must not become a progression axis again.
-- Equipment Realm Rank follows cultivation major-realm progression and supports post-apex endless progression.
-- Rank progression/fusion, ranked crafting, Hunt fragment settlement and dedicated equipment dungeon conversion are live.
-- V142 still contains five attire Set definitions named/identified Metal/Wood/Water/Fire/Earth plus four jewelry Sets. These are existing Set/stat packages; **they do not make individual equipment items an elemental progression axis and they are not a dependency for the redesigned V145 Linh Căn**.
-- V143 Set Resonance is an endless fragment sink. Endless growth must stay on safe raw/bounded stat lanes and must not break combat caps.
-- V142 enhancement cap is +15.
-- 50 same-rank fragments craft one item; 3 lower-rank fragments refine to one next-rank fragment; 3 same-slot/same-rank items merge the main item upward.
-- Raw equipment stats can scale aggressively for infinite-game progression; Chân Nguyên and utility stats must not use the same explosive raw curve.
+### Căn Mạch
 
-Hunt reward source authority after V143 cleanup:
+Four branches are live:
 
-- Hunt may provide Linh Thạch, general Hunt/economy materials, equipment progression fragments, rare eligible treasure, bounded pills, rare Bản Mệnh Tinh Huyết and the currently-live V131 Linh Căn materials.
-- Existing V131 Linh Căn Hunt materials are subject to V145 redesign; their current existence does not force the new Linh Căn contract to keep elemental loot.
-- Hunt no longer directly mints Bùa Chống Tụt, Ngọc Chuyển Cường Hóa, Huyết Tinh, Thể Phách Tinh Hoa or Hộ Huyết Phù; those belong to specialized progression sources.
-- `qa/tests/v143-hunt-reward-authority-test.js` locks this separation.
+- **Tụ Linh Mạch** — Tu Vi, Linh Tủy, Bế Quan/progression support.
+- **Chiến Linh Mạch** — Công plus bounded offensive utility.
+- **Huyền Thể Mạch** — HP/Phòng plus bounded defensive utility.
+- **Linh Hải Mạch** — Chân Nguyên/resource efficiency plus bounded recovery/CDR.
 
-## 5. Công Pháp V144 — SINGLE LIVE MANUAL PROGRESSION
+Điểm Căn Mạch are earned by Linh Căn Tiến Cấp, not a separate farm currency.
 
-`dist/core/manual-progression-v127.js` is the only live Công Pháp progression authority.
+### Căn Ngộ
 
-Canonical V127 contract:
+Each Tiến Cấp creates one Căn Ngộ choice from the canonical pool. Repeatable Căn Ngộ uses diminishing growth; safe raw-stat lanes can continue indefinitely while utility lanes remain bounded.
 
-- 29 realm stages including Phàm Nhân.
-- 9 authored manual archetypes per stage = 261 Công Pháp.
-- max Lv1000 per Công Pháp.
-- 10 progression/advance gates.
-- learned Công Pháp can contribute together according to V127 rules.
+Current canonical identities include:
 
-V144 retired the duplicate V103/V119 manual gameplay lane:
+- Nhất Khí Quán Thể — Công;
+- Thiên Sinh Linh Thể — HP;
+- Huyền Giáp Nội Sinh — Phòng;
+- Linh Hải Vô Nhai — Chân Nguyên bounded;
+- Thiên Địa Đồng Tức — Tu Luyện;
+- Đạo Cơ Viên Dung — balanced Công/HP/Phòng.
 
-- removed `dist/core/technique-progression-v103.js` and its source map;
-- retired `resource.technique_insight` / Bí Thuật Tàn Trang as Hunt/manual progression;
-- removed Hunt legacy technique fragment and complete-manual minting;
-- retired old 0–100 technique mastery progression as a power source;
-- retired old manual equip/study/restore/player-facing APIs;
-- retired manual-driven Hành Ấn selection, including the stale client snapshot surface;
-- retired dungeon mastery gains for the dead manual system;
-- removed V103/V119 manual stats/triggers/passives from live character combat and stat provenance;
-- kept `technique-runtime-v119.js` only as a neutral compatibility boundary because combat modules still import its helper API;
-- retained authored skill elemental identity such as `primaryRoot` damage coefficients as existing combat content; this is **not** a requirement for redesigned V145 Linh Căn;
-- Battle Đạo V2 remains live and realm-driven; do not reintroduce legacy manual gates for Battle Đạo skills/passives.
+## 3. V145 resource source/sink authority
 
-Old save fields such as `knownTechniqueIds`, `techniqueMastery`, `activeTechniqueId`, `equippedTechniqueIds`, `techniqueFragments` and `restoredTechniqueIds` may remain as inert compatibility data until a later save-schema migration. They must not mint rewards, expose progression, or add combat power.
+Only two live V145 progression materials are required:
 
-V144 closure regression: `qa/tests/v144-technique-v103-retirement-test.js`.
+### Linh Tủy
 
-Primary retirement commit: `cd4be634842d05f9185c6c5c8782fcb29ccc6fd2` (`feat(v144): retire V103 V119 manual progression`).
-Final source closure commit: `5f49003b0324059929a5181ff1ff8f10d595b053` (`fix(v144): close technique retirement cleanup`).
+- Sink: ordinary Linh Căn nourishment/level-up.
+- Primary live source: Săn Ảo batch settlement.
+- Source scales with live progression and remains O(1) for large idle batches.
+- Tụ Linh Mạch can improve Linh Tủy income only through its bounded reward lane.
 
-## 6. Balance closure caused by retiring legacy manual combat
+### Bản Nguyên Linh Căn
 
-Removing V103/V119 combat power changed the shared CombatKernel balance envelope, so V144 recalibrates the live systems rather than restoring dead manual bonuses:
+- Sink: every 100-level Linh Căn Tiến Cấp.
+- Bản Nguyên is **tiered by cultivation major realm**.
+- A Bản Nguyên tier does not become obtainable until the character has reached the matching major realm tier.
+- Boss First Clear in an unlocked realm grants the matching Bản Nguyên tier.
+- Săn Ảo uses the deterministic 500-kill origin meter only for a Bản Nguyên tier already unlocked by character realm.
+- 3 lower-tier Bản Nguyên may combine into 1 next-tier Bản Nguyên, but the destination tier must already be unlocked by character realm.
+- Therefore the player cannot pre-farm or pre-combine Bản Nguyên above the reached realm.
 
-- Hỏa Set immortal-grade curve adjusted minimally to keep the five live elemental-named Sets inside the existing 15% aggregate role envelope.
-- Battle Đạo V2 representative Dao Hanh 70 shared-kernel coefficients recalibrated; no PvP-only or Boss-only tuning was introduced.
-- `qa/tests/v129-global-build-balance-test.js` passes with all eight Main Đạo inside the canonical 35–65% representative round-robin envelope.
+This is a hard progression invariant: **chưa lên đại cảnh tương ứng → không được mint/tạo Bản Nguyên Linh Căn bậc đó bằng bất kỳ live player-facing path nào.**
 
-## 7. V144 CANONICAL QA — PASS / LOCKED
+## 4. V145 migration / retirement
 
-Normal `V140 Canonical QA` run `34147222773` completed **SUCCESS** on commit `1e2ee21085fb5c98df62f4f5593cd8eeb160e03e`.
+V145 replaces the old elemental Linh Căn player-facing authority.
 
-PASS gates:
+Retired from Linh Căn gameplay:
 
-- Codebase health scan;
-- V140 cultivation core;
-- V140 cultivation transport;
-- V140 zero legacy;
+- five independent metal/wood/water/fire/earth root progression tracks;
+- root focus as Linh Căn authority;
+- elemental quality progression/materials;
+- 30 Căn Nguyên elemental combat traits;
+- target-origin farming/pity loop;
+- elemental Linh Căn milestones;
+- Linh Căn-driven Hành resource generation/payoff;
+- Linh Căn dependency on skill `primaryRoot`;
+- Linh Căn × Boss elemental matchup;
+- Linh Căn × Equipment Set resonance;
+- manual Hành Ấn / Element Seal as Linh Căn gameplay.
+
+Legacy five-root data may remain only as compatibility/migration input where required. Old elemental Linh Căn combat hooks no longer contribute live skill combat power.
+
+Migration is deterministic and one-time. Old elemental investment is converted/refunded into the V145 model; migration must not repeatedly mint resources on reload.
+
+## 5. V145 UI / API authority
+
+Player-facing Linh Căn UI is the V145 infinite progression surface. It exposes:
+
+- current level and band/`Vô Cực Căn · Chuyển N`;
+- Tu Vi and combat benefits;
+- Linh Tủy owned / next level cost;
+- Tiến Cấp gate and correct Bản Nguyên tier;
+- whether the required realm tier is unlocked;
+- Căn Mạch branches and unspent points;
+- pending Căn Ngộ choices;
+- nourishment, ascension, Căn Mạch, Căn Ngộ and Bản Nguyên combine actions.
+
+Old V131 root focus/origin/quality actions are not the live player-facing Linh Căn API.
+
+## 6. Separation from future Pháp Tắc / Lĩnh Vực
+
+User direction is locked conceptually but **not implemented in V145**:
+
+- Ngũ Hành Kim/Mộc/Thủy/Hỏa/Thổ and extended attributes such as Băng, Lôi, Phong, Huyết, Độc, Ám, Quang, Hư Không belong to a future independent **Pháp Tắc** subsystem.
+- **Lĩnh Vực** is a later high-realm subsystem built on/around high-level laws, not part of V145 Linh Căn.
+- Do not push elemental identity back into Linh Căn merely because legacy combat content or V142 Set names still use elements.
+
+## 7. Existing closed-system invariants still active
+
+### Tu Luyện V140
+
+- 118 realm orders: Phàm Nhân + 28 major cultivation realms.
+- 15-second realtime tick.
+- minor realm auto-advance; deterministic major Thăng Cảnh / explicit Thiên Kiếp gates.
+- Bế Quan +3h bank/day, cap 9h.
+- Săn Yêu never directly mints Tu Vi; Tu Luyện runs independently at 100%.
+
+### Hunt V141+
+
+- 28 major-realm maps.
+- 8 Vực × 100 floors = 800 floors per major realm.
+- one real Boss per floor; clear unlocks next floor.
+- cleared floors become Săn Ảo.
+- real Boss and representative virtual-farm TTK use shared CombatKernel V2.
+- Combat Power is telemetry, not victory authority.
+
+### Equipment V142/V143
+
+- canonical item identity: Slot + `equipmentRankIndex` + Enhancement + Affixes + optional Set identity.
+- V142 enhancement cap +15.
+- V142 elemental-named Sets remain existing stat packages only; they are not a Linh Căn dependency.
+- V143 Set Resonance remains the endless fragment sink with safe stat lanes.
+
+### Công Pháp V144
+
+- `dist/core/manual-progression-v127.js` is the only live Công Pháp progression authority.
+- 29 realm stages × 9 archetypes = 261 manuals, max Lv1000.
+- V103/V119 manual progression/combat authority remains retired.
+
+## 8. Balance closure after elemental Linh Căn retirement
+
+Removing old V131–V133 elemental Linh Căn combat hooks changed the representative 8-Đạo round-robin envelope. V145 recalibrated only the shared V129 midgame Main-Đạo coefficient table; no PvP-only, Boss-only or Linh Căn-specific combat resolver was introduced.
+
+Canonical V129 midgame coefficients after closure:
+
+- sword 1.65
+- fist 1.10
+- body 1.21
+- spell 1.66
+- poison 0.95
+- artifact 1.15
+- formation 1.95
+- mind 2.55
+
+The V129 global-build-balance, power-budget and combat-parity gates pass with this shared-kernel calibration.
+
+## 9. V145 canonical QA — PASS / LOCKED
+
+Canonical source candidate includes runtime source commit:
+
+`e33c5d91b1ce697779089139eb535fe1e0ed64ec` — `fix(v145): rebalance Dao after elemental root retirement`.
+
+Full `V140 Canonical QA` run:
+
+**`34182230349` — SUCCESS**
+
+PASS includes:
+
+- codebase health scan;
+- V140 cultivation core + transport + zero legacy;
 - V141 Hunt × Cultivation closure;
-- V142 Equipment × Hunt;
+- V142 Equipment × Hunt gate including V143/V144 regressions;
+- V145 infinite Spiritual Root core;
+- V145 source/sink runtime;
+- V145 realm-gated Bản Nguyên;
+- V145 UI transport;
 - backend fast gate;
 - frontend fast gate;
 - backend closure;
 - frontend closure.
 
-The temporary V144 patch/finalization workflows were removed. V144 is closed. Do not reopen V103/V119 manual gameplay because obsolete tests, old saves or historical content mention it; only compatibility data may remain inert until a later explicit migration.
+**V145 is CLOSED.** Do not reopen the old Linh Căn × Ngũ Hành design.
 
-## 8. NEXT WORK — V145 LINH CĂN REDESIGN / REQUIREMENTS RESET
+## 10. Next work
 
-The user reset V145 requirements on **2026-09-08**. The previous `Linh Căn × Ngũ Hành Closure` plan is cancelled and must not be revived from chat history, historical design files or legacy code.
+No next subsystem is automatically authorized. Proposed sequence remains:
 
-Cancelled as mandatory V145 requirements:
+- V146 Đan Dược;
+- V147 Linh Thú;
+- V148 Tri Kỷ;
+- V149 Pháp Bảo;
+- V150 Luân Hồi Production Closure;
+- V151 whole-game economy/source-authority closure.
 
-- exactly five Hành Kim/Mộc/Thủy/Hỏa/Thổ;
-- skill `primaryRoot` as Linh Căn authority;
-- Linh Căn × Boss Ngũ Hành matchup;
-- Linh Căn × Equipment Set resonance;
-- adding elemental attributes/progression back to V142 items;
-- Hunt elemental material/drop matrix;
-- Hành Ấn / Element Seal as a bridge;
-- historical `8 Bản Đạo × 5 Hành` and Set 2/4/6 Linh Căn design.
-
-V145 starts again from a source-first audit, then a new product contract must be locked **before gameplay code is changed**.
-
-Mandatory redesign questions:
-
-- what a Linh Căn is in this game and how many the player owns;
-- acquisition/initialization;
-- primary progression axis and long-term ceiling;
-- milestone/breakthrough structure;
-- concrete benefit/effect without duplicating Trang Bị/Công Pháp/Battle Đạo;
-- upgrade materials, sources and sinks;
-- Luân Hồi persistence/reset behavior if relevant;
-- caps/balance boundaries;
-- player-facing UI flow;
-- migration/compatibility for V131/V132/V133 data.
-
-Closure conditions after the new contract is approved:
-
-- exactly one live player-facing Linh Căn progression authority;
-- every consumed material has a live source and every minted progression material has a sink;
-- no dead currency, dead button or display-only power;
-- backend/frontend/save/economy/consumer are consistent;
-- any legacy Hành/Element Seal/root fields not used by the new contract are migrated, retired or compatibility-inert based on actual consumer audit;
-- targeted V145 tests PASS;
-- normal full V140 Canonical QA SUCCESS before marking V145 CLOSED.
-
-Detailed execution plan is in `NEXT_CHAT_TASKS.md`.
+Future Pháp Tắc / Lĩnh Vực should be designed when the user chooses the appropriate high-realm progression work; they are not part of V146 by default.
