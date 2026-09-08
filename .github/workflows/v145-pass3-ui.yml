@@ -1,0 +1,65 @@
+name: V145 Pass3 UI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/v142-equipment-hunt
+    paths:
+      - 'qa/tools/v145-pass3-ui-integration.mjs'
+      - 'qa/tests/v145-spiritual-root-ui-test.js'
+      - '.github/workflows/v145-pass3-ui.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/v142-equipment-hunt
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply V145 UI integration
+        run: node qa/tools/v145-pass3-ui-integration.mjs
+      - name: Syntax check app/runtime
+        run: |
+          node --check app.js
+          node --check standalone-runtime.js
+      - name: V145 UI transport
+        run: node qa/tests/v145-spiritual-root-ui-test.js
+      - name: V145 core
+        run: node qa/tests/v145-spiritual-root-redesign-test.js
+      - name: V145 source sink runtime
+        run: node qa/tests/v145-spiritual-root-runtime-test.js
+      - name: V145 realm origin
+        run: node qa/tests/v145-spiritual-root-realm-origin-test.js
+      - name: V140 cultivation
+        run: node qa/tests/v140-cultivation-core-test.js
+      - name: V141 Hunt x Cultivation
+        run: node qa/tests/v141-hunt-cultivation-closure-test.js
+      - name: V142-V144 gate
+        run: node qa/runners/v142-equipment-hunt-gate.js
+      - name: Backend fast
+        run: node qa/runners/v140-backend-gates.js fast
+      - name: Frontend fast
+        run: node qa/runners/v140-frontend-gates.js fast
+      - name: Remove temporary integration machinery
+        run: |
+          rm qa/tools/v145-pass3-ui-integration.mjs
+          rm .github/workflows/v145-pass3-ui.yml
+      - name: Commit V145 UI source
+        run: |
+          git config user.name 'vuanhtuan161094-byte'
+          git config user.email 'vuanhtuan161094@gmail.com'
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m 'feat(v145): replace spiritual root UI with infinite progression'
+          git push origin HEAD:feature/v142-equipment-hunt
