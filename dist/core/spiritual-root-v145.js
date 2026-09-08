@@ -302,6 +302,8 @@ export function spiritualRootSummaryV145(state, inventory = {}, currentMajorReal
     cultivationBonusPct: spiritualRootCultivationTotalBonusPctV145(s),
     combat: spiritualRootCombatBonusesV145(s),
     availableMeridianPoints: spiritualRootAvailableMeridianPointsV145(s),
+    meridianPointsSpent: { ...s.meridianPointsSpent },
+    meridianBonuses: spiritualRootMeridianBonusesV145(s),
     branches: SPIRITUAL_ROOT_BRANCHES_V145,
     insightRanks: { ...s.insightRanks },
     pendingInsightChoices: Math.max(0, s.ascensions - s.insightChoices.length),
@@ -313,7 +315,13 @@ export function spiritualRootSummaryV145(state, inventory = {}, currentMajorReal
     requiredOriginTier,
     requiredOriginResourceId,
     requiredOriginRealmUnlocked: unlockedRealmTier >= requiredOriginTier,
+    unlockedOriginRealmTier: unlockedRealmTier,
     originOwned: bigintInventory(inventory, requiredOriginResourceId).toString(),
+    originTiers: Array.from({ length: SPIRITUAL_ROOT_MAX_REALM_TIER_V145 }, (_, index) => {
+      const tier = index + 1;
+      const resourceId = spiritualRootOriginResourceIdV145(tier);
+      return { tier, resourceId, owned: bigintInventory(inventory, resourceId).toString(), naturalDropUnlocked: tier <= unlockedRealmTier, canCombineUp: tier < SPIRITUAL_ROOT_MAX_REALM_TIER_V145 };
+    }),
   };
 }
 

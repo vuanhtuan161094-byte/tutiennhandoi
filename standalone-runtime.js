@@ -467,11 +467,11 @@ async function handleApi(req,res,url){
       case'collectionUnequipV12316':result=rt.api.unequipCollectionV12316(String(body.itemId??''));break;
       case'collectionDailyV12316':throw new Error('V109: Phó Bản Daily cũ đã retire. Hãy vào Phó Bản > Bí Cảnh Tài Nguyên; first-clear bằng CombatKernel rồi treo farm theo thời gian.');
       case'caveUpgradeV12316':result=rt.api.upgradeCaveFacilityV12316(String(body.facilityId??'alchemy'));break;
-      case'rootFocusV131':result=rt.api.setRootFocusV131(body.root?String(body.root):undefined);break;
-      case'rootOriginTargetV131':result=rt.api.setRootOriginTargetV131(String(body.root??''),body.originId?String(body.originId):undefined);break;
-      case'rootOriginActivateV131':result=rt.api.activateRootOriginV131(String(body.root??''),String(body.originId??''));break;
-      case'rootQualityBreakthroughV131':result=rt.api.breakthroughRootQualityV131(String(body.root??''));break;
-      case'elementSealV133':result=rt.api.setSkillElementSealV133(String(body.skillId??''),body.root?String(body.root):undefined);break;
+      case'spiritualRootNourishV145':result=rt.api.nourishSpiritualRootV145(Math.max(1,Number(body.levels)||1));break;
+      case'spiritualRootAscendV145':result=rt.api.ascendSpiritualRootV145();break;
+      case'spiritualRootMeridianV145':result=rt.api.allocateSpiritualRootMeridianV145(String(body.branchId??''));break;
+      case'spiritualRootInsightV145':result=rt.api.chooseSpiritualRootInsightV145(String(body.insightId??''));break;
+      case'spiritualRootCombineOriginV145':result=rt.api.combineSpiritualRootOriginV145(Math.max(1,Number(body.fromRealmTier)||1),Math.max(1,Number(body.batches)||1));break;
       case'cultivationDaoFruit':throw new Error('Đạo Quả của hệ Đạo Lộ/Tu Hệ cũ đã ngừng hoạt động.');
       case'visualProfile':result=rt.setVisualProfile({characterSkinId:body.characterSkinId?String(body.characterSkinId):undefined,characterBackgroundId:body.characterBackgroundId?String(body.characterBackgroundId):undefined,selectedExpression:body.selectedExpression?String(body.selectedExpression):undefined});break;
       case'reincarnate':result=rt.api.reincarnate(body.plan??{});break;

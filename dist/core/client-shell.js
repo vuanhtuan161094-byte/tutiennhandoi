@@ -91,7 +91,7 @@ function projectSpecializationPreviewV129(preview, keep = null) {
 
 const WEB_VIEW_BUILDERS_V140 = Object.freeze({
     cultivation: (api) => ({ overview: api.getOverview(), character: api.getCharacterCultivationV140(), flow: api.getFlow(), daoSuy: api.getDaoSuyV127(), alchemy: api.getAlchemyV112() }),
-    character: (api) => ({ character: api.getCharacter(), equipment: api.getEquipmentEquippedV129(), equipmentSystem: api.getEquipmentSystem() }),
+    character: (api) => ({ character: api.getCharacter(), spiritualRoot: api.getSpiritualRootV145(), equipment: api.getEquipmentEquippedV129(), equipmentSystem: api.getEquipmentSystem() }),
     inventory: (api, now, core, subview) => {
         const inv=parseInventorySubviewV129(subview);
         return {
@@ -148,7 +148,7 @@ const WEB_VIEW_BUILDERS_V140 = Object.freeze({
         const specializationPreview=projectSpecializationPreviewV129(preview,keep);
         return {character:api.getCharacterSkillsV129(),specialization,specializationPreview};
     },
-    roots: (api) => ({ character: api.getCharacterRootV129(), spiritualRoots: api.getSpiritualRootV145(), elementSeals: api.getElementSealsV133() }),
+    roots: (api) => ({ spiritualRoot: api.getSpiritualRootV145() }),
     locations: (api) => ({ locations: api.getLocations() }),
     journal: (api) => ({ journal: api.getJournal(), worldHistory: api.getWorldHistory() }),
     power: (api) => ({ personalPower: api.getPersonalPower() }),
@@ -180,7 +180,7 @@ const WEB_VIEW_BUILDERS_V140 = Object.freeze({
     devlab: (api, now) => ({
         character: api.getCharacter(), specialization: api.getSpecializationV125(), specializationPreview: api.getSpecializationPreviewV125(),
         collection: api.getCollectionV12316(now), collectionEconomy: api.getCollectionEconomyV12326(now),
-        spiritualRoots: api.getSpiritualRootV145(), elementSeals: api.getElementSealsV133(), build: api.getBuild(),
+        spiritualRoot: api.getSpiritualRootV145(), build: api.getBuild(),
     }),
 });
 
@@ -241,7 +241,7 @@ export function buildWebClientSnapshot(api, nowUnixMs = Date.now()) {
     }
     return {
         schema: 'web-client-snapshot.v1', clientVersion: '1.40.0', generatedAtUnixMs: nowUnixMs, apiVersion: api.apiVersion,
-        overview, character, inventory: api.getInventory(), equipment: api.getEquipment(), equipmentSystem: api.getEquipmentSystem(), artifacts: api.getArtifacts(), flow: api.getFlow(), journal: api.getJournal(), worldHistory: api.getWorldHistory(), locations: api.getLocations(), personalPower: api.getPersonalPower(), soul, faction: api.getFaction(), social: api.getSocial(), dao, daoSuy, myriadLives: api.getMyriadLives(), playerExperience, dungeons: api.getDungeons(), endlessHunt: api.getEndlessHunt(), build: api.getBuild(), specialization: api.getSpecializationV125(), specializationPreview: api.getSpecializationPreviewV125(), spiritualRoots: api.getSpiritualRootV145(), collection, collectionEconomy, dongfu, economy: api.getEconomyV111(), economyActivity: api.getEconomyActivityV89(nowUnixMs), economyProduction: api.getEconomyProductionV111(nowUnixMs), pvp: api.getPvpV91(nowUnixMs), alchemy, forging, reincarnation: api.getReincarnation(), reincarnationPlanner: api.getReincarnationPlanner(), reincarnationProgress: api.getReincarnationProgressV2(nowUnixMs), permanentPotential: api.getPermanentPotentialV2(), automation: api.getAutomation(), telemetry: api.getTelemetry(), earlyGame: api.getEarlyGameSlice(), saveIntegrity: api.getSaveIntegrity(), combatReview: api.getCombatReview(), nextBossIntel, alpha: evaluateAlphaReadiness(api),
+        overview, character, inventory: api.getInventory(), equipment: api.getEquipment(), equipmentSystem: api.getEquipmentSystem(), artifacts: api.getArtifacts(), flow: api.getFlow(), journal: api.getJournal(), worldHistory: api.getWorldHistory(), locations: api.getLocations(), personalPower: api.getPersonalPower(), soul, faction: api.getFaction(), social: api.getSocial(), dao, daoSuy, myriadLives: api.getMyriadLives(), playerExperience, dungeons: api.getDungeons(), endlessHunt: api.getEndlessHunt(), build: api.getBuild(), specialization: api.getSpecializationV125(), specializationPreview: api.getSpecializationPreviewV125(), spiritualRoot: api.getSpiritualRootV145(), collection, collectionEconomy, dongfu, economy: api.getEconomyV111(), economyActivity: api.getEconomyActivityV89(nowUnixMs), economyProduction: api.getEconomyProductionV111(nowUnixMs), pvp: api.getPvpV91(nowUnixMs), alchemy, forging, reincarnation: api.getReincarnation(), reincarnationPlanner: api.getReincarnationPlanner(), reincarnationProgress: api.getReincarnationProgressV2(nowUnixMs), permanentPotential: api.getPermanentPotentialV2(), automation: api.getAutomation(), telemetry: api.getTelemetry(), earlyGame: api.getEarlyGameSlice(), saveIntegrity: api.getSaveIntegrity(), combatReview: api.getCombatReview(), nextBossIntel, alpha: evaluateAlphaReadiness(api),
     };
 }
 //# sourceMappingURL=client-shell.js.map
