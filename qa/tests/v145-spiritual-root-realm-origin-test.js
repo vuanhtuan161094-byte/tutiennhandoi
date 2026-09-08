@@ -10,13 +10,14 @@ assert.equal(root.spiritualRootOriginTierForAscensionV145(200), 2);
 assert.equal(root.spiritualRootOriginTierForAscensionV145(2800), 28);
 assert.equal(root.spiritualRootOriginTierForAscensionV145(1_000_000), 28);
 
-// Exact 3:1 combine. High-tier pieces may be prepared early, but cannot bypass the character-realm gate.
+// Exact 3:1 combine is also realm-gated: no high-tier Bản Nguyên may exist before its realm is reached.
 const inv = {
   [root.spiritualRootOriginResourceIdV145(1)]: '9',
   [root.spiritualRootOriginResourceIdV145(2)]: '0',
   [root.SPIRITUAL_ROOT_TENDON_RESOURCE_V145]: '999999999999',
 };
-let combined = root.combineSpiritualRootOriginV145(inv, 1, 2);
+assert.throws(() => root.combineSpiritualRootOriginV145(inv, 1, 1, 1), /Cần lên đại cảnh bậc 2/);
+let combined = root.combineSpiritualRootOriginV145(inv, 1, 2, 2);
 assert.equal(combined.ratio, '3:1');
 assert.equal(combined.spent, '6');
 assert.equal(combined.gained, '2');
@@ -53,7 +54,7 @@ const session = fs.readFileSync('dist/core/session.js','utf8');
 const gameplay = fs.readFileSync('dist/core/gameplay.js','utf8');
 const api = fs.readFileSync('dist/core/game-api.js','utf8');
 assert.ok(session.includes('currentMajorRealmIndex: majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder)'));
-assert.ok(session.includes('combineSpiritualRootOriginV145(fromRealmTier, batches = 1)'));
+assert.ok(session.includes('combineSpiritualRootOriginStateV145(this.stateValue.inventory, fromRealmTier, batches, majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder))'));
 assert.ok(gameplay.includes('combineSpiritualRootOriginV145(fromRealmTier, batches = 1)'));
 assert.ok(api.includes('combineSpiritualRootOriginV145(fromRealmTier, batches = 1)'));
 console.log('V145 realm-gated Bản Nguyên + 3:1 combine PASS');

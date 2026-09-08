@@ -16,18 +16,21 @@ export function spiritualRootOriginTierForAscensionV145(level) {
   const ascension = Math.max(1, Math.floor(Math.max(100, Number(level) || 100) / SPIRITUAL_ROOT_ASCENSION_INTERVAL_V145));
   return spiritualRootOriginRealmTierV145(ascension);
 }
-export function combineSpiritualRootOriginV145(inventory, fromRealmTier, batches = 1) {
+export function combineSpiritualRootOriginV145(inventory, fromRealmTier, batches = 1, currentMajorRealmIndex = SPIRITUAL_ROOT_MAX_REALM_TIER_V145) {
   const fromTier = spiritualRootOriginRealmTierV145(fromRealmTier);
   if (fromTier >= SPIRITUAL_ROOT_MAX_REALM_TIER_V145) throw new Error('Bản Nguyên bậc cao nhất không thể ghép tiếp.');
   const count = Math.max(1, Math.floor(Number(batches) || 1));
   const fromId = spiritualRootOriginResourceIdV145(fromTier);
-  const toId = spiritualRootOriginResourceIdV145(fromTier + 1);
+  const toTier = fromTier + 1;
+  const unlockedTier = Math.max(0, Math.min(SPIRITUAL_ROOT_MAX_REALM_TIER_V145, Math.floor(Number(currentMajorRealmIndex) || 0)));
+  if (toTier > unlockedTier) throw new Error(`Cần lên đại cảnh bậc ${toTier} trước khi tạo Bản Nguyên Linh Căn bậc ${toTier}.`);
+  const toId = spiritualRootOriginResourceIdV145(toTier);
   const need = BigInt(count * 3);
   const have = bigintInventory(inventory, fromId);
   if (have < need) throw new Error(`Thiếu Bản Nguyên bậc ${fromTier}: ${have}/${need}.`);
   writeBigintInventory(inventory, fromId, have - need);
   writeBigintInventory(inventory, toId, bigintInventory(inventory, toId) + BigInt(count));
-  return { fromRealmTier: fromTier, toRealmTier: fromTier + 1, fromResourceId: fromId, toResourceId: toId, spent: need.toString(), gained: String(count), ratio: '3:1' };
+  return { fromRealmTier: fromTier, toRealmTier: toTier, fromResourceId: fromId, toResourceId: toId, spent: need.toString(), gained: String(count), ratio: '3:1', unlockedRealmTier: unlockedTier };
 }
 
 export const SPIRITUAL_ROOT_GRADE_NAMES_V145 = Object.freeze([

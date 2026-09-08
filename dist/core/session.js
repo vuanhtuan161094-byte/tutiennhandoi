@@ -3747,7 +3747,7 @@ export class SimulationSession {
         return spiritualRootSummaryV145(state, this.stateValue.inventory, majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder));
     }
     combineSpiritualRootOriginV145(fromRealmTier, batches = 1) {
-        const result = combineSpiritualRootOriginStateV145(this.stateValue.inventory, fromRealmTier, batches);
+        const result = combineSpiritualRootOriginStateV145(this.stateValue.inventory, fromRealmTier, batches, majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder));
         this.actionIndexValue += 1;
         return { ...result, summary: this.spiritualRootSummaryV145() };
     }
