@@ -63,6 +63,12 @@ jobs:
       - name: V145 Spiritual Root UI transport
         run: node qa/tests/v145-spiritual-root-ui-test.js
 
+      - name: V146 Alchemy core
+        run: node qa/tests/v146-alchemy-core-test.js
+
+      - name: V146 Alchemy source runtime
+        run: node qa/tests/v146-alchemy-source-runtime-test.js
+
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
 
