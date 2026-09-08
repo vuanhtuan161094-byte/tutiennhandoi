@@ -47,7 +47,7 @@ assert.equal(nourished.levelsRaised, 1);
 assert.equal(nourished.blockedByAscension, true);
 assert.equal(root.spiritualRootAvailableMeridianPointsV145(nourished.state), 0);
 
-const ascended = root.ascendSpiritualRootV145(nourished.state, inv);
+const ascended = root.ascendSpiritualRootV145(nourished.state, inv, 1);
 assert.equal(ascended.state.ascensions, 1);
 assert.equal(ascended.meridianPointGranted, 1);
 assert.equal(root.spiritualRootAvailableMeridianPointsV145(ascended.state), 1);

@@ -1,9 +1,34 @@
 export const SPIRITUAL_ROOT_SCHEMA_V145 = 'spiritual-root.v145';
 export const SPIRITUAL_ROOT_TENDON_RESOURCE_V145 = 'resource.spiritual_root.tendon.v145';
-export const SPIRITUAL_ROOT_ORIGIN_RESOURCE_V145 = 'resource.spiritual_root.origin.v145';
+export const SPIRITUAL_ROOT_ORIGIN_RESOURCE_V145 = 'resource.spiritual_root.origin.v145.realm.1';
+export const SPIRITUAL_ROOT_MAX_REALM_TIER_V145 = 28;
 export const SPIRITUAL_ROOT_TENDON_NAME_V145 = 'Linh Tủy';
 export const SPIRITUAL_ROOT_ORIGIN_NAME_V145 = 'Bản Nguyên Linh Căn';
 export const SPIRITUAL_ROOT_ASCENSION_INTERVAL_V145 = 100;
+
+export function spiritualRootOriginRealmTierV145(value) {
+  return Math.max(1, Math.min(SPIRITUAL_ROOT_MAX_REALM_TIER_V145, Math.floor(Number(value) || 1)));
+}
+export function spiritualRootOriginResourceIdV145(majorRealmIndex) {
+  return `resource.spiritual_root.origin.v145.realm.${spiritualRootOriginRealmTierV145(majorRealmIndex)}`;
+}
+export function spiritualRootOriginTierForAscensionV145(level) {
+  const ascension = Math.max(1, Math.floor(Math.max(100, Number(level) || 100) / SPIRITUAL_ROOT_ASCENSION_INTERVAL_V145));
+  return spiritualRootOriginRealmTierV145(ascension);
+}
+export function combineSpiritualRootOriginV145(inventory, fromRealmTier, batches = 1) {
+  const fromTier = spiritualRootOriginRealmTierV145(fromRealmTier);
+  if (fromTier >= SPIRITUAL_ROOT_MAX_REALM_TIER_V145) throw new Error('Bản Nguyên bậc cao nhất không thể ghép tiếp.');
+  const count = Math.max(1, Math.floor(Number(batches) || 1));
+  const fromId = spiritualRootOriginResourceIdV145(fromTier);
+  const toId = spiritualRootOriginResourceIdV145(fromTier + 1);
+  const need = BigInt(count * 3);
+  const have = bigintInventory(inventory, fromId);
+  if (have < need) throw new Error(`Thiếu Bản Nguyên bậc ${fromTier}: ${have}/${need}.`);
+  writeBigintInventory(inventory, fromId, have - need);
+  writeBigintInventory(inventory, toId, bigintInventory(inventory, toId) + BigInt(count));
+  return { fromRealmTier: fromTier, toRealmTier: fromTier + 1, fromResourceId: fromId, toResourceId: toId, spent: need.toString(), gained: String(count), ratio: '3:1' };
+}
 
 export const SPIRITUAL_ROOT_GRADE_NAMES_V145 = Object.freeze([
   'Phàm Căn', 'Linh Căn', 'Huyền Căn', 'Địa Căn', 'Thiên Căn',
@@ -39,7 +64,9 @@ export function createSpiritualRootStateV145() {
     meridianPointsSpent: { gathering: 0, battle: 0, body: 0, spirit: 0 },
     insightRanks: {},
     insightChoices: [],
+    huntOriginProgress: 0,
     migratedFromLegacy: false,
+    legacyRefunded: false,
   };
 }
 
@@ -58,7 +85,9 @@ export function cloneSpiritualRootStateV145(value) {
     meridianPointsSpent: Object.fromEntries(Object.keys(SPIRITUAL_ROOT_BRANCHES_V145).map(id => [id, safeInt(src.meridianPointsSpent?.[id])])),
     insightRanks,
     insightChoices: Array.isArray(src.insightChoices) ? src.insightChoices.filter(id => Boolean(SPIRITUAL_ROOT_INSIGHTS_V145[id])) : [],
+    huntOriginProgress: safeInt(src.huntOriginProgress) % 500,
     migratedFromLegacy: Boolean(src.migratedFromLegacy),
+    legacyRefunded: Boolean(src.legacyRefunded),
   };
 }
 
@@ -237,24 +266,31 @@ export function nourishSpiritualRootV145(state, inventory, requestedLevels = 1) 
   return { state: s, levelsRaised: raised, spentTendon: spent.toString(), blockedByAscension: requiredAscensions > 0 && s.ascensions < requiredAscensions };
 }
 
-export function ascendSpiritualRootV145(state, inventory) {
+export function ascendSpiritualRootV145(state, inventory, currentMajorRealmIndex = 0) {
   const s = cloneSpiritualRootStateV145(state);
   if (s.level < 100 || s.level % 100 !== 0) throw new Error('Linh Căn chỉ Tiến Cấp tại mốc mỗi 100 Lv.');
   const expectedAscensions = Math.floor(s.level / 100);
   if (s.ascensions >= expectedAscensions) throw new Error('Mốc Linh Căn này đã Tiến Cấp.');
+  const requiredRealmTier = spiritualRootOriginTierForAscensionV145(s.level);
+  const unlockedRealmTier = Math.max(0, Math.min(SPIRITUAL_ROOT_MAX_REALM_TIER_V145, Math.floor(Number(currentMajorRealmIndex) || 0)));
+  if (unlockedRealmTier < requiredRealmTier) throw new Error(`Cần lên đại cảnh bậc ${requiredRealmTier} trước khi Tiến Cấp Linh Căn mốc này.`);
+  const originResourceId = spiritualRootOriginResourceIdV145(requiredRealmTier);
   const cost = spiritualRootOriginCostV145(s.level);
-  const have = bigintInventory(inventory, SPIRITUAL_ROOT_ORIGIN_RESOURCE_V145);
-  if (have < cost) throw new Error(`Thiếu ${SPIRITUAL_ROOT_ORIGIN_NAME_V145}: ${have}/${cost}.`);
-  writeBigintInventory(inventory, SPIRITUAL_ROOT_ORIGIN_RESOURCE_V145, have - cost);
+  const have = bigintInventory(inventory, originResourceId);
+  if (have < cost) throw new Error(`Thiếu ${SPIRITUAL_ROOT_ORIGIN_NAME_V145} bậc ${requiredRealmTier}: ${have}/${cost}.`);
+  writeBigintInventory(inventory, originResourceId, have - cost);
   s.ascensions = expectedAscensions;
-  return { state: s, cost: cost.toString(), meridianPointGranted: 1, insightOptions: spiritualRootInsightOptionsV145(s) };
+  return { state: s, cost: cost.toString(), requiredRealmTier, originResourceId, meridianPointGranted: 1, insightOptions: spiritualRootInsightOptionsV145(s) };
 }
 
-export function spiritualRootSummaryV145(state, inventory = {}) {
+export function spiritualRootSummaryV145(state, inventory = {}, currentMajorRealmIndex = 0) {
   const s = cloneSpiritualRootStateV145(state);
   const grade = spiritualRootGradeV145(s.level);
   const nextCost = spiritualRootNourishmentCostV145(s.level);
   const atGate = s.level >= 100 && s.level % 100 === 0 && s.ascensions < Math.floor(s.level / 100);
+  const requiredOriginTier = atGate ? spiritualRootOriginTierForAscensionV145(s.level) : spiritualRootOriginTierForAscensionV145(Math.max(100, (s.ascensions + 1) * 100));
+  const requiredOriginResourceId = spiritualRootOriginResourceIdV145(requiredOriginTier);
+  const unlockedRealmTier = Math.max(0, Math.min(SPIRITUAL_ROOT_MAX_REALM_TIER_V145, Math.floor(Number(currentMajorRealmIndex) || 0)));
   return {
     schema: SPIRITUAL_ROOT_SCHEMA_V145,
     level: s.level,
@@ -271,7 +307,10 @@ export function spiritualRootSummaryV145(state, inventory = {}) {
     tendonOwned: bigintInventory(inventory, SPIRITUAL_ROOT_TENDON_RESOURCE_V145).toString(),
     ascensionRequired: atGate,
     ascensionCost: atGate ? spiritualRootOriginCostV145(s.level).toString() : '0',
-    originOwned: bigintInventory(inventory, SPIRITUAL_ROOT_ORIGIN_RESOURCE_V145).toString(),
+    requiredOriginTier,
+    requiredOriginResourceId,
+    requiredOriginRealmUnlocked: unlockedRealmTier >= requiredOriginTier,
+    originOwned: bigintInventory(inventory, requiredOriginResourceId).toString(),
   };
 }
 
@@ -293,4 +332,73 @@ export function migrateLegacySpiritualRootV145(buildFoundation) {
 export function resolveSpiritualRootStateV145(character) {
   if (character?.spiritualRootV145?.schema === SPIRITUAL_ROOT_SCHEMA_V145) return cloneSpiritualRootStateV145(character.spiritualRootV145);
   return migrateLegacySpiritualRootV145(character?.buildFoundation);
+}
+
+
+export const SPIRITUAL_ROOT_VIRTUAL_ORIGIN_PITY_KILLS_V145 = 500;
+
+function addInventoryBigIntV145(inventory, id, amount) {
+  const next = bigintInventory(inventory, id) + BigInt(amount);
+  writeBigintInventory(inventory, id, next);
+  return next;
+}
+
+/** One-time compatibility refund. Legacy elemental resources become generic V145 resources and never remain a live sink. */
+export function settleLegacySpiritualRootMigrationV145(character, inventory = {}) {
+  const hadV145 = character?.spiritualRootV145?.schema === SPIRITUAL_ROOT_SCHEMA_V145;
+  const state = hadV145 ? cloneSpiritualRootStateV145(character.spiritualRootV145) : migrateLegacySpiritualRootV145(character?.buildFoundation);
+  if (state.legacyRefunded) { if (character) character.spiritualRootV145 = state; return { state, refundedTendon: '0', refundedOrigin: '0' }; }
+  let oldMaterials = 0n;
+  for (const id of Object.keys(inventory ?? {})) {
+    if (!id.startsWith('resource.root.')) continue;
+    const amount = bigintInventory(inventory, id);
+    if (amount <= 0n) continue;
+    oldMaterials += amount;
+    writeBigintInventory(inventory, id, 0n);
+  }
+  const oldOrigins = new Set();
+  for (const root of Object.values(character?.buildFoundation?.roots ?? {}))
+    for (const id of root?.knownOriginIds ?? []) oldOrigins.add(id);
+  const tendonRefund = oldMaterials * 500n;
+  const originRefund = BigInt(oldOrigins.size);
+  const migrationOriginTier = spiritualRootOriginRealmTierV145(Math.max(1, state.ascensions + 1));
+  const migrationOriginResourceId = spiritualRootOriginResourceIdV145(migrationOriginTier);
+  if (tendonRefund > 0n) addInventoryBigIntV145(inventory, SPIRITUAL_ROOT_TENDON_RESOURCE_V145, tendonRefund);
+  if (originRefund > 0n) addInventoryBigIntV145(inventory, migrationOriginResourceId, originRefund);
+  state.legacyRefunded = true;
+  if (character) character.spiritualRootV145 = state;
+  return { state, refundedTendon: tendonRefund.toString(), refundedOrigin: originRefund.toString(), originResourceId: migrationOriginResourceId, originRealmTier: migrationOriginTier };
+}
+
+/**
+ * Single Hunt source authority for V145. Settlement is O(1), including very large Săn Ảo batches.
+ * First-clear Bosses grant one Bản Nguyên. Virtual farming grants one Bản Nguyên per 500 kills via deterministic meter.
+ */
+export function settleSpiritualRootHuntV145(character, inventory, context = {}) {
+  const migration = settleLegacySpiritualRootMigrationV145(character, inventory);
+  const state = cloneSpiritualRootStateV145(migration.state);
+  const kills = Math.max(0, safeInt(context.kills));
+  const majorRealmIndex = Math.max(0, safeInt(context.majorRealmIndex));
+  const zone = Math.max(1, safeInt(context.zone, 1));
+  const currentCost = spiritualRootNourishmentCostV145(state.level);
+  const targetKillsPerLevel = BigInt(Math.max(40, Math.floor(70 + Math.sqrt(state.level) * 0.35)));
+  const basePerKill = currentCost / targetKillsPerLevel > 0n ? currentCost / targetKillsPerLevel : 1n;
+  const depthPct = BigInt(Math.min(260, 100 + majorRealmIndex * 5 + zone * 3));
+  const dropBonusPct = spiritualRootMeridianBonusesV145(state).tendonDropBonusPct;
+  const dropBasis = BigInt(Math.max(10000, Math.round(10000 * (1 + dropBonusPct / 100))));
+  const tendon = basePerKill * BigInt(kills) * depthPct * dropBasis / 100n / 10000n;
+  if (tendon > 0n) addInventoryBigIntV145(inventory, SPIRITUAL_ROOT_TENDON_RESOURCE_V145, tendon);
+  const originRealmTier = spiritualRootOriginRealmTierV145(majorRealmIndex);
+  const originResourceId = spiritualRootOriginResourceIdV145(originRealmTier);
+  const currentMajorRealmIndex = Math.max(0, safeInt(context.currentMajorRealmIndex));
+  const originSourceUnlocked = majorRealmIndex >= 1 && majorRealmIndex <= currentMajorRealmIndex;
+  let origin = originSourceUnlocked && context.firstClear ? 1 : 0;
+  if (originSourceUnlocked && context.countForOriginMeter && kills > 0) {
+    const total = state.huntOriginProgress + kills;
+    origin += Math.floor(total / SPIRITUAL_ROOT_VIRTUAL_ORIGIN_PITY_KILLS_V145);
+    state.huntOriginProgress = total % SPIRITUAL_ROOT_VIRTUAL_ORIGIN_PITY_KILLS_V145;
+  }
+  if (origin > 0) addInventoryBigIntV145(inventory, originResourceId, BigInt(origin));
+  character.spiritualRootV145 = state;
+  return { schema: 'spiritual-root-hunt.v145', kills, tendon: tendon.toString(), origin, originRealmTier, originResourceId, originSourceUnlocked, originProgress: state.huntOriginProgress, originPityKills: SPIRITUAL_ROOT_VIRTUAL_ORIGIN_PITY_KILLS_V145, firstClear: Boolean(context.firstClear), migrationRefund: { tendon: migration.refundedTendon, origin: migration.refundedOrigin } };
 }

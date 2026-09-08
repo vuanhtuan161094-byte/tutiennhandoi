@@ -9,7 +9,7 @@ import { BATTLE_DAO_ACTIVE_LOADOUT_SLOTS_V125, addDaoNatureCultivationXpV125, al
 import { BATTLE_DAO_V2_REALM_ORDER, battleDaoV2ActiveSlotsUnlocked, battleDaoV2Catalog, battleDaoV2Passives } from '../content/battle-dao-v2-catalog.js';
 import { battleDaoSkillGrowthCurrentSummaryV126, battleDaoSkillGrowthProfileV126 } from './battle-dao-skill-growth-v126.js';
 import { advanceSkillGradeV12317, ensureSkillHeartProgressionV12317, heartMethodGradeV12317, heartMethodStatSummaryV12317, skillAdvanceCostV12317, skillGradeV12317, skillLevelCostV12317, skillLevelV12317, skillScalingSummaryV12317, SKILL_GRADE_LABEL_V12317, SKILL_GRADE_ORDER_V12317, upgradeSkillLevelV12317 } from './skill-heart-method-v12317.js';
-import { activateKnownRootOriginV131, breakthroughRootQualityV131, rootProgressionSummaryV131, rootQualityMaterialDropsFromHuntV131, rollTargetRootOriginV131, syncGuaranteedRootOriginsV131, setRootFocusV131 as setRootFocusStateV131, setRootOriginTargetV131 as setRootOriginTargetStateV131, ELEMENT_ROOT_V131 } from './spiritual-root-progression-v131.js';
+import { allocateSpiritualRootMeridianPointV145, ascendSpiritualRootV145 as ascendSpiritualRootStateV145, chooseSpiritualRootInsightV145 as chooseSpiritualRootInsightStateV145, combineSpiritualRootOriginV145 as combineSpiritualRootOriginStateV145, nourishSpiritualRootV145 as nourishSpiritualRootStateV145, settleLegacySpiritualRootMigrationV145, settleSpiritualRootHuntV145, spiritualRootSummaryV145 } from './spiritual-root-v145.js';
 import { battleDaoAutoRotationV127, isBattleDaoSkillIdV127 } from './battle-dao-rotation-v127.js';
 import { elementSealSummaryV133, setSkillElementSealV133 as setSkillElementSealStateV133 } from './element-seal-v133.js';
 import './potential.js';
@@ -219,8 +219,9 @@ export class SimulationSession {
         this.stateValue.character.corePotential = { life: ensureLifePotentialForRealm(core.life, this.stateValue.realm.maxRealmOrder, lifePotentialPct), permanent: { ...rp.permanentPotential.allocations } };
         // V144 compatibility: preserve migrated raw save fields, but legacy Công Pháp/manual restoration is inert; only V127 manuals are live progression.
         const v125Foundation = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId);
-        syncGuaranteedRootOriginsV131(v125Foundation);
         this.stateValue.character.buildFoundation = v125Foundation;
+        // V145 migration is committed at session load so reads stay side-effect free afterward.
+        settleLegacySpiritualRootMigrationV145(this.stateValue.character, this.stateValue.inventory);
         const v125Progression = v125Foundation.progressionV125;
         retroactiveSkillPointsForRealmV125(this.stateValue.character, this.stateValue.realm.maxRealmOrder);
         syncDaoNatureTierUnlocksV125(this.stateValue.character, this.stateValue.realm.maxRealmOrder);
@@ -968,9 +969,10 @@ export class SimulationSession {
         const equipmentDropIds = fragmentSettlementV142.drops.map(drop => drop.resourceId);
         const equipmentDropNames = fragmentSettlementV142.drops.map(drop => `${drop.rankName} +${drop.amount}`);
         const economyAwards = recordEconomyActivityV89(ensureCollectionProgressStateV12316(this.stateValue), 'huntKills', kills).awards;
+        const spiritualRootRewardsV145 = settleSpiritualRootHuntV145(this.stateValue.character, this.stateValue.inventory, { kills, firstClear: false, countForOriginMeter: true, majorRealmIndex: map.majorRealmIndex, currentMajorRealmIndex: majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder), zone: map.zone });
         this.actionIndexValue += 1;
-        const summaryLines = [`Săn ảo tầng ${map.zoneFloor}: ${kills.toLocaleString('vi-VN')} yêu thú${eliteKills ? ` · ${eliteKills.toLocaleString('vi-VN')} Tinh Anh` : ''}.`, `Linh Thạch +${spiritStones.toLocaleString('vi-VN')} · Yêu Đan +${demonCores.toLocaleString('vi-VN')} · Mảnh Trang Bị +${fragmentSettlementV142.totalFragments.toLocaleString('vi-VN')}.`, ...equipmentDropNames.slice(0, 5).map(name => `Mảnh: ${name}.`), ...economyAwards.map(x => `${x.label}: Tiên Ngọc Khóa +${x.boundJade}.`)];
-        return { schema: 'endless-hunt-farm-batch.v77', floor: farm.floor, realSeconds: seconds, kills, eliteKills, spiritStones, demonCores, demonCoreResourceId, equipmentRolls, equipmentDropIds, equipmentDropNames, overflowEquipmentRolls, fragmentSettlementV142, farm, summaryLines, economyAwards };
+        const summaryLines = [`Săn ảo tầng ${map.zoneFloor}: ${kills.toLocaleString('vi-VN')} yêu thú${eliteKills ? ` · ${eliteKills.toLocaleString('vi-VN')} Tinh Anh` : ''}.`, `Linh Thạch +${spiritStones.toLocaleString('vi-VN')} · Yêu Đan +${demonCores.toLocaleString('vi-VN')} · Mảnh Trang Bị +${fragmentSettlementV142.totalFragments.toLocaleString('vi-VN')}.`, `Linh Căn: Linh Tủy +${spiritualRootRewardsV145.tendon}${spiritualRootRewardsV145.origin ? ` · Bản Nguyên +${spiritualRootRewardsV145.origin}` : ''} · tiến độ Bản Nguyên ${spiritualRootRewardsV145.originProgress}/${spiritualRootRewardsV145.originPityKills}.`, ...equipmentDropNames.slice(0, 5).map(name => `Mảnh: ${name}.`), ...economyAwards.map(x => `${x.label}: Tiên Ngọc Khóa +${x.boundJade}.`)];
+        return { schema: 'endless-hunt-farm-batch.v77', floor: farm.floor, realSeconds: seconds, kills, eliteKills, spiritStones, demonCores, demonCoreResourceId, equipmentRolls, equipmentDropIds, equipmentDropNames, overflowEquipmentRolls, fragmentSettlementV142, spiritualRootRewardsV145, farm, summaryLines, economyAwards };
     }
     endlessHuntSummary() {
         const hunt = cloneEndlessHuntState(this.stateValue.endlessHunt ?? createEndlessHuntState());
@@ -1107,8 +1109,7 @@ export class SimulationSession {
         const fateEvent = fateResolveHuntEvent(this.currentLifeValue.birth.originsV101?.fate, new SeededRng((seed ^ 0x51ed270b) >>> 0), result.won, result.monster.grade === 'elite' || result.monster.grade === 'boss');
         let cultivationGain = 0, spiritStones = 0, cultivationPillDrops = 0, injuryPillDropId, injuryPillDropName, trueBloodDropId, equipmentDropId, equipmentDropName, jackpotHit = false, jackpotChancePctApplied = 0;
         const economyMaterialDrops = {}, economyRareDrops = {};
-        const rootQualityMaterialDrops = [];
-        const rootOriginFarm = [];
+        let spiritualRootRewardsV145;
         const fateNotes = [...fateMods.notes, ...fateEvent.notes];
         const mapRewards = realmMapRewardProfile(result.monster.grade, map.zone, map.zoneFloor);
         if (result.won) {
@@ -1166,21 +1167,8 @@ export class SimulationSession {
                 trueBloodDropId = trueBloodResourceId(id);
                 this.stateValue.inventory[trueBloodDropId] = (this.stateValue.inventory[trueBloodDropId] ?? 0) + 1;
             }
-            // V144: Hunt no longer mints V103/V119 manual fragments or complete legacy manuals.
-            // V127 Công Pháp progression is owned by the collection/manual economy.
-            // v1.31 Linh Căn: target-farm and Chất Hành materials are granted only by a real HP-combat victory.
-            // A dedicated RNG stream prevents Linh Căn additions from perturbing legacy equipment/economy loot rolls.
-            const rootRng = new SeededRng((seed ^ 0x1f123bb5) >>> 0);
-            const rootFoundation = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId);
-            const qualityDrops = rootQualityMaterialDropsFromHuntV131(rootFoundation, result.monster.elements, result.monster.grade, () => rootRng.next());
-            for (const drop of qualityDrops) {
-                rootQualityMaterialDrops.push(drop);
-                this.stateValue.inventory[drop.resourceId] = (this.stateValue.inventory[drop.resourceId] ?? 0) + drop.amount;
-            }
-            const matchingRoots = [...new Set(result.monster.elements.map(element => ELEMENT_ROOT_V131[element]).filter((root) => Boolean(root)))];
-            for (const root of matchingRoots)
-                rootOriginFarm.push(rollTargetRootOriginV131(rootFoundation, root, result.monster.grade, rootRng.next()));
-            this.stateValue.character.buildFoundation = rootFoundation;
+            // V145: Linh Căn Hunt rewards are generic; no elemental target/material lane survives.
+            spiritualRootRewardsV145 = settleSpiritualRootHuntV145(this.stateValue.character, this.stateValue.inventory, { kills: 1, firstClear: Boolean(result.bossCleared), countForOriginMeter: false, majorRealmIndex: map.majorRealmIndex, currentMajorRealmIndex: majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder), zone: map.zone });
             if (fateEvent.injuryDelta > 0)
                 this.stateValue.injury = Math.min(100, this.stateValue.injury + fateEvent.injuryDelta);
             fateNotes.push(...fateOnHuntResult(this.currentLifeValue.birth.originsV101?.fate, fateRuntime, true, result.monster.grade === 'elite' || result.monster.grade === 'boss'));
@@ -1200,7 +1188,7 @@ export class SimulationSession {
         const combatEvents = options.emitCombatEvents === false ? [] : buildEndlessHuntCombatStreamFromKernelV2({ registry: this.registry, battle: kernelCombat.battle, result, playerId: kernelCombat.playerEntity.id, enemyId: kernelCombat.enemyEntity.id, bossMechanic });
         const significance = result.won ? (result.monster.grade === 'boss' ? 34 : result.monster.grade === 'elite' ? 18 : result.monster.grade === 'enhanced' ? 11 : 6) : 18;
         const openedText = result.bossCleared && result.unlockedFloor ? `; mở tầng ${zoneFloorForMapFloor(result.unlockedFloor)} ${realmMapDefinitionForFloor(result.unlockedFloor).zoneName}` : '';
-        const event = { id: `endless.hunt.${seed}.${result.monster.floor}.${result.monster.grade}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: result.won ? 'combat' : 'injury', significance, message: result.won ? `${result.monster.gradeName} · ${map.zoneName} tầng ${map.zoneFloor}: hạ ${result.monster.name}; Linh Thạch +${spiritStones}${equipmentDropName ? `, rơi ${equipmentDropName}` : ''}${cultivationPillDrops ? `, Tu Vi Đan +${cultivationPillDrops}` : ''}${injuryPillDropName ? `, ${injuryPillDropName} +1` : ''}${trueBloodDropId ? `, Bản Mệnh Tinh Huyết +1` : ''}${openedText}.${fateNotes.length ? ` ${fateNotes.join(' ')}` : ''}` : `Thất bại trước ${result.monster.name} · ${map.zoneName} tầng ${map.zoneFloor}; thương thế +${result.injuryGain}.${fateNotes.length ? ` ${fateNotes.join(' ')}` : ''}`, locationId: this.stateValue.locationId, tags: ['EndlessHunt', result.won ? 'Victory' : 'Defeat', result.monster.grade, map.zoneGradeId, ...result.monster.elements.map(x => `Element:${x}`), ...(result.bossCleared ? ['FloorBoss', 'FirstClear', 'FirstClearLike'] : []), ...(jackpotHit ? ['Jackpot'] : [])], data: { floor: result.monster.floor, localFloor: map.localFloor, zoneFloor: map.zoneFloor, zone: map.zone, majorRealmIndex: map.majorRealmIndex, grade: result.monster.grade, monsterName: result.monster.name, playerPowerLog10: result.playerPowerLog10, enemyPowerLog10: result.enemyPowerLog10, powerRatio: result.powerRatio, cultivationGain, spiritStones, equipmentDropId: equipmentDropId ?? '', economyMaterialDropsJson: JSON.stringify(economyMaterialDrops), economyRareDropsJson: JSON.stringify(economyRareDrops), bossCleared: result.bossCleared, unlockedFloor: result.unlockedFloor ?? 0, trainingPowerLogGain: result.trainingPowerLogGain, farmRewardEfficiencyPct: farmReward.pct, bossMechanicId: bossMechanic?.id ?? '', bossMechanicCoveragePct: bossMechanic?.coveragePct ?? 0, skillPracticeXp: skillPractice.reduce((a, x) => a + x.xpGain, 0), rootQualityMaterialDropsJson: JSON.stringify(rootQualityMaterialDrops), rootOriginFarmJson: JSON.stringify(rootOriginFarm) } };
+        const event = { id: `endless.hunt.${seed}.${result.monster.floor}.${result.monster.grade}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: result.won ? 'combat' : 'injury', significance, message: result.won ? `${result.monster.gradeName} · ${map.zoneName} tầng ${map.zoneFloor}: hạ ${result.monster.name}; Linh Thạch +${spiritStones}${equipmentDropName ? `, rơi ${equipmentDropName}` : ''}${cultivationPillDrops ? `, Tu Vi Đan +${cultivationPillDrops}` : ''}${injuryPillDropName ? `, ${injuryPillDropName} +1` : ''}${trueBloodDropId ? `, Bản Mệnh Tinh Huyết +1` : ''}${openedText}.${fateNotes.length ? ` ${fateNotes.join(' ')}` : ''}` : `Thất bại trước ${result.monster.name} · ${map.zoneName} tầng ${map.zoneFloor}; thương thế +${result.injuryGain}.${fateNotes.length ? ` ${fateNotes.join(' ')}` : ''}`, locationId: this.stateValue.locationId, tags: ['EndlessHunt', result.won ? 'Victory' : 'Defeat', result.monster.grade, map.zoneGradeId, ...result.monster.elements.map(x => `Element:${x}`), ...(result.bossCleared ? ['FloorBoss', 'FirstClear', 'FirstClearLike'] : []), ...(jackpotHit ? ['Jackpot'] : [])], data: { floor: result.monster.floor, localFloor: map.localFloor, zoneFloor: map.zoneFloor, zone: map.zone, majorRealmIndex: map.majorRealmIndex, grade: result.monster.grade, monsterName: result.monster.name, playerPowerLog10: result.playerPowerLog10, enemyPowerLog10: result.enemyPowerLog10, powerRatio: result.powerRatio, cultivationGain, spiritStones, equipmentDropId: equipmentDropId ?? '', economyMaterialDropsJson: JSON.stringify(economyMaterialDrops), economyRareDropsJson: JSON.stringify(economyRareDrops), bossCleared: result.bossCleared, unlockedFloor: result.unlockedFloor ?? 0, trainingPowerLogGain: result.trainingPowerLogGain, farmRewardEfficiencyPct: farmReward.pct, bossMechanicId: bossMechanic?.id ?? '', bossMechanicCoveragePct: bossMechanic?.coveragePct ?? 0, skillPracticeXp: skillPractice.reduce((a, x) => a + x.xpGain, 0), spiritualRootRewardsV145Json: JSON.stringify(spiritualRootRewardsV145 ?? {}) } };
         const economyAwards = options.recordHistory !== false && result.won && result.monster.grade === 'boss'
             ? [...recordEconomyActivityV89(ensureCollectionProgressStateV12316(this.stateValue), 'huntBossWins', 1).awards, ...(result.bossCleared ? (() => { const x = recordFirstClearBoundJadeV89(ensureCollectionProgressStateV12316(this.stateValue), `hunt.${result.monster.floor}`); return x.awarded ? [{ id: `first-clear.hunt.${result.monster.floor}`, label: 'Thưởng công phá tầng đầu', boundJade: x.boundJade }] : []; })() : [])]
             : [];
@@ -1208,9 +1196,9 @@ export class SimulationSession {
             this.historyValue.append(event);
         this.actionIndexValue += 1;
         const bossRetryLine = !result.won && result.monster.grade === 'boss' ? 'Khiêu chiến Boss thất bại: Boss tầng này vẫn còn, có thể thử lại bất cứ lúc nào; bãi farm đã mở trước đó không bị mất.' : undefined;
-        const summaryLines = result.won ? [`Hạ ${result.monster.name} [${result.monster.gradeName}] · ${map.zoneName} tầng ${map.zoneFloor} trong ${result.battleSeconds.toFixed(1)}s · HP còn ${result.playerHpRemainingPct.toFixed(0)}%.`, `Sát thương thực gây ra ${formatLogMagnitude({ log10: result.effectiveDamageLog10 })} · Linh Thạch +${spiritStones}. Tu Luyện vẫn chạy độc lập 100%.`, ...(farmReward.pct < 100 ? [`Hiệu suất farm tầng thấp: ${farmReward.pct}% (${farmReward.reason})`] : []), ...(bossMechanic ? [`Cơ chế Boss: ${bossMechanic.name} · đối sách ${bossMechanic.coveragePct}% · ${bossMechanic.counterHint}`] : []), ...(result.monster.elements.length ? [`Ngũ Hành: ${result.monster.elements.join(' + ')} · ${elementMatchup.label}.`] : []), ...(equipmentDropName ? [`Rơi: ${equipmentDropName}.`] : []), ...(Object.keys(economyMaterialDrops).length ? [`Nguyên liệu: ${Object.entries(economyMaterialDrops).map(([id, n]) => `${economyMaterialDefinition(id)?.name ?? id} +${n}`).join(' · ')}.`] : []), ...(Object.keys(economyRareDrops).length ? [`Bảo vật: ${Object.entries(economyRareDrops).map(([id, n]) => `${heavenlyTreasureDefinitions[id]?.name ?? id} +${n}`).join(' · ')}.`] : []), ...((cultivationPillDrops || injuryPillDropName) ? [`Đan dược: ${cultivationPillDrops ? `Tu Vi Đan +${cultivationPillDrops}` : ''}${cultivationPillDrops && injuryPillDropName ? ' · ' : ''}${injuryPillDropName ? `${injuryPillDropName} +1` : ''}.`] : []), ...(trueBloodDropId ? [`Căn nguyên hiếm: Bản Mệnh Tinh Huyết +1.`] : []), ...(rootQualityMaterialDrops.length ? [`Chất Hành: ${rootQualityMaterialDrops.map(drop => `${drop.resourceName} +${drop.amount}`).join(' · ')}.`] : []), ...(rootOriginFarm.some(x => x.unlocked) ? [`Căn Nguyên: ${rootOriginFarm.filter(x => x.unlocked).map(x => `lĩnh hội ${x.targetName}`).join(' · ')}.`] : []), ...(jackpotHit ? [`Dị tượng chiến lợi phẩm: vận may hiếm đã kích hoạt.`] : []), ...fateNotes, ...(result.bossCleared && result.unlockedFloor ? [`Boss tầng bị hạ: đã mở ${realmMapDefinitionForFloor(result.unlockedFloor).zoneName} tầng ${zoneFloorForMapFloor(result.unlockedFloor)}.`] : [])] : [`${result.outcome === 'timeout' ? 'Hết thời gian giao tranh' : 'Bị đánh bại'} trước ${result.monster.name}; HP ngươi còn ${result.playerHpRemainingPct.toFixed(0)}% · HP mục tiêu còn ${result.enemyHpRemainingPct.toFixed(0)}%.`, `Thương thế +${result.injuryGain}; Chiến Lực chỉ còn là chỉ báo, thắng/thua do HP thực quyết định.`, ...(bossRetryLine ? [bossRetryLine] : []), ...realCombat.diagnosis, ...fateNotes];
+        const summaryLines = result.won ? [`Hạ ${result.monster.name} [${result.monster.gradeName}] · ${map.zoneName} tầng ${map.zoneFloor} trong ${result.battleSeconds.toFixed(1)}s · HP còn ${result.playerHpRemainingPct.toFixed(0)}%.`, `Sát thương thực gây ra ${formatLogMagnitude({ log10: result.effectiveDamageLog10 })} · Linh Thạch +${spiritStones}. Tu Luyện vẫn chạy độc lập 100%.`, ...(farmReward.pct < 100 ? [`Hiệu suất farm tầng thấp: ${farmReward.pct}% (${farmReward.reason})`] : []), ...(bossMechanic ? [`Cơ chế Boss: ${bossMechanic.name} · đối sách ${bossMechanic.coveragePct}% · ${bossMechanic.counterHint}`] : []), ...(result.monster.elements.length ? [`Ngũ Hành: ${result.monster.elements.join(' + ')} · ${elementMatchup.label}.`] : []), ...(equipmentDropName ? [`Rơi: ${equipmentDropName}.`] : []), ...(Object.keys(economyMaterialDrops).length ? [`Nguyên liệu: ${Object.entries(economyMaterialDrops).map(([id, n]) => `${economyMaterialDefinition(id)?.name ?? id} +${n}`).join(' · ')}.`] : []), ...(Object.keys(economyRareDrops).length ? [`Bảo vật: ${Object.entries(economyRareDrops).map(([id, n]) => `${heavenlyTreasureDefinitions[id]?.name ?? id} +${n}`).join(' · ')}.`] : []), ...((cultivationPillDrops || injuryPillDropName) ? [`Đan dược: ${cultivationPillDrops ? `Tu Vi Đan +${cultivationPillDrops}` : ''}${cultivationPillDrops && injuryPillDropName ? ' · ' : ''}${injuryPillDropName ? `${injuryPillDropName} +1` : ''}.`] : []), ...(trueBloodDropId ? [`Căn nguyên hiếm: Bản Mệnh Tinh Huyết +1.`] : []), ...(spiritualRootRewardsV145 && (spiritualRootRewardsV145.tendon !== '0' || spiritualRootRewardsV145.origin > 0) ? [`Linh Căn: Linh Tủy +${spiritualRootRewardsV145.tendon}${spiritualRootRewardsV145.origin ? ` · Bản Nguyên +${spiritualRootRewardsV145.origin}` : ''}.`] : []), ...(jackpotHit ? [`Dị tượng chiến lợi phẩm: vận may hiếm đã kích hoạt.`] : []), ...fateNotes, ...(result.bossCleared && result.unlockedFloor ? [`Boss tầng bị hạ: đã mở ${realmMapDefinitionForFloor(result.unlockedFloor).zoneName} tầng ${zoneFloorForMapFloor(result.unlockedFloor)}.`] : [])] : [`${result.outcome === 'timeout' ? 'Hết thời gian giao tranh' : 'Bị đánh bại'} trước ${result.monster.name}; HP ngươi còn ${result.playerHpRemainingPct.toFixed(0)}% · HP mục tiêu còn ${result.enemyHpRemainingPct.toFixed(0)}%.`, `Thương thế +${result.injuryGain}; Chiến Lực chỉ còn là chỉ báo, thắng/thua do HP thực quyết định.`, ...(bossRetryLine ? [bossRetryLine] : []), ...realCombat.diagnosis, ...fateNotes];
         summaryLines.push(...economyAwards.map(x => `${x.label}: Tiên Ngọc Khóa +${x.boundJade}.`));
-        return { seed, won: result.won, rewardContext: options.rewardContext ?? 'online', jackpotHit, jackpotChancePctApplied, floor: result.monster.floor, monsterId: result.monster.id, monsterName: result.monster.name, grade: result.monster.gradeName, battleSeconds: result.battleSeconds, damage: formatLogMagnitude({ log10: result.effectiveDamageLog10 }), powerRatio: result.powerRatio, cultivationGain, spiritStones, cultivationPillDrops, injuryPillDropId, injuryPillDropName, economyMaterialDrops: { ...economyMaterialDrops }, economyRareDrops: { ...economyRareDrops }, skillPractice, equipmentDropId, equipmentDropName, rootQualityMaterialDrops, rootOriginFarm, injuryGain: result.injuryGain, bossCleared: result.bossCleared, unlockedFloor: result.unlockedFloor, farmRewardEfficiencyPct: farmReward.pct, bossMechanic, combatEvents, summaryLines, economyAwards, event, state: options.cloneState === false ? this.stateValue : this.state };
+        return { seed, won: result.won, rewardContext: options.rewardContext ?? 'online', jackpotHit, jackpotChancePctApplied, floor: result.monster.floor, monsterId: result.monster.id, monsterName: result.monster.name, grade: result.monster.gradeName, battleSeconds: result.battleSeconds, damage: formatLogMagnitude({ log10: result.effectiveDamageLog10 }), powerRatio: result.powerRatio, cultivationGain, spiritStones, cultivationPillDrops, injuryPillDropId, injuryPillDropName, economyMaterialDrops: { ...economyMaterialDrops }, economyRareDrops: { ...economyRareDrops }, skillPractice, equipmentDropId, equipmentDropName, spiritualRootRewardsV145, injuryGain: result.injuryGain, bossCleared: result.bossCleared, unlockedFloor: result.unlockedFloor, farmRewardEfficiencyPct: farmReward.pct, bossMechanic, combatEvents, summaryLines, economyAwards, event, state: options.cloneState === false ? this.stateValue : this.state };
     }
     equipmentCombatImpact(itemId) {
         const snapshot = this.state;
@@ -3726,40 +3714,42 @@ export class SimulationSession {
         e.ascensionEssence[c] += 1;
     } this.actionIndexValue += 1; return { ...result, ascensionEssence: dungeonId === 'daily.all' ? 4 : 1, summary: deriveCollectionSummaryV12316(this.stateValue, nowUnixMs), economy: this.collectionEconomyV12325(nowUnixMs) }; }
     upgradeCaveFacilityV12316(facilityId) { const state = ensureCollectionProgressStateV12316(this.stateValue); const result = upgradeCollectionCaveV12316(state, facilityId, this.stateValue.inventory); recordBoundJadeSpendV89(state, `cave.${facilityId}`, result.cost.boundJade); this.actionIndexValue += 1; return { ...result, summary: deriveCollectionSummaryV12316(this.stateValue), economy: this.economyActivityV89() }; }
-    spiritualRootSummaryV131() {
-        const foundation = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId);
-        this.stateValue.character.buildFoundation = foundation;
-        return rootProgressionSummaryV131(foundation, this.stateValue.inventory);
+    ensureSpiritualRootV145() {
+        return settleLegacySpiritualRootMigrationV145(this.stateValue.character, this.stateValue.inventory).state;
     }
-    setRootFocusV131(root) {
-        const foundation = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId);
-        setRootFocusStateV131(foundation, root);
-        this.stateValue.character.buildFoundation = foundation;
-        this.historyValue.append({ id: `root.focus.v131.${this.actionIndexValue}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: 'cultivation', significance: 4, message: root ? `Đổi Trọng Tâm Linh Căn sang ${rootProgressionSummaryV131(foundation, this.stateValue.inventory).focusRootName}.` : 'Hủy Trọng Tâm Linh Căn; năm căn tiếp tục hấp thụ nền.', locationId: this.stateValue.locationId, tags: ['SpiritualRoot', 'FocusV131'], data: { root: root ?? '', free: true, cooldownSeconds: 0, cost: 0 } });
-        this.actionIndexValue += 1;
-        return rootProgressionSummaryV131(foundation, this.stateValue.inventory);
+    spiritualRootSummaryV145() {
+        const root = this.ensureSpiritualRootV145();
+        return spiritualRootSummaryV145(root, this.stateValue.inventory, majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder));
     }
-    setRootOriginTargetV131(root, originId) {
-        const foundation = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId);
-        setRootOriginTargetStateV131(foundation, root, originId);
-        this.stateValue.character.buildFoundation = foundation;
+    nourishSpiritualRootV145(levels = 1) {
+        const result = nourishSpiritualRootStateV145(this.ensureSpiritualRootV145(), this.stateValue.inventory, levels);
+        this.stateValue.character.spiritualRootV145 = result.state;
         this.actionIndexValue += 1;
-        return rootProgressionSummaryV131(foundation, this.stateValue.inventory);
+        return { ...result, summary: spiritualRootSummaryV145(result.state, this.stateValue.inventory, majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder)) };
     }
-    activateRootOriginV131(root, originId) {
-        const foundation = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId);
-        activateKnownRootOriginV131(foundation, root, originId);
-        this.stateValue.character.buildFoundation = foundation;
+    ascendSpiritualRootV145() {
+        const result = ascendSpiritualRootStateV145(this.ensureSpiritualRootV145(), this.stateValue.inventory, majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder));
+        this.stateValue.character.spiritualRootV145 = result.state;
+        this.historyValue.append({ id: `root.ascend.v145.${this.actionIndexValue}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: 'breakthrough', significance: 24, message: `Linh Căn Tiến Cấp tại Lv${result.state.level}; nhận 1 Điểm Căn Mạch và mở lựa chọn Căn Ngộ.`, locationId: this.stateValue.locationId, tags: ['SpiritualRootV145','Ascension'], data: { level: result.state.level, cost: result.cost } });
         this.actionIndexValue += 1;
-        return rootProgressionSummaryV131(foundation, this.stateValue.inventory);
+        return { ...result, summary: spiritualRootSummaryV145(result.state, this.stateValue.inventory, majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder)) };
     }
-    breakthroughRootQualityV131(root) {
-        const foundation = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId);
-        const result = breakthroughRootQualityV131(foundation, this.stateValue.inventory, root);
-        this.stateValue.character.buildFoundation = foundation;
-        this.historyValue.append({ id: `root.quality.v131.${root}.${this.actionIndexValue}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: 'breakthrough', significance: 24, message: `${rootProgressionSummaryV131(foundation, this.stateValue.inventory).roots.find(x => x.id === root)?.name ?? root} đột phá ${result.to}.`, locationId: this.stateValue.locationId, tags: ['SpiritualRoot', 'ElementQualityV131', 'Breakthrough'], data: { root, from: result.from, to: result.to, materialId: result.materialId, materialCount: result.materialCount, success: true } });
+    allocateSpiritualRootMeridianV145(branchId) {
+        const state = allocateSpiritualRootMeridianPointV145(this.ensureSpiritualRootV145(), branchId);
+        this.stateValue.character.spiritualRootV145 = state;
         this.actionIndexValue += 1;
-        return { breakthrough: result, summary: rootProgressionSummaryV131(foundation, this.stateValue.inventory) };
+        return spiritualRootSummaryV145(state, this.stateValue.inventory, majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder));
+    }
+    chooseSpiritualRootInsightV145(insightId) {
+        const state = chooseSpiritualRootInsightStateV145(this.ensureSpiritualRootV145(), insightId);
+        this.stateValue.character.spiritualRootV145 = state;
+        this.actionIndexValue += 1;
+        return spiritualRootSummaryV145(state, this.stateValue.inventory, majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder));
+    }
+    combineSpiritualRootOriginV145(fromRealmTier, batches = 1) {
+        const result = combineSpiritualRootOriginStateV145(this.stateValue.inventory, fromRealmTier, batches);
+        this.actionIndexValue += 1;
+        return { ...result, summary: this.spiritualRootSummaryV145() };
     }
     elementSealSummaryV133() {
         return elementSealSummaryV133(this.stateValue.character, id => this.registry.technique(id), id => this.registry.skill(id));

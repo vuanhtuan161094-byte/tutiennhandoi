@@ -1,5 +1,4 @@
-import fs from 'node:fs';
-fs.writeFileSync('qa/tests/v145-spiritual-root-runtime-test.js', `import assert from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as root from '../../dist/core/spiritual-root-v145.js';
 
@@ -24,13 +23,13 @@ assert.equal(second.refundedTendon, '0');
 assert.equal(second.refundedOrigin, '0');
 
 const beforeTendon = BigInt(inventory[root.SPIRITUAL_ROOT_TENDON_RESOURCE_V145]);
-let virtual = root.settleSpiritualRootHuntV145(legacyCharacter, inventory, {kills:499,countForOriginMeter:true,majorRealmIndex:1,zone:1});
+let virtual = root.settleSpiritualRootHuntV145(legacyCharacter, inventory, {kills:499,countForOriginMeter:true,majorRealmIndex:1,currentMajorRealmIndex:1,zone:1});
 assert.equal(virtual.origin,0); assert.equal(virtual.originProgress,499); assert.ok(BigInt(virtual.tendon)>0n);
-virtual = root.settleSpiritualRootHuntV145(legacyCharacter, inventory, {kills:1,countForOriginMeter:true,majorRealmIndex:1,zone:1});
+virtual = root.settleSpiritualRootHuntV145(legacyCharacter, inventory, {kills:1,countForOriginMeter:true,majorRealmIndex:1,currentMajorRealmIndex:1,zone:1});
 assert.equal(virtual.origin,1); assert.equal(virtual.originProgress,0);
 assert.ok(BigInt(inventory[root.SPIRITUAL_ROOT_TENDON_RESOURCE_V145]) > beforeTendon);
 const originBefore = BigInt(inventory[root.SPIRITUAL_ROOT_ORIGIN_RESOURCE_V145]);
-const boss = root.settleSpiritualRootHuntV145(legacyCharacter, inventory, {kills:1,firstClear:true,countForOriginMeter:false,majorRealmIndex:1,zone:1});
+const boss = root.settleSpiritualRootHuntV145(legacyCharacter, inventory, {kills:1,firstClear:true,countForOriginMeter:false,majorRealmIndex:1,currentMajorRealmIndex:1,zone:1});
 assert.equal(boss.origin,1); assert.equal(BigInt(inventory[root.SPIRITUAL_ROOT_ORIGIN_RESOURCE_V145]), originBefore+1n);
 
 const session = fs.readFileSync('dist/core/session.js','utf8');
@@ -46,5 +45,3 @@ assert.ok(session.includes('settleSpiritualRootHuntV145'), 'Hunt source not wire
 assert.ok(session.includes('countForOriginMeter: true'), 'virtual Hunt pity source missing');
 assert.ok(session.includes('firstClear: Boolean(result.bossCleared)'), 'Boss first-clear origin source missing');
 console.log('V145 Spiritual Root runtime/source-sink PASS');
-`);
-console.log('V145 pass2 runtime test written');

@@ -25,15 +25,17 @@ for (const token of [
   'daoTechniqueFragment',
   'learnTechniqueManual',
   'battleDaoTechniqueFragmentTargetsV125',
+  'rootQualityMaterialDropsFromHuntV131',
+  'rollTargetRootOriginV131',
 ]) {
   assert.ok(!fight.includes(token), `Hunt must not own dedicated-system reward ${token}`);
 }
 
-// Intentional Hunt lanes stay live until their replacement/source authority is explicitly closed.
+// Intentional Hunt lanes stay live; V145 replaces the retired elemental Linh Căn reward authority.
 for (const token of [
   'settleRealHuntEquipmentFragmentsV142',
   'trueBloodResourceId',
-  'rootQualityMaterialDropsFromHuntV131',
+  'settleSpiritualRootHuntV145',
 ]) {
   assert.ok(fight.includes(token), `intentional Hunt reward lane missing: ${token}`);
 }

@@ -129,11 +129,12 @@ export class LocalGameApplicationApi {
     chooseDaoNatureMajorBranchV125(tierId, branch) { return this.#game.chooseDaoNatureMajorBranchV125(tierId, branch); }
     upgradeBattleDaoSkillV12317(skillId) { return this.#game.upgradeBattleDaoSkillV12317(skillId); }
     advanceBattleDaoSkillV12317(skillId) { return this.#game.advanceBattleDaoSkillV12317(skillId); }
-    getSpiritualRootsV131() { return this.#game.spiritualRootsV131(); }
-    setRootFocusV131(root) { return this.#game.setRootFocusV131(root); }
-    setRootOriginTargetV131(root, originId) { return this.#game.setRootOriginTargetV131(root, originId); }
-    activateRootOriginV131(root, originId) { return this.#game.activateRootOriginV131(root, originId); }
-    breakthroughRootQualityV131(root) { return this.#game.breakthroughRootQualityV131(root); }
+    getSpiritualRootV145() { return this.#game.spiritualRootV145(); }
+    nourishSpiritualRootV145(levels = 1) { return this.#game.nourishSpiritualRootV145(levels); }
+    ascendSpiritualRootV145() { return this.#game.ascendSpiritualRootV145(); }
+    allocateSpiritualRootMeridianV145(branchId) { return this.#game.allocateSpiritualRootMeridianV145(branchId); }
+    chooseSpiritualRootInsightV145(insightId) { return this.#game.chooseSpiritualRootInsightV145(insightId); }
+    combineSpiritualRootOriginV145(fromRealmTier, batches = 1) { return this.#game.combineSpiritualRootOriginV145(fromRealmTier, batches); }
     challengeBoss(dungeonId, floor) { return this.perform({ type: 'challengeDungeon', dungeonId, floor }); }
     chooseEvent(eventId, choiceId) { return this.perform({ type: 'contentEvent', eventId, choiceId }); }
     applyLoadoutPreset(presetId) { return this.perform({ type: 'applyLoadoutPreset', presetId }); }

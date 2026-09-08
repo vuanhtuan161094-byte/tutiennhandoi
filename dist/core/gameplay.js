@@ -216,7 +216,7 @@ export class GameplayFacade {
         const build = this.buildSheet();
         const character = this.character();
         const specialization = this.session.specializationSkillSummaryV125();
-        const roots = this.session.spiritualRootSummaryV131();
+        const roots = this.session.spiritualRootSummaryV145();
         const collection = this.session.collectionSummaryV12316(nowUnixMs);
         const potential = this.session.lifePotentialSummary();
         const soul = this.soul();
@@ -566,11 +566,12 @@ export class GameplayFacade {
     chooseDaoNatureMajorBranchV125(tierId, branch) { return this.session.chooseDaoNatureMajorBranchV125(tierId, branch); }
     upgradeBattleDaoSkillV12317(skillId) { return this.session.upgradeBattleDaoSkillV12317(skillId); }
     advanceBattleDaoSkillV12317(skillId) { return this.session.advanceBattleDaoSkillV12317(skillId); }
-    spiritualRootsV131() { return this.session.spiritualRootSummaryV131(); }
-    setRootFocusV131(root) { return this.session.setRootFocusV131(root); }
-    setRootOriginTargetV131(root, originId) { return this.session.setRootOriginTargetV131(root, originId); }
-    activateRootOriginV131(root, originId) { return this.session.activateRootOriginV131(root, originId); }
-    breakthroughRootQualityV131(root) { return this.session.breakthroughRootQualityV131(root); }
+    spiritualRootV145() { return this.session.spiritualRootSummaryV145(); }
+    nourishSpiritualRootV145(levels = 1) { return this.session.nourishSpiritualRootV145(levels); }
+    ascendSpiritualRootV145() { return this.session.ascendSpiritualRootV145(); }
+    allocateSpiritualRootMeridianV145(branchId) { return this.session.allocateSpiritualRootMeridianV145(branchId); }
+    chooseSpiritualRootInsightV145(insightId) { return this.session.chooseSpiritualRootInsightV145(insightId); }
+    combineSpiritualRootOriginV145(fromRealmTier, batches = 1) { return this.session.combineSpiritualRootOriginV145(fromRealmTier, batches); }
     dungeons() {
         const state = this.session.state;
         const orderedDungeons = Object.values(this.world.dungeons).sort((a, b) => Number(a.tags?.includes('V122') ?? false) - Number(b.tags?.includes('V122') ?? false));

@@ -1,14 +1,4 @@
-import fs from 'node:fs';
-{
- const p='qa/tests/v145-spiritual-root-runtime-test.js';
- let s=fs.readFileSync(p,'utf8');
- const old='majorRealmIndex:1,zone:1}';
- const n=s.split(old).length-1;
- if(n!==3) throw new Error('runtime realm context anchors expected 3 got '+n);
- s=s.replaceAll(old,'majorRealmIndex:1,currentMajorRealmIndex:1,zone:1}');
- fs.writeFileSync(p,s);
-}
-fs.writeFileSync('qa/tests/v145-spiritual-root-realm-origin-test.js', `import assert from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as root from '../../dist/core/spiritual-root-v145.js';
 
@@ -67,5 +57,3 @@ assert.ok(session.includes('combineSpiritualRootOriginV145(fromRealmTier, batche
 assert.ok(gameplay.includes('combineSpiritualRootOriginV145(fromRealmTier, batches = 1)'));
 assert.ok(api.includes('combineSpiritualRootOriginV145(fromRealmTier, batches = 1)'));
 console.log('V145 realm-gated Bản Nguyên + 3:1 combine PASS');
-`);
-console.log('V145 realm-origin tests staged');
