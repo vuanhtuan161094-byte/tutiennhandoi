@@ -47,12 +47,13 @@ Không dùng branch `feature/reincarnation-cultivation-r3`, handoff V141 cũ, ch
 
 ### Trang Bị
 
-- identity: Slot + `equipmentRankIndex` + Enhancement + Affixes + optional SetId.
+- identity món: Slot + `equipmentRankIndex` + Enhancement + Affixes + optional SetId.
 - legacy Grade/Quality/Tier/Gem/Đạo Văn không phải progression axis V142.
 - +15 là cap V142.
 - 50 mảnh cùng bậc → 1 món; 3 mảnh bậc dưới → 1 mảnh bậc trên; 3 món cùng slot+bậc → main +1 bậc.
 - raw stat trang bị theo curve dài hạn/infinite; Chân Nguyên và utility không được nổ theo cùng raw curve.
-- 5 Ngũ Hành attire Sets + 4 jewelry Sets; Tàn Ấn + Set Resonance là live.
+- live V142 vẫn có 5 attire Set mang identity/name Metal/Wood/Water/Fire/Earth và 4 jewelry Sets; đây là Set/stat package đã khóa của V142, **không phải lý do để Linh Căn V145 phải dùng Ngũ Hành và không được biến món trang bị thành một elemental progression axis mới**.
+- Tàn Ấn + Set Resonance là live.
 
 ### Công Pháp
 
@@ -61,23 +62,26 @@ Không dùng branch `feature/reincarnation-cultivation-r3`, handoff V141 cũ, ch
 - các save field cũ chỉ được tồn tại inert compatibility, không được tạo reward/progression/combat power.
 - Battle Đạo V2 vẫn live và realm-driven.
 
-## Việc tiếp theo đã được người dùng chọn: V145 — LINH CĂN × NGŨ HÀNH CLOSURE
+## Việc tiếp theo đã được người dùng chọn: V145 — LINH CĂN REDESIGN
 
-Không hỏi lại hướng chung. Bắt đầu bằng audit live source của Linh Căn/Ngũ Hành rồi đóng thành **một authority duy nhất**.
+**Requirements reset ngày 2026-09-08:** thiết kế `Linh Căn × Ngũ Hành Closure` trước đây đã hủy. Không được phục hồi nó từ chat cũ, file lịch sử hoặc code legacy.
 
-Mục tiêu V145:
+Không mặc định bất kỳ điều nào sau đây là yêu cầu V145:
 
-1. xác định chính xác những module/field/UI/runtime nào đang đại diện Linh Căn, Ngũ Hành, Hành Ấn/Element Seal hoặc hệ tương tự;
-2. phân loại: live canonical / compatibility inert / duplicate legacy;
-3. chốt progression 5 Hành Kim–Mộc–Thủy–Hỏa–Thổ và nguồn nguyên liệu thật;
-4. giữ Hunt chỉ cho loot Linh Căn nào có chủ đích; không để chức năng có nhưng không có nguồn nguyên liệu;
-5. nối stat/effect Linh Căn vào CombatKernel thật, không display-only;
-6. kiểm tra elemental interaction với Battle Đạo, Set, Boss Ngũ Hành và skill `primaryRoot` hiện tại;
-7. dùng cap/soft-cap hợp lý cho stat utility, không cho Linh Căn phá balance raw-stat/infinite progression;
-8. dọn backend + frontend + save + economy/content + tests của lane legacy nếu trùng;
-9. thêm targeted V145 QA rồi chạy canonical V140 workflow đầy đủ;
-10. chỉ gọi V145 CLOSED sau khi full canonical QA SUCCESS.
+- 5 Hành Kim/Mộc/Thủy/Hỏa/Thổ;
+- skill `primaryRoot` là Linh Căn authority;
+- Boss Ngũ Hành;
+- cộng hưởng Linh Căn × Set Trang Bị;
+- loot Hunt theo Hành;
+- Hành Ấn / Element Seal làm cầu nối;
+- `8 Bản Đạo × 5 Hành` hoặc Set 2/4/6 trong file thiết kế Linh Căn lịch sử.
+
+Mục tiêu mới là audit live source, phân loại thứ gì giữ/migrate/retire/compatibility, rồi **chốt contract Linh Căn mới từ số 0 trước khi code gameplay V145**.
+
+Contract mới phải làm rõ: sở hữu Linh Căn thế nào, progression, milestone/đột phá, effect, nguyên liệu, source/sink, Luân Hồi interaction nếu có, caps, UI và migration. Linh Căn chỉ nối CombatKernel nếu effect mới thực sự là combat effect.
+
+Sau khi contract được chốt mới hoàn thiện backend + frontend + save + economy/source-sink + consumer + targeted QA + full canonical QA. Chỉ gọi V145 CLOSED sau khi full canonical QA SUCCESS.
 
 ## Working rule
 
-Làm module-by-module, source-first. Khi chạm một hệ phải rà đủ backend + frontend + save + resource source/sink + CombatKernel consumer + tests. Không re-audit toàn game từ đầu và không mở lại các closure trước nếu V145 không thật sự cần integration change.
+Làm module-by-module, source-first. Khi chạm một hệ phải rà đủ backend + frontend + save + resource source/sink + consumer thật + tests. Không re-audit toàn game từ đầu và không mở lại các closure trước nếu V145 không thật sự cần integration change.
