@@ -1,3 +1,5 @@
+import { createAlchemyHuntProgressV146, cloneAlchemyHuntProgressV146, settleAlchemyHuntRewardsV146 } from './alchemy-hunt-v146.js';
+
 export const SPIRITUAL_ROOT_SCHEMA_V145 = 'spiritual-root.v145';
 export const SPIRITUAL_ROOT_TENDON_RESOURCE_V145 = 'resource.spiritual_root.tendon.v145';
 export const SPIRITUAL_ROOT_ORIGIN_RESOURCE_V145 = 'resource.spiritual_root.origin.v145.realm.1';
@@ -68,6 +70,9 @@ export function createSpiritualRootStateV145() {
     insightRanks: {},
     insightChoices: [],
     huntOriginProgress: 0,
+    // Integration-only persistence for V146 Hunt -> Yêu Đan meters. Alchemy owns the formula/resources;
+    // this field lives here because every canonical real/virtual Hunt reward event already passes this state seam.
+    alchemyHuntV146: createAlchemyHuntProgressV146(),
     migratedFromLegacy: false,
     legacyRefunded: false,
   };
@@ -89,6 +94,7 @@ export function cloneSpiritualRootStateV145(value) {
     insightRanks,
     insightChoices: Array.isArray(src.insightChoices) ? src.insightChoices.filter(id => Boolean(SPIRITUAL_ROOT_INSIGHTS_V145[id])) : [],
     huntOriginProgress: safeInt(src.huntOriginProgress) % 500,
+    alchemyHuntV146: cloneAlchemyHuntProgressV146(src.alchemyHuntV146),
     migratedFromLegacy: Boolean(src.migratedFromLegacy),
     legacyRefunded: Boolean(src.legacyRefunded),
   };
@@ -339,12 +345,10 @@ export function migrateLegacySpiritualRootV145(buildFoundation) {
   return state;
 }
 
-
 export function resolveSpiritualRootStateV145(character) {
   if (character?.spiritualRootV145?.schema === SPIRITUAL_ROOT_SCHEMA_V145) return cloneSpiritualRootStateV145(character.spiritualRootV145);
   return migrateLegacySpiritualRootV145(character?.buildFoundation);
 }
-
 
 export const SPIRITUAL_ROOT_VIRTUAL_ORIGIN_PITY_KILLS_V145 = 500;
 
@@ -384,6 +388,9 @@ export function settleLegacySpiritualRootMigrationV145(character, inventory = {}
 /**
  * Single Hunt source authority for V145. Settlement is O(1), including very large Săn Ảo batches.
  * First-clear Bosses grant one Bản Nguyên. Virtual farming grants one Bản Nguyên per 500 kills via deterministic meter.
+ *
+ * V146 integration note: this function is also the existing canonical fan-out seam reached by both real
+ * and virtual Hunt rewards. It persists only the Alchemy Hunt meter; Alchemy itself owns Yêu Đan formulas.
  */
 export function settleSpiritualRootHuntV145(character, inventory, context = {}) {
   const migration = settleLegacySpiritualRootMigrationV145(character, inventory);
@@ -410,6 +417,9 @@ export function settleSpiritualRootHuntV145(character, inventory, context = {}) 
     state.huntOriginProgress = total % SPIRITUAL_ROOT_VIRTUAL_ORIGIN_PITY_KILLS_V145;
   }
   if (origin > 0) addInventoryBigIntV145(inventory, originResourceId, BigInt(origin));
+
+  const { state: alchemyHuntProgressV146, ...alchemyV146 } = settleAlchemyHuntRewardsV146(state.alchemyHuntV146, inventory, context);
+  state.alchemyHuntV146 = alchemyHuntProgressV146;
   character.spiritualRootV145 = state;
-  return { schema: 'spiritual-root-hunt.v145', kills, tendon: tendon.toString(), origin, originRealmTier, originResourceId, originSourceUnlocked, originProgress: state.huntOriginProgress, originPityKills: SPIRITUAL_ROOT_VIRTUAL_ORIGIN_PITY_KILLS_V145, firstClear: Boolean(context.firstClear), migrationRefund: { tendon: migration.refundedTendon, origin: migration.refundedOrigin } };
+  return { schema: 'spiritual-root-hunt.v145', kills, tendon: tendon.toString(), origin, originRealmTier, originResourceId, originSourceUnlocked, originProgress: state.huntOriginProgress, originPityKills: SPIRITUAL_ROOT_VIRTUAL_ORIGIN_PITY_KILLS_V145, firstClear: Boolean(context.firstClear), alchemyV146, migrationRefund: { tendon: migration.refundedTendon, origin: migration.refundedOrigin } };
 }
