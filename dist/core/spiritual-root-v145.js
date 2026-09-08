@@ -1,0 +1,278 @@
+export const SPIRITUAL_ROOT_SCHEMA_V145 = 'spiritual-root.v145';
+export const SPIRITUAL_ROOT_TENDON_RESOURCE_V145 = 'resource.spiritual_root.tendon.v145';
+export const SPIRITUAL_ROOT_ORIGIN_RESOURCE_V145 = 'resource.spiritual_root.origin.v145';
+export const SPIRITUAL_ROOT_TENDON_NAME_V145 = 'Linh Tủy';
+export const SPIRITUAL_ROOT_ORIGIN_NAME_V145 = 'Bản Nguyên Linh Căn';
+export const SPIRITUAL_ROOT_ASCENSION_INTERVAL_V145 = 100;
+
+export const SPIRITUAL_ROOT_GRADE_NAMES_V145 = Object.freeze([
+  'Phàm Căn', 'Linh Căn', 'Huyền Căn', 'Địa Căn', 'Thiên Căn',
+  'Chân Căn', 'Đạo Căn', 'Tiên Căn', 'Thần Căn', 'Cực Căn',
+]);
+
+export const SPIRITUAL_ROOT_BRANCHES_V145 = Object.freeze({
+  gathering: Object.freeze({ id: 'gathering', name: 'Tụ Linh Mạch', role: 'Tu Vi · tài nguyên · Bế Quan' }),
+  battle: Object.freeze({ id: 'battle', name: 'Chiến Linh Mạch', role: 'Công · Phá Thế · Bạo Thương hữu hạn' }),
+  body: Object.freeze({ id: 'body', name: 'Huyền Thể Mạch', role: 'HP · Phòng · hồi phục · giảm thương hữu hạn' }),
+  spirit: Object.freeze({ id: 'spirit', name: 'Linh Hải Mạch', role: 'Chân Nguyên · hồi CN · hiệu suất · hồi chiêu hữu hạn' }),
+});
+
+export const SPIRITUAL_ROOT_INSIGHTS_V145 = Object.freeze({
+  attack: Object.freeze({ id: 'attack', name: 'Nhất Khí Quán Thể', description: '+4% Công nền mỗi bậc.', repeatable: true }),
+  vitality: Object.freeze({ id: 'vitality', name: 'Thiên Sinh Linh Thể', description: '+6% HP nền mỗi bậc.', repeatable: true }),
+  defense: Object.freeze({ id: 'defense', name: 'Huyền Giáp Nội Sinh', description: '+5% Phòng nền mỗi bậc.', repeatable: true }),
+  spirit: Object.freeze({ id: 'spirit', name: 'Linh Hải Vô Nhai', description: '+8% Chân Nguyên tối đa mỗi bậc.', repeatable: true }),
+  cultivation: Object.freeze({ id: 'cultivation', name: 'Thiên Địa Đồng Tức', description: '+5% hiệu suất Tu Luyện mỗi bậc.', repeatable: true }),
+  balanced: Object.freeze({ id: 'balanced', name: 'Đạo Cơ Viên Dung', description: '+2% Công, HP và Phòng nền mỗi bậc.', repeatable: true }),
+});
+
+const safeInt = (value, fallback = 0) => Math.max(0, Math.floor(Number.isFinite(Number(value)) ? Number(value) : fallback));
+const safeNumber = (value, fallback = 0) => Math.max(0, Number.isFinite(Number(value)) ? Number(value) : fallback);
+
+export function createSpiritualRootStateV145() {
+  return {
+    schema: SPIRITUAL_ROOT_SCHEMA_V145,
+    level: 1,
+    nourishment: 0,
+    ascensions: 0,
+    meridianPointsSpent: { gathering: 0, battle: 0, body: 0, spirit: 0 },
+    insightRanks: {},
+    insightChoices: [],
+    migratedFromLegacy: false,
+  };
+}
+
+export function cloneSpiritualRootStateV145(value) {
+  const base = createSpiritualRootStateV145();
+  const src = value ?? base;
+  const level = Math.max(1, safeInt(src.level, 1));
+  const minimumAscensions = Math.floor((level - 1) / SPIRITUAL_ROOT_ASCENSION_INTERVAL_V145);
+  const insightRanks = Object.fromEntries(Object.entries(src.insightRanks ?? {}).filter(([id]) => Boolean(SPIRITUAL_ROOT_INSIGHTS_V145[id])).map(([id, rank]) => [id, safeInt(rank)]));
+  return {
+    schema: SPIRITUAL_ROOT_SCHEMA_V145,
+    level,
+    nourishment: safeNumber(src.nourishment),
+    ascensions: Math.max(minimumAscensions, safeInt(src.ascensions)),
+    meridianPointsSpent: Object.fromEntries(Object.keys(SPIRITUAL_ROOT_BRANCHES_V145).map(id => [id, safeInt(src.meridianPointsSpent?.[id])])),
+    insightRanks,
+    insightChoices: Array.isArray(src.insightChoices) ? src.insightChoices.filter(id => Boolean(SPIRITUAL_ROOT_INSIGHTS_V145[id])) : [],
+    migratedFromLegacy: Boolean(src.migratedFromLegacy),
+  };
+}
+
+export function spiritualRootGradeV145(level) {
+  const lv = Math.max(1, safeInt(level, 1));
+  if (lv <= 1000) {
+    const index = Math.min(9, Math.floor((lv - 1) / 100));
+    return { id: index < 9 ? `grade.${index + 1}` : 'grade.10', name: SPIRITUAL_ROOT_GRADE_NAMES_V145[index], cycle: 0, rankInCycle: index + 1 };
+  }
+  const cycle = Math.floor((lv - 1001) / 100) + 1;
+  return { id: `infinite.${cycle}`, name: `Vô Cực Căn · Chuyển ${cycle}`, cycle, rankInCycle: cycle };
+}
+
+export function spiritualRootNourishmentCostV145(level) {
+  const lv = Math.max(1, safeInt(level, 1));
+  // Infinite, monotonic and sub-exponential. BigInt keeps long-run saves stable.
+  const a = BigInt(lv + 20);
+  const b = BigInt(Math.floor(Math.sqrt(lv)) + 10);
+  return 40n + a * b + BigInt(Math.floor(lv / 100)) * 250n;
+}
+
+export function spiritualRootOriginCostV145(targetLevel) {
+  const lv = Math.max(100, safeInt(targetLevel, 100));
+  const ascension = Math.max(1, Math.floor(lv / 100));
+  return BigInt(1 + Math.floor((ascension - 1) / 3)) + BigInt(Math.floor(Math.sqrt(ascension) / 2));
+}
+
+export function spiritualRootCultivationBonusPctV145(level, gatheringPoints = 0, cultivationInsightRanks = 0) {
+  const lv = Math.max(1, safeInt(level, 1));
+  const base = 18 * Math.log10(1 + lv / 35) + 9 * Math.log10(1 + lv / 5000);
+  const branch = 1.35 * Math.sqrt(Math.max(0, safeNumber(gatheringPoints)));
+  const insight = 5 * safeInt(cultivationInsightRanks);
+  return Math.max(0, base + branch + insight);
+}
+
+export function spiritualRootCoreCombatBonusPctV145(level) {
+  const lv = Math.max(1, safeInt(level, 1));
+  return Math.max(0, 7.5 * Math.log10(1 + lv / 30) + 4.5 * Math.log10(1 + lv / 5000));
+}
+
+function diminishingUtility(points, scale, cap) {
+  const p = Math.max(0, safeNumber(points));
+  return cap * (1 - Math.exp(-p / Math.max(1, scale)));
+}
+
+export function spiritualRootMeridianBonusesV145(state) {
+  const s = cloneSpiritualRootStateV145(state);
+  const g = s.meridianPointsSpent.gathering;
+  const b = s.meridianPointsSpent.battle;
+  const h = s.meridianPointsSpent.body;
+  const l = s.meridianPointsSpent.spirit;
+  return {
+    cultivationBonusPct: 1.35 * Math.sqrt(g),
+    tendonDropBonusPct: 2.2 * Math.sqrt(g),
+    retreatBonusPct: diminishingUtility(g, 18, 18),
+    attackPct: 1.5 * Math.sqrt(b),
+    breakEffectPct: diminishingUtility(b, 16, 14),
+    critDamagePct: diminishingUtility(b, 18, 24),
+    maxHpPct: 1.8 * Math.sqrt(h),
+    defensePct: 1.55 * Math.sqrt(h),
+    healingReceivedPct: diminishingUtility(h, 18, 18),
+    damageReductionPct: diminishingUtility(h, 24, 8),
+    maxSpiritPct: 1.5 * Math.sqrt(l),
+    spiritRegenPct: diminishingUtility(l, 18, 24),
+    spiritEfficiencyPct: diminishingUtility(l, 24, 12),
+    cooldownReductionPct: diminishingUtility(l, 30, 8),
+  };
+}
+
+export function spiritualRootAvailableMeridianPointsV145(state) {
+  const s = cloneSpiritualRootStateV145(state);
+  const earned = Math.floor((s.level - 1) / 100);
+  const spent = Object.values(s.meridianPointsSpent).reduce((a, b) => a + safeInt(b), 0);
+  return Math.max(0, earned - spent);
+}
+
+export function allocateSpiritualRootMeridianPointV145(state, branchId) {
+  const s = cloneSpiritualRootStateV145(state);
+  if (!SPIRITUAL_ROOT_BRANCHES_V145[branchId]) throw new Error(`Căn Mạch không hợp lệ: ${branchId}`);
+  if (spiritualRootAvailableMeridianPointsV145(s) <= 0) throw new Error('Không còn Điểm Căn Mạch chưa phân bổ.');
+  s.meridianPointsSpent[branchId] += 1;
+  return s;
+}
+
+export function spiritualRootInsightOptionsV145(state) {
+  const s = cloneSpiritualRootStateV145(state);
+  const seed = Math.max(1, s.ascensions);
+  const pool = Object.keys(SPIRITUAL_ROOT_INSIGHTS_V145);
+  const start = (seed * 7 + s.level) % pool.length;
+  return [0, 1, 2].map(i => pool[(start + i * 2) % pool.length]).map(id => SPIRITUAL_ROOT_INSIGHTS_V145[id]);
+}
+
+export function chooseSpiritualRootInsightV145(state, insightId) {
+  const s = cloneSpiritualRootStateV145(state);
+  const choicesUsed = s.insightChoices.length;
+  if (choicesUsed >= s.ascensions) throw new Error('Chưa có lần Tiến Cấp Linh Căn mới để chọn Căn Ngộ.');
+  const options = spiritualRootInsightOptionsV145(s).map(x => x.id);
+  if (!options.includes(insightId)) throw new Error(`Căn Ngộ ${insightId} không nằm trong 3 lựa chọn hiện tại.`);
+  s.insightRanks[insightId] = safeInt(s.insightRanks[insightId]) + 1;
+  s.insightChoices.push(insightId);
+  return s;
+}
+
+export function spiritualRootInsightBonusesV145(state) {
+  const ranks = cloneSpiritualRootStateV145(state).insightRanks;
+  const rank = id => safeInt(ranks[id]);
+  return {
+    attackPct: rank('attack') * 4 + rank('balanced') * 2,
+    maxHpPct: rank('vitality') * 6 + rank('balanced') * 2,
+    defensePct: rank('defense') * 5 + rank('balanced') * 2,
+    maxSpiritPct: rank('spirit') * 8,
+    cultivationPct: rank('cultivation') * 5,
+  };
+}
+
+export function spiritualRootCombatBonusesV145(state) {
+  const s = cloneSpiritualRootStateV145(state);
+  const core = spiritualRootCoreCombatBonusPctV145(s.level);
+  const meridian = spiritualRootMeridianBonusesV145(s);
+  const insight = spiritualRootInsightBonusesV145(s);
+  return {
+    attackPct: core + meridian.attackPct + insight.attackPct,
+    maxHpPct: core + meridian.maxHpPct + insight.maxHpPct,
+    defensePct: core + meridian.defensePct + insight.defensePct,
+    maxSpiritPct: meridian.maxSpiritPct + insight.maxSpiritPct,
+    breakEffectPct: meridian.breakEffectPct,
+    critDamagePct: meridian.critDamagePct,
+    healingReceivedPct: meridian.healingReceivedPct,
+    damageReductionPct: meridian.damageReductionPct,
+    spiritRegenPct: meridian.spiritRegenPct,
+    spiritEfficiencyPct: meridian.spiritEfficiencyPct,
+    cooldownReductionPct: meridian.cooldownReductionPct,
+  };
+}
+
+export function spiritualRootCultivationTotalBonusPctV145(state) {
+  const s = cloneSpiritualRootStateV145(state);
+  const insight = spiritualRootInsightBonusesV145(s);
+  return spiritualRootCultivationBonusPctV145(s.level, s.meridianPointsSpent.gathering, insight.cultivationPct / 5);
+}
+
+function bigintInventory(inventory, id) {
+  const v = inventory?.[id];
+  if (typeof v === 'bigint') return v;
+  if (typeof v === 'number' && Number.isFinite(v)) return BigInt(Math.max(0, Math.floor(v)));
+  if (typeof v === 'string' && /^\d+$/.test(v)) return BigInt(v);
+  return 0n;
+}
+function writeBigintInventory(inventory, id, value) { inventory[id] = value.toString(); }
+
+export function nourishSpiritualRootV145(state, inventory, requestedLevels = 1) {
+  let s = cloneSpiritualRootStateV145(state);
+  let levels = Math.max(1, Math.min(1000, safeInt(requestedLevels, 1)));
+  let spent = 0n;
+  let raised = 0;
+  while (levels-- > 0) {
+    const nextLevel = s.level + 1;
+    if (nextLevel % 100 === 1 && s.level >= 100) break;
+    const cost = spiritualRootNourishmentCostV145(s.level);
+    const have = bigintInventory(inventory, SPIRITUAL_ROOT_TENDON_RESOURCE_V145);
+    if (have < cost) break;
+    writeBigintInventory(inventory, SPIRITUAL_ROOT_TENDON_RESOURCE_V145, have - cost);
+    spent += cost;
+    s.level = nextLevel;
+    raised += 1;
+  }
+  return { state: s, levelsRaised: raised, spentTendon: spent.toString(), blockedByAscension: s.level >= 100 && (s.level + 1) % 100 === 1 };
+}
+
+export function ascendSpiritualRootV145(state, inventory) {
+  const s = cloneSpiritualRootStateV145(state);
+  if (s.level < 100 || s.level % 100 !== 0) throw new Error('Linh Căn chỉ Tiến Cấp tại mốc mỗi 100 Lv.');
+  const expectedAscensions = Math.floor(s.level / 100);
+  if (s.ascensions >= expectedAscensions) throw new Error('Mốc Linh Căn này đã Tiến Cấp.');
+  const cost = spiritualRootOriginCostV145(s.level);
+  const have = bigintInventory(inventory, SPIRITUAL_ROOT_ORIGIN_RESOURCE_V145);
+  if (have < cost) throw new Error(`Thiếu ${SPIRITUAL_ROOT_ORIGIN_NAME_V145}: ${have}/${cost}.`);
+  writeBigintInventory(inventory, SPIRITUAL_ROOT_ORIGIN_RESOURCE_V145, have - cost);
+  s.ascensions = expectedAscensions;
+  return { state: s, cost: cost.toString(), meridianPointGranted: 1, insightOptions: spiritualRootInsightOptionsV145(s) };
+}
+
+export function spiritualRootSummaryV145(state, inventory = {}) {
+  const s = cloneSpiritualRootStateV145(state);
+  const grade = spiritualRootGradeV145(s.level);
+  const nextCost = spiritualRootNourishmentCostV145(s.level);
+  const atGate = s.level >= 100 && s.level % 100 === 0 && s.ascensions < Math.floor(s.level / 100);
+  return {
+    schema: SPIRITUAL_ROOT_SCHEMA_V145,
+    level: s.level,
+    grade,
+    ascensions: s.ascensions,
+    cultivationBonusPct: spiritualRootCultivationTotalBonusPctV145(s),
+    combat: spiritualRootCombatBonusesV145(s),
+    availableMeridianPoints: spiritualRootAvailableMeridianPointsV145(s),
+    branches: SPIRITUAL_ROOT_BRANCHES_V145,
+    insightRanks: { ...s.insightRanks },
+    pendingInsightChoices: Math.max(0, s.ascensions - s.insightChoices.length),
+    insightOptions: spiritualRootInsightOptionsV145(s),
+    nextLevelCost: nextCost.toString(),
+    tendonOwned: bigintInventory(inventory, SPIRITUAL_ROOT_TENDON_RESOURCE_V145).toString(),
+    ascensionRequired: atGate,
+    ascensionCost: atGate ? spiritualRootOriginCostV145(s.level).toString() : '0',
+    originOwned: bigintInventory(inventory, SPIRITUAL_ROOT_ORIGIN_RESOURCE_V145).toString(),
+  };
+}
+
+export function migrateLegacySpiritualRootV145(buildFoundation) {
+  const roots = buildFoundation?.roots ?? {};
+  const levels = ['metal', 'wood', 'water', 'fire', 'earth'].map(id => safeInt(roots[id]?.level, 1));
+  const average = levels.reduce((a, b) => a + b, 0) / Math.max(1, levels.length);
+  const peak = Math.max(...levels, 1);
+  const legacyLevel = Math.max(1, Math.floor(average * 0.65 + peak * 0.35));
+  const state = createSpiritualRootStateV145();
+  state.level = legacyLevel;
+  state.ascensions = Math.floor((legacyLevel - 1) / 100);
+  state.migratedFromLegacy = true;
+  return state;
+}
