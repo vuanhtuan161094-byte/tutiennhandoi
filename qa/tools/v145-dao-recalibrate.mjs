@@ -14,12 +14,12 @@ const old=`export const BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_MID = Object.freez
 const next=`export const BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_MID = Object.freeze({
     // V145 recalibration after elemental Linh Căn V131–V133 combat hooks were retired.
     // Shared-kernel only: no PvP/PvE/Boss-specific coefficient.
-    sword: 1.55,
+    sword: 1.64,
     fist: 1.05,
-    body: 1.27,
-    spell: 1.40,
-    poison: 1.01,
-    artifact: 1.12,
+    body: 1.21,
+    spell: 1.58,
+    poison: 0.945,
+    artifact: 1.15,
     formation: 2.02,
     mind: 2.55,
 });`;
