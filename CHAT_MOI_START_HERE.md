@@ -11,77 +11,67 @@ Source of truth là **current HEAD** của branch:
 3. `NEXT_CHAT_TASKS.md`
 4. live source của subsystem đang làm
 
-Không dùng branch `feature/reincarnation-cultivation-r3`, handoff V141 cũ, chat cũ hoặc file lịch sử làm source of truth nếu mâu thuẫn với current branch HEAD.
+Không dùng chat cũ, file lịch sử hoặc branch cũ làm source of truth nếu mâu thuẫn current branch HEAD.
 
 ## Trạng thái đã khóa
 
 - Gameplay/web version: `1.40.0-alpha.24.0`.
-- V140 Tu Luyện: CLOSED / canonical.
-- V141 Săn Yêu × Tu Luyện: CLOSED.
-- V142 Trang Bị × Hunt: CLOSED.
-- V143 Hunt reward authority + Set Resonance: CLOSED.
-- V144 retirement Công Pháp/Bí Thuật legacy V103/V119: CLOSED / canonical QA PASS.
-- Công Pháp V127 (`dist/core/manual-progression-v127.js`) là hệ Công Pháp progression duy nhất.
-- Không merge `main` nếu người dùng chưa yêu cầu.
+- V140 Tu Luyện — CLOSED.
+- V141 Săn Yêu × Tu Luyện — CLOSED.
+- V142 Trang Bị × Hunt — CLOSED.
+- V143 reward authority + Set Resonance — CLOSED.
+- V144 legacy Công Pháp/Bí Thuật retirement — CLOSED.
+- **V145 Linh Căn vô hạn + Căn Mạch + Căn Ngộ + combat core buff — CLOSED / canonical QA PASS.**
+- V127 Công Pháp là manual progression duy nhất.
+- Battle Đạo V2 vẫn live.
+- **Không merge `main`** nếu user chưa yêu cầu.
 
-## Những invariant không được phá
+V145 canonical full QA: run `34182230349` SUCCESS.
 
-### Tu Luyện
+## V145 Linh Căn — phải nhớ đúng
 
-- 118 realm orders: Phàm Nhân + 28 đại cảnh Luyện Khí → Sáng Thế Chủ.
-- tick 15 giây, auto tiểu cảnh, deterministic Thăng Cảnh / explicit Thiên Kiếp.
-- Bế Quan +3h bank/ngày, cap 9h.
-- Săn Yêu không cấp Tu Vi trực tiếp; Tu Luyện chạy song song 100%.
-- Không phục hồi Căn Cơ/Tổn Căn, Kinh Mạch, Tạp Chất/Thanh Tịnh, absorption/backlog/refining cũ, five cultivation methods, Thiêu Thọ hoặc RNG đại cảnh cũ.
+- Chỉ có một progression Linh Căn canonical/character.
+- Linh Căn **không phải Ngũ Hành**.
+- Lv1 → ∞.
+- Lv1–1000 dùng 10 band Phàm Căn → Cực Căn.
+- Sau Lv1000 là `Vô Cực Căn · Chuyển N`, mỗi 100 Lv một Chuyển vô hạn.
+- Mỗi 100 Lv có Tiến Cấp.
+- Mỗi Tiến Cấp nhận 1 Điểm Căn Mạch + 1 Căn Ngộ.
+- Căn Mạch: Tụ Linh / Chiến Linh / Huyền Thể / Linh Hải.
+- Tu Vi + Công/HP/Phòng có diminishing unbounded growth.
+- CDR/DR/Chân Nguyên/utility cap-sensitive phải bounded.
+- Linh Tủy dùng để lên Lv thường và có source thật từ Săn Ảo.
+- Bản Nguyên Linh Căn dùng cho Tiến Cấp và chia tier theo đại cảnh.
+- **Chưa đạt đại cảnh N thì không được drop/mint/combine thành Bản Nguyên bậc N.**
+- Boss First Clear và Săn Ảo chỉ cấp Bản Nguyên của tier đã được cảnh giới mở.
+- Old five-element Linh Căn V131–V133 không còn player-facing combat authority; chỉ migration/compatibility nếu cần.
+- Không nối V145 Linh Căn trở lại `primaryRoot`, Boss Ngũ Hành, Equipment Set hoặc Hành Ấn.
 
-### Săn Yêu
+Chi tiết đầy đủ ở `CURRENT_CHECKPOINT.md`.
 
-- 28 major-realm maps.
-- 8 Vực × 100 tầng = 800 tầng/đại cảnh.
-- mỗi tầng 1 Boss thật; thắng mới mở tầng kế.
-- tầng đã clear trở thành Săn Ảo.
-- Boss thật + representative Săn Ảo TTK đều dựa trên CombatKernel V2.
-- Combat Power chỉ telemetry, không tự quyết định thắng hoặc mint kill.
-- minimum TTK 0.25s/kill.
-- Boss/difficulty authority lấy trần Boss cao nhất rồi scale xuống; không bảo đảm người chơi cùng cảnh phải clear hết 800 tầng.
+## Pháp Tắc / Lĩnh Vực — future, không phải V145
 
-### Trang Bị
+User đã định hướng:
 
-- identity món: Slot + `equipmentRankIndex` + Enhancement + Affixes + optional SetId.
-- legacy Grade/Quality/Tier/Gem/Đạo Văn không phải progression axis V142.
-- +15 là cap V142.
-- 50 mảnh cùng bậc → 1 món; 3 mảnh bậc dưới → 1 mảnh bậc trên; 3 món cùng slot+bậc → main +1 bậc.
-- raw stat trang bị theo curve dài hạn/infinite; Chân Nguyên và utility không được nổ theo cùng raw curve.
-- live V142 vẫn có 5 attire Set mang identity/name Metal/Wood/Water/Fire/Earth và 4 jewelry Sets; đây là Set/stat package đã khóa của V142, **không phải lý do để Linh Căn V145 phải dùng Ngũ Hành và không được biến món trang bị thành một elemental progression axis mới**.
-- Tàn Ấn + Set Resonance là live.
+- hệ **Pháp Tắc** tương lai sẽ xoay quanh Kim/Mộc/Thủy/Hỏa/Thổ và thuộc tính mở rộng như Băng, Lôi, Phong, Huyết, Độc, Ám, Quang, Hư Không...;
+- **Lĩnh Vực** là subsystem chí cao tương ứng về sau.
 
-### Công Pháp
+Không tự code hai hệ này trong subsystem hiện tại nếu user chưa chọn.
 
-- V127 là authority duy nhất: 29 realm stages × 9 archetypes = 261 Công Pháp, max Lv1000.
-- V103/V119 manual mastery/equip/study/Hunt fragment/combat source đã retired.
-- các save field cũ chỉ được tồn tại inert compatibility, không được tạo reward/progression/combat power.
-- Battle Đạo V2 vẫn live và realm-driven.
+## Invariant game vẫn giữ
 
-## Việc tiếp theo đã được người dùng chọn: V145 — LINH CĂN REDESIGN
+- Tu Luyện: 15s tick, Săn Yêu không trực tiếp mint Tu Vi, Bế Quan bank canonical.
+- Hunt: 28 major maps, 800 tầng/major realm, một Boss thật/tầng, cleared floor → Săn Ảo, shared CombatKernel V2.
+- Trang Bị V142: Slot + Rank + Enhancement + Affixes + optional Set; +15 cap; elemental-named Sets không biến item/Linh Căn thành elemental progression.
+- Công Pháp V127 là authority duy nhất; V103/V119 manual progression đã retired.
+- Không để chức năng cần nguyên liệu mà không có nguồn; không mint nguyên liệu mà không có sink.
 
-**Requirements reset ngày 2026-09-08:** thiết kế `Linh Căn × Ngũ Hành Closure` trước đây đã hủy. Không được phục hồi nó từ chat cũ, file lịch sử hoặc code legacy.
+## Việc tiếp theo
 
-Không mặc định bất kỳ điều nào sau đây là yêu cầu V145:
+Không tự bắt đầu module kế tiếp. Chờ yêu cầu mới nhất của user.
 
-- 5 Hành Kim/Mộc/Thủy/Hỏa/Thổ;
-- skill `primaryRoot` là Linh Căn authority;
-- Boss Ngũ Hành;
-- cộng hưởng Linh Căn × Set Trang Bị;
-- loot Hunt theo Hành;
-- Hành Ấn / Element Seal làm cầu nối;
-- `8 Bản Đạo × 5 Hành` hoặc Set 2/4/6 trong file thiết kế Linh Căn lịch sử.
+Roadmap đề xuất nếu user muốn đi tiếp tuần tự:
 
-Mục tiêu mới là audit live source, phân loại thứ gì giữ/migrate/retire/compatibility, rồi **chốt contract Linh Căn mới từ số 0 trước khi code gameplay V145**.
+V146 Đan Dược → V147 Linh Thú → V148 Tri Kỷ → V149 Pháp Bảo → V150 Luân Hồi Production Closure → V151 Economy/source-authority toàn game.
 
-Contract mới phải làm rõ: sở hữu Linh Căn thế nào, progression, milestone/đột phá, effect, nguyên liệu, source/sink, Luân Hồi interaction nếu có, caps, UI và migration. Linh Căn chỉ nối CombatKernel nếu effect mới thực sự là combat effect.
-
-Sau khi contract được chốt mới hoàn thiện backend + frontend + save + economy/source-sink + consumer + targeted QA + full canonical QA. Chỉ gọi V145 CLOSED sau khi full canonical QA SUCCESS.
-
-## Working rule
-
-Làm module-by-module, source-first. Khi chạm một hệ phải rà đủ backend + frontend + save + resource source/sink + consumer thật + tests. Không re-audit toàn game từ đầu và không mở lại các closure trước nếu V145 không thật sự cần integration change.
+Mỗi module: source-first → contract → backend/frontend/save/source-sink/consumer → targeted QA → full canonical QA.
