@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   ALCHEMY_V146_MAX_FURNACES,
   ALCHEMY_V146_MASTERY_MAX,
@@ -22,6 +23,7 @@ import {
   parseAlchemyPillResourceIdV146,
 } from '../../dist/core/alchemy-v146.js';
 import { alchemyPillResourceId, ensureAlchemyV112State } from '../../dist/core/alchemy-v112.js';
+import { alchemySessionBridgeV146Status } from '../../dist/core/alchemy-session-bridge-v146.js';
 
 assert.equal(ALCHEMY_V146_MAX_FURNACES, 4);
 assert.deepEqual([1, 3, 6, 9].map(alchemyFurnaceCountV146), [1, 2, 3, 4]);
@@ -29,6 +31,9 @@ assert.equal(alchemyRequiredRankV146(0), 1);
 assert.equal(alchemyRequiredRankV146(28), 9);
 assert.deepEqual(alchemyAllowedBatchSizesV146('cultivation'), [1, 10, 100]);
 assert.deepEqual(alchemyAllowedBatchSizesV146('forbidden'), [1, 10]);
+assert.deepEqual(alchemySessionBridgeV146Status(), {
+  schema: 'alchemy-session-bridge.v146', installed: true, compatibilityMethodNames: true, canonicalSystem: 'alchemy.v146',
+});
 
 // Mastery never turns Cực phẩm into a guaranteed output; one family owns one track across all realms.
 {
@@ -107,6 +112,18 @@ assert.deepEqual(alchemyAllowedBatchSizesV146('forbidden'), [1, 10]);
   assert.equal(inventory[alchemyPillResourceIdV146('lifePower', 1, 'high')], 2);
   assert.equal(migration.legacyPillsConverted, 2);
   assert.equal(ensureAlchemyProductionV146(container).migration.legacyQueuesRetired, true);
+}
+
+// Production transport must install before runtime; legacy client action names stay compatible while UI language is retired.
+{
+  const bootstrap = readFileSync(new URL('../../standalone-entry.js', import.meta.url), 'utf8');
+  const uiBridge = readFileSync(new URL('../../modules/alchemy-v146-ui-bridge.js', import.meta.url), 'utf8');
+  assert.match(bootstrap, /alchemy-session-bridge-v146\.js/);
+  assert.match(bootstrap, /alchemy-v146-ui-bridge\.js/);
+  assert.ok(bootstrap.indexOf('alchemy-session-bridge-v146.js') < bootstrap.indexOf('standalone-runtime.js'));
+  assert.match(uiBridge, /ĐAN DƯỢC · V146/);
+  assert.match(uiBridge, /Đan Phương tự mở theo Đan Đạo \+ cảnh giới/);
+  assert.match(uiBridge, /Bồi Dưỡng · mỗi họ\/đại cảnh\/đời/);
 }
 
 console.log('V146 Alchemy production closure PASS');
