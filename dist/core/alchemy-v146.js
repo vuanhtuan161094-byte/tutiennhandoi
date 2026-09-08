@@ -5,6 +5,7 @@ export const ALCHEMY_V146_SCHEMA = 'alchemy.v146';
 export const ALCHEMY_V146_MAJOR_REALM_COUNT = 28;
 export const ALCHEMY_V146_PERMANENT_PILL_CAP_PER_FAMILY_MAJOR_LIFE = 3;
 export const ALCHEMY_V146_CULTIVATION_PILL_CAP_PER_MAJOR_REALM = 10;
+export const ALCHEMY_V146_DAO_SUY_MIN_MAJOR_REALM_INDEX = 11; // Nhân Tiên
 
 export const ALCHEMY_V146_QUALITY_NAMES = Object.freeze({
   low: 'Hạ phẩm',
@@ -17,17 +18,17 @@ export const ALCHEMY_V146_QUALITY_NAMES = Object.freeze({
 export const ALCHEMY_V146_INGREDIENT_FAMILIES = Object.freeze(['herb', 'demonCore']);
 
 export const ALCHEMY_V146_FAMILIES = Object.freeze({
-  cultivation: Object.freeze({ name: 'Tu Vi Đan', role: 'cultivation', permanent: false, herb: 5, demonCore: 0 }),
-  injury: Object.freeze({ name: 'Trị Thương Đan', role: 'recovery', permanent: false, herb: 5, demonCore: 1 }),
-  lifePower: Object.freeze({ name: 'Công Lực Đan', role: 'permanentAttack', permanent: true, herb: 5, demonCore: 1 }),
-  lifeBody: Object.freeze({ name: 'Khí Huyết Đan', role: 'permanentHp', permanent: true, herb: 6, demonCore: 1 }),
-  lifeDefense: Object.freeze({ name: 'Hộ Thể Đan', role: 'permanentDefense', permanent: true, herb: 5, demonCore: 2 }),
-  buffPower: Object.freeze({ name: 'Chiến Ý Đan', role: 'combatAttack', permanent: false, herb: 6, demonCore: 2 }),
-  buffGuard: Object.freeze({ name: 'Kim Cương Đan', role: 'combatGuard', permanent: false, herb: 7, demonCore: 2 }),
-  buffSpirit: Object.freeze({ name: 'Tụ Nguyên Đan', role: 'combatSpirit', permanent: false, herb: 7, demonCore: 3 }),
-  forbidden: Object.freeze({ name: 'Bạo Huyết Cấm Đan', role: 'forbiddenCombat', permanent: false, herb: 15, demonCore: 6 }),
-  lifespan: Object.freeze({ name: 'Thọ Nguyên Đan', role: 'lifespan', permanent: false, herb: 15, demonCore: 5 }),
-  daoSuy: Object.freeze({ name: 'Tĩnh Suy Đan', role: 'daoSuy', permanent: false, herb: 12, demonCore: 4 }),
+  cultivation: Object.freeze({ name: 'Tu Vi Đan', role: 'cultivation', permanent: false, herb: 5, demonCore: 0, minMajorRealmIndex: 0 }),
+  injury: Object.freeze({ name: 'Trị Thương Đan', role: 'recovery', permanent: false, herb: 5, demonCore: 1, minMajorRealmIndex: 1 }),
+  lifePower: Object.freeze({ name: 'Công Lực Đan', role: 'permanentAttack', permanent: true, herb: 5, demonCore: 1, minMajorRealmIndex: 1 }),
+  lifeBody: Object.freeze({ name: 'Khí Huyết Đan', role: 'permanentHp', permanent: true, herb: 6, demonCore: 1, minMajorRealmIndex: 1 }),
+  lifeDefense: Object.freeze({ name: 'Hộ Thể Đan', role: 'permanentDefense', permanent: true, herb: 5, demonCore: 2, minMajorRealmIndex: 1 }),
+  buffPower: Object.freeze({ name: 'Chiến Ý Đan', role: 'combatAttack', permanent: false, herb: 6, demonCore: 2, minMajorRealmIndex: 1 }),
+  buffGuard: Object.freeze({ name: 'Kim Cương Đan', role: 'combatGuard', permanent: false, herb: 7, demonCore: 2, minMajorRealmIndex: 1 }),
+  buffSpirit: Object.freeze({ name: 'Tụ Nguyên Đan', role: 'combatSpirit', permanent: false, herb: 7, demonCore: 3, minMajorRealmIndex: 1 }),
+  forbidden: Object.freeze({ name: 'Bạo Huyết Cấm Đan', role: 'forbiddenCombat', permanent: false, herb: 15, demonCore: 6, minMajorRealmIndex: 1 }),
+  lifespan: Object.freeze({ name: 'Thọ Nguyên Đan', role: 'lifespan', permanent: false, herb: 15, demonCore: 5, minMajorRealmIndex: 1 }),
+  daoSuy: Object.freeze({ name: 'Tĩnh Suy Đan', role: 'daoSuy', permanent: false, herb: 12, demonCore: 4, minMajorRealmIndex: ALCHEMY_V146_DAO_SUY_MIN_MAJOR_REALM_INDEX }),
 });
 
 export const ALCHEMY_V146_LIVE_FAMILY_IDS = Object.freeze(Object.keys(ALCHEMY_V146_FAMILIES));
@@ -84,12 +85,21 @@ export function alchemyPillNameV146(family, majorRealmIndex, quality) {
   return `${def.name} · ${realmName} · ${ALCHEMY_V146_QUALITY_NAMES[quality] ?? quality}`;
 }
 
+export function alchemyRecipeAvailableV146(family, majorRealmIndex) {
+  const def = ALCHEMY_V146_FAMILIES[family];
+  if (!def) return false;
+  const major = clampMajor(majorRealmIndex, true);
+  if (major < def.minMajorRealmIndex) return false;
+  if (major === 0 && def.demonCore > 0) return false;
+  return true;
+}
+
 export function alchemyRecipeIngredientsV146(family, majorRealmIndex) {
   const def = ALCHEMY_V146_FAMILIES[family];
   if (!def) throw new Error(`Họ Đan V146 không tồn tại: ${family}`);
   const major = clampMajor(majorRealmIndex, true);
-  if (major === 0 && def.demonCore > 0)
-    throw new Error(`${def.name} từ Luyện Khí trở lên mới dùng Yêu Đan.`);
+  if (!alchemyRecipeAvailableV146(family, major))
+    throw new Error(`${def.name} chưa có consumer hợp lệ ở cảnh giới này.`);
   const rows = [];
   if (def.herb > 0) rows.push({ resourceId: alchemyHerbResourceIdV146(major), quantity: def.herb, family: 'herb' });
   if (def.demonCore > 0) rows.push({ resourceId: alchemyDemonCoreResourceIdV146(major), quantity: def.demonCore, family: 'demonCore' });
@@ -98,13 +108,16 @@ export function alchemyRecipeIngredientsV146(family, majorRealmIndex) {
 
 export function alchemyRecipeCatalogueV146() {
   const rows = [];
-  // Phàm Nhân is deliberately herb-only: no fake “Phàm Yêu” resource is invented.
-  for (const family of ['cultivation']) {
-    rows.push({ id: `alchemy.v146.${family}.m0`, family, majorRealmIndex: 0, name: alchemyPillNameV146(family, 0, 'low').replace(` · ${ALCHEMY_V146_QUALITY_NAMES.low}`, ''), ingredients: alchemyRecipeIngredientsV146(family, 0) });
-  }
-  for (let major = 1; major <= ALCHEMY_V146_MAJOR_REALM_COUNT; major++) {
+  for (let major = 0; major <= ALCHEMY_V146_MAJOR_REALM_COUNT; major++) {
     for (const family of ALCHEMY_V146_LIVE_FAMILY_IDS) {
-      rows.push({ id: `alchemy.v146.${family}.m${major}`, family, majorRealmIndex: major, name: alchemyPillNameV146(family, major, 'low').replace(` · ${ALCHEMY_V146_QUALITY_NAMES.low}`, ''), ingredients: alchemyRecipeIngredientsV146(family, major) });
+      if (!alchemyRecipeAvailableV146(family, major)) continue;
+      rows.push({
+        id: `alchemy.v146.${family}.m${major}`,
+        family,
+        majorRealmIndex: major,
+        name: alchemyPillNameV146(family, major, 'low').replace(` · ${ALCHEMY_V146_QUALITY_NAMES.low}`, ''),
+        ingredients: alchemyRecipeIngredientsV146(family, major),
+      });
     }
   }
   return rows;
@@ -192,6 +205,7 @@ export function alchemyV146SourceSinkContract() {
       perLifeQuotaResetsOnReincarnation: true,
       onlyTwoIngredientFamilies: true,
       huntMajorRealmCoreTiers: ALCHEMY_V146_MAJOR_REALM_COUNT,
+      daoSuyStartsAtMajorRealmIndex: ALCHEMY_V146_DAO_SUY_MIN_MAJOR_REALM_INDEX,
     },
   };
 }
