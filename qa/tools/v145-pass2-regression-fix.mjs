@@ -16,6 +16,13 @@ function mustReplace(s,a,b,label,expected=1){const n=s.split(a).length-1;if(n!==
  fs.writeFileSync(p,s);
 }
 
+// Client transport can keep the compatibility field name until the UI pass, but all reads must use the V145 API.
+{
+ const p='dist/core/client-shell.js'; let s=fs.readFileSync(p,'utf8');
+ s=mustReplace(s,'api.getSpiritualRootsV131()','api.getSpiritualRootV145()','client-shell root reads',3);
+ fs.writeFileSync(p,s);
+}
+
 // V143 regression must guard the replacement authority, not require the retired elemental V131 lane.
 {
  const p='qa/tests/v143-hunt-reward-authority-test.js'; let s=fs.readFileSync(p,'utf8');
