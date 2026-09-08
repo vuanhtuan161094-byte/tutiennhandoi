@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+const p='dist/core/session.js';
+let s=fs.readFileSync(p,'utf8');
+const old=`        const v125Foundation = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId);\n        syncGuaranteedRootOriginsV131(v125Foundation);\n        this.stateValue.character.buildFoundation = v125Foundation;`;
+const next=`        const v125Foundation = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId);\n        this.stateValue.character.buildFoundation = v125Foundation;\n        // V145 migration is committed at session load so reads stay side-effect free afterward.\n        settleLegacySpiritualRootMigrationV145(this.stateValue.character, this.stateValue.inventory);`;
+const n=s.split(old).length-1;
+if(n!==1) throw new Error('session load migration anchor expected 1 got '+n);
+s=s.replace(old,next);
+if(s.includes('syncGuaranteedRootOriginsV131')) throw new Error('legacy syncGuaranteedRootOriginsV131 survived session');
+fs.writeFileSync(p,s);
+console.log('V145 session-load migration aligned');
