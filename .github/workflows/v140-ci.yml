@@ -69,6 +69,9 @@ jobs:
       - name: V146 Alchemy source runtime
         run: node qa/tests/v146-alchemy-source-runtime-test.js
 
+      - name: V146 Alchemy production closure
+        run: node qa/tests/v146-alchemy-closure-test.js
+
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
 
