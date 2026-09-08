@@ -1,4 +1,4 @@
-const WIP_CACHE_TOKEN='v140-cultivation-clean-20260906';
+const WIP_CACHE_TOKEN='v146-alchemy-closure-20260908';
 
 function isLocalWipHost(hostname){
   const host=String(hostname||'').toLowerCase();
@@ -37,8 +37,14 @@ function showFatalBootError(error,stage='bootstrap'){
 
 await clearLocalWipWebCaches();
 try{
+  await import(`./dist/core/alchemy-session-bridge-v146.js?v=${WIP_CACHE_TOKEN}`);
+}catch(error){showFatalBootError(error,'alchemy-session-bridge-v146.js');throw error;}
+try{
   await import(`./standalone-runtime.js?v=${WIP_CACHE_TOKEN}`);
 }catch(error){showFatalBootError(error,'standalone-runtime.js');throw error;}
 try{
   await import(`./app.js?v=${WIP_CACHE_TOKEN}`);
 }catch(error){showFatalBootError(error,'app.js');throw error;}
+try{
+  await import(`./modules/alchemy-v146-ui-bridge.js?v=${WIP_CACHE_TOKEN}`);
+}catch(error){showFatalBootError(error,'alchemy-v146-ui-bridge.js');throw error;}
