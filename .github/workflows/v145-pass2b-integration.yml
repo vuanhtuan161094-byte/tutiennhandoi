@@ -8,6 +8,7 @@ on:
     paths:
       - 'qa/tools/v145-pass2-realm-origin.mjs'
       - 'qa/tools/v145-pass2-realm-testfix.mjs'
+      - 'qa/tools/v145-pass2-regression-fix.mjs'
       - '.github/workflows/v145-pass2b-integration.yml'
 
 permissions:
@@ -37,6 +38,8 @@ jobs:
         run: node qa/tools/v145-pass2-realm-origin.mjs
       - name: Stage realm-origin tests
         run: node qa/tools/v145-pass2-realm-testfix.mjs
+      - name: Align V143 regression authority
+        run: node qa/tools/v145-pass2-regression-fix.mjs
       - name: V145 core
         run: node qa/tests/v145-spiritual-root-redesign-test.js
       - name: V145 source sink runtime
@@ -60,6 +63,7 @@ jobs:
           rm qa/tools/v145-pass2-fix.mjs
           rm qa/tools/v145-pass2-realm-origin.mjs
           rm qa/tools/v145-pass2-realm-testfix.mjs
+          rm qa/tools/v145-pass2-regression-fix.mjs
           rm .github/workflows/v145-pass2-integration.yml
           rm .github/workflows/v145-pass2b-integration.yml
       - name: Commit V145 pass2 source
