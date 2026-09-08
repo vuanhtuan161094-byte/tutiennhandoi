@@ -9,6 +9,13 @@ function mustReplace(s,a,b,label,expected=1){const n=s.split(a).length-1;if(n!==
  fs.writeFileSync(p,s);
 }
 
+// Final player-experience read path must consume V145 directly; no compatibility wrapper keeps V131 alive.
+{
+ const p='dist/core/gameplay.js'; let s=fs.readFileSync(p,'utf8');
+ s=mustReplace(s,"        const roots = this.session.spiritualRootSummaryV131();","        const roots = this.session.spiritualRootSummaryV145();",'playerExperience root read');
+ fs.writeFileSync(p,s);
+}
+
 // V143 regression must guard the replacement authority, not require the retired elemental V131 lane.
 {
  const p='qa/tests/v143-hunt-reward-authority-test.js'; let s=fs.readFileSync(p,'utf8');
