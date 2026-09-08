@@ -8,163 +8,80 @@
 
 1. Dùng **current branch HEAD** làm source of truth.
 2. Đọc `CHAT_MOI_START_HERE.md` → `CURRENT_CHECKPOINT.md` → file này trước khi sửa.
-3. Không dùng branch/handoff cũ `feature/reincarnation-cultivation-r3` làm canonical.
-4. Không phục hồi mechanic đã retired chỉ vì test, save field, file lịch sử hoặc chat cũ còn nhắc tới.
-5. Làm từng subsystem theo yêu cầu mới nhất của người dùng.
-6. Mỗi subsystem phải rà đủ backend + frontend + save + resource source/sink + CombatKernel consumer + targeted QA.
-7. Không merge `main` nếu người dùng chưa yêu cầu.
-8. Không gọi CLOSED nếu canonical full QA chưa SUCCESS.
+3. Không dùng branch/handoff cũ làm canonical nếu mâu thuẫn current HEAD.
+4. Không phục hồi mechanic đã retired chỉ vì old save/test/chat/file lịch sử còn nhắc tới.
+5. Mỗi subsystem phải rà đủ backend + frontend + save + source/sink + consumer thật + targeted QA.
+6. Không merge `main` nếu người dùng chưa yêu cầu.
+7. Không tự bắt đầu subsystem kế tiếp khi người dùng chưa chọn.
 
-## 1. Baseline đã khóa — giữ nguyên
+## 1. Baseline đã khóa
 
-- V140 Tu Luyện: CLOSED.
-- V141 Săn Yêu × Tu Luyện: CLOSED.
-- V142 Trang Bị × Hunt: CLOSED.
-- V143 reward authority + Set Resonance: CLOSED.
-- V144 Công Pháp legacy retirement: CLOSED.
-- Công Pháp V127 là manual progression duy nhất.
-- Battle Đạo V2 vẫn live.
+- V140 Tu Luyện — CLOSED.
+- V141 Săn Yêu × Tu Luyện — CLOSED.
+- V142 Trang Bị × Hunt — CLOSED.
+- V143 reward authority + Set Resonance — CLOSED.
+- V144 legacy Công Pháp/Bí Thuật retirement — CLOSED.
+- **V145 Linh Căn vô hạn + Căn Mạch + Căn Ngộ + combat core buff — CLOSED.**
 
-Chi tiết authoritative nằm trong `CURRENT_CHECKPOINT.md`.
+Full V145 closure evidence nằm trong `CURRENT_CHECKPOINT.md`. Canonical run `34182230349` SUCCESS.
 
-## 2. NEXT: V145 — LINH CĂN REDESIGN / REQUIREMENTS RESET
+## 2. V145 — không mở lại nếu không có regression thật
 
-### Quyết định mới nhất của người dùng — 2026-09-08
+Canonical V145:
 
-Thiết kế V145 `Linh Căn × Ngũ Hành Closure` trước đây **đã bị hủy**. Không được dùng lại các yêu cầu đó làm canonical.
+- 1 Linh Căn/character;
+- Lv1 → ∞;
+- Lv1–1000: 10 band Phàm Căn → Cực Căn;
+- >1000: `Vô Cực Căn · Chuyển N` vô hạn;
+- mỗi 100 Lv Tiến Cấp → 1 Điểm Căn Mạch + 1 Căn Ngộ;
+- Tu Vi + Công/HP/Phòng là các lane tăng dài hạn an toàn;
+- utility cap-sensitive bounded;
+- Linh Tủy = ordinary level-up resource;
+- Bản Nguyên Linh Căn = Tiến Cấp resource, tiered theo đại cảnh;
+- chưa lên đại cảnh N → không được drop/mint/combine ra Bản Nguyên bậc N;
+- old five-element Linh Căn gameplay retired/migrated/compatibility-inert;
+- Linh Căn không phụ thuộc `primaryRoot`, Boss element, Equipment Set hoặc Hành Ấn.
 
-Những yêu cầu đã hủy gồm:
+Ngũ Hành và các thuộc tính Băng/Lôi/Phong/Huyết/Độc/Ám/Quang/Hư Không được dành cho **Pháp Tắc** tương lai. **Lĩnh Vực** là hệ chí cao sau đó. Không nhét các hệ này trở lại V145.
 
-- không bắt buộc Linh Căn phải là 5 Hành Kim/Mộc/Thủy/Hỏa/Thổ;
-- không bắt buộc skill `primaryRoot` phải là authority của Linh Căn;
-- không bắt buộc Linh Căn tương tác với Boss Ngũ Hành;
-- không bắt buộc Linh Căn tương tác/cộng hưởng với Set Trang Bị Ngũ Hành;
-- không tạo lại thuộc tính Hành cho món trang bị V142;
-- không bắt buộc Hunt phải thả loot theo Hành;
-- không dùng Hành Ấn / Element Seal làm cầu nối cho thiết kế mới;
-- không dùng tài liệu lịch sử `Thiết kế hệ Linh Căn.txt` làm canonical nếu nội dung còn dựa trên `8 Bản Đạo × 5 Hành`, Set 2/4/6 hoặc Hành Ấn.
+## 3. Việc tiếp theo — chờ người dùng chọn
 
-Các module/field cũ có chữ element/root/Hành vẫn phải được audit trước khi sửa/xóa để bảo vệ save và regression, nhưng **sự tồn tại của code cũ không tự biến nó thành yêu cầu sản phẩm mới**.
+Nếu người dùng nói tiếp tục theo roadmap, đề xuất:
 
-### Mục tiêu sản phẩm mới
+### V146 — Đan Dược
 
-Thiết kế lại Linh Căn từ số 0 thành một subsystem độc lập, dễ hiểu và có vòng gameplay hoàn chỉnh:
+Audit source-first rồi production closure theo cùng tiêu chuẩn:
 
-`Nhận/khởi tạo Linh Căn → phát triển → kiếm đúng tài nguyên → nâng/đột phá → nhận hiệu quả rõ ràng → tiếp tục vòng dài hạn`.
+- gameplay loop thật;
+- recipe/crafting/use progression rõ;
+- nguyên liệu có source;
+- mọi material/currency có sink;
+- giới hạn sử dụng/buff rõ;
+- không tạo Tu Vi/combat power trùng authority;
+- save migration nếu có legacy;
+- UI action path thật;
+- targeted QA + full canonical QA.
 
-Hệ mới phải:
+Sau đó đề xuất:
 
-- có một authority player-facing duy nhất;
-- có progression rõ và đủ dài cho idle game;
-- có tác dụng thật, nhưng không được tạo một lớp stat trùng với Trang Bị/Công Pháp/Đạo;
-- mỗi material/currency có source và sink thật;
-- không tạo dead currency, dead button hoặc effect chỉ để hiện UI/Combat Power;
-- save cũ phải migrate/compat an toàn;
-- frontend phải nói rõ người chơi nâng cái gì, cần gì, kiếm ở đâu và được gì;
-- chỉ nối CombatKernel khi effect được thiết kế là combat effect; không ép mọi Linh Căn phải thành elemental damage mechanic.
-
-### Phase A — Forensic audit live source
-
-Audit các file Linh Căn hiện hữu và toàn consumer của chúng, tối thiểu:
-
-- `dist/core/spiritual-root-progression-v131.js`;
-- `dist/core/root-origin-combat-v132.js`;
-- `dist/core/spiritual-root-milestones-v133.js`;
-- `dist/core/build-foundation-v113.js`;
-- `dist/core/five-element-combat-v117.js`;
-- `dist/core/element-seal-v133.js`;
-- `dist/core/character.js`;
-- `dist/core/combat.js`;
-- `dist/core/hunt-real-combat-v130.js`;
-- `dist/core/session.js`;
-- `dist/core/client-shell.js`;
-- `dist/core/game-api.js`;
-- `app.js` / standalone transport / save migration / QA liên quan.
-
-Kết quả phải phân loại từng lane thành:
-
-- **KEEP AS BASE** — cơ chế còn phù hợp để tái sử dụng;
-- **MIGRATE** — dữ liệu/save cần chuyển sang model mới;
-- **RETIRE** — gameplay/UI/runtime cũ không còn phù hợp;
-- **COMPATIBILITY ONLY** — giữ inert để không phá save.
-
-Không xóa trước khi biết consumer.
-
-### Phase B — Chốt contract Linh Căn mới trước khi code gameplay
-
-Phải chốt rõ:
-
-1. Linh Căn là gì trong game và người chơi sở hữu bao nhiêu;
-2. cách khởi tạo/nhận Linh Căn;
-3. trục progression chính;
-4. các mốc biến chất/đột phá nếu có;
-5. hiệu quả chính của Linh Căn;
-6. tài nguyên nâng cấp và nguồn kiếm;
-7. phần nào mất/giữ qua Luân Hồi nếu có;
-8. giới hạn/cap để không phá các subsystem khác;
-9. UI flow;
-10. migration từ V131/V132/V133.
-
-Không tự lấy “5 Hành” làm câu trả lời mặc định cho bất kỳ mục nào ở trên.
-
-### Phase C — Economy / source authority
-
-Lập matrix thật:
-
-`Chức năng → nguyên liệu → nguồn kiếm → sink → consumer`.
-
-Gate phải fail nếu:
-
-- chức năng cần material nhưng material không kiếm được;
-- material được mint nhưng không có sink;
-- cùng một resource bị nhiều subsystem mint vô chủ đích;
-- progression dùng field legacy không còn player-facing;
-- UI bảo người chơi đi kiếm ở một nguồn nhưng backend không thật sự mint ở đó.
-
-### Phase D — Backend + Combat integration
-
-- Chỉ thêm CombatKernel consumer nếu contract mới có combat effect.
-- Không tạo resolver riêng chỉ cho Hunt/Boss/PvP.
-- Stat bounded phải tuân thủ cap hiện hành.
-- Không dùng Trang Bị Set/Hành, Boss Hành hoặc `primaryRoot` làm dependency mặc định.
-- Không thêm power chỉ vào Combat Power telemetry.
-
-### Phase E — Frontend + save cleanup
-
-- UI chỉ hiển thị Linh Căn model mới.
-- Player phải thấy level/progress, cost, nguồn kiếm và benefit trước khi bấm nâng.
-- Field V131/V132/V133 cũ được migrate hoặc để compatibility inert tùy audit.
-- Hành Ấn/Element Seal chỉ được retire nếu audit xác nhận không còn consumer cần thiết; không phục hồi nó làm gameplay mới.
-
-### Phase F — QA closure
-
-Targeted V145 QA phải cover contract mới sau khi contract được chốt, tối thiểu:
-
-1. create/migration/save compatibility;
-2. progression và milestone;
-3. source/sink mọi material;
-4. effect consumer thật;
-5. no duplicate legacy authority;
-6. UI transport/action;
-7. cap/balance invariants;
-8. regression V140/V141/V142/V143/V144.
-
-Sau targeted PASS, chạy `.github/workflows/v140-ci.yml` full canonical gate. Chỉ khi full SUCCESS mới ghi V145 CLOSED vào `CURRENT_CHECKPOINT.md`.
-
-## 3. Sau V145
-
-Nếu không có yêu cầu chen ngang, thứ tự đề xuất:
-
-- V146 Đan Dược;
 - V147 Linh Thú;
 - V148 Tri Kỷ;
 - V149 Pháp Bảo;
 - V150 Luân Hồi Production Closure;
-- V151 Economy/source-authority toàn game;
-- sau đó mới khóa backend gameplay lớn và chuyển mạnh sang UI/UX production.
+- V151 Economy/source-authority toàn game.
 
-Đây là thứ tự đề xuất, không được tự làm sang module kế tiếp trước khi người dùng đồng ý hoặc V145 đã đóng.
+Đây chỉ là roadmap đề xuất. Nếu user chọn hệ khác thì làm hệ user chọn.
 
-## 4. Câu mở đầu để người dùng paste vào chat mới
+## 4. Khi nào làm Pháp Tắc / Lĩnh Vực
 
-> Tiếp tục Game Tu Tiên Nhàn Dỗi từ GitHub branch `feature/v142-equipment-hunt`. Đọc `CHAT_MOI_START_HERE.md`, `CURRENT_CHECKPOINT.md`, `NEXT_CHAT_TASKS.md` trước. Dùng current branch HEAD làm source of truth. V140–V144 đã CLOSED. V145 cũ `Linh Căn × Ngũ Hành` đã bị hủy; đang làm lại Linh Căn từ số 0. Không tự nối Linh Căn với 5 Hành, `primaryRoot`, Boss Ngũ Hành, Set Trang Bị hoặc Hành Ấn. Audit live source trước, chốt contract mới rồi hoàn thiện backend + frontend + save + source/sink + effect consumer + QA. Không để chức năng có mà không có nguyên liệu hoặc nguyên liệu có mà không có sink. Không merge `main`.
+Không code trong V146 mặc định.
+
+Khi user chọn hệ chí cao:
+
+- **Pháp Tắc** sở hữu Ngũ Hành + thuộc tính mở rộng và combat identity/khắc chế/build interaction.
+- **Lĩnh Vực** mở ở progression chí cao tương ứng và dùng authority của hệ cao cấp đó.
+- phải thiết kế mới source/sink/progression/caps trước khi code.
+
+## 5. Câu mở đầu cho chat mới
+
+> Tiếp tục Game Tu Tiên Nhàn Dỗi từ GitHub branch `feature/v142-equipment-hunt`. Đọc `CHAT_MOI_START_HERE.md`, `CURRENT_CHECKPOINT.md`, `NEXT_CHAT_TASKS.md`. Dùng current HEAD làm source of truth. V140–V145 đã CLOSED; V145 là Linh Căn vô hạn, không phải Ngũ Hành. Ngũ Hành/Băng/Lôi/Huyết/Ám... để dành cho Pháp Tắc tương lai, Lĩnh Vực ở progression chí cao. Không merge main. Chờ yêu cầu mới nhất của tôi rồi làm subsystem tiếp theo source-first, đủ backend/frontend/save/source-sink/consumer/QA.
