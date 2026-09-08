@@ -1,0 +1,54 @@
+name: V145 Strict Realm Origin Lock
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/v142-equipment-hunt
+    paths:
+      - 'qa/tools/v145-lock-origin-realm.mjs'
+      - '.github/workflows/v145-lock-origin-realm.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/v142-equipment-hunt
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply strict realm-origin lock
+        run: node qa/tools/v145-lock-origin-realm.mjs
+      - name: V145 realm origin
+        run: node qa/tests/v145-spiritual-root-realm-origin-test.js
+      - name: V145 core
+        run: node qa/tests/v145-spiritual-root-redesign-test.js
+      - name: V145 runtime source-sink
+        run: node qa/tests/v145-spiritual-root-runtime-test.js
+      - name: V140 cultivation core
+        run: node qa/tests/v140-cultivation-core-test.js
+      - name: V141 Hunt x Cultivation
+        run: node qa/tests/v141-hunt-cultivation-closure-test.js
+      - name: V142 Equipment x Hunt
+        run: node qa/runners/v142-equipment-hunt-gate.js
+      - name: Backend fast gate
+        run: node qa/runners/v140-backend-gates.js fast
+      - name: Remove temporary machinery
+        run: rm qa/tools/v145-lock-origin-realm.mjs .github/workflows/v145-lock-origin-realm.yml
+      - name: Commit strict realm-origin authority
+        run: |
+          git config user.name 'vuanhtuan161094-byte'
+          git config user.email 'vuanhtuan161094@gmail.com'
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m 'fix(v145): lock root origins to reached realms'
+          git push origin HEAD:feature/v142-equipment-hunt
