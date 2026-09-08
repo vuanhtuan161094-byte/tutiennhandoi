@@ -1,13 +1,12 @@
 import { applyPotentialStats, clonePotentialState, potentialCultivationMultipliers } from './potential.js';
 import { applyCorePotentialStats, createLifeCorePotentialState, cloneLifeCorePotentialState } from './reincarnation-progression-v1102.js';
-import { cloneBuildFoundationV113, createBuildFoundationV113, elementQualityMultiplier, rootEffectivenessPct } from './build-foundation-v113.js';
-import { activeRootOriginIdsFromFoundationV132, applyActiveRootOriginStatsV132 } from './root-origin-combat-v132.js';
+import { cloneBuildFoundationV113, createBuildFoundationV113 } from './build-foundation-v113.js';
 import { resolveTechniqueRuntimeV119 } from './technique-runtime-v119.js';
 import { applyDaoNatureStatsV125, skillPracticeTierV125 } from './specialization-skill-progression-v125.js';
-import { resolveAuthorizedSkillRootBindingsV133 } from './element-seal-v133.js';
 import { activeSectManualMechanicsV12310 } from './sect-manual-v12310.js';
 import { applyHeartMethodStatsV12317, ensureSkillHeartProgressionV12317 } from './skill-heart-method-v12317.js';
-import { combineStatPctV129 } from './combat-rules.js';
+import { combineBoundedPct, combineStatPctV129 } from './combat-rules.js';
+import { createSpiritualRootStateV145, cloneSpiritualRootStateV145, migrateLegacySpiritualRootV145, resolveSpiritualRootStateV145, spiritualRootCombatBonusesV145 } from './spiritual-root-v145.js';
 function mul(value) {
     return value ?? 1;
 }
@@ -86,15 +85,35 @@ function applyFateBuildStatsV4(stats, modifiers = {}) {
     }
     return { ...stats, attack: Math.max(0, Number(stats.attack) || 0), defense: Math.max(0, Number(stats.defense) || 0) * (1 + defensePct / 100), physique, maxHp, damageReductionPct: combineStatPctV129('damageReductionPct', stats.damageReductionPct ?? 0, damageReductionPct) };
 }
+
+function applySpiritualRootStatsV145(stats, rootState) {
+    const b = spiritualRootCombatBonusesV145(rootState);
+    let physique = stats.physique;
+    let maxHp = stats.maxHp;
+    if (Number.isFinite(physique)) { physique *= 1 + b.maxHpPct / 100; maxHp = physique * 20; }
+    else maxHp = Math.max(1, Number(maxHp) || 1) * (1 + b.maxHpPct / 100);
+    const regen = Number(stats.spiritRegenStandardPctPerSecond) || 0;
+    return { ...stats,
+        attack: Math.max(0, Number(stats.attack) || 0) * (1 + b.attackPct / 100),
+        defense: Math.max(0, Number(stats.defense) || 0) * (1 + b.defensePct / 100),
+        physique, maxHp,
+        maxSpirit: Math.max(0, Number(stats.maxSpirit) || 0) * (1 + b.maxSpiritPct / 100),
+        breakEffectPct: (Number(stats.breakEffectPct) || 0) + b.breakEffectPct,
+        critDamagePct: (Number(stats.critDamagePct) || 150) + b.critDamagePct,
+        healingReceivedPct: (Number(stats.healingReceivedPct) || 0) + b.healingReceivedPct,
+        damageReductionPct: combineStatPctV129('damageReductionPct', stats.damageReductionPct ?? 0, b.damageReductionPct),
+        spiritEfficiencyPct: combineStatPctV129('spiritEfficiencyPct', stats.spiritEfficiencyPct ?? 0, b.spiritEfficiencyPct),
+        cooldownReductionPct: combineBoundedPct(stats.cooldownReductionPct ?? 0, b.cooldownReductionPct, 50),
+        spiritRegenStandardPctPerSecond: regen * (1 + b.spiritRegenPct / 100),
+    };
+}
+
 export function applyCharacterToEntity(entity, state, registry, techniquePassiveMultiplier = 1, suppressLegacyBirthOrigins = false) {
-    const root = registry.spiritualRoot(state.spiritualRootId);
     const modifiers = {};
     const tags = new Set(entity.tags);
     const triggers = [...(entity.triggers ?? [])];
-    for (const tag of root.tags)
-        tags.add(tag);
-    if (!suppressLegacyBirthOrigins)
-        combineCombat(modifiers, root.combat);
+    const spiritualRootV145 = resolveSpiritualRootStateV145(state);
+    state.spiritualRootV145 = spiritualRootV145;
     // V144: V103/V119 manual combat packages are retired. Keep only a neutral runtime object
     // because CombatKernel modules still import the compatibility helper surface.
     const techniqueRuntimeV119 = resolveTechniqueRuntimeV119(state, id => registry.technique(id));
@@ -126,21 +145,12 @@ export function applyCharacterToEntity(entity, state, registry, techniquePassive
     finalStats = applyFateBuildStatsV4(finalStats, state.fateModifiersV4);
     const daoNatureApplied = applyDaoNatureStatsV125(finalStats, foundation);
     finalStats = daoNatureApplied.stats;
+    finalStats = applySpiritualRootStatsV145(finalStats, spiritualRootV145);
     finalStats.dodgeChancePct = combineStatPctV129('dodgeChancePct', finalStats.dodgeChancePct ?? 0, techniqueRuntimeV119.staticDodgeFlatPct);
     if ((finalStats.spiritRegenStandardPctPerSecond ?? 0) > 0)
         finalStats.spiritRegenStandardPctPerSecond = (finalStats.spiritRegenStandardPctPerSecond ?? 0) * (1 + techniqueRuntimeV119.staticSpiritRegenPct / 100);
     // Legacy Class 2.0 stat conversions were superseded by V19/V31 and no longer run.
-    // v1.32 Căn Nguyên static package is projected from the five active root choices before combat entity creation.
-    // Behavioral effects remain in root-origin-combat-v132 and are consumed only by matching Hành actions.
-    finalStats = applyActiveRootOriginStatsV132(finalStats, foundation);
-    // v1.31 Chất Hành is permanent root progression and only multiplies the elemental component.
-    // Materialize all five entries at 0% so later equipment/birth sources can add affinity without losing quality.
-    const rootAffinities = { ...(finalStats.elementalAffinities ?? {}) };
-    for (const [rootId, element] of [['metal', 'Metal'], ['wood', 'Wood'], ['water', 'Water'], ['fire', 'Fire'], ['earth', 'Earth']]) {
-        const current = rootAffinities[element] ?? { pct: 0, evolutionMultiplier: 1 };
-        rootAffinities[element] = { pct: current.pct, evolutionMultiplier: Math.max(current.evolutionMultiplier, elementQualityMultiplier(foundation.elementQuality[element])) };
-    }
-    finalStats.elementalAffinities = rootAffinities;
+    // V145: legacy five-root Căn Nguyên/Chất Hành no longer contributes character power.
     // skill.class.* belongs to the superseded Tu Hệ runtime. Preserve knowledge in migrated saves,
     // but never execute those skills in the canonical combat entity.
     const activeCanonicalSkillIds = state.activeSkillIds.filter(id => !id.startsWith('skill.class.'));
@@ -158,25 +168,17 @@ export function applyCharacterToEntity(entity, state, registry, techniquePassive
         if (!(foundation.techniqueTrueMeaningIdsV119 ?? []).includes(id))
             (foundation.techniqueTrueMeaningIdsV119 ?? (foundation.techniqueTrueMeaningIdsV119 = [])).push(id);
     state.buildFoundation = foundation;
-    const authorizedRootBindingsV133 = resolveAuthorizedSkillRootBindingsV133(state, id => registry.technique(id), id => registry.skill(id));
     const sectManualMechanicsV12310 = activeSectManualMechanicsV12310(foundation);
     const combatBuildV117 = {
         ...(entity.combatBuildV117 ?? {}),
-        rootUnlocked: {
-            metal: foundation.roots.metal.unlocked, wood: foundation.roots.wood.unlocked, water: foundation.roots.water.unlocked, fire: foundation.roots.fire.unlocked, earth: foundation.roots.earth.unlocked,
-        },
-        rootEffectivenessPct: {
-            metal: rootEffectivenessPct(foundation.roots.metal.level), wood: rootEffectivenessPct(foundation.roots.wood.level), water: rootEffectivenessPct(foundation.roots.water.level), fire: rootEffectivenessPct(foundation.roots.fire.level), earth: rootEffectivenessPct(foundation.roots.earth.level),
-        },
-        rootLevelsV133: { metal: foundation.roots.metal.level, wood: foundation.roots.wood.level, water: foundation.roots.water.level, fire: foundation.roots.fire.level, earth: foundation.roots.earth.level },
-        activeRootOriginIdsV132: activeRootOriginIdsFromFoundationV132(foundation),
+        // V145 deliberately exposes no Linh Căn elemental authority to CombatKernel.
         mainDaoId: foundation.battleDao.mainDaoId,
         secondaryDaoId: foundation.battleDao.secondaryDaoId,
         // V80 integration closure: V79 đã runtime hóa đủ 8 Bản Đạo V2.
         // Bất kỳ nhân vật đã chốt Chủ Đạo nào đều phải bật cùng CombatKernel V2 runtime; không còn ngoại lệ chỉ Kiếm.
         battleDaoV2Enabled: Boolean(foundation.battleDao.mainDaoId),
         activeSetMechanics: [...(entity.combatBuildV117?.activeSetMechanics ?? []), ...sectManualMechanicsV12310],
-        skillRootBindingsV118: { ...(entity.combatBuildV117?.skillRootBindingsV118 ?? {}), ...authorizedRootBindingsV133, ...techniqueRuntimeV119.fixedRootBindings },
+        skillRootBindingsV118: {},
         learnedDaoPassiveIdsV118: [...new Set([...(foundation.learnedDaoPassiveIdsV118 ?? []), ...techniqueRuntimeV119.learnedPassiveIds])],
         activeVariantIdsV118: [...(foundation.skillLoadout.buildPassiveIds ?? [])],
         techniqueRuntimeV119: techniqueRuntimeV119.runtime,
@@ -221,15 +223,10 @@ export function characterStatSourceStagesV129(entity, state, registry, technique
         current = { ...current, stats: cloneStatsV129(stats) };
         stages.push({ id, name, entity: current, meta });
     };
-    const root = registry.spiritualRoot(state.spiritualRootId);
-    // Linh Căn bẩm sinh (legacy birth roots are intentionally suppressed on authoritative-birth saves).
-    let rootStats = current.stats;
-    if (!suppressLegacyBirthOrigins && root.combat) {
-        const modifiers = {};
-        combineCombat(modifiers, root.combat);
-        rootStats = applyCombatModifiers(rootStats, modifiers);
-    }
-    push('character.spiritual_root', 'Linh Căn', rootStats, { sourceId: state.spiritualRootId, suppressed: suppressLegacyBirthOrigins });
+    const legacyRoot = registry.spiritualRoot(state.spiritualRootId);
+    push('character.spiritual_root_legacy', 'Linh Căn bẩm sinh legacy · đã nghỉ', current.stats, { sourceId: state.spiritualRootId, retired: true });
+    const v145State = resolveSpiritualRootStateV145(state);
+    push('character.spiritual_root_v145', 'Linh Căn', applySpiritualRootStatsV145(current.stats, v145State), { level: v145State.level, ascensions: v145State.ascensions });
 
     // V144: legacy manual stats remain visible only as a zero-delta provenance marker for migrated saves.
     const techniqueRuntimeV119 = resolveTechniqueRuntimeV119(state, id => registry.technique(id));
@@ -288,16 +285,7 @@ export function characterStatSourceStagesV129(entity, state, registry, technique
         spiritRegenPct: techniqueRuntimeV119.staticSpiritRegenPct,
     });
 
-    let rootOriginStats = applyActiveRootOriginStatsV132(current.stats, foundation);
-    const rootAffinities = { ...(rootOriginStats.elementalAffinities ?? {}) };
-    for (const [rootId, element] of [['metal', 'Metal'], ['wood', 'Wood'], ['water', 'Water'], ['fire', 'Fire'], ['earth', 'Earth']]) {
-        const cur = rootAffinities[element] ?? { pct: 0, evolutionMultiplier: 1 };
-        rootAffinities[element] = { pct: cur.pct, evolutionMultiplier: Math.max(cur.evolutionMultiplier, elementQualityMultiplier(foundation.elementQuality[element])) };
-    }
-    rootOriginStats.elementalAffinities = rootAffinities;
-    push('character.root_origin', 'Căn Nguyên · Chất Hành', rootOriginStats, {
-        activeRootOriginIdsV132: activeRootOriginIdsFromFoundationV132(foundation),
-    });
+    push('character.root_origin_legacy', 'Căn Nguyên · Chất Hành legacy · đã nghỉ', current.stats, { retired: true });
 
     ensureSkillHeartProgressionV12317(foundation.progressionV125);
     const heartMethodStats = applyHeartMethodStatsV12317(current.stats, foundation);
@@ -328,6 +316,7 @@ export function cloneCharacterSystemState(state) {
         potential: clonePotentialState(state.potential),
         corePotential: state.corePotential ? { life: cloneLifeCorePotentialState(state.corePotential.life), permanent: { ...state.corePotential.permanent } } : { life: createLifeCorePotentialState(), permanent: { power: 0, body: 0, defense: 0 } },
         fateModifiersV4: { ...(state.fateModifiersV4 ?? {}) },
+        spiritualRootV145: cloneSpiritualRootStateV145(state.spiritualRootV145 ?? migrateLegacySpiritualRootV145(state.buildFoundation)),
         buildFoundation: (() => { const foundation = cloneBuildFoundationV113(state.buildFoundation, state.spiritualRootId); foundation.techniqueLoadout = { inner: state.activeTechniqueId, dao: state.equippedTechniqueIds?.art, movement: state.equippedTechniqueIds?.movement, secret: state.equippedTechniqueIds?.secret }; return foundation; })(),
         savedCombatLoadouts: (state.savedCombatLoadouts ?? []).map(loadout => ({
             ...loadout, skillIds: [...loadout.skillIds], artifactIds: [...(loadout.artifactIds ?? [])], legacyArtifactIds: [...(loadout.legacyArtifactIds ?? [])], equipmentIds: { ...loadout.equipmentIds },
@@ -351,6 +340,7 @@ export function createCharacterSystemState(spiritualRootId = 'root.mixed', techn
         potential: clonePotentialState(),
         corePotential: { life: createLifeCorePotentialState(), permanent: { power: 0, body: 0, defense: 0 } },
         fateModifiersV4: {},
+        spiritualRootV145: createSpiritualRootStateV145(),
         buildFoundation: (() => { const foundation = createBuildFoundationV113(spiritualRootId); foundation.techniqueLoadout.inner = techniqueId; return foundation; })(),
     };
 }

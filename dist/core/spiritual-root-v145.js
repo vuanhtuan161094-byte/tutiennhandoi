@@ -89,8 +89,9 @@ export function spiritualRootOriginCostV145(targetLevel) {
 /** Baseline Tu Vi bonus. No hard cap; logarithmic growth prevents infinite progression from exploding the economy. */
 export function spiritualRootCultivationBonusPctV145(level, gatheringPoints = 0, cultivationInsightRanks = 0) {
   const lv = Math.max(1, safeInt(level, 1));
-  // Rough anchors: Lv100~10%, 1k~46%, 10k~102%, 100k~162%, 1m~223% before build bonuses.
-  const base = 60.885 * Math.log10(1 + lv / 216.95);
+  const progress = Math.max(0, lv - 1);
+  // Rough anchors remain ~10/46/102/162/223%; fresh Lv1 contributes exactly zero.
+  const base = 60.885 * Math.log10(1 + progress / 216.95);
   const branch = 1.35 * Math.sqrt(Math.max(0, safeNumber(gatheringPoints)));
   const insight = sqrtGrowth(cultivationInsightRanks, 5);
   return Math.max(0, base + branch + insight);
@@ -99,8 +100,9 @@ export function spiritualRootCultivationBonusPctV145(level, gatheringPoints = 0,
 /** Safe raw-stat lane only: Công/HP/Phòng can keep growing forever. */
 export function spiritualRootCoreCombatBonusPctV145(level) {
   const lv = Math.max(1, safeInt(level, 1));
-  // Rough anchors: Lv100~3.3%, 1k~15.7%, 10k~36.3%, 100k~58.6%, 1m~81%.
-  return Math.max(0, 22.479 * Math.log10(1 + lv / 248.91));
+  const progress = Math.max(0, lv - 1);
+  // Rough anchors remain ~3/16/36/59/81%; fresh Lv1 contributes exactly zero.
+  return Math.max(0, 22.479 * Math.log10(1 + progress / 248.91));
 }
 
 function diminishingUtility(points, scale, cap) {
@@ -116,7 +118,7 @@ export function spiritualRootMeridianBonusesV145(state) {
   const l = s.meridianPointsSpent.spirit;
   return {
     cultivationBonusPct: 1.35 * Math.sqrt(g),
-    tendonDropBonusPct: 2.2 * Math.sqrt(g),
+    tendonDropBonusPct: diminishingUtility(g, 24, 40),
     retreatBonusPct: diminishingUtility(g, 18, 18),
     attackPct: 1.5 * Math.sqrt(b),
     breakEffectPct: diminishingUtility(b, 16, 14),
@@ -125,7 +127,7 @@ export function spiritualRootMeridianBonusesV145(state) {
     defensePct: 1.55 * Math.sqrt(h),
     healingReceivedPct: diminishingUtility(h, 18, 18),
     damageReductionPct: diminishingUtility(h, 24, 8),
-    maxSpiritPct: 1.5 * Math.sqrt(l),
+    maxSpiritPct: diminishingUtility(l, 24, 36),
     spiritRegenPct: diminishingUtility(l, 18, 24),
     spiritEfficiencyPct: diminishingUtility(l, 24, 12),
     cooldownReductionPct: diminishingUtility(l, 30, 8),
@@ -189,7 +191,7 @@ export function spiritualRootCombatBonusesV145(state) {
     attackPct: core + meridian.attackPct + insight.attackPct,
     maxHpPct: core + meridian.maxHpPct + insight.maxHpPct,
     defensePct: core + meridian.defensePct + insight.defensePct,
-    maxSpiritPct: meridian.maxSpiritPct + insight.maxSpiritPct,
+    maxSpiritPct: Math.min(60, meridian.maxSpiritPct + insight.maxSpiritPct),
     breakEffectPct: meridian.breakEffectPct,
     critDamagePct: meridian.critDamagePct,
     healingReceivedPct: meridian.healingReceivedPct,
@@ -285,4 +287,10 @@ export function migrateLegacySpiritualRootV145(buildFoundation) {
   state.ascensions = Math.floor((legacyLevel - 1) / 100);
   state.migratedFromLegacy = true;
   return state;
+}
+
+
+export function resolveSpiritualRootStateV145(character) {
+  if (character?.spiritualRootV145?.schema === SPIRITUAL_ROOT_SCHEMA_V145) return cloneSpiritualRootStateV145(character.spiritualRootV145);
+  return migrateLegacySpiritualRootV145(character?.buildFoundation);
 }

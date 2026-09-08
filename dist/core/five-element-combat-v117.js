@@ -1,7 +1,5 @@
 import { skillDomainsV117, skillRuntimeV117, skillSlotClassV117, skillUltimateGaugeCostV117, skillUltimateGaugeGenerateV117, ULTIMATE_GAUGE_MAX_V117, } from './skill-runtime-v117.js';
 import { techniqueEligibleEffectBonusPctV119, techniqueElementGenerateMultiplierV119, techniqueGaugeMultiplierV119 } from './technique-runtime-v119.js';
-import { applyRootOriginActionV132, rootOriginCastRecoveryMultiplierV132, rootOriginGenerateMultiplierV132, rootOriginSpiritCostPctV132 } from './root-origin-combat-v132.js';
-import { rootMilestoneActionBonusV133, rootMilestoneCastRecoveryMultiplierV133, rootMilestoneFireExtremeRequirementPctV133, rootMilestoneGenerateMultiplierV133, rootMilestonePayoffMultiplierV133, rootMilestoneResourceCapV133, rootMilestoneSpiritCostPctV133, rootMilestoneWoodHarvestRequirementPctV133 } from './spiritual-root-milestones-v133.js';
 import { swordV2GaugeMultiplier } from './battle-dao-v2-runtime.js';
 export const ROOT_GENERATE_EFFECTIVENESS_COEF_V117 = 0.20;
 export const ROOT_PAYOFF_EFFECTIVENESS_COEF_V117 = 0.50;
@@ -23,18 +21,10 @@ export function setMechanicV117(entity, mechanic) {
     return entity.combatBuildV117?.activeSetMechanics?.find(x => x.mechanic === mechanic);
 }
 function param(m, key, fallback = 0) { return m?.params[key] ?? fallback; }
-export function rootUnlockedV117(entity, root) {
-    return entity.combatBuildV117?.rootUnlocked?.[root] ?? false;
-}
-export function rootEffectivenessPctV117(entity, root) {
-    return Math.max(0, entity.combatBuildV117?.rootEffectivenessPct?.[root] ?? 0);
-}
-export function rootGenerateMultiplierV117(entity, root) {
-    return (1 + rootEffectivenessPctV117(entity, root) / 100 * ROOT_GENERATE_EFFECTIVENESS_COEF_V117) * rootMilestoneGenerateMultiplierV133(entity, root);
-}
-export function rootPayoffMultiplierV117(entity, root) {
-    return (1 + rootEffectivenessPctV117(entity, root) / 100 * ROOT_PAYOFF_EFFECTIVENESS_COEF_V117) * rootMilestonePayoffMultiplierV133(entity, root);
-}
+export function rootUnlockedV117(_entity, _root) { return true; }
+export function rootEffectivenessPctV117(_entity, _root) { return 0; }
+export function rootGenerateMultiplierV117(_entity, _root) { return 1; }
+export function rootPayoffMultiplierV117(_entity, _root) { return 1; }
 export function earthWeightCapV117(entity) {
     const m = setMechanicV117(entity, 'earth_overcap_weight');
     return 100 * (1 + Math.max(0, param(m, 'capBonusPct')) / 100);
@@ -50,7 +40,7 @@ function resourceCapV117(entity, resource) {
         base = 5;
     else if (resource === 'earthWeight')
         base = earthWeightCapV117(entity);
-    return rootMilestoneResourceCapV133(entity, resource, base);
+    return base;
 }
 function setResourceV117(entity, resource, value) {
     const cap = resourceCapV117(entity, resource);
@@ -100,7 +90,7 @@ export function addResourceV117(entity, resource, baseAmount, now) {
     const root = rootForResource(resource);
     if (!rootUnlockedV117(entity, root))
         return 0;
-    let amount = baseAmount * rootGenerateMultiplierV117(entity, root) * rootOriginGenerateMultiplierV132(entity, root, resource) * generateSetMultiplier(entity, resource, now);
+    let amount = baseAmount * generateSetMultiplier(entity, resource, now);
     if (resource === 'fireSeal' || resource === 'fireHeat')
         amount *= fireAftermathGenerateMultiplier(entity, now);
     if (resource === 'metalArmor' && (entity.pendingSetFlagsV117['metalArmorGeneratePenaltyUntil'] ?? 0) > now)
@@ -129,10 +119,10 @@ function spendOneV117(entity, change) {
     return spent;
 }
 export function minimumFireExtremeRequirementV117(entity) {
-    return Math.min(rootMilestoneFireExtremeRequirementPctV133(entity), Math.max(0, Math.min(100, param(setMechanicV117(entity, 'fire_early_extreme_heat'), 'minimumRequirementPct', 100))));
+    return Math.max(0, Math.min(100, param(setMechanicV117(entity, 'fire_early_extreme_heat'), 'minimumRequirementPct', 100)));
 }
 export function minimumWoodHarvestRequirementV117(entity) {
-    return Math.min(rootMilestoneWoodHarvestRequirementPctV133(entity), Math.max(0, Math.min(100, param(setMechanicV117(entity, 'wood_early_harvest'), 'minimumMaturityPct', 100))));
+    return Math.max(0, Math.min(100, param(setMechanicV117(entity, 'wood_early_harvest'), 'minimumMaturityPct', 100)));
 }
 export function canUseSkillRuntimeV117(entity, skill, now) {
     const r = skillRuntimeV117(skill);
@@ -197,7 +187,6 @@ export function skillSpiritCostMultiplierFromRuntimeV117(entity, skill, now) {
     const chain = setMechanicV117(entity, 'water_spell_chain_cast');
     if (chain && r.daoBinding === 'spell' && entity.fiveElementsV117.waterFlow >= param(chain, 'requiredFlowPct', 80))
         mul *= 1 + entity.waterSpellChainStacksV117 * param(chain, 'spiritCostIncreasePerStackPct', 10) / 100;
-    mul *= Math.max(.05, 1 + (rootOriginSpiritCostPctV132(entity, skill) + rootMilestoneSpiritCostPctV133(entity, skill)) / 100);
     return Math.max(.05, mul);
 }
 export function skillCastTimeMultiplierFromRuntimeV117(entity, skill) {
@@ -208,7 +197,6 @@ export function skillCastTimeMultiplierFromRuntimeV117(entity, skill) {
         const per = param(chain, 'castTimeReductionPerStackPct');
         mul *= Math.max(.1, 1 - entity.waterSpellChainStacksV117 * per / 100);
     }
-    mul *= rootOriginCastRecoveryMultiplierV132(entity, skill) * rootMilestoneCastRecoveryMultiplierV133(entity, skill);
     return Math.max(.1, mul);
 }
 export function prepareSkillActionRuntimeV117(entity, skill, now) {
@@ -419,10 +407,7 @@ export function prepareSkillActionRuntimeV117(entity, skill, now) {
     const fireSword = setMechanicV117(entity, 'fire_sword_extreme_finisher');
     if (fireSword && r.daoBinding === 'sword' && r.form === 'finisher' && entity.fiveElementsV117.fireExtremeUntil > now)
         action.effectBonusPct += param(fireSword, 'finisherBonusPct');
-    // v1.32 Căn Nguyên is an actual behavioral layer on the matching Hành action, never a global Total Damage stat.
-    applyRootOriginActionV132(entity, skill, action, now);
-    rootMilestoneActionBonusV133(entity, skill, action);
-    action.recoveryMultiplier *= rootMilestoneCastRecoveryMultiplierV133(entity, skill);
+    // V145: Linh Căn is independent from this authored skill-resource package.
     // Dao package bridge is intentionally narrow: only authored runtime domains can consume it later.
     const daoStrength = daoStrengthV117(entity, skill);
     if (daoStrength > 0)

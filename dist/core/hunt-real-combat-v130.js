@@ -3,9 +3,7 @@ import { skillPracticeProfileFromTierV125 } from './specialization-skill-progres
 import { battleDaoSkillGrowthProfileV126 } from './battle-dao-skill-growth-v126.js';
 import { tacticalIdentity } from './combat-roles.js';
 import { SeededRng } from './rng.js';
-import { rootOriginHuntSkillTuningV132 } from './root-origin-combat-v132.js';
 import { elementSealDamageCoefficientV133 } from './element-seal-v133.js';
-import { rootMilestoneHuntSkillTuningV133 } from './spiritual-root-milestones-v133.js';
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 const safe = (v, floor = 1e-9) => Math.max(floor, Number.isFinite(v) ? v : floor);
 const log10 = (v) => Math.log10(safe(v));
@@ -102,17 +100,7 @@ function skillTotals(skill, entity) {
     damageCoeff *= effectMult;
     heal *= effectMult;
     shield *= effectMult;
-    const milestone = rootMilestoneHuntSkillTuningV133(entity, skill);
-    damageCoeff *= 1 + milestone.effectPct / 100;
-    heal *= 1 + milestone.effectPct / 100;
-    shield *= 1 + milestone.effectPct / 100;
-    breakPct *= 1 + milestone.breakPct / 100;
-    const origin = rootOriginHuntSkillTuningV132(entity, skill);
-    damageCoeff *= 1 + (origin.effectPct ?? 0) / 100;
-    heal *= 1 + ((origin.effectPct ?? 0) + (origin.healPct ?? 0)) / 100;
-    shield *= 1 + ((origin.effectPct ?? 0) + (origin.shieldPct ?? 0)) / 100;
-    breakPct *= 1 + (origin.breakPct ?? 0) / 100;
-    control *= 1 + (origin.controlPct ?? 0) / 100;
+    // V145: Linh Căn no longer modifies authored elemental skill packages.
     const cdrSources = [entity.stats.cooldownReductionBySkillPct?.[skill.id] ?? 0, practice.cooldownReductionPct, growth?.cooldownReductionPct ?? 0, ...skill.tags.map(t => entity.stats.cooldownReductionByTagPct?.[t] ?? 0)];
     let effectiveCdr = 0;
     for (const source of cdrSources)

@@ -27,6 +27,8 @@ for (const levels of [[1, 100], [100, 1000], [1000, 10_000], [10_000, 100_000], 
   assert.ok(root.spiritualRootCoreCombatBonusPctV145(b) > root.spiritualRootCoreCombatBonusPctV145(a), `core combat curve stopped at ${a}->${b}`);
   assert.ok(root.spiritualRootNourishmentCostV145(b) > root.spiritualRootNourishmentCostV145(a), `Linh Tủy cost not monotonic at ${a}->${b}`);
 }
+assert.equal(root.spiritualRootCultivationBonusPctV145(1), 0);
+assert.equal(root.spiritualRootCoreCombatBonusPctV145(1), 0);
 assert.ok(root.spiritualRootCultivationBonusPctV145(1000) > 44 && root.spiritualRootCultivationBonusPctV145(1000) < 48);
 assert.ok(root.spiritualRootCultivationBonusPctV145(1_000_000) > 220);
 assert.ok(root.spiritualRootCoreCombatBonusPctV145(1_000_000) > 80);
@@ -77,16 +79,18 @@ extreme.ascensions = 10_000;
 extreme.meridianPointsSpent = { gathering: 2500, battle: 2500, body: 2500, spirit: 2500 };
 extreme.insightRanks = { spirit: 100_000, attack: 100_000, vitality: 100_000, defense: 100_000, cultivation: 100_000, balanced: 100_000 };
 const m = root.spiritualRootMeridianBonusesV145(extreme);
-assert.ok(m.retreatBonusPct < 18);
-assert.ok(m.breakEffectPct < 14);
-assert.ok(m.critDamagePct < 24);
-assert.ok(m.healingReceivedPct < 18);
-assert.ok(m.damageReductionPct < 8);
-assert.ok(m.spiritRegenPct < 24);
-assert.ok(m.spiritEfficiencyPct < 12);
-assert.ok(m.cooldownReductionPct < 8);
+assert.ok(m.retreatBonusPct <= 18);
+assert.ok(m.breakEffectPct <= 14);
+assert.ok(m.critDamagePct <= 24);
+assert.ok(m.healingReceivedPct <= 18);
+assert.ok(m.damageReductionPct <= 8);
+assert.ok(m.spiritRegenPct <= 24);
+assert.ok(m.spiritEfficiencyPct <= 12);
+assert.ok(m.cooldownReductionPct <= 8);
+assert.ok(m.tendonDropBonusPct <= 40);
+assert.ok(m.maxSpiritPct <= 36);
 const insights = root.spiritualRootInsightBonusesV145(extreme);
-assert.ok(insights.maxSpiritPct < 48);
+assert.ok(insights.maxSpiritPct <= 48);
 assert.ok(insights.attackPct > 0 && insights.maxHpPct > 0 && insights.defensePct > 0 && insights.cultivationPct > 0);
 
 // Legacy migration is deterministic and compresses five old tracks into one root without carrying element authority forward.
