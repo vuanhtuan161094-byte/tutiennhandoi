@@ -51,6 +51,9 @@ jobs:
       - name: V142 Equipment x Hunt
         run: node qa/runners/v142-equipment-hunt-gate.js
 
+      - name: V145 infinite Spiritual Root core
+        run: node qa/tests/v145-spiritual-root-redesign-test.js
+
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
 
