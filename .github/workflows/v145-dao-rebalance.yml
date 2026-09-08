@@ -1,0 +1,48 @@
+name: V145 Dao Rebalance
+
+on:
+  push:
+    branches:
+      - feature/v142-equipment-hunt
+    paths:
+      - 'qa/tools/v145-dao-rebalance.mjs'
+      - '.github/workflows/v145-dao-rebalance.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  rebalance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/v142-equipment-hunt
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply V145 Dao rebalance candidate
+        run: node qa/tools/v145-dao-rebalance.mjs
+      - name: V129 global build balance
+        run: node qa/tests/v129-global-build-balance-test.js
+      - name: V129 power budget
+        run: node qa/tests/v129-power-budget-test.js
+      - name: V129 combat parity
+        run: node qa/tests/v129-combat-parity-test.js
+      - name: V145 core
+        run: node qa/tests/v145-spiritual-root-redesign-test.js
+      - name: Remove temporary calibration machinery
+        run: rm qa/tools/v145-dao-rebalance.mjs .github/workflows/v145-dao-rebalance.yml
+      - name: Commit balanced shared-kernel calibration
+        run: |
+          git config user.name 'vuanhtuan161094-byte'
+          git config user.email 'vuanhtuan161094@gmail.com'
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m 'fix(v145): rebalance Dao after elemental root retirement'
+          git push origin HEAD:feature/v142-equipment-hunt
