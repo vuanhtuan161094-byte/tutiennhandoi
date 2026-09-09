@@ -157,10 +157,11 @@ test('V147 pet gacha normalizes every fragment roll to 5 and every duplicate ite
   assert.equal(total,fragmentPulls*5+itemPulls*10);
 });
 
-test('V147 browser bootstrap keeps V146 renderer isolated and applies scoped Spirit Beast copy migration',()=>{
-  const app=readFileSync(new URL('../../app.js',import.meta.url),'utf8');
+test('V147 standalone bootstrap loads scoped Spirit Beast UI bridge after the canonical app',()=>{
+  const bootstrap=readFileSync(new URL('../../standalone-entry.js',import.meta.url),'utf8');
   const ui=readFileSync(new URL('../../modules/spirit-beast-ui-v147.js',import.meta.url),'utf8');
-  assert(app.includes("./app-legacy-v146.js")&&app.includes("./modules/spirit-beast-ui-v147.js"));
+  assert(bootstrap.includes('./app.js')&&bootstrap.includes('./modules/spirit-beast-ui-v147.js'));
+  assert(bootstrap.indexOf('./app.js')<bootstrap.indexOf('./modules/spirit-beast-ui-v147.js'));
   assert(ui.includes("PET_ASSET_MARKER='/assets/huntv2/beasts/'"));
   assert(ui.includes("Đột Phá Huyết Mạch")&&ui.includes("Tăng Sao"));
   assert(ui.includes("LINH THÚ V147"));
