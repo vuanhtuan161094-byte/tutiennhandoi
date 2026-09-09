@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   SPIRIT_BEAST_SPECIES,
   SPIRIT_BEAST_FRAGMENT_PER_STAR_V147,
@@ -7,16 +8,33 @@ import {
   spiritBeastEffectiveLevelV147,
   spiritBeastLevelCapV147,
   spiritBeastStarRawMultiplierV147,
+  spiritBeastStarEssenceCostV147,
   spiritBeastStatsV147,
   spiritBeastBondSummaryV147,
   spiritBeastCombatTriggersV147,
   spiritBeastStarUpV147,
   migrateSpiritBeastsV147,
 } from '../../dist/core/spirit-beast-v147.js';
+import { spiritBeastStrengthenCostV147 } from '../../dist/core/collection-progression-v12316.js';
+import { advanceCollectionEconomyV12325, collectionEconomySummaryV12325, strengthenCollectionEconomyV12325 } from '../../dist/core/gacha-collection-economy-v12325.js';
+import { gachaCollectionV12326 } from '../../dist/core/collection-workshop-gacha-v12326.js';
 
 let passed=0;
 function test(name,fn){fn();passed++;console.log(`✓ ${name}`);}
 function pet(id,{level=1,stars=0,fragments=0}={}){return {owned:true,level,stars,specificFragments:fragments,advance:5,spiritBeastV147Migrated:true};}
+function stateWith(items={},beastFacility=1){return {
+  schema:'collection-progression.v12316',
+  currencies:{immortalJade:999999,boundImmortalJade:999999},
+  genericFragments:{manual:0,artifact:0,pet:999999,companion:0},
+  items,
+  activeArtifactIds:[],
+  manualTreeV127:{},
+  gacha:{manual:{pulls:0,pity:0},artifact:{pulls:0,pity:0},pet:{pulls:0,pity:0},companion:{pulls:0,pity:0}},
+  cave:{level:1,facilities:[{id:'beast',level:beastFacility}]},
+  daily:{dayKey:'',clearedIds:[]},
+  spiritBeastV86Migrated:true,
+  spiritBeastV147Migrated:true,
+};}
 
 test('V147 keeps exactly eight authored spirit beast species',()=>{
   assert.equal(SPIRIT_BEAST_SPECIES.length,8);
@@ -31,6 +49,16 @@ test('V147 star economy is fixed at 10 exact fragments per star with normalized 
   const p=pet('pet.1',{stars:20,fragments:35});
   const r=spiritBeastStarUpV147(p,99);
   assert.equal(r.starsAdded,3);assert.equal(p.stars,23);assert.equal(p.specificFragments,5);assert.equal(r.levelCap,1250);
+});
+
+test('V147 milestone essence sink repeats the legacy 1/1/2/3/5 cadence every 20 stars',()=>{
+  assert.equal(spiritBeastStarEssenceCostV147(0),0);
+  assert.equal(spiritBeastStarEssenceCostV147(3),1);
+  assert.equal(spiritBeastStarEssenceCostV147(7),1);
+  assert.equal(spiritBeastStarEssenceCostV147(11),2);
+  assert.equal(spiritBeastStarEssenceCostV147(15),3);
+  assert.equal(spiritBeastStarEssenceCostV147(19),5);
+  assert.equal(spiritBeastStarEssenceCostV147(23),1);
 });
 
 test('V147 level cap expands indefinitely by 50 levels per star',()=>{
@@ -57,10 +85,10 @@ test('V147 bond percent budget caps at Lv1000 + 20 stars and cannot scale infini
   assert.deepEqual({p:over.powerPct,b:over.bodyPct,d:over.defensePct},{p:32,b:30,d:27.8});
 });
 
-test('V147 old Huyết Mạch I-V migrates exactly to 4/8/12/16/20 stars and is idempotent',()=>{
+test('V147 old Huyết Mạch I-V migrates exactly to 4/8/12/16/20 stars and preserves unspent fragments',()=>{
   for(let hm=0;hm<=5;hm++){
-    const state={items:{'pet.1':{owned:true,level:1,advance:hm,specificFragments:0}},genericFragments:{pet:0}};
-    const first=migrateSpiritBeastsV147(state);assert.equal(state.items['pet.1'].stars,hm*4);assert.equal(state.items['pet.1'].advance,5);assert(first.migrated||hm===0);
+    const state={items:{'pet.1':{owned:true,level:1,advance:hm,specificFragments:37}},genericFragments:{pet:0}};
+    const first=migrateSpiritBeastsV147(state);assert.equal(state.items['pet.1'].stars,hm*4);assert.equal(state.items['pet.1'].advance,5);assert.equal(state.items['pet.1'].specificFragments,37);assert(first.migrated||hm===0);
     const snapshot=JSON.stringify(state);migrateSpiritBeastsV147(state);assert.equal(JSON.stringify(state),snapshot);
   }
 });
@@ -83,6 +111,58 @@ test('V147 raw stat consumer respects each beast own star-derived cap',()=>{
   const atCap=spiritBeastStatsV147(species,pet(species.id,{level:100,stars:0}));
   const over=spiritBeastStatsV147(species,pet(species.id,{level:999999,stars:0}));
   assert.deepEqual(over,atCap,'stored over-level must never generate power above the beast personal cap');
+});
+
+test('V147 canonical advance consumes 10 fragments and milestone pill atomically',()=>{
+  const state=stateWith({'pet.1':pet('pet.1',{stars:3,fragments:10})});
+  assert.throws(()=>advanceCollectionEconomyV12325(state,'pet.1'),/Linh Thú Đột Phá Đan/);
+  assert.equal(state.items['pet.1'].stars,3);assert.equal(state.items['pet.1'].specificFragments,10,'failed milestone must not consume fragments');
+  state.economyV12325.ascensionEssence.pet=1;
+  const milestone=advanceCollectionEconomyV12325(state,'pet.1');
+  assert.equal(milestone.stars,4);assert.equal(milestone.essenceCost,1);assert.equal(state.items['pet.1'].specificFragments,0);assert.equal(state.economyV12325.ascensionEssence.pet,0);
+  state.items['pet.1'].specificFragments=10;
+  const ordinary=advanceCollectionEconomyV12325(state,'pet.1');
+  assert.equal(ordinary.stars,5);assert.equal(ordinary.essenceCost,0);
+});
+
+test('V147 nourish uses each pet personal star cap and Beast facility becomes a real discount consumer',()=>{
+  const capped=stateWith({'pet.1':pet('pet.1',{level:100,stars:0})},10);
+  assert.equal(spiritBeastStrengthenCostV147(capped,capped.items['pet.1']),8,'Beast facility Lv10 should discount the Lv1-equivalent cost by 18%');
+  assert.throws(()=>strengthenCollectionEconomyV12325(capped,'pet.1',1),/đã đạt Lv100/);
+  capped.items['pet.1'].stars=1;
+  const r=strengthenCollectionEconomyV12325(capped,'pet.1',1);
+  assert.equal(r.progress.level,101);assert.equal(r.levelCap,150);
+});
+
+test('V147 economy read model exposes stars, exact next-star cost and milestone essence instead of legacy HM costs',()=>{
+  const state=stateWith({'pet.1':pet('pet.1',{level:50,stars:3,fragments:10})});
+  const summary=collectionEconomySummaryV12325(state,undefined,0,117);
+  const item=summary.categories.find(x=>x.category==='pet').items.find(x=>x.id==='pet.1');
+  assert.equal(item.progress.stars,3);assert.equal(item.progress.advance,3);assert.equal(item.spiritBeast.stars,3);assert.equal(item.spiritBeast.levelCap,250);
+  assert.equal(item.advanceCost,10);assert.equal(item.ascensionCost,1);
+});
+
+test('V147 pet gacha normalizes every fragment roll to 5 and every duplicate item to 10 fragments',()=>{
+  const items=Object.fromEntries(SPIRIT_BEAST_SPECIES.map(x=>[x.id,pet(x.id)]));
+  const state=stateWith(items),inventory={};
+  let fragmentPulls=0,itemPulls=0;
+  for(let i=0;i<240;i++){
+    const row=gachaCollectionV12326(state,inventory,'banner.pet',1,(147000+i*977)>>>0,false,[]).results[0];
+    if(row.kind==='fragment'){fragmentPulls++;assert.equal(row.amount,5);assert.equal(row.fragments,5);}
+    if(row.kind==='item'){itemPulls++;assert.equal(row.first,false);assert.equal(row.fragments,10);}
+  }
+  assert(fragmentPulls>0);assert(itemPulls>0);
+  const total=SPIRIT_BEAST_SPECIES.reduce((s,x)=>s+state.items[x.id].specificFragments,0);
+  assert.equal(total,fragmentPulls*5+itemPulls*10);
+});
+
+test('V147 browser bootstrap keeps V146 renderer isolated and applies scoped Spirit Beast copy migration',()=>{
+  const app=readFileSync(new URL('../../app.js',import.meta.url),'utf8');
+  const ui=readFileSync(new URL('../../modules/spirit-beast-ui-v147.js',import.meta.url),'utf8');
+  assert(app.includes("./app-legacy-v146.js")&&app.includes("./modules/spirit-beast-ui-v147.js"));
+  assert(ui.includes("PET_ASSET_MARKER='/assets/huntv2/beasts/'"));
+  assert(ui.includes("Đột Phá Huyết Mạch")&&ui.includes("Tăng Sao"));
+  assert(ui.includes("LINH THÚ V147"));
 });
 
 console.log(`V147 Spirit Beast Progression: ${passed}/${passed} PASS`);
