@@ -46,9 +46,10 @@ export function strengthenCollectionItemV12316(state,id,levels=1){
 }
 
 export function advanceCollectionItemV12316(state,id){
-  const def=legacy.collectionDefinitionV12316(id),p=state.items?.[id];
+  const def=legacy.collectionDefinitionV12316(id);
   if(def.category!=='pet')return legacy.advanceCollectionItemV12316(state,id);
   migrateSpiritBeastsV147(state);
+  const p=state.items?.[id];
   if(!p?.owned)throw new Error(`Chưa sở hữu ${def.name}.`);
   const fragmentCost=SPIRIT_BEAST_FRAGMENT_PER_STAR_V147;
   const essenceCost=spiritBeastStarEssenceCostV147(p.stars);
