@@ -26,13 +26,14 @@ test('Five active Căn Nguyên choices cannot stack duplicate same-root static b
   assert.ok(Math.max(...metal.map(x=>x.static?.armorPenPct??0))<=6,'one active Metal origin keeps Xuyên bounded');
 });
 
-test('Owning all eight V147 bond-capped Linh Thú is a meaningful major-system bond',()=>{
-  const items=Object.fromEntries(SPIRIT_BEAST_SPECIES_V86.map(x=>[x.id,{owned:true,level:1000,stars:20,advance:5,spiritBeastV147Migrated:true}]));
-  const b=spiritBeastBondSummaryV86({items});
-  assert.equal(b.owned,8);
-  assert.ok(b.powerPct>=25 && b.powerPct<=35,`Công ${b.powerPct}%`);
-  assert.ok(b.bodyPct>=25 && b.bodyPct<=35,`Thể ${b.bodyPct}%`);
-  assert.ok(b.defensePct>=25 && b.defensePct<=35,`Phòng ${b.defensePct}%`);
+test('V147 Linh Thú collection gives owned raw but equipped-only percentage',()=>{
+  const items=Object.fromEntries(SPIRIT_BEAST_SPECIES_V86.map(x=>[x.id,{owned:true,level:1000,advance:5,stars:20,spiritBeastV147Migrated:true}]));
+  const inactive=spiritBeastBondSummaryV86({items});
+  assert.equal(inactive.owned,8);
+  assert.equal(inactive.powerPct,0);assert.equal(inactive.bodyPct,0);assert.equal(inactive.defensePct,0);
+  assert.ok(inactive.attackFlat>=1000&&inactive.hpFlat>=10000&&inactive.defenseFlat>=900,'all-owned raw collection must stay meaningful');
+  const active=spiritBeastBondSummaryV86({items,activePetId:'pet.7'});
+  assert.deepEqual({p:active.powerPct,b:active.bodyPct,d:active.defensePct},{p:5.3,b:3.1,d:2.5});
 });
 
 test('Ngũ Hành Set 2p is noticeable while bounded-stat minor lanes remain controlled',()=>{

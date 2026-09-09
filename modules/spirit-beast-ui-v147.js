@@ -11,7 +11,9 @@ function rewrite(text){
     .replace(/LINH THÚ V86/g,'LINH THÚ V147')
     .replace(/Đột Phá Huyết Mạch/g,'Tăng Sao')
     .replace(/Mở ở Huyết Mạch\s+(\d+)/g,'Mở ở $1★')
-    .replace(/Huyết Mạch\s+(\d+)\s*\/\s*(?:\d+|Infinity)/g,'$1★');
+    .replace(/Huyết Mạch\s+(\d+)\s*\/\s*(?:\d+|Infinity)/g,'$1★')
+    .replace(/Linh Khế luôn có hiệu lực/g,'Linh Khế chỉ có hiệu lực khi Trợ Chiến')
+    .replace(/Kể cả khi không trợ chiến\.?\s*Mỗi species chỉ tính một lần\.?/gi,'Tất cả Linh Thú sở hữu cộng raw; chỉ Linh Thú Trợ Chiến kích hoạt % Linh Khế.');
 }
 function patch(root=document){
   const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);

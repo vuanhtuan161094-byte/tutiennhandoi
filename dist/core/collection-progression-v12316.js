@@ -229,6 +229,10 @@ export function collectionStatSummaryV12316(state) {
         for (const line of d.stats) addStat(total, line, effect * manualLineTreeMultiplier(line.id, tree));
     }
     const bond = spiritBeastBondSummaryV86(state);
+    // V147: every owned beast contributes raw stats; only activePetId contributes percentage Linh Khế.
+    total.attackFlat += bond.attackFlat ?? 0;
+    total.hpFlat += bond.hpFlat ?? 0;
+    total.defenseFlat += bond.defenseFlat ?? 0;
     total.powerPct += bond.powerPct;
     total.bodyPct += bond.bodyPct;
     total.defensePct += bond.defensePct;

@@ -7,13 +7,22 @@ import { MAJOR_SYSTEM_BANDS_V129, inPowerBandV129, powerEquivalentPackageV129, r
 let passed=0; const test=(name,fn)=>{fn();passed++;console.log(`✓ [${passed}] ${name}`)};
 const liveElements=EQUIPMENT_SET_CATALOG_V116.filter(x=>x.identity==='element');
 
-test('Owning all eight max Linh Thú stays in the major 25–35% collection band with identity-weighted budgets',()=>{
+test('V147 Linh Thú power budget separates collection raw from equipped-only percent',()=>{
   const items=Object.fromEntries(SPIRIT_BEAST_SPECIES_V86.map(x=>[x.id,{owned:true,level:1000,advance:5,stars:20,spiritBeastV147Migrated:true}]));
-  const b=spiritBeastBondSummaryV86({items});
-  assert.equal(b.owned,8);
-  for(const [axis,value] of Object.entries({powerPct:b.powerPct,bodyPct:b.bodyPct,defensePct:b.defensePct})) assert.ok(value>=25&&value<=35,`${axis}=${value}`);
+  const inactive=spiritBeastBondSummaryV86({items});
+  assert.equal(inactive.owned,8);
+  assert.deepEqual({p:inactive.powerPct,b:inactive.bodyPct,d:inactive.defensePct},{p:0,b:0,d:0});
+  assert.ok(inactive.attackFlat>=1000&&inactive.attackFlat<=2500,'attackFlat='+inactive.attackFlat);
+  assert.ok(inactive.hpFlat>=10000&&inactive.hpFlat<=30000,'hpFlat='+inactive.hpFlat);
+  assert.ok(inactive.defenseFlat>=900&&inactive.defenseFlat<=2200,'defenseFlat='+inactive.defenseFlat);
   const rows=Object.values(SPIRIT_BEAST_BOND_MAX_BUDGET_V129);
-  assert.ok(new Set(rows.map(x=>`${x.powerPct}/${x.bodyPct}/${x.defensePct}`)).size>=6,'Linh Thú identities must not collapse into one generic bond');
+  assert.ok(new Set(rows.map(x=>x.powerPct+'/'+x.bodyPct+'/'+x.defensePct)).size>=6,'Linh Thú identities must not collapse into one generic bond');
+  for(const pet of SPIRIT_BEAST_SPECIES_V86){
+    const b=spiritBeastBondSummaryV86({items,activePetId:pet.id});
+    const authored=SPIRIT_BEAST_BOND_MAX_BUDGET_V129[pet.id];
+    assert.deepEqual({p:b.powerPct,b:b.bodyPct,d:b.defensePct},{p:authored.powerPct,b:authored.bodyPct,d:authored.defensePct},pet.id);
+    assert.ok(b.powerPct<=6&&b.bodyPct<=6&&b.defensePct<=6,'single equipped pet percentage must remain bounded');
+  }
 });
 
 test('All five live elemental Sets have noticeable 2p, meaningful 4p and build-defining 6p power-equivalent budgets',()=>{

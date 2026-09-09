@@ -10,6 +10,7 @@ import {
   spiritBeastStarRawMultiplierV147,
   spiritBeastStarEssenceCostV147,
   spiritBeastStatsV147,
+  spiritBeastBondContributionV147,
   spiritBeastBondSummaryV147,
   spiritBeastCombatTriggersV147,
   spiritBeastStarUpV147,
@@ -77,12 +78,26 @@ test('V147 raw growth sharply diminishes after level 100/500/1000',()=>{
   assert.equal(spiritBeastStarRawMultiplierV147(1000),1.6,'stars above 20 must not create uncapped direct multipliers');
 });
 
-test('V147 bond percent budget caps at Lv1000 + 20 stars and cannot scale infinitely',()=>{
-  const maxState={items:Object.fromEntries(SPIRIT_BEAST_SPECIES.map(x=>[x.id,pet(x.id,{level:1000,stars:20})]))};
-  const overState={items:Object.fromEntries(SPIRIT_BEAST_SPECIES.map(x=>[x.id,pet(x.id,{level:50100,stars:1000})]))};
-  const max=spiritBeastBondSummaryV147(maxState),over=spiritBeastBondSummaryV147(overState);
-  assert.equal(max.powerPct,32);assert.equal(max.bodyPct,30);assert.equal(max.defensePct,27.8);
-  assert.deepEqual({p:over.powerPct,b:over.bodyPct,d:over.defensePct},{p:32,b:30,d:27.8});
+test('V147 all owned beasts add raw while only active pet contributes star-derived percentage',()=>{
+  const items=Object.fromEntries(SPIRIT_BEAST_SPECIES.map(x=>[x.id,pet(x.id,{level:1000,stars:20})]));
+  const inactive=spiritBeastBondSummaryV147({items});
+  assert.equal(inactive.owned,8);
+  assert.deepEqual({p:inactive.powerPct,b:inactive.bodyPct,d:inactive.defensePct},{p:0,b:0,d:0});
+  assert.deepEqual({a:inactive.attackFlat,h:inactive.hpFlat,d:inactive.defenseFlat},{a:1685,h:20187,d:1532});
+  const active=spiritBeastBondSummaryV147({items,activePetId:'pet.1'});
+  assert.deepEqual({p:active.powerPct,b:active.bodyPct,d:active.defensePct},{p:5.6,b:2.6,d:2.3});
+  assert.deepEqual({a:active.attackFlat,h:active.hpFlat,d:active.defenseFlat},{a:1685,h:20187,d:1532},'equipping must not double raw');
+});
+
+test('V147 percentage is star-only: 0★ gives zero and Level cannot inflate Linh Khế',()=>{
+  const species=SPIRIT_BEAST_SPECIES[0];
+  const zero=spiritBeastBondContributionV147(species,pet(species.id,{level:1000,stars:0}));
+  assert.deepEqual(zero,{powerPct:0,bodyPct:0,defensePct:0});
+  const low=spiritBeastBondContributionV147(species,pet(species.id,{level:1,stars:10}));
+  const high=spiritBeastBondContributionV147(species,pet(species.id,{level:50000,stars:10}));
+  assert.deepEqual(low,high);assert.deepEqual(low,{powerPct:2.8,bodyPct:1.3,defensePct:1.15});
+  const capped=spiritBeastBondContributionV147(species,pet(species.id,{level:50000,stars:1000}));
+  assert.deepEqual(capped,{powerPct:5.6,bodyPct:2.6,defensePct:2.3});
 });
 
 test('V147 old Huyết Mạch I-V migrates exactly to 4/8/12/16/20 stars and preserves unspent fragments',()=>{

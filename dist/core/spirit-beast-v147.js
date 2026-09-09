@@ -66,6 +66,9 @@ export const SPIRIT_BEAST_LEGACY_FULL_STAR_V147 = 20;
 export const SPIRIT_BEAST_STAR_MILESTONE_STEP_V147 = 4;
 export const SPIRIT_BEAST_GACHA_FRAGMENT_ROLL_V147 = 5;
 export const SPIRIT_BEAST_DUPLICATE_FRAGMENT_V147 = 10;
+// Every owned beast contributes a bounded share of its authored raw HP/Attack/Defense.
+// Percent Linh Khế is handled separately and only applies to the equipped beast.
+export const SPIRIT_BEAST_COLLECTION_RAW_SHARE_V147 = .10;
 export const SPIRIT_BEAST_SPECIES = SPIRIT_BEAST_SPECIES_V147;
 export const SPIRIT_BEAST_COMBAT_TUNING = SPIRIT_BEAST_COMBAT_TUNING_V147;
 
@@ -118,23 +121,35 @@ export function spiritBeastStatsV147(species,progress){
     effectiveLevel:Number(effective.toFixed(2))
   };
 }
+export function spiritBeastRawContributionV147(species,progress){
+  if(!progress?.owned)return {attackFlat:0,hpFlat:0,defenseFlat:0};
+  const stats=spiritBeastStatsV147(species,progress);
+  return {
+    attackFlat:Math.round(stats.attack*SPIRIT_BEAST_COLLECTION_RAW_SHARE_V147),
+    hpFlat:Math.round(stats.hp*SPIRIT_BEAST_COLLECTION_RAW_SHARE_V147),
+    defenseFlat:Math.round(stats.defense*SPIRIT_BEAST_COLLECTION_RAW_SHARE_V147)
+  };
+}
 export function spiritBeastBondContributionV147(species,progress){
   const max=SPIRIT_BEAST_BOND_MAX_BUDGET_V147[species.id]??{powerPct:0,bodyPct:0,defensePct:0};
-  const stars=spiritBeastStarsV147(progress),level=Math.max(1,Math.floor(Number(progress?.level)||1));
-  const levelFactor=.20+.80*Math.min((level-1)/(SPIRIT_BEAST_BOND_LEVEL_CAP_V147-1),1);
-  const starFactor=.65+.35*Math.min(stars/SPIRIT_BEAST_LEGACY_FULL_STAR_V147,1);
-  const factor=levelFactor*starFactor;
+  const stars=spiritBeastStarsV147(progress);
+  // Level never increases percentage. 0★ has no Linh Khế percent; 20★ reaches the authored cap.
+  const factor=Math.min(stars/SPIRIT_BEAST_LEGACY_FULL_STAR_V147,1);
   return {powerPct:Number((max.powerPct*factor).toFixed(3)),bodyPct:Number((max.bodyPct*factor).toFixed(3)),defensePct:Number((max.defensePct*factor).toFixed(3))};
 }
 export function spiritBeastBondSummaryV147(state){
-  let powerPct=0,bodyPct=0,defensePct=0,owned=0; const rows=[];
+  let powerPct=0,bodyPct=0,defensePct=0,attackFlat=0,hpFlat=0,defenseFlat=0,owned=0; const rows=[];
   for(const species of SPIRIT_BEAST_SPECIES_V147){
     const p=state?.items?.[species.id]; if(!p?.owned)continue;
-    owned++; const stats=spiritBeastStatsV147(species,p),bond=spiritBeastBondContributionV147(species,p);
+    owned++;
+    const stats=spiritBeastStatsV147(species,p),raw=spiritBeastRawContributionV147(species,p),active=state?.activePetId===species.id;
+    const potentialBond=spiritBeastBondContributionV147(species,p);
+    const bond=active?potentialBond:{powerPct:0,bodyPct:0,defensePct:0};
+    attackFlat+=raw.attackFlat;hpFlat+=raw.hpFlat;defenseFlat+=raw.defenseFlat;
     powerPct+=bond.powerPct;bodyPct+=bond.bodyPct;defensePct+=bond.defensePct;
-    rows.push({id:species.id,name:species.name,stats,bond,level:p.level,stars:spiritBeastStarsV147(p),levelCap:spiritBeastLevelCapV147(p)});
+    rows.push({id:species.id,name:species.name,stats,raw,bond,bondPotential:potentialBond,active,level:p.level,stars:spiritBeastStarsV147(p),levelCap:spiritBeastLevelCapV147(p)});
   }
-  return {schema:SPIRIT_BEAST_SCHEMA_V147,owned,total:SPIRIT_BEAST_SPECIES_V147.length,powerPct:Number(powerPct.toFixed(3)),bodyPct:Number(bodyPct.toFixed(3)),defensePct:Number(defensePct.toFixed(3)),rows};
+  return {schema:SPIRIT_BEAST_SCHEMA_V147,owned,total:SPIRIT_BEAST_SPECIES_V147.length,attackFlat,hpFlat,defenseFlat,powerPct:Number(powerPct.toFixed(3)),bodyPct:Number(bodyPct.toFixed(3)),defensePct:Number(defensePct.toFixed(3)),rows};
 }
 function passiveStrengthV147(stars){ return stars>=20?1.5:stars>=12?1.25:1; }
 function effectScale(e,scale,passive,passiveStrength,statusDurationScale=1){
@@ -154,8 +169,11 @@ export function spiritBeastCombatTriggersV147(state){
 }
 export function spiritBeastViewV147(state,speciesId){
   const species=spiritBeastSpeciesV147(speciesId),p=state?.items?.[speciesId]; if(!species)return undefined;
-  const progress=p??{owned:false,level:1,stars:0,specificFragments:0},stars=spiritBeastStarsV147(progress),stats=spiritBeastStatsV147(species,progress),bond=progress.owned?spiritBeastBondContributionV147(species,progress):{powerPct:0,bodyPct:0,defensePct:0};
-  return {schema:SPIRIT_BEAST_SCHEMA_V147,speciesId:species.id,name:species.name,role:species.role,roleLabel:species.roleLabel,asset:species.asset,stats,bond,levelCap:spiritBeastLevelCapV147(progress),stars,starUpCost:SPIRIT_BEAST_FRAGMENT_PER_STAR_V147,starEssenceCost:spiritBeastStarEssenceCostV147(stars),passive:{...species.passive,unlocked:true},actives:species.actives.map(x=>({...x,unlockBloodline:x.unlockStars,unlocked:stars>=(x.unlockStars??0)})),active:state?.activePetId===speciesId};
+  const progress=p??{owned:false,level:1,stars:0,specificFragments:0},stars=spiritBeastStarsV147(progress),stats=spiritBeastStatsV147(species,progress),active=state?.activePetId===speciesId;
+  const raw=progress.owned?spiritBeastRawContributionV147(species,progress):{attackFlat:0,hpFlat:0,defenseFlat:0};
+  const bondPotential=progress.owned?spiritBeastBondContributionV147(species,progress):{powerPct:0,bodyPct:0,defensePct:0};
+  const bond=active?bondPotential:{powerPct:0,bodyPct:0,defensePct:0};
+  return {schema:SPIRIT_BEAST_SCHEMA_V147,speciesId:species.id,name:species.name,role:species.role,roleLabel:species.roleLabel,asset:species.asset,stats,raw,bond,bondPotential,levelCap:spiritBeastLevelCapV147(progress),stars,starUpCost:SPIRIT_BEAST_FRAGMENT_PER_STAR_V147,starEssenceCost:spiritBeastStarEssenceCostV147(stars),passive:{...species.passive,unlocked:true},actives:species.actives.map(x=>({...x,unlockBloodline:x.unlockStars,unlocked:stars>=(x.unlockStars??0)})),active};
 }
 export function spiritBeastStarUpV147(progress,count=1){
   if(!progress?.owned)throw new Error('Chưa sở hữu Linh Thú.');
