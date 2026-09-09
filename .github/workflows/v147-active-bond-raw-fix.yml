@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: '22'
           cache: ''
-      - name: Repair patch-script nested template quoting
+      - name: Repair patch-script quoting and current test anchors
         shell: bash
         run: |
           python - <<'PY'
@@ -38,6 +38,7 @@ jobs:
           s=s.replace('`hpFlat=${inactive.hpFlat}`', "'hpFlat='+inactive.hpFlat")
           s=s.replace('`defenseFlat=${inactive.defenseFlat}`', "'defenseFlat='+inactive.defenseFlat")
           s=s.replace('`${x.powerPct}/${x.bodyPct}/${x.defensePct}`', "x.powerPct+'/'+x.bodyPct+'/'+x.defensePct")
+          s=s.replace('Owning all eight maxed Linh Thú is a meaningful major-system bond','Owning all eight V147 bond-capped Linh Thú is a meaningful major-system bond')
           p.write_text(s)
           PY
       - name: Apply V147 active-bond/raw correction
