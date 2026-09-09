@@ -17,5 +17,9 @@ jobs:
         run: |
           echo '=== runtimeV87 / confidant trigger consumers ==='
           grep -R -n -E 'runtimeV87|confidantCombatTriggersV87|TÂM Ý|TAM Y|activeCompanionId' dist modules app.js standalone-entry.js 2>/dev/null | head -n 300 || true
+          echo '=== fireTriggers call sites ==='
+          grep -n "fireTriggers(" dist/core/combat.js || true
+          echo '=== event names near fireTriggers ==='
+          grep -R -n -E "event: 'On|fireTriggers\([^\n]+, '[A-Za-z]+" dist/core modules | head -n 400 || true
           echo '=== combat kernel candidate files ==='
           find dist modules -type f | grep -E 'combat|battle|kernel|trigger' | head -n 200 || true
