@@ -1,0 +1,46 @@
+name: V147 Active Bond Raw Fix
+
+on:
+  push:
+    branches:
+      - feature/v147-spirit-beast-progression
+    paths:
+      - qa/tools/v147-active-bond-raw-fix.mjs
+      - .github/workflows/v147-active-bond-raw-fix.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: v147-active-bond-raw-fix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  patch-test-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: ''
+      - name: Apply V147 active-bond/raw correction
+        run: node qa/tools/v147-active-bond-raw-fix.mjs
+      - name: Diff integrity
+        run: git diff --check
+      - name: V147 dedicated regression
+        run: node qa/tests/v147-spirit-beast-progression-test.js
+      - name: Backend fast gate
+        run: node qa/runners/v140-backend-gates.js fast
+      - name: Frontend fast gate
+        run: node qa/runners/v140-frontend-gates.js fast
+      - name: Commit verified correction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist/core/spirit-beast-v147.js dist/core/collection-progression-v12316.js modules/spirit-beast-ui-v147.js qa/tests/v147-spirit-beast-progression-test.js qa/tests/v129-stat-source-audit-test.js qa/tests/v129-power-budget-test.js
+          git commit -m "fix(v147): enforce equipped-only bond and owned raw stats"
+          git push origin HEAD:feature/v147-spirit-beast-progression
