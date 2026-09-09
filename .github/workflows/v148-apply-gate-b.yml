@@ -1,40 +1,8 @@
-name: V148 Apply Gate B
+name: V148 Apply Gate B (retired)
 on:
-  push:
-    branches: [feature/v148-confidant-rebuild]
-permissions:
-  contents: write
+  workflow_dispatch:
 jobs:
-  apply:
+  retired:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-      - name: Apply guarded V148 Gate B patch
-        run: node qa/tools/v148-apply-gate-b.js
-      - name: Syntax check touched runtime
-        run: |
-          node --check dist/core/gacha-collection-economy-v12325.js
-          node --check dist/core/collection-workshop-gacha-v12326.js
-          node --check dist/core/session.js
-          node --check dist/core/gameplay.js
-          node --check dist/core/game-api.js
-          node --check standalone-runtime.js
-          node --check modules/confidant-presentation-v87.js
-          node --check app.js
-          node --check qa/tests/v148-confidant-rebuild-test.js
-      - name: Dedicated V148 Gate B
-        run: node qa/tests/v148-confidant-rebuild-test.js
-      - name: Canonical backend fast
-        run: node qa/runners/v140-backend-gates.js fast
-      - name: Canonical frontend fast
-        run: node qa/runners/v140-frontend-gates.js fast
-      - name: Commit tested Gate B output
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add dist/core/gacha-collection-economy-v12325.js dist/core/collection-workshop-gacha-v12326.js dist/core/session.js dist/core/gameplay.js dist/core/game-api.js standalone-runtime.js modules/confidant-presentation-v87.js app.js qa/tests/v148-confidant-rebuild-test.js
-          git diff --cached --quiet && exit 0
-          git commit -m "feat(v148): integrate confidant economy gacha specialties and UI"
-          git push origin HEAD:feature/v148-confidant-rebuild
+      - run: echo 'V148 Gate B already committed; retired.'
