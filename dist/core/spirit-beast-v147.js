@@ -6,6 +6,7 @@ export const SPIRIT_BEAST_BASE_LEVEL_CAP_V147 = 100;
 export const SPIRIT_BEAST_LEVELS_PER_STAR_V147 = 50;
 export const SPIRIT_BEAST_BOND_LEVEL_CAP_V147 = 1000;
 export const SPIRIT_BEAST_LEGACY_FULL_STAR_V147 = 20;
+export const SPIRIT_BEAST_STAR_MILESTONE_STEP_V147 = 4;
 export const SPIRIT_BEAST_GACHA_FRAGMENT_ROLL_V147 = 5;
 export const SPIRIT_BEAST_DUPLICATE_FRAGMENT_V147 = 10;
 export const SPIRIT_BEAST_SPECIES = SPIRIT_BEAST_SPECIES_V147;
@@ -13,6 +14,7 @@ export const SPIRIT_BEAST_COMBAT_TUNING = SPIRIT_BEAST_COMBAT_TUNING_V147;
 
 const BY_ID = new Map(SPIRIT_BEAST_SPECIES_V147.map(x => [x.id, x]));
 const LEGACY_SPECIES_TO_V147 = ['pet.3','pet.1','pet.2','pet.4','pet.6','pet.5','pet.5','pet.8','pet.4','pet.7'];
+const STAR_MILESTONE_ESSENCE_CYCLE_V147 = [1,1,2,3,5];
 
 export const SPIRIT_BEAST_BOND_MAX_BUDGET_V147 = Object.freeze({
   'pet.1':{powerPct:5.6,bodyPct:2.6,defensePct:2.3},
@@ -42,6 +44,12 @@ export function spiritBeastEffectiveLevelV147(level){
 export function spiritBeastStarRawMultiplierV147(stars){
   const legacyEq=Math.min(5,Math.max(0,Number(stars)||0)/4);
   return 1+legacyEq*.12;
+}
+export function spiritBeastStarEssenceCostV147(currentStars){
+  const target=spiritBeastStarsV147({stars:currentStars})+1;
+  if(target%SPIRIT_BEAST_STAR_MILESTONE_STEP_V147!==0)return 0;
+  const milestone=Math.max(1,Math.floor(target/SPIRIT_BEAST_STAR_MILESTONE_STEP_V147));
+  return STAR_MILESTONE_ESSENCE_CYCLE_V147[(milestone-1)%STAR_MILESTONE_ESSENCE_CYCLE_V147.length];
 }
 export function spiritBeastStatsV147(species,progress){
   const stars=spiritBeastStarsV147(progress),level=Math.max(1,Math.min(spiritBeastLevelCapV147(stars),Math.floor(Number(progress?.level)||1)));
@@ -90,7 +98,7 @@ export function spiritBeastCombatTriggersV147(state){
 export function spiritBeastViewV147(state,speciesId){
   const species=spiritBeastSpeciesV147(speciesId),p=state?.items?.[speciesId]; if(!species)return undefined;
   const progress=p??{owned:false,level:1,stars:0,specificFragments:0},stars=spiritBeastStarsV147(progress),stats=spiritBeastStatsV147(species,progress),bond=progress.owned?spiritBeastBondContributionV147(species,progress):{powerPct:0,bodyPct:0,defensePct:0};
-  return {schema:SPIRIT_BEAST_SCHEMA_V147,speciesId:species.id,name:species.name,role:species.role,roleLabel:species.roleLabel,asset:species.asset,stats,bond,levelCap:spiritBeastLevelCapV147(progress),stars,starUpCost:SPIRIT_BEAST_FRAGMENT_PER_STAR_V147,passive:{...species.passive,unlocked:true},actives:species.actives.map(x=>({...x,unlockBloodline:x.unlockStars,unlocked:stars>=(x.unlockStars??0)})),active:state?.activePetId===speciesId};
+  return {schema:SPIRIT_BEAST_SCHEMA_V147,speciesId:species.id,name:species.name,role:species.role,roleLabel:species.roleLabel,asset:species.asset,stats,bond,levelCap:spiritBeastLevelCapV147(progress),stars,starUpCost:SPIRIT_BEAST_FRAGMENT_PER_STAR_V147,starEssenceCost:spiritBeastStarEssenceCostV147(stars),passive:{...species.passive,unlocked:true},actives:species.actives.map(x=>({...x,unlockBloodline:x.unlockStars,unlocked:stars>=(x.unlockStars??0)})),active:state?.activePetId===speciesId};
 }
 export function spiritBeastStarUpV147(progress,count=1){
   if(!progress?.owned)throw new Error('Chưa sở hữu Linh Thú.');
@@ -117,11 +125,10 @@ export function migrateSpiritBeastsV147(state){
     const p=state.items[species.id];if(!p)continue;
     if(!p.spiritBeastV147Migrated){const legacy=Math.max(0,Math.min(5,Math.floor(Number(p.advance)||0)));p.stars=Math.max(spiritBeastStarsV147(p),legacy*4);starsGranted+=legacy*4;p.advance=5;p.spiritBeastV147Migrated=true;migrated=true;}
     p.stars=spiritBeastStarsV147(p);p.level=Math.max(1,Math.floor(Number(p.level)||1));p.specificFragments=Math.max(0,Math.floor(Number(p.specificFragments)||0));
-    if(p.owned&&p.specificFragments>=SPIRIT_BEAST_FRAGMENT_PER_STAR_V147){const auto=Math.floor(p.specificFragments/SPIRIT_BEAST_FRAGMENT_PER_STAR_V147);p.specificFragments-=auto*SPIRIT_BEAST_FRAGMENT_PER_STAR_V147;p.stars+=auto;starsGranted+=auto;migrated=true;}
     const cap=spiritBeastLevelCapV147(p);if(p.level>cap){p.level=cap;migrated=true;}
-    // Keep legacy advance path hard-locked. Stars is the sole V147 progression authority.
+    // Keep legacy advance hard-locked. Stars is the sole V147 progression authority.
     if(p.owned)p.advance=5;
   }
-  state.spiritBeastV147Migrated=true;state.spiritBeastV147MigrationVersion=1;
+  state.spiritBeastV147Migrated=true;state.spiritBeastV147MigrationVersion=2;
   return {migrated,refund,starsGranted};
 }
