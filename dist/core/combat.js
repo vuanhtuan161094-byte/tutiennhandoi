@@ -817,6 +817,7 @@ export class CombatEngine {
         return {
             sourceTag: effect.sourceTag ?? defaultSourceTag,
             coefficient: effect.coefficient,
+            flatDamage: Math.max(0, Number(effect.flatDamage ?? 0)),
             targetMaxHpPct: effect.targetMaxHpPct,
             targetMaxHpAttackCapCoefficient: effect.targetMaxHpAttackCapCoefficient,
             breakDamagePct: effect.breakDamagePct ?? effect.stabilityDamage ?? 0,
@@ -877,7 +878,7 @@ export class CombatEngine {
             target.dodgePressure = Math.max(0, target.dodgePressure - 0.65);
         }
         const hpPart = Math.min(combatMaxHp(target.baseStats) * Math.max(0, ctx.targetMaxHpPct ?? 0) / 100, srcStats.attack * Math.max(0, ctx.targetMaxHpAttackCapCoefficient ?? 0));
-        const raw = srcStats.attack * ctx.coefficient + hpPart;
+        const raw = srcStats.attack * ctx.coefficient + hpPart + Math.max(0, Number(ctx.flatDamage ?? 0));
         let damage = raw * fateOutgoingDamageMultiplierV4(source,target) * defenseFactor(srcStats.attack, dstStats.defense, 0);
         let layers = 0;
         if (ctx.canCrit) {
@@ -948,7 +949,7 @@ export class CombatEngine {
         if (didCrit)
             this.log(now, 'crit', `${source.name} ${critLayerName(critLayerCount)}.`, source.id, target.id, ctx.skillId, { rawCritPct: crit.rawPct, guaranteedLayers: crit.guaranteedLayers, nextLayerChancePct: crit.nextLayerChancePct, critLayers: critLayerCount, damagePctPerLayer: crit.damagePctPerLayer });
         const hpPart = Math.min(combatMaxHp(target.baseStats) * Math.max(0, ctx.targetMaxHpPct ?? 0) / 100, srcStats.attack * Math.max(0, ctx.targetMaxHpAttackCapCoefficient ?? 0));
-        let raw = srcStats.attack * Math.max(0, ctx.coefficient) + hpPart;
+        let raw = srcStats.attack * Math.max(0, ctx.coefficient) + hpPart + Math.max(0, Number(ctx.flatDamage ?? 0));
         const elemental = ctx.elementalCoefficients ?? {};
         for (const [elementKey, coefficientValue] of Object.entries(elemental)) {
             const element = elementKey;
@@ -1504,7 +1505,7 @@ export class CombatEngine {
                 continue;
             if (trigger.sourceTags && !trigger.sourceTags.includes(sourceTag))
                 continue;
-            const runtime = trigger.runtimeV87, runtime88 = trigger.runtimeV88;
+            const runtime = trigger.runtimeV87, runtime88 = trigger.runtimeV88, runtime148 = trigger.runtimeV148;
             // V87/V88 danger gates and once-per-battle rules share triggerState; a new EntityState resets them naturally.
             if ((runtime?.oncePerBattle || runtime88?.oncePerBattle) && owner.triggerState[trigger.id])
                 continue;
@@ -1534,12 +1535,29 @@ export class CombatEngine {
                 if (artifactBaoQi + 1e-9 < artifactCost)
                     continue;
             }
+            if (runtime148?.kind === 'harmony') {
+                const gauge = Math.max(0, Number(owner.marks['__confidant_v148_harmony'] ?? 0));
+                if (gauge + 1e-9 < Math.max(1, Number(runtime148.harmonyCost ?? 100)))
+                    continue;
+            }
             const last = owner.triggerState[trigger.id]?.lastTriggeredAt ?? -Infinity;
             if (trigger.cooldown && now - last < trigger.cooldown)
                 continue;
             const effectiveChance = trigger.chancePct * Math.max(0, procCoefficient);
             if (effectiveChance <= 0 || !this.rng.chance(effectiveChance))
                 continue;
+            if (runtime148?.kind === 'gauge') {
+                const before = Math.max(0, Number(owner.marks['__confidant_v148_harmony'] ?? 0));
+                const after = Math.min(100, before + Math.max(0, Number(runtime148.gaugeGain ?? 0)) * Math.max(0, procCoefficient));
+                owner.marks['__confidant_v148_harmony'] = after;
+                if (before < 100 && after >= 100)
+                    this.log(now, 'resource', `Đồng Tâm đã viên mãn · có thể kích Tâm Ý Hợp Kích.`, owner.id, target.id, undefined, { confidantRuntime:'confidant.v148', confidantEvent:'gaugeReady', confidantId:runtime148.confidantId, confidantGauge:after });
+                continue;
+            }
+            if (runtime148?.kind === 'harmony') {
+                const cost = Math.max(1, Number(runtime148.harmonyCost ?? 100));
+                owner.marks['__confidant_v148_harmony'] = Math.max(0, Number(owner.marks['__confidant_v148_harmony'] ?? 0) - cost);
+            }
             owner.triggerState[trigger.id] = { lastTriggeredAt: now };
             if (runtime88) {
                 const art = owner.combatBuildV117?.artifactV88;
@@ -1550,11 +1568,12 @@ export class CombatEngine {
             const message = runtime ? `${runtime.label} · ${runtime.confidantName}: ${runtime.abilityName}.` : runtime88 ? `${runtime88.label} · ${runtime88.itemName}: ${runtime88.abilityName}.` : `${owner.name} kích phát ${trigger.id}.`;
             const data = { event, sourceTag, procCoefficient, effectiveChance };
             if (runtime) {
-                data.confidantRuntime = 'confidant.v87';
+                data.confidantRuntime = runtime148 ? 'confidant.v148' : 'confidant.v87';
                 data.confidantEvent = runtime.kind;
                 data.confidantId = runtime.confidantId;
                 data.abilityName = runtime.abilityName;
                 data.oncePerBattle = Boolean(runtime.oncePerBattle);
+                if (runtime148) data.confidantGauge = Math.max(0, Number(owner.marks['__confidant_v148_harmony'] ?? 0));
             }
             if (runtime88) {
                 data.artifactRuntime = 'artifact.v88';

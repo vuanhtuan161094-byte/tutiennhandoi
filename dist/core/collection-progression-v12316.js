@@ -66,6 +66,7 @@ export function ensureCollectionProgressStateV12316(container) {
     migrateManualProgressV127(state);
     migrateSpiritBeastsV86(state);
     migrateConfidantsV87(state);
+    migrateConfidantsV148(state);
     migrateArtifactsV88(state);
     return state;
 }
@@ -236,6 +237,9 @@ export function collectionStatSummaryV12316(state) {
     total.powerPct += bond.powerPct;
     total.bodyPct += bond.bodyPct;
     total.defensePct += bond.defensePct;
+    // V148: all owned Tri Kỷ contribute raw account progression only; no collection-wide percentage inflation.
+    const confidantFortuneV148 = confidantFortuneSummaryV148(state);
+    total.cultivationFlatPer15s += Math.max(0, Number(confidantFortuneV148.cultivationFlatPer15s)||0);
     const active = [...state.activeArtifactIds];
     for (const id of active) {
         const p = state.items[id], d = BY_ID.get(id);
@@ -274,18 +278,19 @@ export function applyCollectionToEntityV12316(base, state) {
     stats.breakEffectPct = (stats.breakEffectPct ?? 0) + b.breakEffectPct;
     stats.shieldEffectPct = (stats.shieldEffectPct ?? 0) + b.shieldPct;
     stats.actionSpeed = Math.max(0.01, (stats.actionSpeed ?? 1) * (1 + b.actionSpeedPct / 100));
-    let enriched = { ...base, tags: [...new Set([...base.tags, 'CollectionV12316', 'ManualV127', 'SpiritBeastV86', 'ConfidantV87', 'ArtifactV88'])], stats, triggers: [...(base.triggers ?? []), ...spiritBeastCombatTriggersV86(state), ...confidantCombatTriggersV87(state)] };
+    let enriched = { ...base, tags: [...new Set([...base.tags, 'CollectionV12316', 'ManualV127', 'SpiritBeastV86', 'ConfidantV148', 'ArtifactV88'])], stats, triggers: [...(base.triggers ?? []), ...spiritBeastCombatTriggersV86(state), ...confidantCombatTriggersV148(state)] };
     enriched = applyArtifactsV88ToEntity(enriched, state);
     return enriched;
 }
 export function collectionCultivationMultiplierV12316(state) {
     if (!state) return 1;
-    const fortune = confidantFortuneSummaryV87(state), specialty = activeConfidantSpecialtyV87(state), specialtyPct = specialty?.unlocked && specialty.id === 'cultivation' ? specialty.strengthPct : 0;
+    // V148 Phúc Duyên is raw. Only active Lạc Dao may provide the bounded cultivation specialty %.
+    const specialty = activeConfidantSpecialtyV148(state), specialtyPct = specialty?.unlocked && specialty.id === 'cultivation' ? specialty.strengthPct : 0;
     const tree = manualTree(state), completed = manualCompletedRealmStagesV127(state).size;
     const completePct = completed * (2 + Math.max(0, Math.min(1, tree.completedRealmCultivationBonusPct ?? 0)));
-    return 1 + (fortune.cultivationPct + specialtyPct + completePct) / 100;
+    return 1 + (specialtyPct + completePct) / 100;
 }
-export function collectionConfidantV87Summary(state) { return { fortune: confidantFortuneSummaryV87(state), activeSpecialty: activeConfidantSpecialtyV87(state) }; }
+export function collectionConfidantV87Summary(state) { migrateConfidantsV148(state); return { schema:'confidant.v148', fortune: confidantFortuneSummaryV148(state), activeSpecialty: activeConfidantSpecialtyV148(state) }; }
 export const DAILY_DUNGEONS_V12316 = [
     { id: 'daily.manual', name: 'Tàng Kinh Bí Cảnh', openDays: [1, 4], description: 'Legacy tài nguyên Công Pháp; V89 không mint Tiên Ngọc Khóa từ endpoint cũ.', reward: { boundJade: 0, genericCategory: 'manual', genericFragments: 45, specificPulls: 1 } },
     { id: 'daily.artifact', name: 'Vạn Bảo Các', openDays: [2, 5], description: 'Legacy tài nguyên Pháp Bảo; V89 không mint Tiên Ngọc Khóa từ endpoint cũ.', reward: { boundJade: 0, genericCategory: 'artifact', genericFragments: 30, specificPulls: 1 } },
@@ -331,6 +336,7 @@ export function collectionSummaryV12316(container, now = Date.now()) {
 
 // V147 canonical overrides. Legacy V146 implementation is retained above as internal fallback only.
 import { SPIRIT_BEAST_DUPLICATE_FRAGMENT_V147, SPIRIT_BEAST_FRAGMENT_PER_STAR_V147, migrateSpiritBeastsV147, spiritBeastEffectiveLevelV147, spiritBeastLevelCapV147, spiritBeastStarEssenceCostV147, spiritBeastStarUpV147 } from './spirit-beast-v147.js';
+import { CONFIDANT_DUPLICATE_FRAGMENT_V148, CONFIDANT_FRAGMENT_PER_STAR_V148, migrateConfidantsV148, confidantCombatTriggersV148, confidantViewV148, confidantFortuneSummaryV148, confidantIntimacyCostV148, confidantIntimacyCapV148, confidantStarEssenceCostV148, confidantStarUpV148, confidantStarsV148, activeConfidantSpecialtyV148, spendConfidantHeartPointV148 } from './confidant-v87.js';
 
 export function spiritBeastStrengthenCostV147(state,progress){
   const effective=spiritBeastEffectiveLevelV147(progress?.level??1);
@@ -342,7 +348,7 @@ export function spiritBeastStrengthenCostV147(state,progress){
   return cost;
 }
 
-export function grantCollectionItemV12316(state,id,fragmentAmount){
+function grantCollectionItemV12316V147Canonical(state,id,fragmentAmount){
   const def=collectionDefinitionV12316(id);
   if(def.category!=='pet')return grantCollectionItemV12316LegacyV146(state,id,fragmentAmount);
   migrateSpiritBeastsV147(state);
@@ -355,7 +361,7 @@ export function grantCollectionItemV12316(state,id,fragmentAmount){
   return {first,progress:{...p},definition:def};
 }
 
-export function strengthenCollectionItemV12316(state,id,levels=1){
+function strengthenCollectionItemV12316V147Canonical(state,id,levels=1){
   const def=collectionDefinitionV12316(id);
   if(def.category!=='pet')return strengthenCollectionItemV12316LegacyV146(state,id,levels);
   migrateSpiritBeastsV147(state);
@@ -374,7 +380,7 @@ export function strengthenCollectionItemV12316(state,id,levels=1){
   return {definition:def,levels:done,cost,levelCap,progress:{...p}};
 }
 
-export function advanceCollectionItemV12316(state,id){
+function advanceCollectionItemV12316V147Canonical(state,id){
   const def=collectionDefinitionV12316(id);
   if(def.category!=='pet')return advanceCollectionItemV12316LegacyV146(state,id);
   migrateSpiritBeastsV147(state);
@@ -390,4 +396,43 @@ export function advanceCollectionItemV12316(state,id){
   if(essenceCost>0)state.economyV12325.ascensionEssence.pet-=essenceCost;
   p.advance=5;
   return {definition:def,cost:fragmentCost,fragmentCost,essenceCost,stars:result.stars,levelCap:result.levelCap,progress:{...p}};
+}
+
+
+// V148 canonical collection wrappers.
+export function grantCollectionItemV12316(state,id,fragmentAmount){
+  const def=collectionDefinitionV12316(id);
+  if(def.category!=='companion')return grantCollectionItemV12316V147Canonical(state,id,fragmentAmount);
+  migrateConfidantsV148(state);
+  const p=state.items[id]??(state.items[id]={owned:false,level:1,advance:0,stars:0,specificFragments:0,confidantHeartV148:{assist:0,guard:0,harmony:0,raw:0},confidantV148Migrated:true});
+  const first=!p.owned;p.owned=true;
+  if(!first)p.specificFragments=Math.max(0,Math.floor(Number(p.specificFragments)||0))+CONFIDANT_DUPLICATE_FRAGMENT_V148;
+  return {first,progress:{...p,confidantHeartV148:{...(p.confidantHeartV148??{})}},definition:def};
+}
+
+export function strengthenCollectionItemV12316(state,id,levels=1){
+  const def=collectionDefinitionV12316(id);
+  if(def.category!=='companion')return strengthenCollectionItemV12316V147Canonical(state,id,levels);
+  migrateConfidantsV148(state);
+  const p=state.items?.[id];if(!p?.owned)throw new Error(`Chưa sở hữu ${def.name}.`);
+  const levelCap=confidantIntimacyCapV148(p);let done=0,cost=0;
+  for(let i=0;i<Math.max(1,Math.floor(Number(levels)||1));i++){
+    if(p.level>=levelCap)break;
+    const c=facilityDiscountedCostV99(state,'companion',confidantIntimacyCostV148(p));
+    if((state.genericFragments?.companion??0)<c)break;
+    state.genericFragments.companion-=c;p.level+=1;cost+=c;done+=1;
+  }
+  if(done<=0)throw new Error(`Không đủ Đồng Tâm Ngọc hoặc đã đạt Thân Mật ${levelCap}.`);
+  return {definition:def,levels:done,cost,levelCap,progress:{...p,confidantHeartV148:{...(p.confidantHeartV148??{})}}};
+}
+
+export function advanceCollectionItemV12316(state,id){
+  const def=collectionDefinitionV12316(id);
+  if(def.category!=='companion')return advanceCollectionItemV12316V147Canonical(state,id);
+  const result=confidantStarUpV148(state,id,1);
+  return {...result,cost:CONFIDANT_FRAGMENT_PER_STAR_V148,advanceCost:CONFIDANT_FRAGMENT_PER_STAR_V148};
+}
+
+export function spendCollectionConfidantHeartPointV148(state,id,branch){
+  return spendConfidantHeartPointV148(state,id,branch);
 }

@@ -6,7 +6,7 @@ const here=path.dirname(fileURLToPath(import.meta.url));
 const testsDir=path.resolve(here,'../tests');
 const repoRoot=path.resolve(here,'../..');
 const mode=String(process.argv[2]??'fast').trim().toLowerCase();
-const FAST=['v140-cultivation-core-test.js','v147-spirit-beast-progression-test.js','v140-zero-legacy-test.js','v129-stat-architecture-test.js','v129-stat-provenance-test.js','v129-stat-source-audit-test.js','v129-major-systems-audit-test.js','v129-combat-parity-test.js','v129-gameplay-consistency-test.js','v129-dao-suy-alchemy-balance-test.js','v129-hunt-alchemy-tier-regression-test.js','v129-endgame-continuity-structural-test.js','v99-dongfu-production-test.js'];
+const FAST=['v140-cultivation-core-test.js','v147-spirit-beast-progression-test.js','v148-confidant-rebuild-test.js','v140-zero-legacy-test.js','v129-stat-architecture-test.js','v129-stat-provenance-test.js','v129-stat-source-audit-test.js','v129-major-systems-audit-test.js','v129-combat-parity-test.js','v129-gameplay-consistency-test.js','v129-dao-suy-alchemy-balance-test.js','v129-hunt-alchemy-tier-regression-test.js','v129-endgame-continuity-structural-test.js','v99-dongfu-production-test.js'];
 const excluded=name=>name.includes('transport')||name.includes('frontend')||name.includes('web-launcher')||name.includes('performance')||name==='pvp-v91-balance-test.js';
 const closure=()=>fs.readdirSync(testsDir).filter(n=>n.endsWith('test.js')&&!excluded(n)).sort();
 const tests=mode==='fast'?FAST:mode==='closure'?closure():null;
