@@ -1,0 +1,204 @@
+
+// V148 — canonical infinite Confidant progression. V87 exports above remain compatibility-only.
+export const CONFIDANT_SCHEMA_V148 = 'confidant.v148';
+export const CONFIDANT_FRAGMENT_PER_STAR_V148 = 10;
+export const CONFIDANT_GACHA_FRAGMENT_ROLL_V148 = 5;
+export const CONFIDANT_DUPLICATE_FRAGMENT_V148 = 10;
+export const CONFIDANT_BASE_INTIMACY_CAP_V148 = 100;
+export const CONFIDANT_INTIMACY_PER_STAR_V148 = 50;
+export const CONFIDANT_HARMONY_GAUGE_MAX_V148 = 100;
+export const CONFIDANT_HEART_BRANCH_LEVEL_MAX_V148 = 10;
+
+const CONFIDANT_GRADE_POWER_V148 = Object.freeze({ mystic: 1, earth: 1.08, heaven: 1.18, immortal: 1.32 });
+const CONFIDANT_HEART_BRANCHES_V148 = Object.freeze({
+  'companion.1': [
+    {id:'assist',name:'Sinh Mệnh',description:'Thanh Mộc Sinh Tức mạnh hơn; thiên về hồi phục chủ động.'},
+    {id:'guard',name:'Hộ Đạo',description:'Mộc Linh Hộ Mệnh mạnh hơn khi rơi vào nguy hiểm.'},
+    {id:'harmony',name:'Mộc Linh',description:'Vạn Mộc Hồi Xuân mạnh hơn và tích Đồng Tâm hiệu quả hơn.'},
+  ],
+  'companion.2': [
+    {id:'assist',name:'Định Huyệt',description:'Tố Quang Điểm Huyệt mạnh hơn khi khai thác sơ hở.'},
+    {id:'guard',name:'Tĩnh Tâm',description:'Tăng khả năng tự bảo hộ và hồi Chân Nguyên.'},
+    {id:'harmony',name:'Vô Sai',description:'Vô Sai Nhất Kích mạnh hơn khi đã khóa nhịp mục tiêu.'},
+  ],
+  'companion.3': [
+    {id:'assist',name:'Trợ Nguyên',description:'Liên Hỏa Trợ Nguyên mạnh hơn và giữ nhịp kỹ năng.'},
+    {id:'guard',name:'Hộ Mạch',description:'Đan Tâm Hộ Mạch tăng khả năng cứu nguy.'},
+    {id:'harmony',name:'Liên Hỏa',description:'Cửu Chuyển Liên Hỏa tăng hiệu lực hợp kích.'},
+  ],
+  'companion.4': [
+    {id:'assist',name:'Khí Văn',description:'Phá Giáp Khí Văn tăng sát thương và Phá Thế.'},
+    {id:'guard',name:'Huyền Thiết',description:'Huyền Thiết Hộ Thân tạo bảo hộ mạnh hơn.'},
+    {id:'harmony',name:'Đoạn Giáp',description:'Thiên Công Đoạn Giáp mạnh hơn khi phá tuyến phòng thủ.'},
+  ],
+  'companion.5': [
+    {id:'assist',name:'Thanh Âm',description:'Thanh Âm Trợ Đạo ổn định nhịp chiến tốt hơn.'},
+    {id:'guard',name:'Quy Nguyên',description:'Tĩnh Tâm Quy Nguyên hồi phục tốt hơn.'},
+    {id:'harmony',name:'Đồng Luật',description:'Thiên Âm Đồng Luật tăng hiệu lực nhịp chiến.'},
+  ],
+  'companion.6': [
+    {id:'assist',name:'Linh Minh',description:'Linh Minh Khiếu hỗ trợ chuỗi Linh Thú tốt hơn.'},
+    {id:'guard',name:'Hộ Chủ',description:'Vạn Thú Hộ Chủ tăng bảo hộ khi nguy hiểm.'},
+    {id:'harmony',name:'Bách Thú',description:'Bách Thú Đồng Minh tăng sức mạnh phối hợp với Linh Thú.'},
+  ],
+  'companion.7': [
+    {id:'assist',name:'Truy Yêu',description:'Truy Yêu Nhất Trảm tăng áp lực lên Boss.'},
+    {id:'guard',name:'Nghịch Cảnh',description:'Nghịch Cảnh Phản Trảm mạnh hơn khi bị ép thế.'},
+    {id:'harmony',name:'Tuyệt Sát',description:'Tuyệt Sát Trảm Yêu tăng bạo phát kết liễu.'},
+  ],
+  'companion.8': [
+    {id:'assist',name:'Ám Tiễn',description:'Lưu Quang Ám Tiễn tăng khả năng làm suy yếu.'},
+    {id:'guard',name:'Tàng Phong',description:'Tàng Phong Hộ Tâm tăng khả năng hóa giải bất lợi.'},
+    {id:'harmony',name:'Vạn Biến',description:'Hồng Trần Vạn Biến tăng hiệu lực ứng biến.'},
+  ],
+});
+
+const CONFIDANT_GAUGE_PROFILE_V148 = Object.freeze({
+  'companion.1': [{event:'OnDamageTaken',gain:16}],
+  'companion.2': [{event:'OnHit',sourceTags:['ActiveHit'],gain:10},{event:'OnShieldBreak',gain:20}],
+  'companion.3': [{event:'OnHit',sourceTags:['ActiveHit'],gain:9},{event:'OnCrit',sourceTags:['ActiveHit'],gain:4}],
+  'companion.4': [{event:'OnHit',sourceTags:['ActiveHit'],gain:6},{event:'OnShieldBreak',gain:35}],
+  'companion.5': [{event:'OnHit',sourceTags:['ActiveHit'],gain:8},{event:'OnDodge',gain:12}],
+  'companion.6': [{event:'OnHit',sourceTags:['Summon'],gain:18},{event:'OnHit',sourceTags:['ActiveHit'],gain:4}],
+  'companion.7': [{event:'OnHit',sourceTags:['ActiveHit'],gain:5},{event:'OnCrit',sourceTags:['ActiveHit'],gain:24},{event:'OnShieldBreak',gain:28}],
+  'companion.8': [{event:'OnDamageTaken',gain:12},{event:'OnDodge',gain:20},{event:'OnTargetDodge',gain:8}],
+});
+
+function clampInt(v,min,max){return Math.max(min,Math.min(max,Math.floor(Number(v)||0)));}
+export function confidantStarsV148(p){
+  if(Number.isFinite(Number(p?.stars)))return Math.max(0,Math.floor(Number(p.stars)));
+  return clampInt(p?.advance,0,4)*5;
+}
+export function confidantIntimacyV148(p){return Math.max(1,Math.floor(Number(p?.level)||1));}
+export function confidantIntimacyCapV148(p){return CONFIDANT_BASE_INTIMACY_CAP_V148+CONFIDANT_INTIMACY_PER_STAR_V148*confidantStarsV148(p);}
+export function confidantEffectiveIntimacyV148(p){
+  const lv=confidantIntimacyV148(p);
+  if(lv<=100)return lv;
+  if(lv<=500)return 100+(lv-100)*.20;
+  if(lv<=2000)return 180+(lv-500)*.08;
+  return 300+(lv-2000)*.015;
+}
+function confidantHeartStateV148(p){
+  const old=p?.confidantHeartV148??{};
+  return {assist:clampInt(old.assist,0,CONFIDANT_HEART_BRANCH_LEVEL_MAX_V148),guard:clampInt(old.guard,0,CONFIDANT_HEART_BRANCH_LEVEL_MAX_V148),harmony:clampInt(old.harmony,0,CONFIDANT_HEART_BRANCH_LEVEL_MAX_V148),raw:Math.max(0,Math.floor(Number(old.raw)||0))};
+}
+export function confidantHeartPointSummaryV148(p,id){
+  const stars=confidantStarsV148(p),tree=confidantHeartStateV148(p),earned=Math.floor(stars/10),used=tree.assist+tree.guard+tree.harmony+tree.raw;
+  return {earned,used,available:Math.max(0,earned-used),tree,branches:(CONFIDANT_HEART_BRANCHES_V148[id]??[]).map(x=>({...x,level:tree[x.id]??0,maxLevel:CONFIDANT_HEART_BRANCH_LEVEL_MAX_V148})),repeatableRaw:tree.raw};
+}
+export function spendConfidantHeartPointV148(state,id,branch){
+  const d=confidantDefinitionV87(id),p=state?.items?.[id];
+  if(!d||!p?.owned)throw new Error('Chưa sở hữu Tri Kỷ này.');
+  migrateConfidantsV148(state);
+  const summary=confidantHeartPointSummaryV148(p,id);
+  if(summary.available<=0)throw new Error('Chưa có Điểm Tâm Ý khả dụng; mỗi 10★ nhận 1 điểm.');
+  const key=String(branch||'');
+  if(!['assist','guard','harmony','raw'].includes(key))throw new Error('Nhánh Tâm Ý không tồn tại.');
+  const tree=confidantHeartStateV148(p);
+  if(key!=='raw'&&tree[key]>=CONFIDANT_HEART_BRANCH_LEVEL_MAX_V148)throw new Error('Nhánh Tâm Ý này đã đạt cấp tối đa.');
+  tree[key]+=1;p.confidantHeartV148=tree;
+  return confidantHeartPointSummaryV148(p,id);
+}
+export function confidantHeartPowerV148(p,id){
+  const d=confidantDefinitionV87(id),factor=CONFIDANT_GRADE_POWER_V148[d?.grade]??1,stars=confidantStarsV148(p),effective=confidantEffectiveIntimacyV148(p),heart=confidantHeartStateV148(p);
+  return Math.max(1,Math.round((35+effective*5.5)*factor*(1+Math.min(20,stars)*.025)+heart.raw*24));
+}
+export function confidantIntimacyCostV148(p){
+  const effective=confidantEffectiveIntimacyV148(p),stars=confidantStarsV148(p);
+  return Math.max(4,Math.floor(8+effective*.75+Math.min(100,stars)*.5));
+}
+export function confidantStarEssenceCostV148(stars){
+  const next=Math.max(0,Math.floor(Number(stars)||0))+1;
+  if(next%5!==0)return 0;
+  return Math.min(5,1+Math.floor(Math.max(0,next-5)/25));
+}
+export function confidantStarUpV148(state,id,count=1){
+  migrateConfidantsV148(state);
+  const d=confidantDefinitionV87(id),p=state?.items?.[id];
+  if(!d||!p?.owned)throw new Error('Chưa sở hữu Tri Kỷ này.');
+  let done=0,fragmentCost=0,essenceCost=0;
+  for(let i=0;i<Math.max(1,Math.floor(Number(count)||1));i++){
+    const stars=confidantStarsV148(p),needFrag=CONFIDANT_FRAGMENT_PER_STAR_V148,needEssence=confidantStarEssenceCostV148(stars),haveFrag=Math.max(0,Math.floor(Number(p.specificFragments)||0)),haveEssence=Math.max(0,Math.floor(Number(state?.economyV12325?.ascensionEssence?.companion)||0));
+    if(haveFrag<needFrag||haveEssence<needEssence)break;
+    p.specificFragments=haveFrag-needFrag;
+    if(needEssence>0)state.economyV12325.ascensionEssence.companion=haveEssence-needEssence;
+    p.stars=stars+1;p.advance=Math.min(4,Math.floor(p.stars/5));
+    done++;fragmentCost+=needFrag;essenceCost+=needEssence;
+  }
+  if(!done){const stars=confidantStarsV148(p),needEssence=confidantStarEssenceCostV148(stars);throw new Error(`Thiếu mảnh Tri Kỷ hoặc Duyên Tinh: cần ${CONFIDANT_FRAGMENT_PER_STAR_V148} mảnh${needEssence?` + ${needEssence} Duyên Tinh`:''}.`);}
+  return {definition:d,stars:confidantStarsV148(p),levels:done,fragmentCost,essenceCost,levelCap:confidantIntimacyCapV148(p),progress:{...p,confidantHeartV148:{...confidantHeartStateV148(p)}}};
+}
+function specialtyStrengthPctV148(intimacy,stars){
+  if(intimacy<30)return 0;
+  const effective=confidantEffectiveIntimacyV148({level:intimacy});
+  return Number(Math.min(12,3+Math.min(5,Math.max(0,effective-30)*.025)+Math.min(4,stars*.2)).toFixed(2));
+}
+export function activeConfidantSpecialtyV148(state){
+  const id=state?.activeCompanionId;if(!id)return undefined;
+  const d=confidantDefinitionV87(id),p=state?.items?.[id];if(!d||!p?.owned)return undefined;
+  const intimacy=confidantIntimacyV148(p),stars=confidantStarsV148(p),strengthPct=specialtyStrengthPctV148(intimacy,stars);
+  return {id:d.specialty.id,name:d.specialty.name,description:d.specialty.description,strengthPct,unlocked:intimacy>=30,confidantId:d.id,confidantName:d.name,progressionSchema:CONFIDANT_SCHEMA_V148};
+}
+export function confidantFortuneSummaryV148(state){
+  let owned=0,cultivationFlatPer15s=0,resourceMastery=0,craftMastery=0,totalHeartPower=0;
+  const rows=[];
+  for(const d of CONFIDANTS_V87){
+    const p=state?.items?.[d.id];if(!p?.owned)continue;owned++;
+    const intimacy=confidantIntimacyV148(p),stars=confidantStarsV148(p),effective=confidantEffectiveIntimacyV148(p),heartPower=confidantHeartPowerV148(p,d.id);
+    const cultivationFlat=Math.max(1,Math.floor(1+effective*.08+Math.min(500,stars)*.03));
+    const resourceFlat=Math.max(1,Math.floor(1+effective*.045+Math.min(500,stars)*.018));
+    const craftFlat=Math.max(1,Math.floor(1+effective*.035+Math.min(500,stars)*.012));
+    cultivationFlatPer15s+=cultivationFlat;resourceMastery+=resourceFlat;craftMastery+=craftFlat;totalHeartPower+=heartPower;
+    rows.push({id:d.id,name:d.name,intimacy,stars,heartPower,cultivationFlat,resourceFlat,craftFlat});
+  }
+  return {schema:CONFIDANT_SCHEMA_V148,owned,total:CONFIDANTS_V87.length,cultivationFlatPer15s,resourceMastery,craftMastery,totalHeartPower,cultivationPct:0,huntRewardPct:0,craftQualityPct:0,rows};
+}
+function relationScaleV148(p){
+  const effective=confidantEffectiveIntimacyV148(p),stars=confidantStarsV148(p);
+  return Math.max(.9,Math.min(1.6,.9+Math.min(.55,effective*.0015)+Math.min(.15,stars*.003)));
+}
+function scaleEffectV148(e,scale,heartPower,kind,branchLevel){
+  const branchBonus=1+Math.max(0,branchLevel)*.02;
+  if(e.type==='damage')return {...e,coefficient:e.coefficient*Math.min(1.55,scale)*branchBonus,flatDamage:Math.round((e.flatDamage??0)+heartPower*(kind==='harmony'?1.4:.45)*branchBonus),breakDamagePct:(e.breakDamagePct??0)*Math.min(1.35,scale)};
+  if(e.type==='heal')return {...e,flat:Math.round((e.flat??0)+heartPower*(kind==='harmony'?1.2:.48)*branchBonus),maxHpPct:(e.maxHpPct??0)*Math.min(1.28,scale)*branchBonus,attackCoefficient:(e.attackCoefficient??0)*Math.min(1.28,scale)*branchBonus};
+  if(e.type==='shield')return {...e,capacity:Math.round((e.capacity??0)+heartPower*(kind==='harmony'?1.15:.5)*branchBonus),maxHpPct:(e.maxHpPct??0)*Math.min(1.28,scale)*branchBonus,attackCoefficient:(e.attackCoefficient??0)*Math.min(1.28,scale)*branchBonus};
+  if(e.type==='restoreSpirit')return {...e,flat:(e.flat??0)*Math.min(1.5,scale)*branchBonus};
+  if(e.type==='applyStatus')return {...e,duration:e.duration*Math.min(1.22,scale)*(1+Math.min(.1,branchLevel*.01))};
+  return {...e};
+}
+export function confidantCombatTriggersV148(state){
+  const id=state?.activeCompanionId;if(!id)return[];
+  const d=confidantDefinitionV87(id),p=state?.items?.[id];if(!d||!p?.owned)return[];
+  const intimacy=confidantIntimacyV148(p),stars=confidantStarsV148(p),heart=confidantHeartStateV148(p),heartPower=confidantHeartPowerV148(p,id),relation=relationScaleV148(p)*(CONFIDANT_COMBAT_TUNING_V108[id]??1),out=[];
+  const assistScale=relation*(stars>=10?1.12:1);
+  out.push({id:`confidant.v148.${d.id}.assist`,event:d.assist.event,chancePct:100,sourceTags:d.assist.event==='OnHit'?['ActiveHit']:undefined,cooldown:Math.max(4,d.assist.cooldown*(stars>=10?.82:1)),effects:d.assist.effects.map(e=>scaleEffectV148(e,assistScale,heartPower,'assist',heart.assist)),runtimeV87:{kind:'assist',confidantId:d.id,confidantName:d.name,abilityName:d.assist.name,label:'TRỢ CHIẾN'},runtimeV148:{kind:'assist'}});
+  if(intimacy>=150&&stars>=3)out.push({id:`confidant.v148.${d.id}.guard`,event:'OnDamageTaken',chancePct:100,cooldown:99999,effects:d.guard.effects.map(e=>scaleEffectV148(e,relation*(stars>=20?1.18:1.06),heartPower,'guard',heart.guard)),runtimeV87:{kind:'guard',confidantId:d.id,confidantName:d.name,abilityName:d.guard.name,label:'HỘ ĐẠO',hpBelowPct:d.guard.hpBelowPct,oncePerBattle:true},runtimeV148:{kind:'guard'}});
+  if(intimacy>=250&&stars>=5){
+    const harmonyBranchGain=1+heart.harmony*.015;
+    for(const [idx,g] of (CONFIDANT_GAUGE_PROFILE_V148[id]??[]).entries())out.push({id:`confidant.v148.${d.id}.gauge.${idx}`,event:g.event,chancePct:100,sourceTags:g.sourceTags,effects:[],runtimeV148:{kind:'gauge',gaugeGain:g.gain*harmonyBranchGain,confidantId:d.id,confidantName:d.name}});
+    out.push({id:`confidant.v148.${d.id}.harmony`,event:'OnHit',chancePct:100,sourceTags:['ActiveHit'],effects:d.harmony.effects.map(e=>scaleEffectV148(e,relation*(stars>=50?1.28:1.12),heartPower,'harmony',heart.harmony)),runtimeV87:{kind:'harmony',confidantId:d.id,confidantName:d.name,abilityName:d.harmony.name,label:'TÂM Ý HỢP KÍCH'},runtimeV148:{kind:'harmony',harmonyCost:CONFIDANT_HARMONY_GAUGE_MAX_V148}});
+  }
+  return out;
+}
+export function confidantViewV148(state,id){
+  const d=confidantDefinitionV87(id);if(!d)return undefined;
+  const p=state?.items?.[id]??{owned:false,level:1,advance:0,stars:0,specificFragments:0};
+  const intimacy=confidantIntimacyV148(p),stars=confidantStarsV148(p),maxIntimacy=confidantIntimacyCapV148(p),heartPower=confidantHeartPowerV148(p,id),heartTree=confidantHeartPointSummaryV148(p,id),specialty=activeConfidantSpecialtyV148({...state,activeCompanionId:id});
+  return {schema:CONFIDANT_SCHEMA_V148,compatibilitySchema:CONFIDANT_SCHEMA_V87,id:d.id,code:d.code,name:d.name,title:d.title,fantasy:d.fantasy,asset:d.asset,combatStyle:d.combatStyle,intimacy,maxIntimacy,stars,maxStars:null,heartPower,active:state?.activeCompanionId===id,specialty:{...d.specialty,unlocked:intimacy>=30,strengthPct:specialty?.strengthPct??0},assist:{...d.assist,unlocked:true,upgraded:stars>=10},guard:{...d.guard,unlocked:intimacy>=150&&stars>=3,upgraded:stars>=20},harmony:{...d.harmony,unlocked:intimacy>=250&&stars>=5,upgraded:stars>=50,gaugeMax:CONFIDANT_HARMONY_GAUGE_MAX_V148,cooldown:undefined},heartTree,gaugeProfile:(CONFIDANT_GAUGE_PROFILE_V148[id]??[]).map(x=>({...x})),milestones:{guard:{stars:3,intimacy:150},harmony:{stars:5,intimacy:250},assistII:10,guardII:20,harmonyII:50,capstone:100}};
+}
+export function migrateConfidantsV148(state){
+  if(!state||state.confidantV148Migrated)return {migrated:false};
+  if(!state.confidantV87Migrated)migrateConfidantsV87(state);
+  for(const d of CONFIDANTS_V87){
+    const p=state.items?.[d.id];if(!p)continue;
+    if(!Number.isFinite(Number(p.stars)))p.stars=clampInt(p.advance,0,4)*5;
+    else p.stars=Math.max(0,Math.floor(Number(p.stars)));
+    p.level=Math.max(1,Math.floor(Number(p.level)||1));
+    p.advance=Math.min(4,Math.floor(p.stars/5));
+    p.specificFragments=Math.max(0,Math.floor(Number(p.specificFragments)||0));
+    p.confidantHeartV148=confidantHeartStateV148(p);
+    p.confidantV148Migrated=true;
+  }
+  state.confidantV148Migrated=true;
+  return {migrated:true};
+}
