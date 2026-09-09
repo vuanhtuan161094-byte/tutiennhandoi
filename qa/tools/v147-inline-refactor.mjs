@@ -101,6 +101,11 @@ replaceRequired(
   'const collection=session.stateValue.collectionV12316;',
   "const collection=session.stateValue.collectionV12316;\nfor(const pet of SPIRIT_BEAST_SPECIES_V86){const progress=collection.items[pet.id]??(collection.items[pet.id]={owned:true,level:1,advance:5,specificFragments:0});progress.owned=true;progress.level=1000;progress.advance=5;progress.stars=20;progress.spiritBeastV147Migrated=true;}"
 );
+replaceRequired(
+  'qa/tests/v129-global-build-balance-test.js',
+  "x.id.startsWith('spirit-beast.v86.')",
+  "x.id.startsWith('spirit-beast.v147.')"
+);
 
 for(const retired of [
   'dist/core/spirit-beast-data-v147.js',
