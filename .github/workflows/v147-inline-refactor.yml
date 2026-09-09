@@ -1,0 +1,87 @@
+name: V147 One-off Canonical Inline Refactor
+
+on:
+  push:
+    branches:
+      - feature/v147-spirit-beast-progression
+    paths:
+      - qa/tools/v147-inline-refactor.mjs
+      - .github/workflows/v147-inline-refactor.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: v147-inline-refactor-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  refactor-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: ''
+
+      - name: Inline V147 canonical modules
+        run: node qa/tools/v147-inline-refactor.mjs
+
+      - name: Diff integrity
+        run: git diff --check
+
+      - name: Codebase health scan
+        continue-on-error: true
+        run: node qa/tools/codebase-health.js
+
+      - name: V140 cultivation core
+        run: node qa/tests/v140-cultivation-core-test.js
+      - name: V140 cultivation transport
+        run: node qa/tests/v140-cultivation-transport-test.js
+      - name: V140 zero legacy
+        run: node qa/tests/v140-zero-legacy-test.js
+      - name: V141 Hunt x Cultivation closure
+        run: node qa/tests/v141-hunt-cultivation-closure-test.js
+      - name: V142 Equipment x Hunt
+        run: node qa/runners/v142-equipment-hunt-gate.js
+      - name: V145 infinite Spiritual Root core
+        run: node qa/tests/v145-spiritual-root-redesign-test.js
+      - name: V145 Spiritual Root source sink runtime
+        run: node qa/tests/v145-spiritual-root-runtime-test.js
+      - name: V145 Spiritual Root realm origin
+        run: node qa/tests/v145-spiritual-root-realm-origin-test.js
+      - name: V145 Spiritual Root UI transport
+        run: node qa/tests/v145-spiritual-root-ui-test.js
+      - name: V146 Alchemy core
+        run: node qa/tests/v146-alchemy-core-test.js
+      - name: V146 Alchemy source runtime
+        run: node qa/tests/v146-alchemy-source-runtime-test.js
+      - name: V146 Alchemy production closure
+        run: node qa/tests/v146-alchemy-closure-test.js
+      - name: Backend fast gate
+        run: node qa/runners/v140-backend-gates.js fast
+      - name: Frontend fast gate
+        run: node qa/runners/v140-frontend-gates.js fast
+      - name: Backend closure
+        run: node qa/runners/v140-backend-gates.js closure
+      - name: Frontend closure
+        run: node qa/runners/v140-frontend-gates.js closure
+
+      - name: Commit verified inline refactor
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A dist/core
+          if git diff --cached --quiet; then
+            echo "No refactor changes to commit."
+            exit 0
+          fi
+          git commit -m "refactor(v147): inline canonical spirit beast modules"
+          git push origin HEAD:feature/v147-spirit-beast-progression
