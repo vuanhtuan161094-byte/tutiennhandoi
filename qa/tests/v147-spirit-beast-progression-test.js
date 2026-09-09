@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {
-  SPIRIT_BEAST_SPECIES_V147,
+  SPIRIT_BEAST_SPECIES,
   SPIRIT_BEAST_FRAGMENT_PER_STAR_V147,
   SPIRIT_BEAST_GACHA_FRAGMENT_ROLL_V147,
   SPIRIT_BEAST_DUPLICATE_FRAGMENT_V147,
@@ -19,9 +19,9 @@ function test(name,fn){fn();passed++;console.log(`✓ ${name}`);}
 function pet(id,{level=1,stars=0,fragments=0}={}){return {owned:true,level,stars,specificFragments:fragments,advance:5,spiritBeastV147Migrated:true};}
 
 test('V147 keeps exactly eight authored spirit beast species',()=>{
-  assert.equal(SPIRIT_BEAST_SPECIES_V147.length,8);
-  assert.equal(new Set(SPIRIT_BEAST_SPECIES_V147.map(x=>x.id)).size,8);
-  assert.deepEqual(SPIRIT_BEAST_SPECIES_V147.map(x=>x.id),['pet.1','pet.2','pet.3','pet.4','pet.5','pet.6','pet.7','pet.8']);
+  assert.equal(SPIRIT_BEAST_SPECIES.length,8);
+  assert.equal(new Set(SPIRIT_BEAST_SPECIES.map(x=>x.id)).size,8);
+  assert.deepEqual(SPIRIT_BEAST_SPECIES.map(x=>x.id),['pet.1','pet.2','pet.3','pet.4','pet.5','pet.6','pet.7','pet.8']);
 });
 
 test('V147 star economy is fixed at 10 exact fragments per star with normalized gacha targets',()=>{
@@ -50,8 +50,8 @@ test('V147 raw growth sharply diminishes after level 100/500/1000',()=>{
 });
 
 test('V147 bond percent budget caps at Lv1000 + 20 stars and cannot scale infinitely',()=>{
-  const maxState={items:Object.fromEntries(SPIRIT_BEAST_SPECIES_V147.map(x=>[x.id,pet(x.id,{level:1000,stars:20})]))};
-  const overState={items:Object.fromEntries(SPIRIT_BEAST_SPECIES_V147.map(x=>[x.id,pet(x.id,{level:50100,stars:1000})]))};
+  const maxState={items:Object.fromEntries(SPIRIT_BEAST_SPECIES.map(x=>[x.id,pet(x.id,{level:1000,stars:20})]))};
+  const overState={items:Object.fromEntries(SPIRIT_BEAST_SPECIES.map(x=>[x.id,pet(x.id,{level:50100,stars:1000})]))};
   const max=spiritBeastBondSummaryV147(maxState),over=spiritBeastBondSummaryV147(overState);
   assert.equal(max.powerPct,32);assert.equal(max.bodyPct,30);assert.equal(max.defensePct,27.8);
   assert.deepEqual({p:over.powerPct,b:over.bodyPct,d:over.defensePct},{p:32,b:30,d:27.8});
@@ -79,7 +79,7 @@ test('V147 only the selected active beast injects CombatKernel triggers',()=>{
 });
 
 test('V147 raw stat consumer respects each beast own star-derived cap',()=>{
-  const species=SPIRIT_BEAST_SPECIES_V147[0];
+  const species=SPIRIT_BEAST_SPECIES[0];
   const atCap=spiritBeastStatsV147(species,pet(species.id,{level:100,stars:0}));
   const over=spiritBeastStatsV147(species,pet(species.id,{level:999999,stars:0}));
   assert.deepEqual(over,atCap,'stored over-level must never generate power above the beast personal cap');
