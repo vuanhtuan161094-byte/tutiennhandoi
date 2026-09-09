@@ -26,8 +26,8 @@ test('Five active Căn Nguyên choices cannot stack duplicate same-root static b
   assert.ok(Math.max(...metal.map(x=>x.static?.armorPenPct??0))<=6,'one active Metal origin keeps Xuyên bounded');
 });
 
-test('Owning all eight maxed Linh Thú is a meaningful major-system bond',()=>{
-  const items=Object.fromEntries(SPIRIT_BEAST_SPECIES_V86.map(x=>[x.id,{owned:true,level:50,advance:5}]));
+test('Owning all eight V147 bond-capped Linh Thú is a meaningful major-system bond',()=>{
+  const items=Object.fromEntries(SPIRIT_BEAST_SPECIES_V86.map(x=>[x.id,{owned:true,level:1000,stars:20,advance:5,spiritBeastV147Migrated:true}]));
   const b=spiritBeastBondSummaryV86({items});
   assert.equal(b.owned,8);
   assert.ok(b.powerPct>=25 && b.powerPct<=35,`Công ${b.powerPct}%`);
