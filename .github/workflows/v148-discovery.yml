@@ -13,13 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Locate confidant runtime consumers
+      - name: Locate confidant integration surfaces
         run: |
-          echo '=== runtimeV87 / confidant trigger consumers ==='
-          grep -R -n -E 'runtimeV87|confidantCombatTriggersV87|TÂM Ý|TAM Y|activeCompanionId' dist modules app.js standalone-entry.js 2>/dev/null | head -n 300 || true
+          echo '=== collection UI action handlers ==='
+          grep -R -n -E 'collection-(advance|strengthen).*v12325|advanceCollectionEconomyV12325|strengthenCollectionEconomyV12325|activeCompanionId' app.js dist/core/session.js modules 2>/dev/null | head -n 350 || true
+          echo '=== specialty consumers ==='
+          grep -R -n -E "specialty\.id|activeConfidantSpecialtyV87|cultivationPct|huntRewardPct|craftQualityPct" dist modules app.js 2>/dev/null | head -n 400 || true
           echo '=== fireTriggers call sites ==='
           grep -n "fireTriggers(" dist/core/combat.js || true
-          echo '=== event names near fireTriggers ==='
-          grep -R -n -E "event: 'On|fireTriggers\([^\n]+, '[A-Za-z]+" dist/core modules | head -n 400 || true
-          echo '=== combat kernel candidate files ==='
-          find dist modules -type f | grep -E 'combat|battle|kernel|trigger' | head -n 200 || true
