@@ -107,6 +107,7 @@ export class LocalGameApplicationApi {
     gachaCollectionV12325(bannerId, count = 1, usePremium = false) { return this.#game.collectionGachaV12325(bannerId, count, usePremium); }
     strengthenCollectionV12325(itemId, levels = 1) { return this.#game.collectionStrengthenV12325(itemId, levels); }
     advanceCollectionV12325(itemId) { return this.#game.collectionAdvanceV12325(itemId); }
+    spendConfidantHeartV148(itemId, branch) { return this.#game.confidantHeartV148(itemId, branch); }
     equipCollectionV12325(itemId, artifactSlotIndex) { return this.#game.collectionEquipV12325(itemId, artifactSlotIndex); }
     unequipCollectionV12325(itemId) { return this.#game.collectionUnequipV12325(itemId); }
     strengthenHeartMethodV12325(passiveId) { return this.#game.heartMethodStrengthenV12325(passiveId); }

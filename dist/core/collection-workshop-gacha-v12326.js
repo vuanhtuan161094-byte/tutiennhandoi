@@ -15,7 +15,7 @@ const GRADE_ORDER = ['mundane', 'spirit', 'mystic', 'earth', 'heaven', 'immortal
 const GRADE_RATE = { mundane: 18, spirit: 25, mystic: 30, earth: 18, heaven: 7, immortal: 1.5, extreme: .4, breaker: .1 };
 const CATEGORY_LABEL = { manual: 'Công Pháp', heart: 'Tâm Pháp', artifact: 'Pháp Bảo', relic: 'Chí Bảo', pet: 'Linh Thú', companion: 'Tri Kỷ', bloodline: 'Huyết Mạch', physique: 'Thể Chất' };
 const GACHA_NAME = { manual: 'Chiêu Mộ Công Pháp', heart: 'Chiêu Mộ Tâm Pháp', artifact: 'Chiêu Mộ Pháp Bảo', relic: 'Chiêu Mộ Chí Bảo', pet: 'Linh Khế Linh Thú', companion: 'Duyên Khế Tri Kỷ', bloodline: 'Huyết Mạch Chiêu Hoán', physique: 'Thể Chất Thức Tỉnh' };
-const ROLE = { manual: 'Nền chỉ số · Tu Vi · utility', heart: 'Build Bản Đạo · stat + mechanic', artifact: '2/3/4 slot · Bảo Tính + Pháp Kỹ · Bảo Khí', relic: '1 slot · Chí Bảo đổi luật build', pet: 'Trợ chiến · 1 Nội Tại + 3 kỹ năng · Linh Khế toàn bộ', companion: 'Thân Mật 1–100 · Duyên I–V · Sở Trường · Trợ Chiến/Hộ Đạo/Tâm Ý', bloodline: 'Độ Thuần · Bậc Huyết · chỉ số huyết mạch', physique: 'Cảnh Luyện Thể · chỉ số thân thể' };
+const ROLE = { manual: 'Nền chỉ số · Tu Vi · utility', heart: 'Build Bản Đạo · stat + mechanic', artifact: '2/3/4 slot · Bảo Tính + Pháp Kỹ · Bảo Khí', relic: '1 slot · Chí Bảo đổi luật build', pet: 'Trợ chiến · Sao vô hạn · Linh Khế active', companion: 'Thân Mật ∞ · Duyên ★∞ · Tâm Lực · Đồng Tâm · Tâm Ý', bloodline: 'Độ Thuần · Bậc Huyết · chỉ số huyết mạch', physique: 'Cảnh Luyện Thể · chỉ số thân thể' };
 export const MATERIAL_NAME_V12326 = { manual: 'Công Pháp Tàn Ý', heart: 'Tâm Pháp Tàn Quyển', artifact: 'Luyện Bảo Tinh Hoa', relic: 'Chí Bảo Linh Tinh', pet: 'Linh Thú Tinh Phách', companion: 'Đồng Tâm Ngọc', bloodline: 'Huyết Tinh', physique: 'Thể Phách Tinh Hoa' };
 export const BREAK_NAME_V12326 = { manual: 'Thiên Tinh Công Pháp', heart: 'Thiên Tinh Tâm Pháp', artifact: 'Thiên Tinh Pháp Bảo', relic: 'Thiên Tinh Chí Bảo', pet: 'Linh Thú Đột Phá Đan', companion: 'Duyên Tinh Đột Phá', bloodline: 'Hộ Huyết Phù', physique: 'Luyện Thể Đạo Tinh' };
 const FACILITY = { manual: 'scripture', heart: 'scripture', artifact: 'artifact', relic: 'artifact', pet: 'beast', companion: 'companion', bloodline: 'bloodline', physique: 'physique' };
@@ -356,6 +356,7 @@ export function devMaxWorkshopV12326(state, inventory) { const e = ensureCollect
 
 // V147 canonical overrides. Legacy V146 implementation is retained above as internal fallback only.
 import { SPIRIT_BEAST_DUPLICATE_FRAGMENT_V147, SPIRIT_BEAST_GACHA_FRAGMENT_ROLL_V147 } from './spirit-beast-v147.js';
+import { CONFIDANT_GACHA_FRAGMENT_ROLL_V148, CONFIDANT_DUPLICATE_FRAGMENT_V148 } from './confidant-v87.js';
 
 function normalizePetPullsV147(state,result){
   const rows=result?.results??[];
@@ -380,6 +381,48 @@ function normalizePetPullsV147(state,result){
   return result;
 }
 
-export function gachaCollectionV12326(state,inventory,banner,count,seed,usePremium=false,knownHeartPassiveIds=[],realmOrder=117){
+function gachaCollectionV12326V147Canonical(state,inventory,banner,count,seed,usePremium=false,knownHeartPassiveIds=[],realmOrder=117){
   return normalizePetPullsV147(state,gachaCollectionV12326LegacyV146(state,inventory,banner,count,seed,usePremium,knownHeartPassiveIds,realmOrder));
+}
+
+export const CONFIDANT_GACHA_WEIGHTS_V148=Object.freeze({
+  'companion.1':8,'companion.2':15,'companion.3':8,'companion.4':15,'companion.5':22,'companion.6':22,'companion.7':2,'companion.8':8,
+});
+function weightedConfidantV148(rng,minGrade){
+  const floor=minGrade?GRADE_ORDER.indexOf(minGrade):0;
+  const pool=collectionCatalogV12326('companion').filter(x=>GRADE_ORDER.indexOf(x.grade)>=floor);
+  const total=pool.reduce((n,x)=>n+(CONFIDANT_GACHA_WEIGHTS_V148[x.id]??0),0);let r=rng.next()*Math.max(1,total);
+  for(const d of pool){r-=CONFIDANT_GACHA_WEIGHTS_V148[d.id]??0;if(r<=0)return d;}return pool.at(-1);
+}
+function gachaConfidantV148(state,inventory,banner,count,seed,usePremium=false){
+  const def=GACHA_BANNERS_V12326.find(x=>x.id===banner);if(!def||def.category!=='companion')throw new Error('Banner Tri Kỷ không tồn tại.');
+  const e=ensureCollectionWorkshopV12326(state),t=e.tracks[banner];count=Math.max(1,Math.min(10,Math.floor(count)));
+  const cost=count===10?1440:160*count,key=usePremium?'immortalJade':'boundImmortalJade';if(state.currencies[key]<cost)throw new Error('Không đủ Tiên Ngọc để Duyên Khế Tri Kỷ.');state.currencies[key]-=cost;
+  const rng=new SeededRng(seed>>>0),results=[];
+  for(let i=0;i<count;i++){
+    let pity,minGrade,kind,item,grade;
+    if(t.sinceImmortal>=119){pity='120';minGrade='immortal';kind=rng.next()<.08?'item':'fragment';}
+    else if(t.sinceHeaven>=59){pity='60';minGrade='heaven';kind=rng.next()<.08?'item':'fragment';}
+    else if(t.sinceMystic>=9){pity='10';minGrade='mystic';kind=rng.next()<.08?'item':'fragment';}
+    else {const r=rng.next();kind=r<.74?'material':r<.82?'breakthrough':r<.98?'fragment':'item';}
+    let row={category:'companion',categoryLabel:CATEGORY_LABEL.companion,kind,pity};
+    if(kind==='material'){
+      const amount=strengthAmount('companion');addStrengthMaterialV12326(state,inventory,'companion',amount);row={...row,name:MATERIAL_NAME_V12326.companion,amount};
+    }else if(kind==='breakthrough'){
+      const amount=1;addBreakMaterialV12326(state,inventory,'companion',amount);row={...row,name:BREAK_NAME_V12326.companion,amount};
+    }else{
+      item=weightedConfidantV148(rng,minGrade);grade=item.grade;
+      if(kind==='fragment'){
+        addFragments(state,e,item,CONFIDANT_GACHA_FRAGMENT_ROLL_V148);row={...row,id:item.id,name:item.name,grade:item.grade,gradeLabel:item.gradeLabel,amount:CONFIDANT_GACHA_FRAGMENT_ROLL_V148,fragments:CONFIDANT_GACHA_FRAGMENT_ROLL_V148,first:false,featured:item.id==='companion.7',rateUpEligible:false};
+      }else{
+        const g=directGrant(state,e,item,new Set());row={...row,id:item.id,name:item.name,grade:item.grade,gradeLabel:item.gradeLabel,amount:1,fragments:g.first?0:CONFIDANT_DUPLICATE_FRAGMENT_V148,first:g.first,featured:item.id==='companion.7',rateUpEligible:false};
+      }
+    }
+    updateTrack(t,grade);results.push(row);e.history.unshift({pull:t.pulls,bannerId:banner,category:'companion',kind:row.kind,itemId:row.id,name:row.name,grade:row.grade,gradeLabel:row.gradeLabel,amount:row.amount,first:row.first,featured:row.featured,currency:key});
+  }
+  e.history=e.history.slice(0,120);return {schema:COLLECTION_WORKSHOP_SCHEMA_V12326,bannerId:banner,bannerName:def.name,cost,currency:key,results,track:{...t},companionPool:'explicit-v148',pity:{mystic:`${t.sinceMystic}/10`,heaven:`${t.sinceHeaven}/60`,immortal:`${t.sinceImmortal}/120`,featuredGuaranteed:false}};
+}
+export function gachaCollectionV12326(state,inventory,banner,count,seed,usePremium=false,knownHeartPassiveIds=[],realmOrder=117){
+  if(banner==='banner.companion')return gachaConfidantV148(state,inventory,banner,count,seed,usePremium);
+  return gachaCollectionV12326V147Canonical(state,inventory,banner,count,seed,usePremium,knownHeartPassiveIds,realmOrder);
 }

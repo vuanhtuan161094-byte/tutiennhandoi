@@ -78,7 +78,7 @@ import { SeededRng } from './rng.js';
 import { advanceBloodlineGrade, bloodlineProgressSummary, BODY_ESSENCE_RESOURCE_ID, BLOODLINE_ESSENCE_RESOURCE_ID, BLOODLINE_PROTECTION_RESOURCE_ID, implantBloodline, physiqueProgressSummary, progressPhysique, purifyBloodline, swapBloodline, trueBloodResourceId } from './origin-progression-v102.js';
 import { bloodlineIds } from './birth-origins-v101.js';
 import { cloneFateRuntimeState, createFateRuntimeState, fateHuntModifiers, fateOnHuntResult, fateResolveHuntEvent } from './fate-runtime-v102.js';
-import { collectionConfidantV87Summary, collectionDefinitionV12316, syncCollectionManualTreeV127, collectionSummaryV12316 as deriveCollectionSummaryV12316, cloneCollectionProgressStateV12316, ensureCollectionProgressStateV12316, gachaCollectionV12316 as rollCollectionGachaV12316, strengthenCollectionItemV12316 as strengthenCollectionProgressV12316, advanceCollectionItemV12316 as advanceCollectionProgressV12316, equipCollectionItemV12316 as equipCollectionProgressV12316, unequipCollectionItemV12316 as unequipCollectionProgressV12316, clearDailyDungeonV12316 as clearCollectionDailyV12316, upgradeCaveFacilityV12316 as upgradeCollectionCaveV12316, caveFacilityCostMultiplierV99, caveFacilityDiscountPctV99, caveFacilityLevelV99 } from './collection-progression-v12316.js';
+import { collectionConfidantV87Summary, collectionDefinitionV12316, spendCollectionConfidantHeartPointV148 as spendConfidantHeartPointProgressV148, syncCollectionManualTreeV127, collectionSummaryV12316 as deriveCollectionSummaryV12316, cloneCollectionProgressStateV12316, ensureCollectionProgressStateV12316, gachaCollectionV12316 as rollCollectionGachaV12316, strengthenCollectionItemV12316 as strengthenCollectionProgressV12316, advanceCollectionItemV12316 as advanceCollectionProgressV12316, equipCollectionItemV12316 as equipCollectionProgressV12316, unequipCollectionItemV12316 as unequipCollectionProgressV12316, clearDailyDungeonV12316 as clearCollectionDailyV12316, upgradeCaveFacilityV12316 as upgradeCollectionCaveV12316, caveFacilityCostMultiplierV99, caveFacilityDiscountPctV99, caveFacilityLevelV99 } from './collection-progression-v12316.js';
 import { artifactSlotCapacityV88 } from './artifact-v88.js';
 import { applyCollectionEconomyToEntityV12325, collectionEconomySummaryV12325 as deriveCollectionEconomyV12325, gachaCollectionEconomyV12325 as rollCollectionEconomyV12325, strengthenCollectionEconomyV12325 as strengthenCollectionEconomyProgressV12325, advanceCollectionEconomyV12325 as advanceCollectionEconomyProgressV12325, equipCollectionEconomyV12325 as equipCollectionEconomyProgressV12325, unequipCollectionEconomyV12325 as unequipCollectionEconomyProgressV12325, strengthenHeartMethodV12325 as strengthenHeartMethodProgressV12325, advanceHeartMethodV12325 as advanceHeartMethodProgressV12325, clearDailyEconomyDungeonV12325 as clearDailyEconomyV12325, simulateGachaEconomyV12325, ensureCollectionEconomyV12325, devMaxCollectionEconomyV12325 } from './gacha-collection-economy-v12325.js';
 import { activateOriginCollectionV12326, clearDailyWorkshopV12326, collectionWorkshopSummaryV12326 as deriveCollectionWorkshopV12326, composeCollectionItemV12326, devMaxWorkshopV12326, gachaCollectionV12326 as rollCollectionWorkshopGachaV12326, simulateGachaV12326, syncOriginCollectionV12326, setManualGachaRealmV127 as setManualGachaRealmStateV127, setManualGachaOrientationV127 as setManualGachaOrientationStateV127 } from './collection-workshop-gacha-v12326.js';
@@ -953,8 +953,8 @@ export class SimulationSession {
         const rng = new SeededRng(mixSeed(this.rootSeed ^ 0x77ba7c11, hunt.farmBatchIndex + farm.floor * 8191));
         const eliteKills = deterministicBinomialV77(kills, farm.eliteChancePct / 100, rng);
         hunt.farmTotalEliteKills = Math.max(0, hunt.farmTotalEliteKills) + eliteKills;
-        const confidant = collectionConfidantV87Summary(this.stateValue.collectionV12316), specialty = confidant.activeSpecialty, huntRewardPct = confidant.fortune.huntRewardPct + (specialty?.unlocked && specialty.id === 'hunt' ? specialty.strengthPct : 0), huntRewardMultiplier = 1 + huntRewardPct / 100;
-        const spiritStones = this.fateSpiritStoneGainV4(deterministicJitteredTotalV77((kills * farm.spiritStonesPerKill + eliteKills * farm.spiritStonesPerKill * 2.5) * huntRewardMultiplier * regularRewardMultiplier, rng, .075));
+        const confidant = collectionConfidantV87Summary(this.stateValue.collectionV12316), specialty = confidant.activeSpecialty, huntRewardPct = specialty?.unlocked && specialty.id === 'hunt' ? specialty.strengthPct : 0, huntRewardMultiplier = 1 + huntRewardPct / 100, confidantResourceFlat = Math.max(0, Number(confidant.fortune.resourceMastery)||0);
+        const spiritStones = this.fateSpiritStoneGainV4(deterministicJitteredTotalV77((kills * farm.spiritStonesPerKill + eliteKills * farm.spiritStonesPerKill * 2.5) * huntRewardMultiplier * regularRewardMultiplier + kills * confidantResourceFlat, rng, .075));
         this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + spiritStones;
         const demonCoreResourceId = economyMaterialResourceId('beastCore', map.zone, 'beast');
         const demonCores = Math.max(0, Math.round((deterministicBinomialV77(kills, farm.demonCoreChancePct / 100, rng) + eliteKills * 2) * huntRewardMultiplier * regularRewardMultiplier));
@@ -1116,8 +1116,8 @@ export class SimulationSession {
             // V77 canonical: Săn Yêu (including Boss first-clear) never grants direct Tu Vi.
             // The independent Tu Luyện stream keeps running at 100% while the player hunts.
             cultivationGain = 0;
-            const confidant = collectionConfidantV87Summary(this.stateValue.collectionV12316), specialty = confidant.activeSpecialty, huntRewardPct = confidant.fortune.huntRewardPct + (specialty?.unlocked && specialty.id === 'hunt' ? specialty.strengthPct : 0), huntRewardMultiplier = 1 + huntRewardPct / 100;
-            spiritStones = this.fateSpiritStoneGainV4(Math.max(0, Math.round(result.spiritStones * map.rewardDepthMultiplier * economyBandScale(map.majorRealmIndex) * fateMods.rewardMultiplier * fateEvent.rewardMultiplier * farmReward.multiplier * huntRewardMultiplier)) + fateEvent.spiritStoneDelta);
+            const confidant = collectionConfidantV87Summary(this.stateValue.collectionV12316), specialty = confidant.activeSpecialty, huntRewardPct = specialty?.unlocked && specialty.id === 'hunt' ? specialty.strengthPct : 0, huntRewardMultiplier = 1 + huntRewardPct / 100, confidantResourceFlat = Math.max(0, Number(confidant.fortune.resourceMastery)||0);
+            spiritStones = this.fateSpiritStoneGainV4(Math.max(0, Math.round(result.spiritStones * map.rewardDepthMultiplier * economyBandScale(map.majorRealmIndex) * fateMods.rewardMultiplier * fateEvent.rewardMultiplier * farmReward.multiplier * huntRewardMultiplier)) + fateEvent.spiritStoneDelta + confidantResourceFlat);
             this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + spiritStones;
             const rng = new SeededRng((seed ^ 0x7f4a7c15) >>> 0);
             // V129: Hunt's pill tier follows the same 8-band economy mapping as Alchemy.
@@ -1849,7 +1849,7 @@ export class SimulationSession {
     }
     alchemyProductionModifiersV85() {
         const tree = this.alchemyTreeModifiers(), facility = this.alchemyFacilityProfileV85().modifiers, talent = professionTalentModifiers(this.stateValue.inheritedOrigins, 'alchemy');
-        const confidant = collectionConfidantV87Summary(this.stateValue.collectionV12316), specialty = confidant.activeSpecialty, alchemyPct = specialty?.unlocked && specialty.id === 'alchemy' ? specialty.strengthPct : 0, fortuneQuality = Math.max(0, confidant.fortune.craftQualityPct);
+        const confidant = collectionConfidantV87Summary(this.stateValue.collectionV12316), specialty = confidant.activeSpecialty, alchemyPct = specialty?.unlocked && specialty.id === 'alchemy' ? specialty.strengthPct : 0, fortuneQuality = Math.max(0, Number(confidant.fortune.craftMastery)||0);
         const sum = (key) => (Number(tree[key] ?? 0) + Number(facility[key] ?? 0));
         return {
             yieldPct: sum('yieldPct') + alchemyPct * .5, timeReductionPct: sum('timeReductionPct'), materialEfficiencyPct: sum('materialEfficiencyPct') + alchemyPct * .35, qualityWeightBonus: sum('qualityWeightBonus') + Math.max(0, Number(talent.qualityScoreBonus ?? 0)) + alchemyPct + fortuneQuality,
@@ -3530,6 +3530,13 @@ export class SimulationSession {
     techniqueManualSummary() {
         return { schema: 'technique-manuals.v144.retired', retired: true, canonicalSchema: 'manual-progression.v127.production', note: 'V103/V119 chỉ còn dữ liệu save tương thích; không tạo sức mạnh, loot hay progression.' };
     }
+    spendConfidantHeartPointV148(itemId, branch) {
+        if (!this.stateValue.alive) throw new Error('Đời hiện tại đã kết thúc.');
+        const state = ensureCollectionProgressStateV12316(this.stateValue);
+        const result = spendConfidantHeartPointProgressV148(state, itemId, branch);
+        this.actionIndexValue += 1;
+        return { ...result, collection: this.collectionEconomyV12326() };
+    }
     collectionSummaryV12316(nowUnixMs = Date.now()) {
         return deriveCollectionSummaryV12316(this.stateValue, nowUnixMs);
     }
@@ -3599,7 +3606,7 @@ export class SimulationSession {
         this.actionIndexValue += 1;
         return { ...result, economy: this.economyActivityV89(nowUnixMs), collection: this.collectionEconomyV12326(nowUnixMs) };
     }
-    forgingTalentModifiersV87() { const talent = professionTalentModifiers(this.stateValue.inheritedOrigins, 'forging'), confidant = collectionConfidantV87Summary(this.stateValue.collectionV12316), specialty = confidant.activeSpecialty, forgingPct = specialty?.unlocked && specialty.id === 'forging' ? specialty.strengthPct : 0; return { ...talent, successChanceFlat: Math.max(0, Number(talent.successChanceFlat ?? 0)) + forgingPct / 100, qualityScoreBonus: Math.max(0, Number(talent.qualityScoreBonus ?? 0)) + forgingPct + Math.max(0, confidant.fortune.craftQualityPct), masteryGainMultiplier: Math.max(1, Number(talent.masteryGainMultiplier ?? 1)) + forgingPct / 200 }; }
+    forgingTalentModifiersV87() { const talent = professionTalentModifiers(this.stateValue.inheritedOrigins, 'forging'), confidant = collectionConfidantV87Summary(this.stateValue.collectionV12316), specialty = confidant.activeSpecialty, forgingPct = specialty?.unlocked && specialty.id === 'forging' ? specialty.strengthPct : 0; return { ...talent, successChanceFlat: Math.max(0, Number(talent.successChanceFlat ?? 0)) + forgingPct / 100, qualityScoreBonus: Math.max(0, Number(talent.qualityScoreBonus ?? 0)) + forgingPct + Math.max(0, Number(confidant.fortune.craftMastery)||0), masteryGainMultiplier: Math.max(1, Number(talent.masteryGainMultiplier ?? 1)) + forgingPct / 200 }; }
     syncForgingV12328(nowUnixMs = Date.now()) { const live = this.stateValue.collectionV12316; if (!live?.workshopV12328?.forgeQueues?.length)
         return []; const state = ensureCollectionProgressStateV12316(this.stateValue), ready = readyForgeQueuesV12328(state, nowUnixMs), done = []; for (const job of ready) {
         for (const r of job.reserved)

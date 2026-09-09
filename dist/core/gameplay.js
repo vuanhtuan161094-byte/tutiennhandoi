@@ -544,6 +544,7 @@ export class GameplayFacade {
     collectionGachaV12325(bannerId, count = 1, usePremium = false) { return this.session.collectionGachaV12325(bannerId, count, usePremium); }
     collectionStrengthenV12325(itemId, levels = 1) { return this.session.strengthenCollectionV12325(itemId, levels); }
     collectionAdvanceV12325(itemId) { return this.session.advanceCollectionV12325(itemId); }
+    confidantHeartV148(itemId, branch) { return this.session.spendConfidantHeartPointV148(itemId, branch); }
     collectionEquipV12325(itemId, artifactSlotIndex) { return this.session.equipCollectionV12325(itemId, artifactSlotIndex); }
     collectionUnequipV12325(itemId) { return this.session.unequipCollectionV12325(itemId); }
     heartMethodStrengthenV12325(passiveId) { return this.session.strengthenHeartMethodV12325(passiveId); }

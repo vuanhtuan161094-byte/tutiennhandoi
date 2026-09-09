@@ -310,6 +310,7 @@ function collectionEconomySummaryV12325LegacyV146(state, foundation, now = Date.
 // V147 canonical overrides. Legacy V146 implementation is retained above as internal fallback only.
 import { spiritBeastStrengthenCostV147 } from './collection-progression-v12316.js';
 import { SPIRIT_BEAST_FRAGMENT_PER_STAR_V147, spiritBeastLevelCapV147, spiritBeastStarEssenceCostV147, spiritBeastViewV147 } from './spirit-beast-v147.js';
+import { CONFIDANT_FRAGMENT_PER_STAR_V148, migrateConfidantsV148, confidantStarsV148, confidantIntimacyCapV148, confidantIntimacyCostV148, confidantStarEssenceCostV148, confidantViewV148, confidantFortuneSummaryV148, activeConfidantSpecialtyV148 } from './confidant-v87.js';
 
 function petDefinition(id){const d=collectionDefinitionV12325(id);return d?.category==='pet'?d:undefined;}
 function summaryStars(progress){
@@ -331,6 +332,7 @@ export function advanceCollectionEconomyV12325(state,itemId){
 }
 
 export function collectionEconomySummaryV12325(state,foundation,now=Date.now(),realmOrder=10){
+  migrateConfidantsV148(state);
   const out=collectionEconomySummaryV12325LegacyV146(state,foundation,now,realmOrder);
   const cat=out.categories?.find(x=>x.category==='pet');
   if(!cat)return out;
@@ -353,5 +355,20 @@ export function collectionEconomySummaryV12325(state,foundation,now=Date.now(),r
       ascensionCost:owned?spiritBeastStarEssenceCostV147(stars):undefined,
     };
   });
+  const companionCat=out.categories?.find(x=>x.category==='companion');
+  if(companionCat){
+    const fortune=confidantFortuneSummaryV148(state),activeSpecialty=activeConfidantSpecialtyV148(state);
+    companionCat.confidantFortune=fortune;companionCat.activeSpecialty=activeSpecialty;
+    companionCat.items=companionCat.items.map(item=>{
+      const progress={...(item.progress??{})},stars=confidantStarsV148(progress);progress.stars=stars;
+      const live={...progress,stars},viewState={items:{[item.id]:live},activeCompanionId:state?.activeCompanionId};
+      const view=confidantViewV148(viewState,item.id),owned=Boolean(progress.owned),levelCap=confidantIntimacyCapV148(live);
+      return {...item,progress,confidant:view,active:state?.activeCompanionId===item.id,
+        strengthenCost:owned&&Number(progress.level??1)<levelCap?facilityDiscountedCostV99(state,'companion',confidantIntimacyCostV148(live)):undefined,
+        advanceCost:owned?CONFIDANT_FRAGMENT_PER_STAR_V148:undefined,
+        ascensionCost:owned?confidantStarEssenceCostV148(stars):undefined};
+    });
+    out.confidantV87={fortune,activeSpecialty};out.confidantV148={fortune,activeSpecialty};
+  }
   return out;
 }

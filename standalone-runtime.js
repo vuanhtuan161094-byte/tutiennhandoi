@@ -453,6 +453,7 @@ async function handleApi(req,res,url){
       case'collectionGachaV12325':throw new Error('V100 đã khóa Gacha legacy V12325; hãy dùng banner riêng Vạn Tượng.');
       case'collectionStrengthenV12325':result=rt.api.strengthenCollectionV12325(String(body.itemId??''),Number(body.levels??1));break;
       case'collectionAdvanceV12325':result=rt.api.advanceCollectionV12325(String(body.itemId??''));break;
+      case'confidantHeartV148':result=rt.api.spendConfidantHeartV148(String(body.itemId??''),String(body.branch??''));break;
       case'collectionEquipV12325':result=rt.api.equipCollectionV12325(String(body.itemId??''),Number.isFinite(Number(body.slotIndex))?Number(body.slotIndex):undefined);break;
       case'collectionUnequipV12325':result=rt.api.unequipCollectionV12325(String(body.itemId??''));break;
       case'heartMethodStrengthenV12325':result=rt.api.strengthenHeartMethodV12325(String(body.passiveId??body.heartMethodId??''));break;
