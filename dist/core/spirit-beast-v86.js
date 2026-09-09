@@ -1,6 +1,6 @@
 import {
   SPIRIT_BEAST_SCHEMA_V147,
-  SPIRIT_BEAST_SPECIES_V147,
+  SPIRIT_BEAST_SPECIES,
   SPIRIT_BEAST_COMBAT_TUNING,
   SPIRIT_BEAST_BOND_MAX_BUDGET_V147,
   spiritBeastSpeciesV147,
@@ -17,7 +17,7 @@ import {
 // continue to work without preserving a second gameplay authority.
 export const SPIRIT_BEAST_SCHEMA_V86 = SPIRIT_BEAST_SCHEMA_V147;
 export const SPIRIT_BEAST_MAX_BLOODLINE_V86 = 5;
-export const SPIRIT_BEAST_SPECIES_V86 = SPIRIT_BEAST_SPECIES_V147;
+export const SPIRIT_BEAST_SPECIES_V86 = SPIRIT_BEAST_SPECIES;
 export const SPIRIT_BEAST_BOND_MAX_BUDGET_V129 = SPIRIT_BEAST_BOND_MAX_BUDGET_V147;
 export const SPIRIT_BEAST_COMBAT_TUNING_V108 = SPIRIT_BEAST_COMBAT_TUNING;
 
@@ -32,7 +32,7 @@ export const migrateSpiritBeastsV86 = migrateSpiritBeastsV147;
 // Return the highest currently unlocked cap; V147 stat/view logic still clamps
 // each individual beast to its own star-derived cap.
 export function spiritBeastLevelCapV86(state){
-  const pets=SPIRIT_BEAST_SPECIES_V147.map(x=>state?.items?.[x.id]).filter(x=>x?.owned);
+  const pets=SPIRIT_BEAST_SPECIES.map(x=>state?.items?.[x.id]).filter(x=>x?.owned);
   return pets.length?Math.max(...pets.map(spiritBeastLevelCapV147)):spiritBeastLevelCapV147(0);
 }
 
