@@ -70,9 +70,10 @@ check(daoIds.every(id=>score[id].w>0&&score[id].l>0),'V129 representative midgam
 const st=createPlayableAdventureState(); st.realm.maxRealmOrder=22;
 const session=new SimulationSession(registry,thanhHaWorld,adventureEnemies,playablePlayerProfile,10858,st); session.devCollectionGrantV12326();
 const collection=session.stateValue.collectionV12316;
+for(const pet of SPIRIT_BEAST_SPECIES_V86){const progress=collection.items[pet.id]??(collection.items[pet.id]={owned:true,level:1,advance:5,specificFragments:0});progress.owned=true;progress.level=1000;progress.advance=5;progress.stars=20;progress.spiritBeastV147Migrated=true;}
 check(SPIRIT_BEAST_SPECIES_V86.length===8&&Object.keys(SPIRIT_BEAST_COMBAT_TUNING_V108).length===8,'V108 covers all 8 Spirit Beasts with active-combat-only tuning');
 check(Object.values(SPIRIT_BEAST_COMBAT_TUNING_V108).every(x=>x.powerScale>=.75&&x.powerScale<=1.35&&x.cooldownScale>=.75&&x.cooldownScale<=1.25),'V108 Spirit Beast calibration stays bounded and preserves authored roles');
-for(const pet of SPIRIT_BEAST_SPECIES_V86){collection.activePetId=pet.id;check((session.personalCombatEntity().triggers||[]).filter(x=>x.id.startsWith('spirit-beast.v86.')).length===3,`V108 ${pet.name} keeps all three canonical combat actives live`);}
+for(const pet of SPIRIT_BEAST_SPECIES_V86){collection.activePetId=pet.id;check((session.personalCombatEntity().triggers||[]).filter(x=>x.id.startsWith('spirit-beast.v147.')).length===3,`V108 ${pet.name} keeps all three canonical combat actives live`);}
 collection.activePetId=undefined;
 check(CONFIDANTS_V87.length===8&&Object.keys(CONFIDANT_COMBAT_TUNING_V108).length===8,'V108 covers all 8 Confidants without touching Fortune/specialty progression');
 check(Object.values(CONFIDANT_COMBAT_TUNING_V108).every(x=>x>=.65&&x<=1.35),'V108 Confidant active-combat calibration stays bounded');

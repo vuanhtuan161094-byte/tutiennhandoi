@@ -8,7 +8,7 @@ let passed=0; const test=(name,fn)=>{fn();passed++;console.log(`✓ [${passed}] 
 const liveElements=EQUIPMENT_SET_CATALOG_V116.filter(x=>x.identity==='element');
 
 test('Owning all eight max Linh Thú stays in the major 25–35% collection band with identity-weighted budgets',()=>{
-  const items=Object.fromEntries(SPIRIT_BEAST_SPECIES_V86.map(x=>[x.id,{owned:true,level:50,advance:5}]));
+  const items=Object.fromEntries(SPIRIT_BEAST_SPECIES_V86.map(x=>[x.id,{owned:true,level:1000,advance:5,stars:20,spiritBeastV147Migrated:true}]));
   const b=spiritBeastBondSummaryV86({items});
   assert.equal(b.owned,8);
   for(const [axis,value] of Object.entries({powerPct:b.powerPct,bodyPct:b.bodyPct,defensePct:b.defensePct})) assert.ok(value>=25&&value<=35,`${axis}=${value}`);
