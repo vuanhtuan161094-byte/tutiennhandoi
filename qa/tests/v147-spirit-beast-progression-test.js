@@ -72,7 +72,7 @@ test('V147 raw growth sharply diminishes after level 100/500/1000',()=>{
   assert.equal(spiritBeastEffectiveLevelV147(100),100);
   assert.equal(spiritBeastEffectiveLevelV147(500),180);
   assert.equal(spiritBeastEffectiveLevelV147(1000),220);
-  assert(Math.abs(spiritBeastEffectiveLevelV147(5100)-301.98)<1e-9);
+  assert.equal(spiritBeastEffectiveLevelV147(5100),302);
   assert.equal(spiritBeastStarRawMultiplierV147(20),1.6);
   assert.equal(spiritBeastStarRawMultiplierV147(1000),1.6,'stars above 20 must not create uncapped direct multipliers');
 });
