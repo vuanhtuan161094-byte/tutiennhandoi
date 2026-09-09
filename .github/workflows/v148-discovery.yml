@@ -13,11 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Locate confidant integration surfaces
+      - name: Locate V148 patch anchors
         run: |
-          echo '=== collection UI action handlers ==='
-          grep -R -n -E 'collection-(advance|strengthen).*v12325|advanceCollectionEconomyV12325|strengthenCollectionEconomyV12325|activeCompanionId' app.js dist/core/session.js modules 2>/dev/null | head -n 350 || true
+          echo '=== session collection action strings ==='
+          grep -n -C 8 -E "collectionStrengthenV12325|collectionAdvanceV12325|collectionEquipV12325" dist/core/session.js || true
+          echo '=== app action renderer context ==='
+          grep -n -C 3 -E "selected.category==='companion'|data-collection-advance-v12325" app.js | head -n 120 || true
           echo '=== specialty consumers ==='
-          grep -R -n -E "specialty\.id|activeConfidantSpecialtyV87|cultivationPct|huntRewardPct|craftQualityPct" dist modules app.js 2>/dev/null | head -n 400 || true
-          echo '=== fireTriggers call sites ==='
-          grep -n "fireTriggers(" dist/core/combat.js || true
+          grep -n -C 3 -E "huntRewardPct|fortuneQuality|gardenPct|discountPct = specialty|forgingTalentModifiersV87" dist/core/session.js || true
