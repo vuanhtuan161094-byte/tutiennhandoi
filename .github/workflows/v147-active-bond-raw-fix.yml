@@ -27,6 +27,19 @@ jobs:
         with:
           node-version: '22'
           cache: ''
+      - name: Repair patch-script nested template quoting
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('qa/tools/v147-active-bond-raw-fix.mjs')
+          s=p.read_text()
+          s=s.replace('`attackFlat=${inactive.attackFlat}`', "'attackFlat='+inactive.attackFlat")
+          s=s.replace('`hpFlat=${inactive.hpFlat}`', "'hpFlat='+inactive.hpFlat")
+          s=s.replace('`defenseFlat=${inactive.defenseFlat}`', "'defenseFlat='+inactive.defenseFlat")
+          s=s.replace('`${x.powerPct}/${x.bodyPct}/${x.defensePct}`', "x.powerPct+'/'+x.bodyPct+'/'+x.defensePct")
+          p.write_text(s)
+          PY
       - name: Apply V147 active-bond/raw correction
         run: node qa/tools/v147-active-bond-raw-fix.mjs
       - name: Diff integrity
