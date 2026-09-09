@@ -126,8 +126,9 @@ test('V147 canonical advance consumes 10 fragments and milestone pill atomically
 });
 
 test('V147 nourish uses each pet personal star cap and Beast facility becomes a real discount consumer',()=>{
+  const fresh=stateWith({'pet.1':pet('pet.1',{level:1,stars:0})},10);
+  assert.equal(spiritBeastStrengthenCostV147(fresh,fresh.items['pet.1']),8,'Beast facility Lv10 should discount fresh nourish cost by 18%');
   const capped=stateWith({'pet.1':pet('pet.1',{level:100,stars:0})},10);
-  assert.equal(spiritBeastStrengthenCostV147(capped,capped.items['pet.1']),8,'Beast facility Lv10 should discount the Lv1-equivalent cost by 18%');
   assert.throws(()=>strengthenCollectionEconomyV12325(capped,'pet.1',1),/đã đạt Lv100/);
   capped.items['pet.1'].stars=1;
   const r=strengthenCollectionEconomyV12325(capped,'pet.1',1);
