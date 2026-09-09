@@ -37,6 +37,14 @@ function foldFacade({canonical,legacy,conflicts,transformWrapper}){
   console.log(`[v147-inline] folded ${legacy} -> ${canonical}`);
 }
 
+function replaceRequired(file,from,to){
+  const source=read(file);
+  if(source.includes(to))return;
+  if(!source.includes(from))throw new Error(`Không tìm thấy closure fixture cần migrate trong ${file}.`);
+  write(file,source.replace(from,to));
+  console.log(`[v147-inline] migrated closure fixture ${file}`);
+}
+
 // 1) Inline authored Spirit Beast data into the canonical V147 module.
 {
   const dataPath='dist/core/spirit-beast-data-v147.js';
@@ -80,6 +88,19 @@ foldFacade({
   legacy:'dist/core/collection-workshop-gacha-v12326-legacy.js',
   conflicts:['gachaCollectionV12326'],
 });
+
+// 5) V129 closure fixtures that explicitly mean "max Linh Thú" must follow the
+// V147 max-bond/skill milestones (Lv1000 + 20★), not the retired Lv50/HM V values.
+replaceRequired(
+  'qa/tests/v129-power-budget-test.js',
+  "const items=Object.fromEntries(SPIRIT_BEAST_SPECIES_V86.map(x=>[x.id,{owned:true,level:50,advance:5}]));",
+  "const items=Object.fromEntries(SPIRIT_BEAST_SPECIES_V86.map(x=>[x.id,{owned:true,level:1000,advance:5,stars:20,spiritBeastV147Migrated:true}]));"
+);
+replaceRequired(
+  'qa/tests/v129-global-build-balance-test.js',
+  'const collection=session.stateValue.collectionV12316;',
+  "const collection=session.stateValue.collectionV12316;\nfor(const pet of SPIRIT_BEAST_SPECIES_V86){const progress=collection.items[pet.id]??(collection.items[pet.id]={owned:true,level:1,advance:5,specificFragments:0});progress.owned=true;progress.level=1000;progress.advance=5;progress.stars=20;progress.spiritBeastV147Migrated=true;}"
+);
 
 for(const retired of [
   'dist/core/spirit-beast-data-v147.js',
