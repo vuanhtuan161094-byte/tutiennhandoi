@@ -1,0 +1,21 @@
+name: V148 Confidant Discovery
+
+on:
+  push:
+    branches:
+      - feature/v148-confidant-rebuild
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Locate confidant runtime consumers
+        run: |
+          echo '=== runtimeV87 / confidant trigger consumers ==='
+          grep -R -n -E 'runtimeV87|confidantCombatTriggersV87|TÂM Ý|TAM Y|activeCompanionId' dist modules app.js standalone-entry.js 2>/dev/null | head -n 300 || true
+          echo '=== combat kernel candidate files ==='
+          find dist modules -type f | grep -E 'combat|battle|kernel|trigger' | head -n 200 || true
