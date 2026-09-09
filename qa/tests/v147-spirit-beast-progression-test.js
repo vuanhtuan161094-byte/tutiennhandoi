@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import {
   SPIRIT_BEAST_SPECIES,
   SPIRIT_BEAST_FRAGMENT_PER_STAR_V147,
@@ -165,6 +165,18 @@ test('V147 standalone bootstrap loads scoped Spirit Beast UI bridge after the ca
   assert(ui.includes("PET_ASSET_MARKER='/assets/huntv2/beasts/'"));
   assert(ui.includes("Đột Phá Huyết Mạch")&&ui.includes("Tăng Sao"));
   assert(ui.includes("LINH THÚ V147"));
+});
+
+test('V147 canonical graph contains no temporary legacy facades or split Spirit Beast data module',()=>{
+  const retired=[
+    '../../dist/core/collection-progression-v12316-legacy.js',
+    '../../dist/core/collection-workshop-gacha-v12326-legacy.js',
+    '../../dist/core/gacha-collection-economy-v12325-legacy.js',
+    '../../dist/core/spirit-beast-data-v147.js',
+  ];
+  for(const rel of retired)assert.equal(existsSync(new URL(rel,import.meta.url)),false,`${rel} must stay retired`);
+  const core=readFileSync(new URL('../../dist/core/spirit-beast-v147.js',import.meta.url),'utf8');
+  assert(core.includes("name:'Xích Viêm Sư'")&&core.includes("name:'Sơn Nhạc Hùng'"),'V147 species data must stay inline with canonical authority');
 });
 
 console.log(`V147 Spirit Beast Progression: ${passed}/${passed} PASS`);
