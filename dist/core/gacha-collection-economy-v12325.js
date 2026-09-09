@@ -283,6 +283,7 @@ export function devMaxCollectionEconomyV12325(state) { const e = ensureCollectio
         p.level = d.category === 'manual' ? MANUAL_LEVEL_MAX_V127 : d.category === 'companion' || d.category === 'artifact' ? 100 : 50;
         p.advance = d.category === 'artifact' ? 4 : d.category === 'pet' ? SPIRIT_BEAST_MAX_BLOODLINE_V86 : d.category === 'companion' ? CONFIDANT_MAX_FATE_V87 - 1 : d.category === 'manual' ? MANUAL_ADVANCE_MAX_V127 : 6;
         p.specificFragments = Math.max(p.specificFragments, 9999);
+        if (d.category === 'companion') { p.stars = 100; p.level = 5100; p.advance = 4; p.confidantV148Migrated = true; p.confidantHeartV148 ??= { assist: 10, guard: 10, harmony: 10, raw: 0 }; }
     }
     else {
         const p = extraProgress(e, d.id);

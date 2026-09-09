@@ -288,7 +288,8 @@ function confidantHeartStateV148(p){
 }
 export function confidantHeartPointSummaryV148(p,id){
   const stars=confidantStarsV148(p),tree=confidantHeartStateV148(p),earned=Math.floor(stars/10),used=tree.assist+tree.guard+tree.harmony+tree.raw;
-  return {earned,used,available:Math.max(0,earned-used),tree,branches:(CONFIDANT_HEART_BRANCHES_V148[id]??[]).map(x=>({...x,level:tree[x.id]??0,maxLevel:CONFIDANT_HEART_BRANCH_LEVEL_MAX_V148})),repeatableRaw:tree.raw};
+  const repeatableUnlocked=tree.assist>=CONFIDANT_HEART_BRANCH_LEVEL_MAX_V148&&tree.guard>=CONFIDANT_HEART_BRANCH_LEVEL_MAX_V148&&tree.harmony>=CONFIDANT_HEART_BRANCH_LEVEL_MAX_V148;
+  return {earned,used,available:Math.max(0,earned-used),tree,branches:(CONFIDANT_HEART_BRANCHES_V148[id]??[]).map(x=>({...x,level:tree[x.id]??0,maxLevel:CONFIDANT_HEART_BRANCH_LEVEL_MAX_V148})),repeatableRaw:tree.raw,repeatableUnlocked};
 }
 export function spendConfidantHeartPointV148(state,id,branch){
   const d=confidantDefinitionV87(id),p=state?.items?.[id];
@@ -300,6 +301,7 @@ export function spendConfidantHeartPointV148(state,id,branch){
   if(!['assist','guard','harmony','raw'].includes(key))throw new Error('Nhánh Tâm Ý không tồn tại.');
   const tree=confidantHeartStateV148(p);
   if(key!=='raw'&&tree[key]>=CONFIDANT_HEART_BRANCH_LEVEL_MAX_V148)throw new Error('Nhánh Tâm Ý này đã đạt cấp tối đa.');
+  if(key==='raw'&&(tree.assist<CONFIDANT_HEART_BRANCH_LEVEL_MAX_V148||tree.guard<CONFIDANT_HEART_BRANCH_LEVEL_MAX_V148||tree.harmony<CONFIDANT_HEART_BRANCH_LEVEL_MAX_V148))throw new Error('Cần hoàn thiện cả 3 nhánh Tâm Ý trước khi mở RAW lặp vô hạn.');
   tree[key]+=1;p.confidantHeartV148=tree;
   return confidantHeartPointSummaryV148(p,id);
 }
@@ -374,10 +376,11 @@ export function confidantCombatTriggersV148(state){
   const id=state?.activeCompanionId;if(!id)return[];
   const d=confidantDefinitionV87(id),p=state?.items?.[id];if(!d||!p?.owned)return[];
   const intimacy=confidantIntimacyV148(p),stars=confidantStarsV148(p),heart=confidantHeartStateV148(p),heartPower=confidantHeartPowerV148(p,id),relation=relationScaleV148(p)*(CONFIDANT_COMBAT_TUNING_V108[id]??1),out=[];
-  const assistScale=relation*(stars>=10?1.12:1);
-  out.push({id:`confidant.v148.${d.id}.assist`,event:d.assist.event,chancePct:100,sourceTags:d.assist.event==='OnHit'?['ActiveHit']:undefined,cooldown:Math.max(4,d.assist.cooldown*(stars>=10?.82:1)),effects:d.assist.effects.map(e=>scaleEffectV148(e,assistScale,heartPower,'assist',heart.assist)),runtimeV87:{kind:'assist',confidantId:d.id,confidantName:d.name,abilityName:d.assist.name,label:'TRỢ CHIẾN'},runtimeV148:{kind:'assist'}});
-  if(intimacy>=150&&stars>=3)out.push({id:`confidant.v148.${d.id}.guard`,event:'OnDamageTaken',chancePct:100,cooldown:99999,effects:d.guard.effects.map(e=>scaleEffectV148(e,relation*(stars>=20?1.18:1.06),heartPower,'guard',heart.guard)),runtimeV87:{kind:'guard',confidantId:d.id,confidantName:d.name,abilityName:d.guard.name,label:'HỘ ĐẠO',hpBelowPct:d.guard.hpBelowPct,oncePerBattle:true},runtimeV148:{kind:'guard'}});
-  if(intimacy>=250&&stars>=5){
+  const legacyAssist=Boolean(p.legacyAssistUpgradeV148),legacyGuard=Boolean(p.legacyGuardUnlockedV148),legacyHarmony=Boolean(p.legacyHarmonyUnlockedV148);
+  const assistScale=relation*((stars>=10||legacyAssist)?1.12:1);
+  out.push({id:`confidant.v148.${d.id}.assist`,event:d.assist.event,chancePct:100,sourceTags:d.assist.event==='OnHit'?['ActiveHit']:undefined,cooldown:Math.max(4,d.assist.cooldown*((stars>=10||legacyAssist)?.82:1)),effects:d.assist.effects.map(e=>scaleEffectV148(e,assistScale,heartPower,'assist',heart.assist)),runtimeV87:{kind:'assist',confidantId:d.id,confidantName:d.name,abilityName:d.assist.name,label:'TRỢ CHIẾN'},runtimeV148:{kind:'assist'}});
+  if(legacyGuard||(intimacy>=150&&stars>=3))out.push({id:`confidant.v148.${d.id}.guard`,event:'OnDamageTaken',chancePct:100,cooldown:99999,effects:d.guard.effects.map(e=>scaleEffectV148(e,relation*(stars>=20?1.18:1.06),heartPower,'guard',heart.guard)),runtimeV87:{kind:'guard',confidantId:d.id,confidantName:d.name,abilityName:d.guard.name,label:'HỘ ĐẠO',hpBelowPct:d.guard.hpBelowPct,oncePerBattle:true},runtimeV148:{kind:'guard'}});
+  if(legacyHarmony||(intimacy>=250&&stars>=5)){
     const harmonyBranchGain=1+heart.harmony*.015;
     for(const [idx,g] of (CONFIDANT_GAUGE_PROFILE_V148[id]??[]).entries())out.push({id:`confidant.v148.${d.id}.gauge.${idx}`,event:g.event,chancePct:100,sourceTags:g.sourceTags,effects:[],runtimeV148:{kind:'gauge',gaugeGain:g.gain*harmonyBranchGain,confidantId:d.id,confidantName:d.name}});
     out.push({id:`confidant.v148.${d.id}.harmony`,event:'OnHit',chancePct:100,sourceTags:['ActiveHit'],effects:d.harmony.effects.map(e=>scaleEffectV148(e,relation*(stars>=50?1.28:1.12),heartPower,'harmony',heart.harmony)),runtimeV87:{kind:'harmony',confidantId:d.id,confidantName:d.name,abilityName:d.harmony.name,label:'TÂM Ý HỢP KÍCH'},runtimeV148:{kind:'harmony',harmonyCost:CONFIDANT_HARMONY_GAUGE_MAX_V148}});
@@ -388,15 +391,21 @@ export function confidantViewV148(state,id){
   const d=confidantDefinitionV87(id);if(!d)return undefined;
   const p=state?.items?.[id]??{owned:false,level:1,advance:0,stars:0,specificFragments:0};
   const intimacy=confidantIntimacyV148(p),stars=confidantStarsV148(p),maxIntimacy=confidantIntimacyCapV148(p),heartPower=confidantHeartPowerV148(p,id),heartTree=confidantHeartPointSummaryV148(p,id),specialty=activeConfidantSpecialtyV148({...state,activeCompanionId:id});
-  return {schema:CONFIDANT_SCHEMA_V148,compatibilitySchema:CONFIDANT_SCHEMA_V87,id:d.id,code:d.code,name:d.name,title:d.title,fantasy:d.fantasy,asset:d.asset,combatStyle:d.combatStyle,intimacy,maxIntimacy,stars,maxStars:null,heartPower,active:state?.activeCompanionId===id,specialty:{...d.specialty,unlocked:intimacy>=30,strengthPct:specialty?.strengthPct??0},assist:{...d.assist,unlocked:true,upgraded:stars>=10},guard:{...d.guard,unlocked:intimacy>=150&&stars>=3,upgraded:stars>=20},harmony:{...d.harmony,unlocked:intimacy>=250&&stars>=5,upgraded:stars>=50,gaugeMax:CONFIDANT_HARMONY_GAUGE_MAX_V148,cooldown:undefined},heartTree,gaugeProfile:(CONFIDANT_GAUGE_PROFILE_V148[id]??[]).map(x=>({...x})),milestones:{guard:{stars:3,intimacy:150},harmony:{stars:5,intimacy:250},assistII:10,guardII:20,harmonyII:50,capstone:100}};
+  const legacyAssist=Boolean(p.legacyAssistUpgradeV148),legacyGuard=Boolean(p.legacyGuardUnlockedV148),legacyHarmony=Boolean(p.legacyHarmonyUnlockedV148);
+  return {schema:CONFIDANT_SCHEMA_V148,compatibilitySchema:CONFIDANT_SCHEMA_V87,id:d.id,code:d.code,name:d.name,title:d.title,fantasy:d.fantasy,asset:d.asset,combatStyle:d.combatStyle,intimacy,maxIntimacy,stars,maxStars:null,heartPower,active:state?.activeCompanionId===id,specialty:{...d.specialty,unlocked:intimacy>=30,strengthPct:specialty?.strengthPct??0},assist:{...d.assist,unlocked:true,upgraded:stars>=10||legacyAssist},guard:{...d.guard,unlocked:legacyGuard||(intimacy>=150&&stars>=3),upgraded:stars>=20},harmony:{...d.harmony,unlocked:legacyHarmony||(intimacy>=250&&stars>=5),upgraded:stars>=50,gaugeMax:CONFIDANT_HARMONY_GAUGE_MAX_V148,cooldown:undefined},heartTree,gaugeProfile:(CONFIDANT_GAUGE_PROFILE_V148[id]??[]).map(x=>({...x})),legacyPreserved:{assist:legacyAssist,guard:legacyGuard,harmony:legacyHarmony},milestones:{guard:{stars:3,intimacy:150},harmony:{stars:5,intimacy:250},assistII:10,guardII:20,harmonyII:50,capstone:100}};
 }
 export function migrateConfidantsV148(state){
   if(!state||state.confidantV148Migrated)return {migrated:false};
   if(!state.confidantV87Migrated)migrateConfidantsV87(state);
   for(const d of CONFIDANTS_V87){
     const p=state.items?.[d.id];if(!p)continue;
-    if(!Number.isFinite(Number(p.stars)))p.stars=clampInt(p.advance,0,4)*5;
-    else p.stars=Math.max(0,Math.floor(Number(p.stars)));
+    const hadStars=Number.isFinite(Number(p.stars)),legacyLevel=Math.max(1,Math.floor(Number(p.level)||1)),legacyFate=clampInt(p.advance,0,4)+1;
+    if(!hadStars){
+      if(legacyLevel>=50)p.legacyAssistUpgradeV148=true;
+      if(legacyLevel>=70&&legacyFate>=2)p.legacyGuardUnlockedV148=true;
+      if(legacyLevel>=100&&legacyFate>=5)p.legacyHarmonyUnlockedV148=true;
+      p.stars=clampInt(p.advance,0,4)*5;
+    } else p.stars=Math.max(0,Math.floor(Number(p.stars)));
     p.level=Math.max(1,Math.floor(Number(p.level)||1));
     p.advance=Math.min(4,Math.floor(p.stars/5));
     p.specificFragments=Math.max(0,Math.floor(Number(p.specificFragments)||0));

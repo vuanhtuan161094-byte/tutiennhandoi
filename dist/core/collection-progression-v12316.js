@@ -103,7 +103,7 @@ function strengthenCollectionItemV12316LegacyV146(state, id, levels = 1) {
             c = facilityDiscountedCostV99(state, 'scripture', c);
         if (def.category === 'companion')
             c = facilityDiscountedCostV99(state, 'companion', c);
-        const specialty = activeConfidantSpecialtyV87(state);
+        const specialty = activeConfidantSpecialtyV148(state);
         if (def.category === 'pet' && specialty?.unlocked && specialty.id === 'spiritBeast')
             c = Math.max(1, Math.ceil(c * (1 - specialty.strengthPct / 100)));
         if (def.category !== 'companion' && specialty?.unlocked && specialty.id === 'resource')
@@ -324,7 +324,7 @@ export function upgradeCaveFacilityV12316(state, facilityId, inventory) { const 
     throw new Error('Công trình đã Lv10.'); const c = caveFacilityUpgradeCostV12316(f.level); if ((inventory['resource.spirit_stone'] ?? 0) < c.spiritStone)
     throw new Error(`Thiếu Linh Thạch: cần ${c.spiritStone}.`); if (state.currencies.boundImmortalJade < c.boundJade)
     throw new Error(`Thiếu Tiên Ngọc Khóa: cần ${c.boundJade}.`); inventory['resource.spirit_stone'] -= c.spiritStone; state.currencies.boundImmortalJade -= c.boundJade; f.level += 1; state.cave.level = Math.max(state.cave.level, Math.max(...state.cave.facilities.map(x => x.level))); return { facility: { ...f }, cost: c }; }
-export function collectionSummaryV12316(container, now = Date.now()) {
+function collectionSummaryV12316LegacyV148(container, now = Date.now()) {
     const state = cloneCollectionProgressStateV12316(container.collectionV12316);
     migrateConfidantsV87(state);
     migrateArtifactsV88(state);
@@ -342,7 +342,7 @@ export function spiritBeastStrengthenCostV147(state,progress){
   const effective=spiritBeastEffectiveLevelV147(progress?.level??1);
   let cost=Math.max(5,Math.floor(8+effective*2.4));
   cost=facilityDiscountedCostV99(state,'beast',cost);
-  const specialty=activeConfidantSpecialtyV87(state);
+  const specialty=activeConfidantSpecialtyV148(state);
   if(specialty?.unlocked&&specialty.id==='spiritBeast')cost=Math.max(1,Math.ceil(cost*(1-specialty.strengthPct/100)));
   if(specialty?.unlocked&&specialty.id==='resource')cost=Math.max(1,Math.ceil(cost*(1-specialty.strengthPct/100)));
   return cost;
@@ -435,4 +435,20 @@ export function advanceCollectionItemV12316(state,id){
 
 export function spendCollectionConfidantHeartPointV148(state,id,branch){
   return spendConfidantHeartPointV148(state,id,branch);
+}
+
+
+// V148 canonical compatibility read-model: legacy V12316 callers still receive current Tri Kỷ progression.
+export function collectionSummaryV12316(container,now=Date.now()){
+  const out=collectionSummaryV12316LegacyV148(container,now);
+  const state=cloneCollectionProgressStateV12316(container?.collectionV12316);migrateConfidantsV148(state);
+  const cat=out.categories?.find(x=>x.category==='companion');
+  if(cat){
+    cat.confidantFortune=confidantFortuneSummaryV148(state);cat.activeSpecialty=activeConfidantSpecialtyV148(state);
+    cat.items=cat.items.map(item=>{
+      const p=state.items?.[item.id]??{owned:false,level:1,stars:0,advance:0,specificFragments:0};const owned=Boolean(p.owned),view=confidantViewV148(state,item.id),cap=confidantIntimacyCapV148(p);
+      return {...item,progress:{...p},confidant:view,active:state.activeCompanionId===item.id,strengthenCost:owned&&p.level<cap?facilityDiscountedCostV99(state,'companion',confidantIntimacyCostV148(p)):undefined,advanceCost:owned?CONFIDANT_FRAGMENT_PER_STAR_V148:undefined};
+    });
+  }
+  const summary=collectionConfidantV87Summary(state);out.confidantV87=summary;out.confidantV148=summary;return out;
 }
