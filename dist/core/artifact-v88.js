@@ -23,251 +23,78 @@ export const ARTIFACT_COMBO_SCHEMA_V149 = 'artifact.combo.v149';
 export const RELIC_SCHEMA_V151 = 'relic.production.v151';
 export const RELIC_SLOT_LIMIT_V151 = 1;
 export const RELIC_RULES_V151 = Object.freeze({
-  'relic.1': {
-    identity: 'Đạo vực cứu nguy',
-    pattern: 'emergency-reset',
-    trigger: 'HP thấp / một lần mỗi trận',
-    purpose: 'Mở cửa sống sót khi bị burst nhưng không tạo thêm mạng.',
-    buildFit: ['sustain', 'boss', 'tank'],
-  },
-  'relic.2': {
-    identity: 'Đảo tử hộ mệnh',
-    pattern: 'anti-death',
-    trigger: 'Đòn chí tử / một lần mỗi trận',
-    purpose: 'Giữ lại đúng 1 HP bằng charge anti-death dùng chung; không cộng dồn nhiều mạng.',
-    buildFit: ['glass-cannon', 'progression', 'boss'],
-  },
-  'relic.3': {
-    identity: 'Kết liễu',
-    pattern: 'execute',
-    trigger: 'Mục tiêu dưới 20% HP',
-    purpose: 'Rút ngắn pha cuối Boss bằng đòn true damage không thể né.',
-    buildFit: ['boss', 'burst', 'speed-clear'],
-  },
-  'relic.4': {
-    identity: 'Xuyên giới đổi nhịp',
-    pattern: 'tempo-follow-up',
-    trigger: 'Đòn chủ động',
-    purpose: 'Nối một đòn chắc trúng và hoàn Chân Nguyên để giữ nhịp kỹ năng.',
-    buildFit: ['tempo', 'spirit', 'generalist'],
-  },
-  'relic.5': {
-    identity: 'Cộng hưởng Pháp Bảo',
-    pattern: 'artifact-echo',
-    trigger: 'ProcHit',
-    purpose: 'Biến nhịp Pháp Kỹ thành đạo âm truy kích, ưu tiên loadout nhiều Pháp Bảo chủ động.',
-    buildFit: ['artifact', 'combo', 'multi-proc'],
-  },
-  'relic.6': {
-    identity: 'Phản luyện áp lực',
-    pattern: 'counter-pressure',
-    trigger: 'Bị đánh khi HP dưới 70%',
-    purpose: 'Chuyển áp lực nhận vào thành phản kích, hộ thuẫn nhỏ và hồi Chân Nguyên.',
-    buildFit: ['counter', 'tank', 'attrition'],
-  },
-  'relic.7': {
-    identity: 'Khóa thân pháp',
-    pattern: 'anti-dodge-combo',
-    trigger: 'Mục tiêu né',
-    purpose: 'Phản kích không thể né và để lại Phá Vọng cho finisher tương thích.',
-    buildFit: ['anti-dodge', 'combo', 'crit-follow-up'],
-  },
-  'relic.8': {
-    identity: 'Tịnh hóa khống chế',
-    pattern: 'cleanse-guard',
-    trigger: 'Bị đánh khi HP thấp',
-    purpose: 'Xóa khống chế và dựng hộ thân; chuyên chống chuỗi control thay vì cứu tử.',
-    buildFit: ['control-resist', 'sustain', 'pvp'],
-  },
+  'relic.1': { identity:'Đạo vực cứu nguy',pattern:'emergency-reset',trigger:'HP thấp / một lần mỗi trận',purpose:'Mở cửa sống sót khi bị burst nhưng không tạo thêm mạng.',buildFit:['sustain','boss','tank'] },
+  'relic.2': { identity:'Đảo tử hộ mệnh',pattern:'anti-death',trigger:'Đòn chí tử / một lần mỗi trận',purpose:'Giữ lại đúng 1 HP bằng charge anti-death dùng chung; không cộng dồn nhiều mạng.',buildFit:['glass-cannon','progression','boss'] },
+  'relic.3': { identity:'Kết liễu',pattern:'execute',trigger:'Mục tiêu dưới 20% HP',purpose:'Rút ngắn pha cuối Boss bằng đòn true damage không thể né.',buildFit:['boss','burst','speed-clear'] },
+  'relic.4': { identity:'Xuyên giới đổi nhịp',pattern:'tempo-follow-up',trigger:'Đòn chủ động',purpose:'Nối một đòn chắc trúng và hoàn Chân Nguyên để giữ nhịp kỹ năng.',buildFit:['tempo','spirit','generalist'] },
+  'relic.5': { identity:'Cộng hưởng vạn pháp',pattern:'artifact-echo',trigger:'Hit từ Pháp Bảo / triệu hồi',purpose:'Biến hit từ Pháp Bảo và các nguồn triệu hồi thành đạo âm truy kích có hồi chiêu.',buildFit:['artifact','summon','combo','multi-proc'] },
+  'relic.6': { identity:'Phản luyện áp lực',pattern:'counter-pressure',trigger:'Bị đánh khi HP dưới 70%',purpose:'Chuyển áp lực nhận vào thành phản kích, hộ thuẫn nhỏ và hồi Chân Nguyên.',buildFit:['counter','tank','attrition'] },
+  'relic.7': { identity:'Khóa thân pháp',pattern:'anti-dodge-combo',trigger:'Mục tiêu né',purpose:'Phản kích không thể né và để lại Phá Vọng cho finisher tương thích.',buildFit:['anti-dodge','combo','crit-follow-up'] },
+  'relic.8': { identity:'Tịnh hóa khống chế',pattern:'cleanse-guard',trigger:'Bị đánh khi HP thấp',purpose:'Xóa khống chế và dựng hộ thân; chuyên chống chuỗi control thay vì cứu tử.',buildFit:['control-resist','sustain','pvp'] },
 });
 
 const ARTIFACT_TEXT_V150 = Object.freeze({
-  'artifact.spirit_suppressing_bell': { skillDescription: 'Khi chịu sát thương và HP thấp, theo hồi chiêu dựng hộ thuẫn.' },
-  'artifact.thunder_guiding_mirror': { passiveName: 'Dẫn Lôi', passiveDescription: 'Chuyên tạo Lôi Ấn để mở combo cho Pháp Bảo tương thích.' },
-  'artifact.thunder_punishment_sword': { skillDescription: 'Sau nhịp công kích, theo hồi chiêu gọi thiên lôi đánh mục tiêu.' },
-  'artifact.blood_severing_gourd': { skillDescription: 'Khi địch hồi phục, theo hồi chiêu áp anti-heal và huyết phệ.' },
-  'artifact.purple_mansion_lamp': { role: 'Hồi Chân Nguyên / sustain', description: 'Minh đăng dưỡng thần, giữ nhịp kỹ năng và hộ thân trong trường chiến.', passiveName: 'Minh Hỏa Dưỡng Thần', passiveDescription: 'Thiên về hồi Chân Nguyên và ổn định nhịp chiến đấu.', skillDescription: 'Định kỳ theo đòn chủ động, hồi Chân Nguyên và mở hiệu ứng tiến giai.' },
-  'artifact.golden_core_cauldron': { skillDescription: 'Theo hồi chiêu phóng Đan Hỏa gây sát thương và thiêu đốt.' },
-  'artifact.starfall_sword_box': { skillDescription: 'Sau bạo kích, theo hồi chiêu phóng chuỗi tinh kiếm truy kích.' },
-  'artifact.soul_nourishing_lotus': { passiveName: 'Liên Tâm', passiveDescription: 'Thiên về thanh tẩy, hộ hồn và giữ Chân Nguyên khi bị ép máu.' },
-  'artifact.nascent_soul_banner': { skillDescription: 'Theo hồi chiêu tạo hai ảnh hồn nối đòn từ công kích chủ động.' },
-  'artifact.green_spirit_gourd': { passiveName: 'Hồi Linh', passiveDescription: 'Ưu tiên cứu Chân Nguyên khi tài nguyên xuống thấp.', skillDescription: 'Khi Chân Nguyên thấp, theo hồi chiêu hồi Chân Nguyên chuẩn.' },
+  'artifact.spirit_suppressing_bell': { skillDescription:'Khi chịu sát thương và HP thấp, theo hồi chiêu dựng hộ thuẫn.' },
+  'artifact.thunder_guiding_mirror': { passiveName:'Dẫn Lôi',passiveDescription:'Chuyên tạo Lôi Ấn để mở combo cho Pháp Bảo tương thích.' },
+  'artifact.thunder_punishment_sword': { skillDescription:'Sau nhịp công kích, theo hồi chiêu gọi thiên lôi đánh mục tiêu.' },
+  'artifact.blood_severing_gourd': { skillDescription:'Khi địch hồi phục, theo hồi chiêu áp anti-heal và huyết phệ.' },
+  'artifact.purple_mansion_lamp': { role:'Hồi Chân Nguyên / sustain',description:'Minh đăng dưỡng thần, giữ nhịp kỹ năng và hộ thân trong trường chiến.',passiveName:'Minh Hỏa Dưỡng Thần',passiveDescription:'Thiên về hồi Chân Nguyên và ổn định nhịp chiến đấu.',skillDescription:'Định kỳ theo đòn chủ động, hồi Chân Nguyên và mở hiệu ứng tiến giai.' },
+  'artifact.golden_core_cauldron': { skillDescription:'Theo hồi chiêu phóng Đan Hỏa gây sát thương và thiêu đốt.' },
+  'artifact.starfall_sword_box': { skillDescription:'Sau bạo kích, theo hồi chiêu phóng chuỗi tinh kiếm truy kích.' },
+  'artifact.soul_nourishing_lotus': { passiveName:'Liên Tâm',passiveDescription:'Thiên về thanh tẩy, hộ hồn và giữ Chân Nguyên khi bị ép máu.' },
+  'artifact.nascent_soul_banner': { skillDescription:'Theo hồi chiêu tạo hai ảnh hồn nối đòn từ công kích chủ động.' },
+  'artifact.green_spirit_gourd': { passiveName:'Hồi Linh',passiveDescription:'Ưu tiên cứu Chân Nguyên khi tài nguyên xuống thấp.',skillDescription:'Khi Chân Nguyên thấp, theo hồi chiêu hồi Chân Nguyên chuẩn.' },
 });
 
-function artifactDefinitionV150(def) {
-  const patch = ARTIFACT_TEXT_V150[def.id] ?? {};
-  const passive = { ...(def.passive ?? {}) };
-  const skill = { ...(def.skill ?? {}) };
-  delete passive.baoQiGainPct;
-  delete passive.costReductionPct;
-  delete skill.baoQiCost;
-  delete skill.baoQiGain;
-  if (patch.passiveName) passive.name = patch.passiveName;
-  if (patch.passiveDescription) passive.description = patch.passiveDescription;
-  if (patch.skillDescription) skill.description = patch.skillDescription;
-  return Object.freeze({ ...def, role: patch.role ?? def.role, description: patch.description ?? def.description, passive: Object.freeze(passive), skill: Object.freeze(skill) });
-}
+function artifactDefinitionV150(def){const patch=ARTIFACT_TEXT_V150[def.id]??{},passive={...(def.passive??{})},skill={...(def.skill??{})};delete passive.baoQiGainPct;delete passive.costReductionPct;delete skill.baoQiCost;delete skill.baoQiGain;if(patch.passiveName)passive.name=patch.passiveName;if(patch.passiveDescription)passive.description=patch.passiveDescription;if(patch.skillDescription)skill.description=patch.skillDescription;return Object.freeze({...def,role:patch.role??def.role,description:patch.description??def.description,passive:Object.freeze(passive),skill:Object.freeze(skill)});}
+const relicDamage=(coefficient,extra={})=>({type:'damage',coefficient,sourceTag:'Summon',canCrit:false,canDodge:true,procCoefficient:0,...extra});
+const relicShield=(maxHpPct,duration=5)=>({type:'shield',capacity:0,stability:Infinity,duration,maxHpPct,overflowDamageRatio:.25});
 
-const relicDamage = (coefficient, extra = {}) => ({ type: 'damage', coefficient, sourceTag: 'Summon', canCrit: false, canDodge: true, procCoefficient: 0, ...extra });
-const relicShield = (maxHpPct, duration = 5) => ({ type: 'shield', capacity: 0, stability: Infinity, duration, maxHpPct, overflowDamageRatio: .25 });
-
-const RELIC_OVERRIDES_V151 = Object.freeze({
-  'relic.1': { role: 'Đạo vực / cứu nguy', description: 'Triển khai Sơn Hà Giới đúng một lần để ổn định lại trận chiến khi bị ép sát ngưỡng nguy hiểm.', ruleName: 'Sơn Hà Giới', ruleDescription: 'Một lần/trận khi HP dưới 35%: hồi 3% HP tối đa và dựng hộ thuẫn 18% HP tối đa trong 6 giây.', trigger: { name: 'Sơn Hà Giới', description: 'HP dưới 35%: một lần/trận hồi nhẹ và dựng đại thuẫn.', event: 'OnDamageTaken', cooldown: 999, hpBelowPct: 35, oncePerBattle: true, effects: [{ type: 'heal', maxHpPct: 3, target: 'self' }, relicShield(18, 6)] } },
-  'relic.2': { role: 'Đảo tử / hộ mệnh', description: 'Đổi đúng một lần chết thành cơ hội tiếp tục chiến đấu; không tạo chuỗi hồi sinh.', ruleName: 'Luân Hồi Phản Chiếu', ruleDescription: 'Một lần/trận khi nhận đòn chí tử, giữ lại 1 HP. Charge này dùng chung với các nguồn anti-death khác nên không cộng dồn thêm mạng.', reincarnationMirror: true, trigger: undefined },
-  'relic.3': { role: 'Kết liễu / Boss', description: 'Chuyên rút ngắn pha cuối của mục tiêu lớn thay vì tăng sát thương đều suốt trận.', ruleName: 'Trảm Tiên', ruleDescription: 'Khi mục tiêu dưới 20% HP, theo hồi chiêu tung một nhát true damage không thể né.', trigger: { name: 'Trảm Tiên', description: 'Địch dưới 20% HP: trảm kích true damage không thể né.', event: 'OnHit', sourceTags: ['ActiveHit'], cooldown: 9, targetHpBelowPct: 20, effects: [relicDamage(.85, { canDodge: false, trueDamage: true })] } },
-  'relic.4': { role: 'Xuyên giới / đổi nhịp', description: 'Bẻ quỹ đạo giao tranh bằng một đòn xuyên giới chắc trúng rồi hoàn Chân Nguyên cho nhịp kế tiếp.', ruleName: 'Thái Hư Xuyên Giới', ruleDescription: 'Sau đòn chủ động, theo hồi chiêu xuyên kích không thể né và hồi 12 Chân Nguyên.', trigger: { name: 'Thái Hư Xuyên Giới', description: 'Đòn chủ động gọi một xuyên kích chắc trúng và hồi Chân Nguyên.', event: 'OnHit', sourceTags: ['ActiveHit'], cooldown: 12, effects: [relicDamage(.42, { canDodge: false, unavoidable: true }), { type: 'restoreSpirit', flat: 12 }] } },
-  'relic.5': { role: 'Cộng hưởng Pháp Bảo', description: 'Lắng nghe các ProcHit rồi phát đạo âm truy kích, khiến loadout nhiều Pháp Bảo có nhịp cộng hưởng riêng.', ruleName: 'Vạn Pháp Cộng Minh', ruleDescription: 'Khi một ProcHit xuất hiện, theo hồi chiêu phát đạo âm không thể né; không khóa cùng bộ Pháp Bảo.', trigger: { name: 'Vạn Pháp Cộng Minh', description: 'ProcHit gọi thêm đạo âm truy kích.', event: 'OnHit', sourceTags: ['ProcHit'], cooldown: 7.5, effects: [relicDamage(.32, { canDodge: false })] } },
-  'relic.6': { role: 'Phản luyện / phản công', description: 'Hỗn Độn Đỉnh không còn là một khiên cứu nguy thứ ba; nó biến áp lực nhận vào thành phản kích và hồi nhịp.', ruleName: 'Hỗn Độn Phản Luyện', ruleDescription: 'Khi bị đánh lúc HP dưới 70%, theo hồi chiêu phản kích, dựng hộ thuẫn nhỏ và hồi 6 Chân Nguyên.', trigger: { name: 'Hỗn Độn Phản Luyện', description: 'HP dưới 70%: phản kích, hộ thân nhỏ và hồi Chân Nguyên.', event: 'OnDamageTaken', cooldown: 10, hpBelowPct: 70, effects: [relicDamage(.42, { canDodge: false }), relicShield(4, 4), { type: 'restoreSpirit', flat: 6 }] } },
-  'relic.7': { role: 'Khóa thân pháp / combo', description: 'Khóa quỹ tích sau một lần né, vừa phản kích vừa để lại Phá Vọng cho finisher tương thích.', ruleName: 'Định Càn Khôn', ruleDescription: 'Khi mục tiêu né, theo hồi chiêu phản kích không thể né và đặt 2 tầng Phá Vọng.', trigger: { name: 'Định Càn Khôn', description: 'Mục tiêu né: phản kích chắc trúng và đặt Phá Vọng.', event: 'OnTargetDodge', sourceTags: ['ActiveHit'], cooldown: 8, effects: [relicDamage(.58, { canDodge: false, unavoidable: true }), { type: 'addMark', mark: 'Phá Vọng', stacks: 2, maxStacks: 3 }] } },
-  'relic.8': { role: 'Thanh tẩy / kháng khống', description: 'Chuyên phá chuỗi khống chế khi bị ép máu; không cạnh tranh vai trò hồi sinh hay phản công.', ruleName: 'Tịnh Thế', ruleDescription: 'Khi HP dưới 45% và bị đánh: theo hồi chiêu xóa Body/Spirit Control, dựng khiên 8% HP tối đa và hồi 5 Chân Nguyên.', trigger: { name: 'Tịnh Thế', description: 'HP thấp: thanh tẩy khống chế, hộ thân và hồi Chân Nguyên.', event: 'OnDamageTaken', cooldown: 14, hpBelowPct: 45, effects: [{ type: 'removeStatus', groups: ['BodyControl', 'SpiritControl'], target: 'self' }, relicShield(8, 5), { type: 'restoreSpirit', flat: 5 }] } },
+const RELIC_OVERRIDES_V151=Object.freeze({
+  'relic.1':{role:'Đạo vực / cứu nguy',description:'Triển khai Sơn Hà Giới đúng một lần để ổn định lại trận chiến khi bị ép sát ngưỡng nguy hiểm.',ruleName:'Sơn Hà Giới',ruleDescription:'Một lần/trận khi HP dưới 35%: hồi 3% HP tối đa và dựng hộ thuẫn 18% HP tối đa trong 6 giây.',trigger:{name:'Sơn Hà Giới',description:'HP dưới 35%: một lần/trận hồi nhẹ và dựng đại thuẫn.',event:'OnDamageTaken',cooldown:999,hpBelowPct:35,oncePerBattle:true,effects:[{type:'heal',maxHpPct:3,target:'self'},relicShield(18,6)]}},
+  'relic.2':{role:'Đảo tử / hộ mệnh',description:'Đổi đúng một lần chết thành cơ hội tiếp tục chiến đấu; không tạo chuỗi hồi sinh.',ruleName:'Luân Hồi Phản Chiếu',ruleDescription:'Một lần/trận khi nhận đòn chí tử, giữ lại 1 HP. Charge này dùng chung với các nguồn anti-death khác nên không cộng dồn thêm mạng.',reincarnationMirror:true,trigger:undefined},
+  'relic.3':{role:'Kết liễu / Boss',description:'Chuyên rút ngắn pha cuối của mục tiêu lớn thay vì tăng sát thương đều suốt trận.',ruleName:'Trảm Tiên',ruleDescription:'Khi mục tiêu dưới 20% HP, theo hồi chiêu tung một nhát true damage không thể né.',trigger:{name:'Trảm Tiên',description:'Địch dưới 20% HP: trảm kích true damage không thể né.',event:'OnHit',sourceTags:['ActiveHit'],cooldown:9,targetHpBelowPct:20,effects:[relicDamage(.85,{canDodge:false,trueDamage:true})]}},
+  'relic.4':{role:'Xuyên giới / đổi nhịp',description:'Bẻ quỹ đạo giao tranh bằng một đòn xuyên giới chắc trúng rồi hoàn Chân Nguyên cho nhịp kế tiếp.',ruleName:'Thái Hư Xuyên Giới',ruleDescription:'Sau đòn chủ động, theo hồi chiêu xuyên kích không thể né và hồi 12 Chân Nguyên.',trigger:{name:'Thái Hư Xuyên Giới',description:'Đòn chủ động gọi một xuyên kích chắc trúng và hồi Chân Nguyên.',event:'OnHit',sourceTags:['ActiveHit'],cooldown:12,effects:[relicDamage(.42,{canDodge:false,unavoidable:true}),{type:'restoreSpirit',flat:12}]}},
+  'relic.5':{role:'Cộng hưởng Pháp Bảo / triệu hồi',description:'Lắng nghe hit từ Pháp Bảo và các nguồn triệu hồi rồi phát đạo âm truy kích, tạo một build cộng hưởng ngoại lực rõ ràng.',ruleName:'Vạn Pháp Cộng Minh',ruleDescription:'Khi một hit mang nguồn Summon xuất hiện, theo hồi chiêu phát đạo âm không thể né; cooldown được ghi trước khi resolve nên không tự-loop.',trigger:{name:'Vạn Pháp Cộng Minh',description:'Pháp Bảo hoặc triệu hồi đánh trúng sẽ gọi thêm đạo âm theo hồi chiêu.',event:'OnHit',sourceTags:['Summon'],cooldown:7.5,effects:[relicDamage(.32,{canDodge:false})]}},
+  'relic.6':{role:'Phản luyện / phản công',description:'Hỗn Độn Đỉnh không còn là một khiên cứu nguy thứ ba; nó biến áp lực nhận vào thành phản kích và hồi nhịp.',ruleName:'Hỗn Độn Phản Luyện',ruleDescription:'Khi bị đánh lúc HP dưới 70%, theo hồi chiêu phản kích, dựng hộ thuẫn nhỏ và hồi 6 Chân Nguyên.',trigger:{name:'Hỗn Độn Phản Luyện',description:'HP dưới 70%: phản kích, hộ thân nhỏ và hồi Chân Nguyên.',event:'OnDamageTaken',cooldown:10,hpBelowPct:70,effects:[relicDamage(.42,{canDodge:false}),relicShield(4,4),{type:'restoreSpirit',flat:6}]}},
+  'relic.7':{role:'Khóa thân pháp / combo',description:'Khóa quỹ tích sau một lần né, vừa phản kích vừa để lại Phá Vọng cho finisher tương thích.',ruleName:'Định Càn Khôn',ruleDescription:'Khi mục tiêu né, theo hồi chiêu phản kích không thể né và đặt 2 tầng Phá Vọng.',trigger:{name:'Định Càn Khôn',description:'Mục tiêu né: phản kích chắc trúng và đặt Phá Vọng.',event:'OnTargetDodge',sourceTags:['ActiveHit'],cooldown:8,effects:[relicDamage(.58,{canDodge:false,unavoidable:true}),{type:'addMark',mark:'Phá Vọng',stacks:2,maxStacks:3}]}},
+  'relic.8':{role:'Thanh tẩy / kháng khống',description:'Chuyên phá chuỗi khống chế khi bị ép máu; không cạnh tranh vai trò hồi sinh hay phản công.',ruleName:'Tịnh Thế',ruleDescription:'Khi HP dưới 45% và bị đánh: theo hồi chiêu xóa Body/Spirit Control, dựng khiên 8% HP tối đa và hồi 5 Chân Nguyên.',trigger:{name:'Tịnh Thế',description:'HP thấp: thanh tẩy khống chế, hộ thân và hồi Chân Nguyên.',event:'OnDamageTaken',cooldown:14,hpBelowPct:45,effects:[{type:'removeStatus',groups:['BodyControl','SpiritControl'],target:'self'},relicShield(8,5),{type:'restoreSpirit',flat:5}]}},
 });
+function relicDefinitionV151(def){const patch=RELIC_OVERRIDES_V151[def.id]??{},out={...def,...patch,v151:{schema:RELIC_SCHEMA_V151,activeLimit:RELIC_SLOT_LIMIT_V151,...(RELIC_RULES_V151[def.id]??{})}};delete out.costReductionPct;delete out.baoQiGainPct;delete out.baoQiMaxBonus;if(out.trigger){out.trigger={...out.trigger};delete out.trigger.baoQiCost;delete out.trigger.baoQiGain;out.trigger.effects=(out.trigger.effects??[]).map(e=>({...e}));}return Object.freeze(out);}
+export const ARTIFACTS_V88=Object.freeze(BASE_ARTIFACTS_V88.map(artifactDefinitionV150));
+export const RELICS_V88=Object.freeze(BASE_RELICS_V88.map(relicDefinitionV151));
+const ARTIFACT_BY_ID_V150=new Map(ARTIFACTS_V88.map(x=>[x.id,x]));
+const RELIC_BY_ID_V151=new Map(RELICS_V88.map(x=>[x.id,x]));
+export function artifactDefinitionV88(id){return ARTIFACT_BY_ID_V150.get(id);}
+export function relicDefinitionV88(id){return RELIC_BY_ID_V151.get(id);}
 
-function relicDefinitionV151(def) {
-  const patch = RELIC_OVERRIDES_V151[def.id] ?? {};
-  const out = { ...def, ...patch, v151: { schema: RELIC_SCHEMA_V151, activeLimit: RELIC_SLOT_LIMIT_V151, ...(RELIC_RULES_V151[def.id] ?? {}) } };
-  delete out.costReductionPct;
-  delete out.baoQiGainPct;
-  delete out.baoQiMaxBonus;
-  if (out.trigger) {
-    out.trigger = { ...out.trigger };
-    delete out.trigger.baoQiCost;
-    delete out.trigger.baoQiGain;
-    out.trigger.effects = (out.trigger.effects ?? []).map(e => ({ ...e }));
-  }
-  return Object.freeze(out);
-}
-
-export const ARTIFACTS_V88 = Object.freeze(BASE_ARTIFACTS_V88.map(artifactDefinitionV150));
-export const RELICS_V88 = Object.freeze(BASE_RELICS_V88.map(relicDefinitionV151));
-
-const ARTIFACT_BY_ID_V150 = new Map(ARTIFACTS_V88.map(x => [x.id, x]));
-const RELIC_BY_ID_V151 = new Map(RELICS_V88.map(x => [x.id, x]));
-
-export function artifactDefinitionV88(id) { return ARTIFACT_BY_ID_V150.get(id); }
-export function relicDefinitionV88(id) { return RELIC_BY_ID_V151.get(id); }
-
-export const ARTIFACT_COMBO_RULES_V149 = Object.freeze({
-  'artifact.spirit_suppressing_bell': { kind: 'reactive', listens: ['LowHP','OnDamageTaken'], note: 'Hộ chủ khi thấp máu; hưởng lợi từ mọi nguồn kéo dài thời gian sống.' },
-  'artifact.thunder_guiding_mirror': { kind: 'setup', produces: ['Lôi Ấn'], tags: ['Lightning','Mark'], note: 'Tạo Lôi Ấn cho bất kỳ finisher tương thích; không khóa theo bộ.' },
-  'artifact.thunder_punishment_sword': { kind: 'finisher', consumes: [{ mark: 'Lôi Ấn', max: 3 }], tags: ['Lightning','Burst'], note: 'Tiêu tối đa 3 Lôi Ấn để cộng sát thương; dấu ấn có thể đến từ bất kỳ hệ thống nào.' },
-  'artifact.true_sight_mirror': { kind: 'setup-reactive', listens: ['OnTargetDodge'], produces: ['Phá Vọng'], tags: ['AntiDodge','Mark'], note: 'Giai V tạo Phá Vọng để follow-up tương thích tận dụng.' },
-  'artifact.mountain_breaking_seal': { kind: 'reactive', listens: ['OnShieldBreak'], produces: ['Sơn Chấn'], tags: ['Break'], note: 'Kích hoạt từ mọi nguồn phá khiên, không cần cùng bộ.' },
-  'artifact.blood_severing_gourd': { kind: 'reactive', listens: ['OnEnemyHeal'], tags: ['AntiHeal','DoT'], note: 'Phản ứng với hồi phục của địch từ toàn combat.' },
-  'artifact.purple_mansion_lamp': { kind: 'engine-reactive', listens: ['OnHit'], provides: ['Chân Nguyên'], tags: ['Spirit','Sustain'], note: 'Hồi Chân Nguyên theo nhịp để giữ chu kỳ kỹ năng; không còn tài nguyên Bảo Khí.' },
-  'artifact.golden_core_cauldron': { kind: 'setup-damage', produces: ['Đan Hỏa'], tags: ['Fire','DoT','Mark'], note: 'Tạo áp lực Đan Hỏa cho các tương tác dấu ấn về sau.' },
-  'artifact.starfall_sword_box': { kind: 'finisher-reactive', listens: ['OnCrit'], consumes: [{ mark: 'Phá Vọng', max: 1 }], tags: ['FollowUp','Crit'], note: 'Bạo kích kích hoạt kiếm hạp; nếu có Phá Vọng sẽ tiêu 1 tầng để tăng truy kích.' },
-  'artifact.soul_nourishing_lotus': { kind: 'reactive', listens: ['LowHP','OnDamageTaken'], tags: ['Cleanse','Sustain'], note: 'Kích hoạt độc lập khi bị ép máu thấp.' },
-  'artifact.nascent_soul_banner': { kind: 'follow-up', listens: ['OnHit'], tags: ['Echo'], note: 'Nối đòn từ hit chủ động; không khóa nguồn tạo nhịp.' },
-  'artifact.green_spirit_gourd': { kind: 'engine-reactive', listens: ['LowSpirit','OnHit'], provides: ['Chân Nguyên'], tags: ['Spirit','Sustain'], note: 'Cứu Chân Nguyên khi thấp để giữ chu kỳ kỹ năng.' },
+export const ARTIFACT_COMBO_RULES_V149=Object.freeze({
+  'artifact.spirit_suppressing_bell':{kind:'reactive',listens:['LowHP','OnDamageTaken'],note:'Hộ chủ khi thấp máu; hưởng lợi từ mọi nguồn kéo dài thời gian sống.'},
+  'artifact.thunder_guiding_mirror':{kind:'setup',produces:['Lôi Ấn'],tags:['Lightning','Mark'],note:'Tạo Lôi Ấn cho bất kỳ finisher tương thích; không khóa theo bộ.'},
+  'artifact.thunder_punishment_sword':{kind:'finisher',consumes:[{mark:'Lôi Ấn',max:3}],tags:['Lightning','Burst'],note:'Tiêu tối đa 3 Lôi Ấn để cộng sát thương; dấu ấn có thể đến từ bất kỳ hệ thống nào.'},
+  'artifact.true_sight_mirror':{kind:'setup-reactive',listens:['OnTargetDodge'],produces:['Phá Vọng'],tags:['AntiDodge','Mark'],note:'Giai V tạo Phá Vọng để follow-up tương thích tận dụng.'},
+  'artifact.mountain_breaking_seal':{kind:'reactive',listens:['OnShieldBreak'],produces:['Sơn Chấn'],tags:['Break'],note:'Kích hoạt từ mọi nguồn phá khiên, không cần cùng bộ.'},
+  'artifact.blood_severing_gourd':{kind:'reactive',listens:['OnEnemyHeal'],tags:['AntiHeal','DoT'],note:'Phản ứng với hồi phục của địch từ toàn combat.'},
+  'artifact.purple_mansion_lamp':{kind:'engine-reactive',listens:['OnHit'],provides:['Chân Nguyên'],tags:['Spirit','Sustain'],note:'Hồi Chân Nguyên theo nhịp để giữ chu kỳ kỹ năng; không còn tài nguyên Bảo Khí.'},
+  'artifact.golden_core_cauldron':{kind:'setup-damage',produces:['Đan Hỏa'],tags:['Fire','DoT','Mark'],note:'Tạo áp lực Đan Hỏa cho các tương tác dấu ấn về sau.'},
+  'artifact.starfall_sword_box':{kind:'finisher-reactive',listens:['OnCrit'],consumes:[{mark:'Phá Vọng',max:1}],tags:['FollowUp','Crit'],note:'Bạo kích kích hoạt kiếm hạp; nếu có Phá Vọng sẽ tiêu 1 tầng để tăng truy kích.'},
+  'artifact.soul_nourishing_lotus':{kind:'reactive',listens:['LowHP','OnDamageTaken'],tags:['Cleanse','Sustain'],note:'Kích hoạt độc lập khi bị ép máu thấp.'},
+  'artifact.nascent_soul_banner':{kind:'follow-up',listens:['OnHit'],tags:['Echo'],note:'Nối đòn từ hit chủ động; không khóa nguồn tạo nhịp.'},
+  'artifact.green_spirit_gourd':{kind:'engine-reactive',listens:['LowSpirit','OnHit'],provides:['Chân Nguyên'],tags:['Spirit','Sustain'],note:'Cứu Chân Nguyên khi thấp để giữ chu kỳ kỹ năng.'},
 });
-
-const round6 = n => Number(Math.max(0, Number(n) || 0).toFixed(6));
-function comboRuleFor(id) { const rule = ARTIFACT_COMBO_RULES_V149[id]; return rule ? JSON.parse(JSON.stringify(rule)) : undefined; }
-function augmentArtifactTriggerV149(trigger) {
-  if (trigger?.runtimeV88?.kind !== 'artifactSkill') return trigger;
-  const itemId = trigger.runtimeV88.itemId;
-  const rule = comboRuleFor(itemId);
-  const effects = [...(trigger.effects ?? [])];
-  if (itemId === 'artifact.thunder_punishment_sword' && !effects.some(e => e.type === 'consumeMarkDamage' && e.mark === 'Lôi Ấn')) {
-    const main = effects.find(e => e.type === 'damage');
-    effects.push({ type: 'consumeMarkDamage', mark: 'Lôi Ấn', maxConsume: 3, baseCoefficient: 0, coefficientPerStack: round6((main?.coefficient ?? 0.9) * 0.20), breakDamagePctPerStack: 2, sourceTag: 'Summon' });
-  }
-  if (itemId === 'artifact.starfall_sword_box' && !effects.some(e => e.type === 'consumeMarkDamage' && e.mark === 'Phá Vọng')) {
-    const main = effects.find(e => e.type === 'damage');
-    effects.push({ type: 'consumeMarkDamage', mark: 'Phá Vọng', maxConsume: 1, baseCoefficient: 0, coefficientPerStack: round6((main?.coefficient ?? 0.38) * 0.45), breakDamagePctPerStack: 0, sourceTag: 'Summon' });
-  }
-  return { ...trigger, effects, runtimeV88: { ...trigger.runtimeV88, comboV149: rule, hardSetLock: false } };
-}
-
-function noBaoQiTriggerV150(trigger) {
-  if (!['artifactSkill','relicRule'].includes(trigger?.runtimeV88?.kind)) return trigger;
-  const { baoQiCost: _cost, baoQiGain: _gain, ...runtime } = trigger.runtimeV88;
-  const cooldown = runtime.kind === 'artifactSkill' ? Number((Math.max(0, Number(trigger.cooldown) || 0) * ARTIFACT_NO_RESOURCE_COOLDOWN_MULTIPLIER_V150).toFixed(2)) : trigger.cooldown;
-  return { ...trigger, cooldown, runtimeV88: { ...runtime, resourceMode: ARTIFACT_RESOURCE_MODE_V150, baoQiRemovedV150: true } };
-}
-
-function scaleEffectV151(effect, multiplier) {
-  const x = { ...effect };
-  if (x.type === 'damage') {
-    x.coefficient = Number((Number(x.coefficient ?? 0) * multiplier).toFixed(6));
-    if (x.attackCoefficient !== undefined) x.attackCoefficient = Number((Number(x.attackCoefficient) * multiplier).toFixed(6));
-  } else if (x.type === 'damageOverTime') x.coefficientPerTick = Number((Number(x.coefficientPerTick ?? 0) * multiplier).toFixed(6));
-  else if (x.type === 'heal') {
-    if (x.flat !== undefined) x.flat = Number((Number(x.flat) * multiplier).toFixed(6));
-    if (x.maxHpPct !== undefined) x.maxHpPct = Number((Number(x.maxHpPct) * multiplier).toFixed(6));
-    if (x.attackCoefficient !== undefined) x.attackCoefficient = Number((Number(x.attackCoefficient) * multiplier).toFixed(6));
-  } else if (x.type === 'shield') {
-    if (x.capacity !== undefined) x.capacity = Number((Number(x.capacity) * multiplier).toFixed(6));
-    if (x.maxHpPct !== undefined) x.maxHpPct = Number((Number(x.maxHpPct) * multiplier).toFixed(6));
-    if (x.attackCoefficient !== undefined) x.attackCoefficient = Number((Number(x.attackCoefficient) * multiplier).toFixed(6));
-  } else if (x.type === 'restoreSpirit' && x.flat !== undefined) x.flat = Number((Number(x.flat) * multiplier).toFixed(6));
-  return x;
-}
-
-function relicProgressV151(state, id) { return state?.economyV12325?.extraItems?.[id]; }
-function ownedActiveRelicV151(state) {
-  const id = state?.economyV12325?.activeRelicId;
-  const progress = relicProgressV151(state, id);
-  return progress?.owned ? RELIC_BY_ID_V151.get(id) : undefined;
-}
-
-export function relicEffectScaleV151(state, id) {
-  const p = relicProgressV151(state, id) ?? { owned: false, level: 1, advance: 0, specificFragments: 0 };
-  const level = Math.max(1, Math.min(100, Math.floor(Number(p.level) || 1)));
-  return Number((((.9 + level * .0045) * (1 + artifactGradeIndexV88(p) * .06) * (1 + artifactFortuneSummaryV88(state).relicPowerPct / 100))).toFixed(6));
-}
-
-function relicTriggerV151(state, relic) {
-  if (!relic?.trigger) return undefined;
-  const scale = relicEffectScaleV151(state, relic.id);
-  return noBaoQiTriggerV150({ id: `artifact.v151.relic.${relic.id}`, event: relic.trigger.event, chancePct: 100, sourceTags: relic.trigger.sourceTags, effects: (relic.trigger.effects ?? []).map(e => scaleEffectV151(e, scale)), cooldown: relic.trigger.cooldown, runtimeV88: { kind: 'relicRule', itemId: relic.id, itemName: relic.name, abilityName: relic.ruleName, label: 'CHÍ BẢO', hpBelowPct: relic.trigger.hpBelowPct, spiritBelowPct: relic.trigger.spiritBelowPct, targetHpBelowPct: relic.trigger.targetHpBelowPct, oncePerBattle: relic.trigger.oncePerBattle, relicV151: RELIC_RULES_V151[relic.id], schemaV151: RELIC_SCHEMA_V151 } });
-}
-
-export function artifactComboSummaryV149(state) {
-  const activeIds = [...new Set(state?.activeArtifactIds ?? [])].filter(id => ARTIFACTS_V88.some(x => x.id === id) && state?.items?.[id]?.owned);
-  const active = activeIds.map(id => ({ id, name: ARTIFACTS_V88.find(x => x.id === id)?.name, rule: comboRuleFor(id) })).filter(x => x.rule);
-  const marksProduced = [...new Set(active.flatMap(x => x.rule.produces ?? []))];
-  const marksConsumed = [...new Set(active.flatMap(x => (x.rule.consumes ?? []).map(c => c.mark)))];
-  const matchedMarks = marksProduced.filter(mark => marksConsumed.includes(mark));
-  return { schema: ARTIFACT_COMBO_SCHEMA_V149, hardSetLock: false, sharedBaoQi: false, resourceMode: ARTIFACT_RESOURCE_MODE_V150, baoQiRemovedV150: true, activeCount: active.length, active, marksProduced, marksConsumed, matchedMarks, rule: 'Combo theo trigger/hồi chiêu/event/trạng thái/mark; khác bộ vẫn combo nếu điều kiện khớp.' };
-}
-
-export function artifactResourceSummaryV150() { return { schema: ARTIFACT_RESOURCE_SCHEMA_V150, mode: ARTIFACT_RESOURCE_MODE_V150, baoQiEnabled: false, cooldownMultiplier: ARTIFACT_NO_RESOURCE_COOLDOWN_MULTIPLIER_V150, rule: 'Pháp Bảo không dùng thanh tài nguyên riêng; mỗi món được điều tiết bằng trigger, hồi chiêu và điều kiện combat.' }; }
-
-export function relicSummaryV151(state) {
-  const active = ownedActiveRelicV151(state);
-  return { schema: RELIC_SCHEMA_V151, activeLimit: RELIC_SLOT_LIMIT_V151, activeId: active?.id, activeName: active?.name, identity: active ? RELIC_RULES_V151[active.id] : undefined, effectScale: active ? relicEffectScaleV151(state, active.id) : 0, progression: 'Luyện Hóa Lv1–100 + Bảo Giai I–V', sourceSink: { summon: 'Thiên Bảo', daily: 'Chí Bảo Tàn Giới', strengthen: 'Chí Bảo Linh Tinh', advance: 'mảnh riêng + Thiên Tinh Tiến Giai' }, rule: 'Chỉ 1 Chí Bảo sở hữu được chọn mới hoạt động; mỗi món đổi một luật/nhịp combat, không dùng Bảo Khí.' };
-}
-
-export function artifactCombatRuntimeV88(state) {
-  const base = artifactCombatRuntimeBase(state);
-  let triggers = (base.triggers ?? []).map(augmentArtifactTriggerV149).map(noBaoQiTriggerV150).filter(t => t.runtimeV88?.kind !== 'relicRule');
-  const relic = ownedActiveRelicV151(state);
-  const injected = relicTriggerV151(state, relic);
-  if (injected) triggers = [...triggers, injected];
-  return { ...base, triggers, reincarnationMirror: Boolean(relic?.reincarnationMirror), baoQiMax: 0, baseGainPerAction: 0, baoQiGainPct: 0, baoQiCostReductionPct: 0, comboV149: artifactComboSummaryV149(state), resourceV150: artifactResourceSummaryV150(), relicV151: relicSummaryV151(state) };
-}
-
-export function applyArtifactsV88ToEntity(baseEntity, state) {
-  const applied = applyArtifactsBase(baseEntity, state);
-  const runtime = artifactCombatRuntimeV88(state);
-  const mirrorTag = 'ArtifactV88:Relic:ReincarnationMirror';
-  const tags = [...new Set([...(applied.tags ?? []).filter(t => t !== mirrorTag), ...(runtime.reincarnationMirror ? [mirrorTag] : [])])];
-  const nonArtifactRuntime = (applied.triggers ?? []).filter(t => !['artifactSkill','relicRule'].includes(t?.runtimeV88?.kind));
-  return { ...applied, tags, triggers: [...nonArtifactRuntime, ...runtime.triggers], combatBuildV117: { ...(applied.combatBuildV117 ?? {}), artifactV88: { ...(applied.combatBuildV117?.artifactV88 ?? {}), baoQiMax: 0, baseGainPerAction: 0, baoQiGainPct: 0, baoQiCostReductionPct: 0, comboV149: runtime.comboV149, resourceV150: runtime.resourceV150, relicV151: runtime.relicV151 } } };
-}
-
-export function artifactViewV88(state, id) {
-  const view = artifactViewBase(state, id);
-  if (!view) return view;
-  const def = ARTIFACT_BY_ID_V150.get(id);
-  const comboV149 = comboRuleFor(id);
-  return { ...view, name: def?.name ?? view.name, role: def?.role ?? view.role, description: def?.description ?? view.description, passive: def?.passive ?? view.passive, skill: def?.skill ?? view.skill, comboV149, resourceV150: artifactResourceSummaryV150(), v149: { ...(view.v149 ?? {}), combo: comboV149, hardSetLock: false, resourceMode: ARTIFACT_RESOURCE_MODE_V150, baoQiRemovedV150: true } };
-}
-
-export function relicViewV88(state, id) {
-  const view = relicViewBase(state, id);
-  if (!view) return view;
-  const def = RELIC_BY_ID_V151.get(id);
-  return { ...view, ...def, progress: view.progress, refinementLevel: view.refinementLevel, gradeLabel: view.gradeLabel, gradeIndex: view.gradeIndex, active: view.active && Boolean(relicProgressV151(state, id)?.owned), resourceV150: artifactResourceSummaryV150(), v151: { ...(def?.v151 ?? {}), effectScale: relicEffectScaleV151(state, id), active: view.active && Boolean(relicProgressV151(state, id)?.owned), progression: 'Luyện Hóa Lv1–100 + Bảo Giai I–V' } };
-}
+const round6=n=>Number(Math.max(0,Number(n)||0).toFixed(6));
+function comboRuleFor(id){const rule=ARTIFACT_COMBO_RULES_V149[id];return rule?JSON.parse(JSON.stringify(rule)):undefined;}
+function augmentArtifactTriggerV149(trigger){if(trigger?.runtimeV88?.kind!=='artifactSkill')return trigger;const itemId=trigger.runtimeV88.itemId,rule=comboRuleFor(itemId),effects=[...(trigger.effects??[])];if(itemId==='artifact.thunder_punishment_sword'&&!effects.some(e=>e.type==='consumeMarkDamage'&&e.mark==='Lôi Ấn')){const main=effects.find(e=>e.type==='damage');effects.push({type:'consumeMarkDamage',mark:'Lôi Ấn',maxConsume:3,baseCoefficient:0,coefficientPerStack:round6((main?.coefficient??.9)*.20),breakDamagePctPerStack:2,sourceTag:'Summon'});}if(itemId==='artifact.starfall_sword_box'&&!effects.some(e=>e.type==='consumeMarkDamage'&&e.mark==='Phá Vọng')){const main=effects.find(e=>e.type==='damage');effects.push({type:'consumeMarkDamage',mark:'Phá Vọng',maxConsume:1,baseCoefficient:0,coefficientPerStack:round6((main?.coefficient??.38)*.45),breakDamagePctPerStack:0,sourceTag:'Summon'});}return{...trigger,effects,runtimeV88:{...trigger.runtimeV88,comboV149:rule,hardSetLock:false}};}
+function noBaoQiTriggerV150(trigger){if(!['artifactSkill','relicRule'].includes(trigger?.runtimeV88?.kind))return trigger;const{baoQiCost:_cost,baoQiGain:_gain,...runtime}=trigger.runtimeV88;const cooldown=runtime.kind==='artifactSkill'?Number((Math.max(0,Number(trigger.cooldown)||0)*ARTIFACT_NO_RESOURCE_COOLDOWN_MULTIPLIER_V150).toFixed(2)):trigger.cooldown;return{...trigger,cooldown,runtimeV88:{...runtime,resourceMode:ARTIFACT_RESOURCE_MODE_V150,baoQiRemovedV150:true}};}
+function scaleEffectV151(effect,multiplier){const x={...effect};if(x.type==='damage'){x.coefficient=Number((Number(x.coefficient??0)*multiplier).toFixed(6));if(x.attackCoefficient!==undefined)x.attackCoefficient=Number((Number(x.attackCoefficient)*multiplier).toFixed(6));}else if(x.type==='damageOverTime')x.coefficientPerTick=Number((Number(x.coefficientPerTick??0)*multiplier).toFixed(6));else if(x.type==='heal'){if(x.flat!==undefined)x.flat=Number((Number(x.flat)*multiplier).toFixed(6));if(x.maxHpPct!==undefined)x.maxHpPct=Number((Number(x.maxHpPct)*multiplier).toFixed(6));if(x.attackCoefficient!==undefined)x.attackCoefficient=Number((Number(x.attackCoefficient)*multiplier).toFixed(6));}else if(x.type==='shield'){if(x.capacity!==undefined)x.capacity=Number((Number(x.capacity)*multiplier).toFixed(6));if(x.maxHpPct!==undefined)x.maxHpPct=Number((Number(x.maxHpPct)*multiplier).toFixed(6));if(x.attackCoefficient!==undefined)x.attackCoefficient=Number((Number(x.attackCoefficient)*multiplier).toFixed(6));}else if(x.type==='restoreSpirit'&&x.flat!==undefined)x.flat=Number((Number(x.flat)*multiplier).toFixed(6));return x;}
+function relicProgressV151(state,id){return state?.economyV12325?.extraItems?.[id];}
+function ownedActiveRelicV151(state){const id=state?.economyV12325?.activeRelicId,progress=relicProgressV151(state,id);return progress?.owned?RELIC_BY_ID_V151.get(id):undefined;}
+export function relicEffectScaleV151(state,id){const p=relicProgressV151(state,id)??{owned:false,level:1,advance:0,specificFragments:0},level=Math.max(1,Math.min(100,Math.floor(Number(p.level)||1)));return Number((((.9+level*.0045)*(1+artifactGradeIndexV88(p)*.06)*(1+artifactFortuneSummaryV88(state).relicPowerPct/100))).toFixed(6));}
+function relicTriggerV151(state,relic){if(!relic?.trigger)return undefined;const scale=relicEffectScaleV151(state,relic.id);return noBaoQiTriggerV150({id:`artifact.v151.relic.${relic.id}`,event:relic.trigger.event,chancePct:100,sourceTags:relic.trigger.sourceTags,effects:(relic.trigger.effects??[]).map(e=>scaleEffectV151(e,scale)),cooldown:relic.trigger.cooldown,runtimeV88:{kind:'relicRule',itemId:relic.id,itemName:relic.name,abilityName:relic.ruleName,label:'CHÍ BẢO',hpBelowPct:relic.trigger.hpBelowPct,spiritBelowPct:relic.trigger.spiritBelowPct,targetHpBelowPct:relic.trigger.targetHpBelowPct,oncePerBattle:relic.trigger.oncePerBattle,relicV151:RELIC_RULES_V151[relic.id],schemaV151:RELIC_SCHEMA_V151}});}
+export function artifactComboSummaryV149(state){const activeIds=[...new Set(state?.activeArtifactIds??[])].filter(id=>ARTIFACTS_V88.some(x=>x.id===id)&&state?.items?.[id]?.owned),active=activeIds.map(id=>({id,name:ARTIFACTS_V88.find(x=>x.id===id)?.name,rule:comboRuleFor(id)})).filter(x=>x.rule),marksProduced=[...new Set(active.flatMap(x=>x.rule.produces??[]))],marksConsumed=[...new Set(active.flatMap(x=>(x.rule.consumes??[]).map(c=>c.mark)))],matchedMarks=marksProduced.filter(mark=>marksConsumed.includes(mark));return{schema:ARTIFACT_COMBO_SCHEMA_V149,hardSetLock:false,sharedBaoQi:false,resourceMode:ARTIFACT_RESOURCE_MODE_V150,baoQiRemovedV150:true,activeCount:active.length,active,marksProduced,marksConsumed,matchedMarks,rule:'Combo theo trigger/hồi chiêu/event/trạng thái/mark; khác bộ vẫn combo nếu điều kiện khớp.'};}
+export function artifactResourceSummaryV150(){return{schema:ARTIFACT_RESOURCE_SCHEMA_V150,mode:ARTIFACT_RESOURCE_MODE_V150,baoQiEnabled:false,cooldownMultiplier:ARTIFACT_NO_RESOURCE_COOLDOWN_MULTIPLIER_V150,rule:'Pháp Bảo không dùng thanh tài nguyên riêng; mỗi món được điều tiết bằng trigger, hồi chiêu và điều kiện combat.'};}
+export function relicSummaryV151(state){const active=ownedActiveRelicV151(state);return{schema:RELIC_SCHEMA_V151,activeLimit:RELIC_SLOT_LIMIT_V151,activeId:active?.id,activeName:active?.name,identity:active?RELIC_RULES_V151[active.id]:undefined,effectScale:active?relicEffectScaleV151(state,active.id):0,progression:'Luyện Hóa Lv1–100 + Bảo Giai I–V',sourceSink:{summon:'Thiên Bảo',daily:'Chí Bảo Tàn Giới',strengthen:'Chí Bảo Linh Tinh',advance:'mảnh riêng + Thiên Tinh Tiến Giai'},rule:'Chỉ 1 Chí Bảo sở hữu được chọn mới hoạt động; mỗi món đổi một luật/nhịp combat, không dùng Bảo Khí.'};}
+export function artifactCombatRuntimeV88(state){const base=artifactCombatRuntimeBase(state);let triggers=(base.triggers??[]).map(augmentArtifactTriggerV149).map(noBaoQiTriggerV150).filter(t=>t.runtimeV88?.kind!=='relicRule');const relic=ownedActiveRelicV151(state),injected=relicTriggerV151(state,relic);if(injected)triggers=[...triggers,injected];return{...base,triggers,reincarnationMirror:Boolean(relic?.reincarnationMirror),baoQiMax:0,baseGainPerAction:0,baoQiGainPct:0,baoQiCostReductionPct:0,comboV149:artifactComboSummaryV149(state),resourceV150:artifactResourceSummaryV150(),relicV151:relicSummaryV151(state)};}
+export function applyArtifactsV88ToEntity(baseEntity,state){const applied=applyArtifactsBase(baseEntity,state),runtime=artifactCombatRuntimeV88(state),mirrorTag='ArtifactV88:Relic:ReincarnationMirror',tags=[...new Set([...(applied.tags??[]).filter(t=>t!==mirrorTag),...(runtime.reincarnationMirror?[mirrorTag]:[])])],nonArtifactRuntime=(applied.triggers??[]).filter(t=>!['artifactSkill','relicRule'].includes(t?.runtimeV88?.kind));return{...applied,tags,triggers:[...nonArtifactRuntime,...runtime.triggers],combatBuildV117:{...(applied.combatBuildV117??{}),artifactV88:{...(applied.combatBuildV117?.artifactV88??{}),baoQiMax:0,baseGainPerAction:0,baoQiGainPct:0,baoQiCostReductionPct:0,comboV149:runtime.comboV149,resourceV150:runtime.resourceV150,relicV151:runtime.relicV151}}};}
+export function artifactViewV88(state,id){const view=artifactViewBase(state,id);if(!view)return view;const def=ARTIFACT_BY_ID_V150.get(id),comboV149=comboRuleFor(id);return{...view,name:def?.name??view.name,role:def?.role??view.role,description:def?.description??view.description,passive:def?.passive??view.passive,skill:def?.skill??view.skill,comboV149,resourceV150:artifactResourceSummaryV150(),v149:{...(view.v149??{}),combo:comboV149,hardSetLock:false,resourceMode:ARTIFACT_RESOURCE_MODE_V150,baoQiRemovedV150:true}};}
+export function relicViewV88(state,id){const view=relicViewBase(state,id);if(!view)return view;const def=RELIC_BY_ID_V151.get(id),owned=Boolean(relicProgressV151(state,id)?.owned);return{...view,...def,progress:view.progress,refinementLevel:view.refinementLevel,gradeLabel:view.gradeLabel,gradeIndex:view.gradeIndex,active:view.active&&owned,resourceV150:artifactResourceSummaryV150(),v151:{...(def?.v151??{}),effectScale:relicEffectScaleV151(state,id),active:view.active&&owned,progression:'Luyện Hóa Lv1–100 + Bảo Giai I–V'}};}
