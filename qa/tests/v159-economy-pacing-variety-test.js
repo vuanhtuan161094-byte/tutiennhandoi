@@ -6,6 +6,12 @@ import { dungeons } from '../../dist/content/dungeons.js';
 import { createDungeonProgressState } from '../../dist/core/dungeon.js';
 import { IMMORTAL_MAJOR_STAGES_V114, immortalCadenceV159, immortalProgressionSummaryV114 } from '../../dist/core/immortal-progression-v114.js';
 import { createImmortalState, breakExtremityLayer, createGenesisEpoch } from '../../dist/core/immortal.js';
+import { buildRegistry } from '../../dist/content/registry.js';
+import { thanhHaWorld } from '../../dist/content/world.js';
+import { adventureEnemies } from '../../dist/content/entities.js';
+import { createPlayableAdventureState, playablePlayerProfile } from '../../dist/content/adventure.js';
+import { SimulationSession } from '../../dist/core/session.js';
+import { GameplayFacade } from '../../dist/core/gameplay.js';
 
 let passed=0;
 function test(name,fn){fn();passed++;console.log(`✓ ${name}`);}
@@ -114,6 +120,27 @@ test('V159 public gameplay dispatch exposes existing manifestation, Phá Cực a
   assert(source.includes("type === 'breakExtremityLayerV159'")&&source.includes('this.session.breakExtremityLayer'));
   assert(source.includes("type === 'createGenesisEpochV159'")&&source.includes('this.session.createGenesisEpoch'));
   assert(!source.includes('new CombatEngine')&&!source.includes('new CombatKernel'));
+});
+
+test('V159 production player journey emits no provisional Immortal+ milestone',()=>{
+  const registry=buildRegistry();
+  const state=createPlayableAdventureState();
+  const realm=[...registry.realms.values()].find(x=>x.order===114);
+  state.realm.realmId=realm.id;state.realm.maxRealmOrder=114;
+  const game=new GameplayFacade(new SimulationSession(registry,thanhHaWorld,adventureEnemies,playablePlayerProfile,159114,state),registry,thanhHaWorld);
+  const journey=game.playerExperienceV105(1788210000000).progression;
+  assert(journey.steps.filter(x=>Number(x.order)>=46).every(x=>x.provisional!==true));
+  assert.equal(journey.productionVerifiedThroughRealmOrder,117);
+});
+
+test('V159 journey UI mounts real Phá Cực / Khai Kỷ Nguyên controls on the existing public perform transport',()=>{
+  const ui=readFileSync(new URL('../../modules/endgame-ui-v159.js',import.meta.url),'utf8');
+  const entry=readFileSync(new URL('../../standalone-entry.js',import.meta.url),'utf8');
+  assert(entry.includes('./modules/endgame-ui-v159.js'));
+  assert(ui.includes("type:'breakExtremityLayerV159'")&&ui.includes("type:'createGenesisEpochV159'"));
+  assert(ui.includes("fetch('/api/action'")&&ui.includes("action:'perform'"));
+  assert(ui.includes("localStorage.setItem(STORAGE_KEY"));
+  assert(!ui.includes('new CombatEngine')&&!ui.includes('new CombatKernel'));
 });
 
 console.log(`\nV159 ECONOMY / PACING / ENDGAME VARIETY: ${passed}/${passed} PASS`);
