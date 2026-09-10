@@ -1,69 +1,84 @@
 # NEXT CHAT TASKS — GAME TU TIÊN NHÀN DỖI
 
-**Date:** 2026-09-10  
-**Canonical branch:** `feature/v159-economy-pacing-endgame-variety`  
+**Date:** 2026-09-11  
+**Canonical branch:** `feature/v160-full-life-economy-pacing-simulation`  
 **Gameplay/web version:** `1.40.0-alpha.24.0`
 
-## 0. Quy tắc bắt buộc
+## Rules
 
-1. Dùng current feature-branch HEAD làm source of truth.
-2. Đọc `CHAT_MOI_START_HERE.md` → `CURRENT_CHECKPOINT.md` → file này trước khi sửa.
-3. Không dùng `main`, branch cũ, chat cũ hoặc handoff cũ làm canonical nếu mâu thuẫn current HEAD.
-4. Không phục hồi mechanic đã retired chỉ vì compatibility code/test cũ còn tồn tại.
-5. Không merge `main` nếu user chưa yêu cầu rõ.
-6. Không tự đặt tên V160 hoặc tự mở subsystem mới khi user chưa chọn ưu tiên.
+1. Current feature-branch HEAD is source of truth.
+2. Read `CHAT_MOI_START_HERE.md` → `CURRENT_CHECKPOINT.md` → `V160_FULL_LIFE_ECONOMY_PACING_AUDIT.md` → this file.
+3. V140–V159 are CLOSED / LOCKED. Do not reopen them without a real regression or explicit new requirement.
+4. Do not restore retired mechanics because compatibility code/history still mentions them.
+5. Do not merge `main` unless explicitly instructed.
+6. Do not add new systems during Phase B; fix only evidence-backed economy/pacing issues.
 
-## 1. Baseline đã khóa
+## Current V160 closure state
 
-V140–V158 CLOSED / LOCKED.
+V160 added production-authority full-life measurement for cultivation pacing, manual acquisition, Linh Căn acquisition and Luân Hồi scale.
 
-Mốc V158 cuối:
-- branch `feature/v158-full-gameplay-integration`;
-- exact HEAD `63f43800cabeca54c97ffa1c0d46d8558d0d9e6d`;
-- canonical QA `34470829575` — SUCCESS.
+Implementation evidence already green:
 
-## 2. V159 hiện tại
+- canonical run `34540649913` — SUCCESS on `44d8c958884a04bc2c642e9fa2ad861a1b6d9791`;
+- V160 pacing PASS;
+- V160 acquisition PASS;
+- backend closure 90/90;
+- frontend closure 20/20.
 
-Branch: `feature/v159-economy-pacing-endgame-variety`.
+A reconciled V160 closure gate has now been added. Confirm the exact current branch HEAD canonical run is SUCCESS before treating V160 as formally CLOSED / LOCKED.
 
-Implementation HEAD trước đồng bộ tài liệu: `0e208ba126ecf9452116af7b7c4358f3363979a3`.
-Canonical QA: `34478194159` — SUCCESS.
+## Phase B — next work after V160 green
 
-Branch V159 đang đúng 8 commit ahead V158, 0 behind.
+Work in this order:
 
-V159 đã:
+### B1. Bế Quan contract decision/audit
 
-- tạo pacing ledger cho toàn progression 0→117 bằng target time canonical hiện có;
-- giữ rõ đây là baseline Tu Vi budget, không phải lời hứa thời gian hoàn thành thực tế;
-- xác nhận 18 Immortal+ major stage đều có dungeon 5 tầng + first-clear reward + time-based farm;
-- chia nhịp Immortal+ thành 5 cadence identity thay vì một template refinement duy nhất;
-- expose existing manifestation / Phá Cực / Genesis Epoch qua public gameplay dispatch;
-- nối Phá Cực và Khai Kỷ Nguyên vào journey UI thật;
-- giữ một shared gameplay/combat authority, không tạo CombatEngine/CombatKernel thứ hai;
-- xác nhận player journey production through realm order 117 không còn provisional Immortal+ milestone.
+Current production behavior: 3h/day, reward is authored % of current-realm required Tu Vi, not a calculation from current accelerated Tu Vi/15s.
 
-## 3. QA gate hiện tại
+Before changing anything, compare the intended gameplay contract against this live behavior. If the intended contract remains percentage-based, leave V140 untouched. If an explicit new requirement says rate-based, change it with migration/provenance/tests rather than a hidden multiplier.
 
-Canonical run `34478194159` trên HEAD `0e208ba...` đã PASS toàn bộ:
+### B2. Early/mid pacing cliff audit
 
-- V140–V158 gates;
-- V159 Economy pacing and endgame variety;
-- Backend fast;
-- Frontend fast;
-- Backend closure;
-- Frontend closure.
+Investigate the two measured duration jumps:
 
-Sau commit đồng bộ tài liệu, phải kiểm tra canonical QA của exact new HEAD trước khi gọi V159 **CLOSED / LOCKED** chính thức.
+- order 1 / Luyện Khí: 5.71×;
+- order 10 / Trúc Cơ: 3.15×.
 
-## 4. Việc tiếp theo
+For Luyện Khí, validate the jump against first Săn Yêu / first-clear / idle-farm engagement.
+For Trúc Cơ, evaluate timing together with the density of unlocked systems; do not solve onboarding by randomly reducing every number.
 
-Chưa có V160 canonical.
+### B3. Realistic Vạn Tượng spending model
 
-Không tự phát minh roadmap mới. Khi user yêu cầu tiếp tục, trước hết xác nhận exact current HEAD/QA rồi thực hiện đúng ưu tiên mới nhất của user.
+Current one-banner best case is intentionally unrealistic. Build a player-spend model across 8 banners with at least:
 
-Nếu tiếp tục theo mục tiêu gameplay hiện tại, các câu hỏi còn mở đáng audit gồm:
+- focused manual build;
+- balanced collection build;
+- combat-first build.
 
-- pacing/economy thực tế có choke point hay trivialization ở đâu khi tính các accelerator thật;
-- Trúc Cơ cần onboarding/hierarchy thế nào để không mở quá nhiều hệ một lúc;
-- Immortal+ sau V159 đã có cadence khác nhau nhưng mức độ khác biệt gameplay thực chiến còn đủ hay chưa;
-- technical debt compatibility cũ chỉ cleanup khi có task riêng, không hồi sinh mechanic legacy.
+Measure manual gate progress and collection starvation under the same recurring Bound Jade budget.
+
+### B4. Acquisition-adjusted Công Pháp pacing
+
+Feed realistic manual ownership/progression back into Tu Vi pacing. Only then decide whether any manual effect or fragment cost needs tuning. Preserve the strong Lv1000 payoff unless acquisition-adjusted data proves a real runaway.
+
+### B5. Linh Căn Hunt-linked pacing
+
+Measure nourishment + Bản Nguyên acquisition against actual realm/Hunt advancement. Preserve the every-100-level realm-tier gate. Look specifically for deadlocks or trivial maxing.
+
+### B6. Economy/source-sink review
+
+Use the V160 measurements to audit resource stockpile/deadlock across manual, heart, artifact, relic, pet, companion, bloodline and physique categories. Do not invent a currency to fix a source/sink problem unless existing authorities cannot solve it.
+
+## After Phase B
+
+Continue the already approved sequence:
+
+- Phase C — Endgame gameplay variety;
+- Phase D — Build/combat balance;
+- Phase E — Luân Hồi multi-life;
+- Phase F — Code/performance cleanup;
+- Phase G — UI/UX Production;
+- Phase H — VFX/art;
+- Phase I — final player QA / release candidate.
+
+Do not skip directly to UI while Phase-B progression changes can still affect unlock/pacing hierarchy.
