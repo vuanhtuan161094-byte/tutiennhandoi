@@ -1,9 +1,10 @@
-# CURRENT CHECKPOINT — V147 CLOSED
+# CURRENT CHECKPOINT — V148 TRI KỶ REBUILD CLOSED
 
-**Date:** 2026-09-09  
-**Branch:** `feature/v147-spirit-beast-progression`  
+**Date:** 2026-09-10  
+**Branch:** `feature/v148-confidant-rebuild`  
 **Gameplay/web version:** `1.40.0-alpha.24.0`  
-**Status:** V140–V147 **CLOSED / canonical QA PASS**.  
+**Status:** V140–V148 **CLOSED / canonical QA PASS**.  
+**Main:** intentionally **not merged / untouched**.  
 **Rule:** current branch source is truth. **Do not merge `main`** unless the user explicitly asks.
 
 ## 1. Closed baseline
@@ -15,148 +16,167 @@
 - V144 — Công Pháp/Bí Thuật legacy retirement: CLOSED.
 - V145 — Linh Căn vô hạn + Căn Mạch + Căn Ngộ + combat core buff: CLOSED.
 - V146 — Đan Dược production closure: CLOSED.
-- **V147 — Linh Thú progression/economy/combat integration: CLOSED.**
+- V147 — Linh Thú progression/economy/combat integration: CLOSED.
+- **V148 — Tri Kỷ progression/economy/combat integration: CLOSED.**
 
 Không mở lại hệ đã CLOSED vì chat cũ, save cũ, test lịch sử hoặc field compatibility còn tồn tại. Chỉ mở lại khi có regression thật hoặc user đổi yêu cầu.
 
-## 2. V147 authority
+## 2. V148 authority
 
-Player-facing/canonical Spirit Beast authority là `spirit-beast.v147`.
+Player-facing/canonical Tri Kỷ authority là `confidant.v148`.
 
 Live stack:
 
-- `dist/core/spirit-beast-v147.js` — 8 Linh Thú, Sao, Level cap, raw growth, Linh Khế, skill milestones, migration;
-- `dist/core/spirit-beast-v86.js` — compatibility aliases only, không phải authority gameplay;
-- `dist/core/collection-progression-v12316.js` — nourish/Level + stat consumer canonical;
-- `dist/core/gacha-collection-economy-v12325.js` — star-up/read model/economy consumer canonical;
-- `dist/core/collection-workshop-gacha-v12326.js` — pet gacha write path canonical;
-- `modules/spirit-beast-ui-v147.js` — player-facing copy/transport bridge;
-- `standalone-entry.js` — nạp UI bridge sau canonical app.
+- `dist/core/confidant-v87.js` — chứa canonical V148 progression/combat authority; V87 exports chỉ còn compatibility;
+- `dist/core/collection-progression-v12316.js` — Thân Mật, Duyên Sao, Tâm Ý, Fortune/stat consumer;
+- `dist/core/gacha-collection-economy-v12325.js` — economy/read-model consumer canonical;
+- `dist/core/collection-workshop-gacha-v12326.js` — companion gacha write path canonical;
+- `dist/core/combat.js` — Đồng Tâm/Hợp Kích chạy trong shared CombatKernel;
+- `modules/confidant-presentation-v87.js` — presentation bridge hỗ trợ `confidant.v148`;
+- `qa/tests/v148-confidant-rebuild-test.js` — dedicated canonical regression.
 
-Các façade tạm `*-legacy.js`, split `spirit-beast-data-v147.js` và toàn bộ one-off refactor/fix scaffolding đã bị xóa. V147 data nằm trong canonical authority để giữ static graph trong production budget.
+Temporary V148 apply/audit/discovery workflows, patch tools và staging artifacts đã bị xóa khỏi production tree.
 
-## 3. V147 gameplay contract
+## 3. Canonical gameplay contract
 
-### 8 Linh Thú cố định
+### 8 Tri Kỷ cố định
 
-1. Xích Viêm Sư — burst DPS.
-2. Huyền Giáp Quy — hộ chủ/khiên.
-3. Mộng Linh Hồ — control/phá phòng.
-4. Thanh Vân Hạc — support/nhịp chiến.
-5. Lôi Ảnh Lang — liên kích/tốc chiến.
-6. Bích Linh Lộc — thanh tẩy/hộ chủ.
-7. U Minh Xà — DoT/suy yếu.
-8. Sơn Nhạc Hùng — Phá Thế/cận chiến.
+Giữ đúng **8 Tri Kỷ**; không mở roster chỉ để làm loãng gacha.
 
-Giữ đúng 8 con; không mở rộng roster chỉ để làm loãng gacha.
+### Thân Mật
 
-### Level
+- **Thân Mật tăng vô hạn.**
+- Max Thân Mật cá nhân: **`100 + 50 × Sao`**.
+- 0★ → cap 100.
+- 20★ → cap 1100.
+- 100★ → cap 5100.
+- 1000★ → cap 50100.
+- Hiệu lực dùng diminishing growth để endgame không tăng tuyến tính vô hạn.
 
-- Level dùng `Linh Thú Tinh Phách`.
-- Level cap cá nhân: **`100 + 50 × Sao`**.
-- 0★ → Lv100.
-- 20★ → Lv1100.
-- 100★ → Lv5100.
-- 1000★ → Lv50100.
-- Không có hard cap Sao/Level trong contract hiện tại.
-- Raw growth dùng diminishing curve sau Lv100/Lv500/Lv1000 để progression vẫn vô hạn nhưng không lấn át các major system khác.
-- Direct star raw multiplier dừng tăng tại 20★, tối đa ×1.60; Sao cao hơn chủ yếu mở Level cap.
+### Duyên Sao / mảnh
 
-### Sao / mảnh
+- **Duyên ★ tăng vô hạn.**
+- **10 mảnh đúng Tri Kỷ = +1★** cố định.
+- Gacha fragment hit = **5 mảnh**.
+- Duplicate nguyên Tri Kỷ đã sở hữu = **10 mảnh**.
+- `Duyên Tinh` chỉ tiêu tại milestone mỗi 5★.
+- Chi phí milestone Duyên Tinh tăng dần nhưng cap ở **5**.
+- Star-up atomic: thiếu Duyên Tinh thì không mất mảnh.
 
-- **10 mảnh đúng Linh Thú = +1★**.
-- Pet gacha fragment roll = **5 mảnh**.
-- Duplicate Linh Thú đã sở hữu = **10 mảnh**.
-- Không còn lượng mảnh khác nhau theo phẩm kiểu Huyền 6 / Địa 8 / Thiên 10 / Tiên 14.
-- Mảnh mới không tự convert thành Sao khi ensure/migrate; player chủ động Tăng Sao.
-- `Linh Thú Đột Phá Đan` là sink milestone mỗi 4★, chu kỳ **1 / 1 / 2 / 3 / 5**, lặp lại theo block 20★.
-- Star-up milestone atomic: thiếu Đột Phá Đan thì không mất mảnh.
+### Tâm Lực / Tâm Ý
 
-## 4. Raw stat / Linh Khế — canonical rule
+- `Tâm Lực` là chỉ số riêng của Tri Kỷ, scale theo Thân Mật + phẩm + progression nhưng có diminishing curve.
+- Mỗi **10★ nhận 1 Điểm Tâm Ý**.
+- Mỗi Tri Kỷ có 3 nhánh authored:
+  - Trợ Chiến;
+  - Hộ Đạo;
+  - Hợp Kích.
+- Mỗi nhánh hữu hạn tối đa **Lv10**.
+- Nhánh raw lặp vô hạn **chỉ mở sau khi 3 nhánh đạt 10/10/10**.
+- Raw repeatable tăng Tâm Lực, không mở thêm multiplier % vô hạn.
 
-**Đây là rule bắt buộc của V147:**
+## 4. Combat — Đồng Tâm canonical
 
-- **Tất cả Linh Thú đã sở hữu** đều đóng góp raw cho nhân vật, kể cả không Trợ Chiến.
-- Mỗi thú đóng góp **10% raw HP / Công / Phòng authored hiện tại của chính nó** vào collection stat:
-  - pet Attack → `attackFlat`;
-  - pet HP → `hpFlat`;
-  - pet Defense → `defenseFlat`.
-- Level/Sao làm raw pet tăng theo curve V147; vì vậy nuôi nhiều thú luôn có giá trị.
-- Ở fixture cả 8 thú Lv1000 / 20★, tổng collection raw hiện là **+1,685 Công / +20,187 HP / +1,532 Phòng**.
+- Chỉ **1 `activeCompanionId`** tham gia combat.
+- Trợ Chiến/Hộ Đạo/Hợp Kích đều chạy trong **shared CombatKernel**; không có resolver thứ hai.
+- `Đồng Tâm` từ **0 → 100**.
+- Hợp Kích **không dùng cooldown**; đủ 100 Đồng Tâm thì tự kích và tiêu 100.
+- 8 Tri Kỷ có gauge profile khác nhau dựa trên các event thật như `OnHit`, `OnCrit`, `OnDamageTaken`, `OnShieldBreak`, `OnDodge`, `OnTargetDodge`, `Summon`.
+- Canonical trigger IDs: `confidant.v148.*`.
+- V129 global balance regression kiểm semantic runtime V148 gồm `assist + guard + gauge + harmony`, không còn khóa prefix V87 cũ.
 
-**% Linh Khế hoàn toàn tách khỏi raw:**
+## 5. Phúc Duyên / Sở Trường
 
-- **Chỉ `activePetId` đang Trợ Chiến mới cho % Linh Khế.**
-- Thú sở hữu nhưng không Trợ Chiến cho **0%**, chỉ còn raw.
-- **0★ cho 0% Linh Khế.**
-- % chỉ tăng theo Sao, tuyến tính tới 20★ rồi cap; **Level không tăng %**.
-- Sao >20★ và Level cực cao không thể tiếp tục inflate %.
-- Max % khi 20★ của từng con vẫn giữ identity authored, ví dụ:
-  - Xích Viêm Sư: +5.6% Công / +2.6% Thể / +2.3% Phòng;
-  - Huyền Giáp Quy: +2.6% Công / +5.5% Thể / +5.2% Phòng;
-  - U Minh Xà: +5.3% Công / +3.1% Thể / +2.5% Phòng.
-- Aggregate cũ `+32% Công / +30% Thể / +27.8% Phòng` từ cả 8 thú **đã RETIRED**, không còn là gameplay live.
-- Equip/unequip chỉ đổi % Linh Khế + combat active; không double raw.
+**Phúc Duyên toàn bộ Tri Kỷ là raw-only:**
 
-## 5. Skill / combat
+- `cultivationPct = 0`;
+- `huntRewardPct = 0`;
+- `craftQualityPct = 0`.
 
-- Skill mở theo Sao: 0★ / 8★ / 16★.
-- 12★ tăng Nội Tại.
-- 20★ là capstone Nội Tại/cooldown.
-- Chỉ `activePetId` đưa trigger Linh Thú vào shared CombatKernel.
-- Không có resolver combat song song.
-- Linh Thú không có authority thắng/thua riêng; Combat Power chỉ telemetry như các hệ khác.
-- Mộng Linh Hồ đã sửa role/wording cũ không khớp cơ chế thành `Khống chế · Phá phòng`.
-- Player-facing copy ghi rõ: tất cả thú sở hữu cộng raw; chỉ thú Trợ Chiến kích hoạt % Linh Khế.
+All-owned contribution dùng raw:
 
-## 6. Migration
+- `cultivationFlatPer15s`;
+- `resourceMastery`;
+- `craftMastery`.
 
-Legacy Huyết Mạch Linh Thú chuyển một lần sang Sao:
+Chỉ Tri Kỷ đang Đồng Hành mới kích hoạt Sở Trường. Sở Trường vẫn có `%` bounded/capped vì đây là active-specialty effect, không phải collection multiplier vô hạn. Cả 8 Sở Trường đã có consumer gameplay thật.
 
-- HM 0 → 0★
-- HM I → 4★
-- HM II → 8★
-- HM III → 12★
-- HM IV → 16★
-- HM V → 20★
+## 6. Companion gacha canonical
 
-Migration deterministic + idempotent; giữ mảnh chưa tiêu; compatibility field/import cũ không được trở lại thành gameplay authority.
+Gacha dùng pool đúng 8 người; **không nearest-grade remap**.
 
-## 7. Stat / save safety
+Explicit weights:
 
-- Stored over-level bị clamp theo Level cap riêng của từng thú, không thể exploit save để sinh stat vượt cap.
-- Nuôi dưỡng dùng `Linh Thú Tinh Phách`; Beast facility Lv1–10 là discount consumer thật, tối đa 18%.
-- Raw collection share là constant bounded `0.10`, không phải hidden multiplier chain.
-- Equipped-only Linh Khế có per-pet authored cap < 6% mỗi trục trong catalog hiện tại.
-- Dedicated regression khóa cả 3 điều kiện: all-owned raw, active-only %, 0★ = 0% và Level không inflate %.
+- `companion.5` — Huyền: 24
+- `companion.6` — Huyền: 24
+- `companion.2` — Địa: 15
+- `companion.4` — Địa: 15
+- `companion.1` — Thiên: 7
+- `companion.3` — Thiên: 7
+- `companion.8` — Thiên: 6
+- `companion.7` — Tiên: 2
 
-## 8. V147 canonical QA — PASS / LOCKED
+Tổng = 100.
 
-Canonical code candidate đã đóng:
+50,000-pull simulation snapshot:
 
-`f6b129d4e80d2ca0331f8df5c33ce1fd1b7962d4`
+- Huyền: khoảng **43–44 pull / 1★**;
+- Địa: khoảng **64–67 pull / 1★**;
+- Thiên: khoảng **112–118 pull / 1★**;
+- Tiên — Yến Vũ: khoảng **179 pull / 1★**.
+
+Không còn rarity inversion kiểu phẩm cao tích mảnh nhanh hơn phẩm thấp.
+
+## 7. Migration / save safety
+
+Legacy Duyên được chuyển một lần:
+
+- Duyên I → 0★
+- Duyên II → 5★
+- Duyên III → 10★
+- Duyên IV → 15★
+- Duyên V → 20★
+
+Migration deterministic + idempotent.
+
+Save cũ đã mở mechanic không bị mất quyền vì điều kiện V148 mới:
+
+- Trợ Chiến upgrade đã kiếm được được bảo toàn;
+- Hộ Đạo đã kiếm được được bảo toàn;
+- Hợp Kích đã kiếm được được bảo toàn.
+
+Compatibility entitlement chỉ bảo toàn mechanic; không tặng giả Thân Mật/Level mới.
+
+## 8. V148 canonical QA — PASS / LOCKED ON FEATURE BRANCH
+
+Runtime-cleanup candidate trước checkpoint metadata:
+
+`068c4704544e92e6182f7007761e81775ae99122`
 
 Full `V140 Canonical QA` run:
 
-**`34327784759` — SUCCESS**
+**`34435772700` — SUCCESS**
 
 PASS gồm:
 
-- codebase health scan;
-- V140 cultivation core + transport + zero legacy;
-- V141 Hunt × Cultivation closure;
-- V142/V143/V144 Equipment/Hunt/technique regression;
-- V145 Linh Căn core/source-sink/realm-origin/UI;
-- V146 Alchemy core/source-runtime/production closure;
-- V147 Spirit Beast dedicated progression/economy/gacha/migration/raw/bond/transport tests;
-- backend fast: PASS;
-- frontend fast: PASS;
-- backend closure: PASS;
-- frontend closure: PASS.
+- repository hygiene;
+- static module graph + drift gate;
+- codebase health;
+- CombatKernel parity;
+- V87 compatibility baseline;
+- V124–V139 regression suite;
+- V140 runtime/static/legacy/real-source/UI suites;
+- V141 codebase optimization;
+- developer-mode isolation;
+- V129 save fixture compatibility;
+- V148 dedicated Tri Kỷ regression;
+- backend closure;
+- frontend closure;
+- final V140 closure gate.
 
-Static graph performance remains within production budget; test limit was not raised.
+One-off V148 scaffolding đã được dọn; production tree chỉ giữ dedicated `qa/tests/v148-confidant-rebuild-test.js` cho V148.
 
-**V147 is CLOSED.**
+**V148 is CLOSED on `feature/v148-confidant-rebuild`. `main` chưa merge.**
 
 ## 9. Existing invariants still active
 
@@ -166,16 +186,17 @@ Static graph performance remains within production budget; test limit was not ra
 - Công Pháp authority duy nhất: `dist/core/manual-progression-v127.js`.
 - Linh Căn V145 là progression vô hạn riêng, không phải Ngũ Hành.
 - Đan Dược V146 chỉ dùng material/source/sink canonical đã khóa.
+- Linh Thú V147 giữ đúng 8 con, Sao/Level dài hạn, all-owned raw + active-only Linh Khế %.
 - Không để material/currency live không có source và sink/consumer rõ.
 - Không tạo duplicate authority/resolver chỉ để compatibility.
+- Combat Power chỉ là telemetry, không phải authority gameplay.
 
 ## 10. Next work
 
-Không tự bắt đầu subsystem mới khi user chưa yêu cầu.
+Không tự merge `main` và không tự mở subsystem mới khi user chưa yêu cầu.
 
 Roadmap đề xuất tiếp theo:
 
-- V148 Tri Kỷ;
 - V149 Pháp Bảo;
 - V150 Luân Hồi Production Closure;
 - V151 Economy/source-authority toàn game.
