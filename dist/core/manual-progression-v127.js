@@ -19,7 +19,7 @@ const ARCHETYPES = [
   {key:'crit',title:'Bạo Linh Sát Quyết',role:'Bạo Kích + Bạo Thương',grade:'earth',power:1.08,stats:[['critPct',0.42],['critDamagePct',0.20]]},
   {key:'heart',title:'Hội Tâm Thiên Thư',role:'Hội Tâm + Hội Tâm Damage',grade:'heaven',power:1.10,stats:[['heartPct',0.04],['heartDamagePct',0.20]]},
   {key:'pierce',title:'Phá Hư Chân Giải',role:'Xuyên Giáp + Phá Thế',grade:'immortal',power:1.12,stats:[['armorPenPct',0.05],['breakEffectPct',0.06]]},
-  {key:'precision',title:'Thiên Cơ Bộ Pháp',role:'Né + Tốc Độ Hành Động',grade:'extreme',power:1.08,stats:[['dodgePct',0.035],['actionSpeedPct',0.02]]},
+  {key:'precision',title:'Thiên Cơ Bộ Pháp',role:'Né + Chính Xác',grade:'extreme',power:1.08,stats:[['dodgePct',0.035],['accuracyPct',0.027]]},
   {key:'control',title:'Vạn Pháp Trấn Linh',role:'Phá Thế + Kháng Khống',grade:'breaker',power:1.14,stats:[['breakEffectPct',0.04],['controlResistPct',0.035]]},
   {key:'sustain',title:'Sinh Sinh Tạo Hóa Kinh',role:'Hồi Phục + Khiên',grade:'extreme',power:1.12,stats:[['healingPct',0.10],['shieldPct',0.10]]},
 ];
@@ -27,7 +27,7 @@ export const MANUAL_ARCHETYPES_V127 = ARCHETYPES.map(x=>({...x,baseStats:x.stats
 const round3=v=>Number(Number(v).toFixed(3));
 const realmStatScale=i=>1+Math.max(0,Math.min(28,i))*0.075;
 const realmFragmentScale=i=>1+2*Math.pow(Math.max(0,Math.min(28,i))/28,1.18);
-const combatWeight={attackFlat:.055,powerPct:1,physiqueFlat:.12,hpFlat:.006,hpPct:1,defenseFlat:.09,defensePct:1,damageReductionPct:5,critPct:3,critDamagePct:1.2,heartPct:3,heartDamagePct:1.2,armorPenPct:3,breakEffectPct:2,accuracyPct:1.5,dodgePct:3,controlPct:2,controlResistPct:2.2,healingPct:1.5,shieldPct:1.5,actionSpeedPct:2};
+const combatWeight={attackFlat:.055,powerPct:1,physiqueFlat:.12,hpFlat:.006,hpPct:1,defenseFlat:.09,defensePct:1,damageReductionPct:5,critPct:3,critDamagePct:1.2,heartPct:3,heartDamagePct:1.2,armorPenPct:3,breakEffectPct:2,accuracyPct:1.5,dodgePct:3,controlPct:2,controlResistPct:2.2,healingPct:1.5,shieldPct:1.5};
 function strengthScore(stats){return stats.reduce((s,x)=>s+Math.max(0,x.value)*(combatWeight[x.id]??1),0);}
 
 export function buildManualCatalogV127(){
