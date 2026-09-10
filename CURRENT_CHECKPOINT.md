@@ -1,175 +1,176 @@
-# CURRENT CHECKPOINT — V157 FAST CLOSURE
+# CURRENT CHECKPOINT — V158 FULL GAMEPLAY INTEGRATION CLOSED
 
 **Date:** 2026-09-10  
-**Branch:** `feature/v152-v157-fast-closure`  
+**Branch:** `feature/v158-full-gameplay-integration`  
 **Gameplay/web version:** `1.40.0-alpha.24.0`  
-**Status:** V140–V157 **CLOSED / LOCKED** once the exact current checkpoint HEAD passes canonical QA.  
-**Implementation HEAD validated:** `15da841d6b0570c8d564facb5ab322f6d63d802e`  
-**Implementation QA run:** `34467563471` — **SUCCESS**  
+**Status:** V140–V158 **CLOSED / LOCKED** once the exact current checkpoint HEAD passes canonical QA.  
+**Implementation HEAD validated:** `501f5f7d4a72678b094e7080eb458a022301d6f4`  
+**Implementation QA run:** `34470627889` — **SUCCESS**  
 **Main:** intentionally **not merged / untouched**.  
 **Rule:** current branch source is truth. Do not merge `main` unless the user explicitly asks.
 
 ## 1. Closed baseline
 
-- V140 — Tu Luyện: CLOSED.
-- V141 — Săn Yêu × Tu Luyện: CLOSED.
-- V142 — Trang Bị × Hunt: CLOSED.
-- V143 — Hunt reward authority + Set Resonance: CLOSED.
-- V144 — Công Pháp/Bí Thuật legacy retirement: CLOSED.
-- V145 — Linh Căn infinite progression: CLOSED.
-- V146 — Đan Dược production closure: CLOSED.
-- V147 — Linh Thú progression/economy/combat: CLOSED.
-- V148 — Tri Kỷ progression/economy/combat + V129 cross-build balance: CLOSED.
-- V149 — Pháp Bảo progression/economy/combat/combo + V129 cross-build balance: CLOSED.
-- V150 — Bảo Khí removed from production Pháp Bảo/Chí Bảo combat: CLOSED.
-- V151 — Chí Bảo one-slot combat-law rebuild + all-eight production combat QA: CLOSED.
-- **V152 — Công Pháp contract correction and regression lock: CLOSED.**
-- **V153 — Luân Hồi current production contract: CLOSED.**
-- **V154 — six-Lục-Đạo Phân Thân authority: CLOSED.**
-- **V155 — current Skills/Tâm Pháp authority and major-system runtime contract: CLOSED.**
-- **V156 — Động Phủ production + standalone transport: CLOSED.**
-- **V157 — Endgame progression continuity to Sáng Thế Chủ/Genesis Epoch: CLOSED.**
+V140–V157 remain closed exactly as recorded by the previous checkpoint. V158 adds a cross-system player-journey closure; it does not rebuild those systems or create a second gameplay architecture.
 
-Không mở lại hệ đã CLOSED vì chat cũ, save cũ, test lịch sử hoặc compatibility field còn tồn tại. Chỉ mở lại khi có regression thật hoặc user đổi yêu cầu.
+- V140 — Tu Luyện / Bế Quan.
+- V141 — Săn Yêu × Tu Luyện.
+- V142–V143 — Trang Bị × Hunt + Set Resonance.
+- V144 — legacy technique retirement.
+- V145 — Linh Căn.
+- V146 — Đan Dược.
+- V147 — Linh Thú.
+- V148 — Tri Kỷ.
+- V149–V151 — Pháp Bảo / no-Bảo-Khí / Chí Bảo.
+- V152 — Công Pháp.
+- V153 — Luân Hồi.
+- V154 — six-Lục-Đạo Phân Thân authority.
+- V155 — Skills / Tâm Pháp authority.
+- V156 — Động Phủ.
+- V157 — Endgame continuity.
+- **V158 — Full Gameplay Integration / Player Journey: CLOSED.**
 
-## 2. V152 Công Pháp lock
+Do not reopen a closed system because of old chat text, old save compatibility fields or historical tests. Reopen only for a real regression or a new explicit requirement.
 
-Canonical Công Pháp remains:
+## 2. V158 canonical player loop
 
-- 29 realm groups × 9 manuals = **261 Công Pháp**.
-- Every manual has **Lv1–1000** and 10 hundred-level advancement gates.
-- All learned manuals remain effective; there is no equip/current-realm filter.
-- Every manual contributes authored Tu Vi plus combat stats.
-- Công Pháp does **not** grant breakthrough-requirement reduction.
-- Công Pháp does **not** grant Action Speed or a hidden Chân Nguyên/max-spirit package.
+The player-facing loop is now explicitly locked as:
 
-V152 fixes the contradictory precision manual:
+`Tu Luyện → Farm → Nuôi Build → Công Phá → Luân Hồi`
 
-- `Thiên Cơ Bộ Pháp` changed from **Né + Tốc Độ Hành Động** to **Né + Chính Xác**.
-- Stat line changed from `actionSpeedPct` to bounded direct `accuracyPct`.
-- The obsolete `actionSpeedPct` Công Pháp strength weight was removed.
-- `accuracyPct` reaches the real production combat consumer through `collection-progression-v12316.js`.
+The guide exposes 16 distinct player-facing systems. Every system must explain:
 
-Permanent V152 gates assert:
+- purpose;
+- what the player does;
+- what it costs;
+- what it gives;
+- where its source/reward comes from.
 
-- all 261 manuals declare `noActionSpeed=true` and `noSpirit=true`;
-- no manual stat line can contain `actionSpeedPct`, `maxSpiritPct` or `spiritFlat`;
-- Thiên Cơ Bộ Pháp keeps Dodge + Accuracy identity;
-- the full manual package may have bounded Accuracy but must still have zero Action Speed;
-- Phá Thế and Khiên manual stats continue to alter real CombatKernel V2 behavior.
+The progression guide spans all **29 major milestones** from Phàm Nhân through Sáng Thế Chủ and remains verified through realm order **117**.
 
-## 3. V153 Luân Hồi lock
+## 3. V158 findings fixed
 
-V153 does not rebuild the already-working Luân Hồi implementation. Existing production authority is retained and now runs explicitly in canonical CI.
+### Hunt/Tu Vi contradiction
 
-Locked invariants include:
+The old player-facing guide incorrectly said Săn Yêu directly granted Tu Vi. V141 production authority already forbids this.
 
-- Tu Luyện and Công Pháp trees remain separate authored progression domains.
-- Tu Luyện R3 has **12 independent nodes**, each with 20 ranks.
-- Công Pháp tree has **13 authored nodes**.
-- `cultivation.majorBreakthroughRequirementReductionPct` is capped at **5%** at the validated max tree.
-- retired Tu Luyện modifier lanes remain retired instead of being silently restored.
-- Luân Hồi combat memories continue to use real CombatEntity/CombatEngine consumers rather than a hidden global total-damage scalar.
-- cost invariant tests remain part of the canonical gate.
+V158 now states:
 
-## 4. V154 Phân Thân lock
+- Săn Yêu gives Linh Thạch, Yêu Đan and loot/materials;
+- Săn Yêu does **not** mint Tu Vi directly;
+- Tu Luyện continues independently at **100%** while hunting/farming.
 
-Production Phân Thân authority is exactly **6**, corresponding to Lục Đạo:
+### Stale Luân Hồi “Thí Luyện” copy
 
-1. Thiên Đạo
-2. Nhân Đạo
-3. A Tu La Đạo
-4. Súc Sinh Đạo
-5. Ngạ Quỷ Đạo
-6. Địa Ngục Đạo
+The old guide still described `kết toán → thí luyện → chốt reward`, although the current lifecycle no longer requires a fake trial/min-age/min-realm/first-clear gate.
 
-Legacy parallel-worker capacity is not production Phân Thân authority. Save migration/compatibility cannot increase the canonical six-clone cap.
+V158 player-facing lifecycle is:
 
-## 5. V155 Skills / Tâm Pháp lock
+`xem reward dự kiến → Tọa Hóa → kết toán → chọn kế thừa → mở đời kế`
 
-V155 is a regression closure, not another skill-system rewrite.
+Luân Hồi uses actual life achievements and Reincarnation Energy / CP rules. No fake mandatory Thí Luyện step is presented to the player.
 
-- Current skill runtime remains on the shared CombatEngine / CombatKernel V2 architecture.
-- V129 Đạo Tính branch identities remain materially distinct at full progression.
-- Tâm Pháp keeps full authored main/secondary passive ownership; secondary is not silently reduced to a legacy partial coefficient.
-- Old V103 technique progression remains retired by the earlier V144 closure and must not be restored as a parallel player-facing authority.
-- Current major-system audit remains a permanent V155 CI gate.
+### Độ Kiếp guidance ordering
 
-## 6. V156 Động Phủ lock
+The old smart guide could recommend **Dẫn Thiên Kiếp** while the mandatory matching floor in **Thiên Kiếp Cổ Trường** was not yet first-cleared, producing an action guaranteed to be blocked.
 
-Canonical Động Phủ remains the existing production implementation with **8 facilities**.
+V158 now orders this correctly:
 
-The permanent gate verifies real consumers, including:
+1. If Tu Vi is full but the mandatory Luyện Kiếp gate is missing, the primary task is `tribulation-prep` and routes to the required dungeon first-clear.
+2. Only after that gate is ready does the guide offer **Dẫn Thiên Kiếp**.
 
-- Tàng Kinh Các lowering actual Công Pháp/Tâm Pháp strengthening cost;
-- Tri Kỷ Các lowering actual intimacy strengthening cost;
-- Huyết Trì and Luyện Thể Thất lowering their real mutation spends;
-- Luyện Bảo Các retaining actual refinement discount behavior;
-- Linh Thú Viên, Đan Phòng and Luyện Khí retaining production consumers;
-- facility upgrades mutating real levels and spending canonical currencies;
-- standalone transport rehydrating facility state and effects.
+### Duplicate stage-content recommendation
 
-No duplicate Động Phủ system was added.
+The smart session loop could add the same `stage-content` recommendation from both progression and content-loop surfaces. V158 deduplicates this so the player sees one actionable task instead of repeated guidance.
 
-## 7. V157 Endgame lock
+## 4. Cross-system journey invariants
 
-Endgame remains continuous on the V140 canonical realm progression.
+The permanent V158 integration gate verifies:
 
-Validated structural continuity:
+- 5-step core loop and 16 unique player-facing systems;
+- all 29 major progression milestones through order 117;
+- unlock coherence at Phàm Nhân, Luyện Khí, Trúc Cơ, Tử Phủ, Kim Đan, Nguyên Anh and Hóa Thần;
+- Hunt never claims direct Tu Vi and explicitly coexists with 100% Tu Luyện;
+- Luân Hồi has no resurrected min-age/min-realm/first-clear fake gate;
+- specialized resource content uses **CombatKernel V2 first-clear → real time-based farm**;
+- repeat guardian combat cannot spam progression materials or bypass gacha-specific fragments;
+- all **261 Công Pháp** remain Lv1–1000 with ten 100-level gates and no Action Speed/hidden Chân Nguyên package;
+- roster remains **8 Linh Thú + 8 Tri Kỷ + 12 Pháp Bảo + 8 Chí Bảo**;
+- fresh Động Phủ has exactly **8 facilities**;
+- production Phân Thân authority remains exactly **6 Lục Đạo**;
+- blocked Độ Kiếp guidance resolves Luyện Kiếp before offering real tribulation;
+- smart guidance has no duplicate task ids/stage-content duplication;
+- Immortal+ contains **18 explicit four-order stages**, each with a five-floor content objective;
+- Sáng Thế Chủ is the terminal major milestone rather than a fake next realm.
 
-- order 34 → 117 contains exactly **83 one-step transitions**;
-- orders 41 → 46 contain exactly **5 Thiên Kiếp transitions**;
-- canonical actions reach **Sáng Thế Chủ order 117**;
-- Thiên Kiếp retry path does not restore legacy realm-RNG breakthrough logic;
-- Sáng Thế Chủ can create the first **Genesis Epoch** through the canonical action.
+## 5. V158 test philosophy
 
-V157 therefore closes continuity only; it does not invent a parallel endgame progression system.
+V158 does **not** fabricate a compressed “played 500 hours” simulation and call that production PASS.
 
-## 8. V149–V151 locks retained
+Instead:
 
-- Canonical Pháp Bảo equip: `collectionV12316.activeArtifactIds`.
-- Canonical Chí Bảo equip: `collectionV12316.economyV12325.activeRelicId`.
-- Chí Bảo active limit: **1** and active relic must be owned.
-- Roster remains **12 Pháp Bảo + 8 Chí Bảo**.
-- Production Pháp Bảo/Chí Bảo has **no Bảo Khí**.
-- Pháp Bảo activation is trigger/condition + cooldown/once-per-battle + shared CombatEngine effect.
-- Bảo Hồn remains infinite raw-only Công Lực / Thể Phách / Phòng Ngự progression for Pháp Bảo.
-- Chí Bảo remains finite Lv1–100 / Bảo Giai I–V one-slot combat-law progression.
-- Legacy `state.artifacts` has no production combat authority.
+- the V158 gate checks the cross-system journey, unlocks, contracts and player-facing guidance;
+- the same canonical workflow also runs the existing real production gates for cultivation, Hunt, equipment, Linh Căn, alchemy, confidants, artifacts, relics, Công Pháp, Luân Hồi, Phân Thân, Động Phủ and endgame;
+- CombatKernel V2 remains the shared real combat authority;
+- source/sink and first-clear/farm behavior remain tested in their production subsystem gates.
 
-Do not restore Bảo Khí, multi-relic simultaneous activation, unowned active-id authority, stat-only Chí Bảo behavior or a second artifact combat resolver.
+This is the canonical meaning of “full gameplay integration” for V158.
 
-## 9. Canonical QA evidence
+## 6. Canonical journey by phase
 
-Implementation exact HEAD: `15da841d6b0570c8d564facb5ab322f6d63d802e`  
-Canonical run: `34467563471` — **SUCCESS**.
+- **Phàm Nhân:** Tu Luyện begins; Linh Căn and origin/core-stat foundations are available.
+- **Luyện Khí:** Săn Yêu, Phó Bản, loot/equipment and social gameplay create the first `fight → first-clear → farm → upgrade` loop while Tu Luyện continues in parallel.
+- **Trúc Cơ:** player chooses Đạo identity; Skills/Tâm Pháp, Đan, Động Phủ, Collection/Gacha and Luân Hồi/meta tools open.
+- **Tử Phủ / Kim Đan:** faction layer becomes available; asynchronous Đấu Pháp opens at Kim Đan as a build benchmark.
+- **Nguyên Anh:** Thần Hồn and exactly six Lục Đạo Phân Thân turn already-cleared content into parallel/offline farm capacity.
+- **Hóa Thần → Đại Thừa:** Đạo Ý/Đạo Vực and stage-specific build objectives become more important; Hợp Thể checks body–soul–dao–artifact balance rather than only one power number.
+- **Độ Kiếp:** unique hard cadence break; matching Thiên Kiếp Cổ Trường floor must be first-cleared before the real Heavenly Tribulation.
+- **Nhân Tiên → Vĩnh Sinh:** named Immortal+ refinements and five-floor stage dungeons accompany the continuing realm climb.
+- **Sáng Thế Chủ:** reaches orders 114–117; terminal Sáng Thế content feeds the Genesis Epoch endgame loop.
+
+Across the whole journey, learned Công Pháp remain active, build systems layer onto shared CombatEntity/CombatKernel, one active Chí Bảo changes a combat law, Động Phủ improves long-term efficiency, and Luân Hồi converts the achievements of one life into persistent advantages for later lives.
+
+## 7. Known design risk — not a closure regression
+
+The strongest remaining design risk is the **Immortal+ ladder from Nhân Tiên through Vĩnh Sinh**.
+
+Source currently gives 18 named major stages with escalating fantasy identity, but much of the mechanical cadence follows the same template: improve stage metrics + clear a five-floor dungeon. This is valid production content and V158 does not rewrite it, but it risks feeling like renamed/reskinned repetition compared with the more varied Mortal→Độ Kiếp journey.
+
+This should be treated as a future game-design/pacing improvement, not as a reason to reopen V140–V158.
+
+A second UX risk is Trúc Cơ: many long-term systems unlock together. The systems are individually valid, but onboarding/hierarchy may need simplification during UI/UX production.
+
+## 8. Known technical debt — cleanup later
+
+A stale compatibility API surface still exists around `runReincarnationTrialV2` in facade/API code while the current player-facing lifecycle no longer uses a mandatory reincarnation trial. Current app flow does not use this as the normal Luân Hồi path.
+
+Do not reintroduce trial gameplay merely to justify that legacy surface. Retire or reconcile it during a dedicated code-cleanup phase.
+
+## 9. QA evidence
+
+Implementation exact HEAD: `501f5f7d4a72678b094e7080eb458a022301d6f4`  
+Canonical run: `34470627889` — **SUCCESS**.
 
 Observed on that exact implementation SHA:
 
-- V140–V151 pre-existing canonical steps: PASS.
-- V152 Công Pháp contract: PASS.
-- V153 Luân Hồi contract: PASS.
-- V154 Phân Thân authority: PASS.
-- V155 Skills/Tâm Pháp authority: PASS.
-- V156 Động Phủ production + transport: PASS.
-- V157 Endgame continuity: PASS.
+- V140–V157 canonical gates: PASS.
+- **V158 Full player journey integration: PASS.**
 - Backend fast: PASS.
 - Frontend fast: PASS.
 - Backend closure: PASS.
 - Frontend closure: PASS.
 
-The exact current checkpoint/documentation HEAD must also have a SUCCESS canonical workflow run. If that final run is not SUCCESS, V152–V157 are not considered locked regardless of this file title.
+The exact current checkpoint/documentation HEAD must also have a SUCCESS canonical workflow run. If that final run is not SUCCESS, V158 is not considered locked regardless of this file title.
 
-## 10. Changed files in V152–V157 fast closure
+## 10. V158 changed files
 
-- `dist/core/manual-progression-v127.js` — removes Công Pháp Action Speed and replaces Thiên Cơ Bộ Pháp with Dodge + Accuracy.
-- `qa/tests/v127-manual-progression-test.js` — permanent V152 no-speed/no-spirit and precision-manual invariants.
-- `qa/tests/v129-stat-architecture-test.js` — bounded Accuracy allowed; Action Speed still hard-zero for Công Pháp.
-- `.github/workflows/v140-ci.yml` — explicit V152→V157 gates using existing production tests.
+- `dist/core/player-experience-v105.js` — corrected Hunt/Luân Hồi player truth, tribulation guidance ordering and duplicate task guidance.
+- `qa/tests/v158-player-journey-integration-test.js` — cross-system player-journey gate.
+- `.github/workflows/v140-ci.yml` — V158 canonical gate.
 - `CURRENT_CHECKPOINT.md` — this closure record.
 
-No new adapter layer, test subsystem or parallel gameplay resolver was created.
+No second gameplay resolver, duplicate progression system or fake accelerated farm simulator was added.
 
 ## 11. Next-session rule
 
-Start from `feature/v152-v157-fast-closure` after confirming its exact HEAD is green. Treat V140–V157 as CLOSED. Do not reopen closed systems without a real regression or a new explicit user requirement. Do not merge `main` unless explicitly instructed.
+Start from `feature/v158-full-gameplay-integration` after confirming the exact checkpoint HEAD is green. Treat V140–V158 as CLOSED. Do not reopen closed systems without a real regression or explicit new user requirement. Do not merge `main` unless explicitly instructed.
