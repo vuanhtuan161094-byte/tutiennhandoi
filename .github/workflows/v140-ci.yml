@@ -135,6 +135,9 @@ jobs:
       - name: V160 Reconciled full-life audit closure
         run: node qa/tests/v160-full-life-audit-closure-test.js
 
+      - name: V161 Retreat contract audit
+        run: node qa/tests/v161-retreat-contract-audit-test.js
+
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
 
