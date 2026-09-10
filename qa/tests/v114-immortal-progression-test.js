@@ -12,5 +12,14 @@ ok(IMMORTAL_MAJOR_STAGES_V114.length===18,'V114 covers every Immortal+ major sta
  const s=make(49);const q=immortalProgressionSummaryV114(s.stateValue,s.stateValue.dungeons);ok(q.active&&q.finalGate.applies&&!q.finalGate.ready,'Immortal content objectives remain visible as guidance');
  s.stateValue.cultivation.tuVi=cultivationRealmV140(49).requiredTuVi;const out=s.ascendRealmV140();ok(out.toRealmId==='realm.earth_immortal.early','V140 deterministic Thăng Cảnh is not blocked by optional Immortal dungeon objectives');
 }
-{const s=make(117);s.stateValue.dungeons.highestClearedFloor['dungeon.genesis_source']=5;const q=immortalProgressionSummaryV114(s.stateValue,s.stateValue.dungeons);ok(q.terminal&&q.finalGate.ready,'Sáng Thế Chủ keeps a terminal completion objective, not a fake next realm');}
+{
+ const s=make(117);
+ s.stateValue.immortal.creationSource=100;
+ s.stateValue.immortal.genesisAuthority=100;
+ s.stateValue.inventory['resource.genesis_core']=20;
+ s.stateValue.inventory['resource.first_dawn_fragment']=1;
+ s.stateValue.dungeons.highestClearedFloor['dungeon.genesis_source']=5;
+ const q=immortalProgressionSummaryV114(s.stateValue,s.stateValue.dungeons);
+ ok(q.terminal&&q.finalGate.ready&&q.nextAction.title==='Khai Kỷ Nguyên','Sáng Thế Chủ keeps a real terminal Genesis Epoch objective, not a fake next realm');
+}
 console.log(`V114 IMMORTAL CONTENT: ${pass}/${pass} PASS`);
