@@ -1,13 +1,16 @@
-// V149 public adapter.
-// The full V12325/V147/V148 implementation is preserved byte-for-byte in the base module.
-// Explicit exports below shadow the matching star exports without changing any unrelated economy path.
+// V150 public adapter.
+// V149 Bảo Hồn progression remains canonical; V150 removes the separate Pháp Bảo combat-resource layer.
+// The full V12325/V147/V148 implementation is preserved in the base module.
 export * from './gacha-collection-economy-v12325-base.js';
 
 import * as base from './gacha-collection-economy-v12325-base.js';
 import {
   ARTIFACT_SCHEMA_V149,
+  ARTIFACT_RESOURCE_SCHEMA_V150,
+  ARTIFACT_RESOURCE_MODE_V150,
   artifactComboSummaryV149,
   artifactRawSummaryV149,
+  artifactResourceSummaryV150,
   refineArtifactBaoHonV149,
 } from './artifact-v88.js';
 
@@ -15,10 +18,21 @@ function artifactFacilityLevelV149(state) {
   return Math.max(1, Math.floor(state?.cave?.facilities?.find(x => x.id === 'artifact')?.level ?? 1));
 }
 
+function fortuneWithoutRemovedResourceV150(fortune = {}) {
+  const out = { ...fortune };
+  delete out.baoQiGainPct;
+  if (out.caps) {
+    out.caps = { ...out.caps };
+    delete out.caps.baoQiGainPct;
+  }
+  out.resourceMode = ARTIFACT_RESOURCE_MODE_V150;
+  out.v150Rule = 'Pháp Bảo dùng trigger + hồi chiêu + điều kiện combat; không dùng thanh tài nguyên riêng.';
+  return out;
+}
+
 /**
- * V149 keeps the existing public strengthening command as the single mutation authority.
+ * Existing public strengthening command remains the single mutation authority.
  * Before Lv100 it is ordinary Luyện Hóa. At Lv100 + Bảo Giai V it becomes Bảo Hồn ∞.
- * Chí Bảo and every non-artifact category stay on the exact V12325/V147/V148 implementation.
  */
 export function strengthenCollectionEconomyV12325(state, itemId, levels = 1) {
   const definition = base.collectionDefinitionV12325(itemId);
@@ -39,14 +53,15 @@ export function strengthenCollectionEconomyV12325(state, itemId, levels = 1) {
 }
 
 /**
- * Production read-model override: expose the infinite raw lane and combo grammar through
- * the same collection DTO. Percentage mechanics remain owned by bounded V88 Fortune.
+ * Production read model: Bảo Hồn stays raw-only/infinite; V150 exposes trigger/cooldown as the
+ * only Pháp Bảo activation throttle and removes the obsolete combat-resource stat from player DTOs.
  */
 export function collectionEconomySummaryV12325(state, foundation, now = Date.now(), realmOrder = 10) {
   const out = base.collectionEconomySummaryV12325(state, foundation, now, realmOrder);
   const artifactCategory = out.categories?.find(x => x.category === 'artifact');
   if (artifactCategory) {
     artifactCategory.genericFragmentName = 'Luyện Bảo Tinh Hoa';
+    artifactCategory.artifactFortune = fortuneWithoutRemovedResourceV150(artifactCategory.artifactFortune);
     artifactCategory.items = artifactCategory.items.map(item => {
       const v149 = item.artifact?.v149;
       if (!v149) return item;
@@ -74,11 +89,14 @@ export function collectionEconomySummaryV12325(state, foundation, now = Date.now
         strengthenBlockedReason,
         v149,
         comboV149: item.artifact?.comboV149 ?? v149.combo,
+        resourceV150: item.artifact?.resourceV150 ?? artifactResourceSummaryV150(),
       };
     });
   }
+
   const raw = artifactRawSummaryV149(state);
   const combo = artifactComboSummaryV149(state);
+  const resource = artifactResourceSummaryV150();
   const artifactV149 = {
     schema: ARTIFACT_SCHEMA_V149,
     mode: 'Bảo Hồn ∞',
@@ -100,6 +118,20 @@ export function collectionEconomySummaryV12325(state, foundation, now = Date.now
     combo,
   };
   out.artifactV149 = artifactV149;
-  if (out.artifactV88) out.artifactV88 = { ...out.artifactV88, v149: artifactV149, comboV149: combo };
+  out.artifactV150 = {
+    schema: ARTIFACT_RESOURCE_SCHEMA_V150,
+    resource,
+    activation: 'trigger + cooldown + condition',
+    combo: 'event / state / mark; no hard set lock',
+  };
+  if (out.artifactV88) {
+    out.artifactV88 = {
+      ...out.artifactV88,
+      fortune: fortuneWithoutRemovedResourceV150(out.artifactV88.fortune),
+      v149: artifactV149,
+      comboV149: combo,
+      resourceV150: resource,
+    };
+  }
   return out;
 }
