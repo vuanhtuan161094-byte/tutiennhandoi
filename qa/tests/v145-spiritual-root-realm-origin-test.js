@@ -51,7 +51,9 @@ assert.equal(boss.originRealmTier,3);
 assert.equal(BigInt(huntInv[root.spiritualRootOriginResourceIdV145(3)]),1n);
 
 const session = fs.readFileSync('dist/core/session.js','utf8');
-const gameplay = fs.readFileSync('dist/core/gameplay.js','utf8');
+const gameplayAdapter = fs.readFileSync('dist/core/gameplay.js','utf8');
+const gameplayBase = fs.existsSync('dist/core/gameplay-v149-base.js') ? fs.readFileSync('dist/core/gameplay-v149-base.js','utf8') : '';
+const gameplay = `${gameplayAdapter}\n${gameplayBase}`;
 const api = fs.readFileSync('dist/core/game-api.js','utf8');
 assert.ok(session.includes('currentMajorRealmIndex: majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder)'));
 assert.ok(session.includes('combineSpiritualRootOriginStateV145(this.stateValue.inventory, fromRealmTier, batches, majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder))'));
