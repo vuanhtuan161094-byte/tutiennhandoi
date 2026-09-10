@@ -365,7 +365,7 @@ function relationScaleV148(p){
 }
 function scaleEffectV148(e,scale,heartPower,kind,branchLevel){
   const branchBonus=1+Math.max(0,branchLevel)*.02;
-  if(e.type==='damage')return {...e,coefficient:e.coefficient*Math.min(1.55,scale)*branchBonus,flatDamage:Math.round((e.flatDamage??0)+heartPower*(kind==='harmony'?1.4:.45)*branchBonus),breakDamagePct:(e.breakDamagePct??0)*Math.min(1.35,scale)};
+  if(e.type==='damage'){const heartCoefficient=Math.min(kind==='harmony'?.28:kind==='guard'?.10:.12,heartPower*(kind==='harmony'?.00008:.000035))*branchBonus;return {...e,coefficient:e.coefficient*Math.min(1.55,scale)*branchBonus+heartCoefficient,flatDamage:Math.max(0,Number(e.flatDamage??0)),breakDamagePct:(e.breakDamagePct??0)*Math.min(1.35,scale)};}
   if(e.type==='heal')return {...e,flat:Math.round((e.flat??0)+heartPower*(kind==='harmony'?1.2:.48)*branchBonus),maxHpPct:(e.maxHpPct??0)*Math.min(1.28,scale)*branchBonus,attackCoefficient:(e.attackCoefficient??0)*Math.min(1.28,scale)*branchBonus};
   if(e.type==='shield')return {...e,capacity:Math.round((e.capacity??0)+heartPower*(kind==='harmony'?1.15:.5)*branchBonus),maxHpPct:(e.maxHpPct??0)*Math.min(1.28,scale)*branchBonus,attackCoefficient:(e.attackCoefficient??0)*Math.min(1.28,scale)*branchBonus};
   if(e.type==='restoreSpirit')return {...e,flat:(e.flat??0)*Math.min(1.5,scale)*branchBonus};
