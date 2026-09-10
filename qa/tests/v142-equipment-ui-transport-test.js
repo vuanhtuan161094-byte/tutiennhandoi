@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-const gameplay=fs.readFileSync('dist/core/gameplay.js','utf8');
+const gameplayAdapter=fs.readFileSync('dist/core/gameplay.js','utf8');
+const gameplayBase=fs.existsSync('dist/core/gameplay-v149-base.js')?fs.readFileSync('dist/core/gameplay-v149-base.js','utf8'):'';
+const gameplay=`${gameplayAdapter}\n${gameplayBase}`;
 const dispatch=fs.readFileSync('dist/core/gameplay-dispatch.js','utf8');
 const client=fs.readFileSync('dist/core/client-shell.js','utf8');
 const app=fs.readFileSync('app.js','utf8');
