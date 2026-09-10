@@ -66,9 +66,13 @@ for(const m of matrices){
     assert.ok(r.offenseGainPct>-5&&r.offenseGainPct<55,`${m.spec.label}/${r.name}: offense gain outside safety envelope`);
   }
   assert.ok(byId['companion.7'].offenseGainPct>byId['companion.1'].offenseGainPct,`${m.spec.label}: Yến Vũ burst offense must exceed Mộc Quỳnh sustain offense`);
+  assert.ok(byId['companion.4'].offenseGainPct>byId['companion.3'].offenseGainPct,`${m.spec.label}: Tạ Vân burst must exceed Hạ Liên support offense`);
+  assert.ok(byId['companion.4'].offenseGainPct>byId['companion.5'].offenseGainPct,`${m.spec.label}: Tạ Vân burst must exceed Lạc Dao support offense`);
   assert.ok(byId['companion.1'].survivalDelta>=byId['companion.7'].survivalDelta,`${m.spec.label}: Mộc Quỳnh sustain survival must not trail Yến Vũ burst`);
   assert.ok(byId['companion.8'].offenseGainPct<=28,`${m.spec.label}: Bạch Tố Tâm guard cannot drift into burst damage`);
   assert.ok(byId['companion.5'].offenseGainPct<=32,`${m.spec.label}: Lạc Dao support cannot drift into burst damage`);
+  assert.ok(byId['companion.2'].controlDelta>=10,`${m.spec.label}: Ninh Tố must preserve control identity`);
+  assert.ok(byId['companion.6'].controlDelta>=8,`${m.spec.label}: Cố Thanh Hà must preserve control identity`);
 }
 
 const aggregate=Object.fromEntries(CONFIDANTS_V87.map(c=>[c.id,{name:c.name,role:c.combatStyle,offense:avg(matrices.map(m=>m.rows.find(x=>x.id===c.id)),'offenseGainPct'),pressure:avg(matrices.map(m=>m.rows.find(x=>x.id===c.id)),'pressureGainPct'),survival:avg(matrices.map(m=>m.rows.find(x=>x.id===c.id)),'survivalDelta'),control:avg(matrices.map(m=>m.rows.find(x=>x.id===c.id)),'controlDelta')} ]));
@@ -76,8 +80,16 @@ console.log('\n[AVERAGE ACROSS 3 ARCHETYPES]');
 for(const c of CONFIDANTS_V87){const r=aggregate[c.id];console.log(`${c.name.padEnd(10)} | ${r.role.padEnd(8)} | OFF ${r.offense.toFixed(1).padStart(6)}% | PRESS ${r.pressure.toFixed(1).padStart(6)}% | SURV ${r.survival.toFixed(2).padStart(6)} | CTRL ${r.control.toFixed(2).padStart(5)}`);}
 assert.ok(aggregate['companion.7'].offense>=28&&aggregate['companion.7'].offense<=42,'Yến Vũ aggregate burst envelope 28–42%');
 assert.ok(aggregate['companion.4'].offense>=24&&aggregate['companion.4'].offense<=40,'Tạ Vân aggregate burst envelope 24–40%');
+assert.ok(aggregate['companion.7'].offense>aggregate['companion.4'].offense,'Yến Vũ immortal burst must lead Tạ Vân on aggregate, while build-specific armor-fracture synergy may vary');
+assert.ok(aggregate['companion.4'].offense>aggregate['companion.3'].offense&&aggregate['companion.4'].offense>aggregate['companion.5'].offense,'Tạ Vân aggregate burst must remain above supports');
+assert.ok(aggregate['companion.3'].offense>=8&&aggregate['companion.3'].offense<=26,'Hạ Liên aggregate support envelope 8–26%');
 assert.ok(aggregate['companion.5'].offense>=8&&aggregate['companion.5'].offense<=26,'Lạc Dao aggregate support envelope 8–26%');
+assert.ok(aggregate['companion.6'].offense>=8&&aggregate['companion.6'].offense<=22,'Cố Thanh Hà aggregate control offense envelope 8–22%');
 assert.ok(aggregate['companion.8'].offense>=3&&aggregate['companion.8'].offense<=22,'Bạch Tố Tâm aggregate guard envelope 3–22%');
+assert.ok(aggregate['companion.2'].control>=10,'Ninh Tố aggregate control must stay >=10');
+assert.ok(aggregate['companion.6'].control>=8,'Cố Thanh Hà aggregate control must stay >=8');
 assert.ok(aggregate['companion.1'].survival>=8,'Mộc Quỳnh aggregate sustain survival must stay >=8');
 assert.ok(aggregate['companion.8'].survival>=3,'Bạch Tố Tâm aggregate guard survival must stay >=3');
+assert.ok(aggregate['companion.1'].survival>aggregate['companion.8'].survival&&aggregate['companion.8'].survival>aggregate['companion.7'].survival,'aggregate survival hierarchy must remain sustain > guard > burst');
+assert.ok(aggregate['companion.8'].offense<aggregate['companion.3'].offense&&aggregate['companion.8'].offense<aggregate['companion.5'].offense,'guard offense must remain below support offense on aggregate');
 console.log('\nV148 CONFIDANT V129 THREE-ARCHETYPE MATRIX PASS');
