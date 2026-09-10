@@ -29,11 +29,7 @@ function stateFor(activeRelicId,{level=100,advance=4,ownedAll=true,activeArtifac
     items:Object.fromEntries(ARTIFACTS_V88.map(d=>[d.id,artItem()])),
     activeArtifactIds:[...activeArtifacts],
     cave:{level:1,facilities:[{id:'artifact',level:10}]},
-    economyV12325:{
-      relicV88Migrated:true,
-      extraItems:Object.fromEntries(RELICS_V88.map(d=>[d.id,relicItem(level,advance,ownedAll)])),
-      activeRelicId,
-    },
+    economyV12325:{relicV88Migrated:true,extraItems:Object.fromEntries(RELICS_V88.map(d=>[d.id,relicItem(level,advance,ownedAll)])),activeRelicId},
     artifactV88Migrated:true,
   };
 }
@@ -55,17 +51,14 @@ check(['damage','shield','restoreSpirit'].every(type=>chaos?.trigger?.effects?.s
 const ruler=RELICS_V88.find(x=>x.id==='relic.7');
 check(ruler?.trigger?.effects?.some(e=>e.type==='addMark'&&e.mark==='Phá Vọng'&&e.stacks===2),'Càn Khôn Xích creates two Phá Vọng stacks as a real cross-system combo bridge');
 const bell=RELICS_V88.find(x=>x.id==='relic.5');
-check(bell?.trigger?.sourceTags?.includes('ProcHit')&&bell.trigger.cooldown>=7,'Vạn Pháp Đạo Chung listens to ProcHit and is cooldown-bounded against recursion spam');
+check(bell?.trigger?.sourceTags?.includes('Summon')&&bell.trigger.cooldown>=7,'Vạn Pháp Đạo Chung listens to real Pháp Bảo/triệu hồi hit traffic and is cooldown-bounded against recursion spam');
 
 for(const relic of RELICS_V88){
   const state=stateFor(relic.id);
   const runtime=artifactCombatRuntimeV88(state);
   const live=runtime.triggers.filter(t=>t.runtimeV88?.kind==='relicRule');
-  if(relic.id==='relic.2'){
-    check(live.length===0&&runtime.reincarnationMirror===true,'Luân Hồi Kính activates only through the existing shared anti-death path');
-  }else{
-    check(live.length===1&&live[0].runtimeV88?.itemId===relic.id,`${relic.name} injects exactly one active shared-engine relic rule`);
-  }
+  if(relic.id==='relic.2')check(live.length===0&&runtime.reincarnationMirror===true,'Luân Hồi Kính activates only through the existing shared anti-death path');
+  else check(live.length===1&&live[0].runtimeV88?.itemId===relic.id,`${relic.name} injects exactly one active shared-engine relic rule`);
 }
 
 const corrupted=stateFor('relic.2',{ownedAll:false});
@@ -94,12 +87,7 @@ if(!registry.skills.has(STRIKE))registry.registerSkill({id:STRIKE,name:'V151 Th�
 if(!registry.skills.has(IDLE))registry.registerSkill({id:IDLE,name:'V151 Tĩnh Thủ',description:'Không gây sát thương.',tags:['BalanceSimV151'],spiritCost:0,cooldown:0,castTime:0,recoveryTime:1,effects:[]});
 function stats({attack=500,physique=900,defense=500,dodge=0,mobility=1,accuracy=100}={}){return{maxHp:180000,attack,physique,defense,maxSpirit:100,spiritStandard:100,spiritRegenStandardPctPerSecond:0,mobility,accuracy,critChancePct:0,critPowerPerLayer:.5,heartChancePct:0,dodgeChancePct:dodge,controlPower:1,resolve:100,actionSpeed:1,elementalAffinities:{},elementalResistancesPct:{},dominantElement:'Earth'};}
 function entity(id,name,skillId,overrides={}){return{id,combatModel:'locked-v1',name,tags:[],stats:stats(overrides),skillIds:[skillId],aiProfile:{name:`${id}-ai`,rules:[{skillId,priority:1,conditions:[{type:'always'}]}]}};}
-function runWith(relicId,{activeArtifacts=[],playerStats={},enemyStats={},duration=45,seed=151001}={}){
-  const state=stateFor(relicId,{activeArtifacts});
-  const player=applyArtifactsV88ToEntity(entity('P','V151 Player',STRIKE,playerStats),state);
-  const enemy=entity('E','V151 Enemy',STRIKE,enemyStats);
-  return runCombatKernelV2({registry,seed,entities:[player,enemy],maxDuration:duration,mode:'simulation'}).battle;
-}
+function runWith(relicId,{activeArtifacts=[],playerStats={},enemyStats={},duration=45,seed=151001}={}){const state=stateFor(relicId,{activeArtifacts});const player=applyArtifactsV88ToEntity(entity('P','V151 Player',STRIKE,playerStats),state);const enemy=entity('E','V151 Enemy',STRIKE,enemyStats);return runCombatKernelV2({registry,seed,entities:[player,enemy],maxDuration:duration,mode:'simulation'}).battle;}
 const relicLogs=(battle,id)=>battle.logs.filter(x=>x.type==='trigger'&&x.actorId==='P'&&x.data?.artifactRuntime==='artifact.v88'&&x.data?.artifactEvent==='relicRule'&&x.data?.artifactId===id);
 
 const tempo=runWith('relic.4',{enemyStats:{attack:1,physique:5000,defense:1000},duration:45});
@@ -108,7 +96,7 @@ check(tempoLogs.length>=2&&tempoLogs.length<=4,'Thái Hư Châu repeatedly parti
 
 const resonance=runWith('relic.5',{activeArtifacts:ART_LOADOUT,enemyStats:{attack:1,physique:5000,defense:1000},duration:45,seed:151002});
 const resonanceLogs=relicLogs(resonance,'relic.5');
-check(resonanceLogs.length>=2&&resonanceLogs.length<=7,'Vạn Pháp Đạo Chung receives real ProcHit traffic without runaway recursion');
+check(resonanceLogs.length>=2&&resonanceLogs.length<=7,'Vạn Pháp Đạo Chung receives real Pháp Bảo/triệu hồi hit traffic without runaway recursion');
 
 const counter=runWith('relic.6',{playerStats:{attack:20,physique:2400,defense:250},enemyStats:{attack:900,physique:4000,defense:500},duration:50,seed:151003});
 const counterLogs=relicLogs(counter,'relic.6');
