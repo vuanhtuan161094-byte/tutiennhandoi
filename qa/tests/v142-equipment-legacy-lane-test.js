@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { EQUIPMENT_TRANSFER_GEM_RESOURCE, transferEquipmentEnhancement } from '../../dist/core/equipment.js';
 
-const gameplay=fs.readFileSync('dist/core/gameplay.js','utf8');
+const gameplayAdapter=fs.readFileSync('dist/core/gameplay.js','utf8');
+const gameplayBase=fs.existsSync('dist/core/gameplay-v149-base.js')?fs.readFileSync('dist/core/gameplay-v149-base.js','utf8'):'';
+const gameplay=`${gameplayAdapter}\n${gameplayBase}`;
 const session=fs.readFileSync('dist/core/session.js','utf8');
 const app=fs.readFileSync('app.js','utf8');
 
