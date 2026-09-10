@@ -51,7 +51,33 @@ for(const r of rows){
   assert.ok(r.harmonyPer60<=8,`${r.name}: Harmony cannot spam beyond 8/60s average`);
 }
 const byId=Object.fromEntries(rows.map(x=>[x.id,x]));
-assert.ok(byId['companion.7'].offenseGainPct>byId['companion.1'].offenseGainPct,'Yến Vũ burst offense must exceed Mộc Quỳnh sustain offense');
+const between=(v,min,max,label)=>assert.ok(v>=min&&v<=max,`${label}: expected ${min}..${max}, got ${v.toFixed(2)}`);
+
+// Role envelopes are deliberately broader than the locked point estimates: catch identity drift without overfitting one seed set.
+between(byId['companion.1'].offenseGainPct,-2,10,'Mộc Quỳnh sustain offense');
+assert.ok(byId['companion.1'].survivalDelta>=10,'Mộc Quỳnh must remain the strongest sustain anchor');
+
+between(byId['companion.2'].offenseGainPct,20,32,'Ninh Tố control offense');
+assert.ok(byId['companion.2'].controlDelta>=10,'Ninh Tố must retain high control/debuff contribution');
+
+between(byId['companion.3'].offenseGainPct,15,26,'Hạ Liên support offense');
+assert.ok(byId['companion.3'].survivalDelta>=4,'Hạ Liên support must provide meaningful pressure survival');
+
+between(byId['companion.4'].offenseGainPct,25,36,'Tạ Vân burst offense');
 assert.ok(byId['companion.4'].offenseGainPct>byId['companion.3'].offenseGainPct,'Tạ Vân burst offense must exceed Hạ Liên support offense');
-assert.ok(byId['companion.1'].survivalDelta>=byId['companion.7'].survivalDelta,'Mộc Quỳnh sustain survival must not trail Yến Vũ burst');
-console.log('\nV148 CONFIDANT V129 BALANCE PROBE PASS');
+
+between(byId['companion.5'].offenseGainPct,12,24,'Lạc Dao support offense');
+assert.ok(byId['companion.5'].offenseGainPct<byId['companion.4'].offenseGainPct,'Lạc Dao support cannot overtake Tạ Vân burst');
+
+between(byId['companion.6'].offenseGainPct,10,24,'Cố Thanh Hà control offense');
+assert.ok(byId['companion.6'].controlDelta>=8,'Cố Thanh Hà must retain control identity');
+
+between(byId['companion.7'].offenseGainPct,30,40,'Yến Vũ burst offense');
+assert.ok(byId['companion.7'].offenseGainPct===Math.max(...rows.map(x=>x.offenseGainPct)),'Yến Vũ must remain highest offense without exceeding the burst cap');
+
+between(byId['companion.8'].offenseGainPct,5,18,'Bạch Tố Tâm guard offense');
+assert.ok(byId['companion.8'].survivalDelta>=4,'Bạch Tố Tâm guard must provide meaningful pressure survival');
+assert.ok(byId['companion.8'].survivalDelta>=byId['companion.7'].survivalDelta+3,'Bạch Tố Tâm guard survival must clearly exceed Yến Vũ burst');
+
+assert.ok(byId['companion.1'].survivalDelta>=byId['companion.8'].survivalDelta,'Mộc Quỳnh sustain survival must remain at least as strong as Bạch Tố Tâm guard');
+console.log('\nV148 CONFIDANT V129 BALANCE ENVELOPES PASS');
