@@ -120,6 +120,9 @@ jobs:
       - name: V157 Endgame continuity
         run: node qa/tests/v129-endgame-continuity-structural-test.js
 
+      - name: V158 Full player journey integration
+        run: node qa/tests/v158-player-journey-integration-test.js
+
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
 
