@@ -1,17 +1,15 @@
-# CURRENT CHECKPOINT — V158 FULL GAMEPLAY INTEGRATION CLOSED
+# CURRENT CHECKPOINT — V159 ECONOMY / PACING / ENDGAME VARIETY
 
 **Date:** 2026-09-10  
-**Branch:** `feature/v158-full-gameplay-integration`  
+**Canonical branch:** `feature/v159-economy-pacing-endgame-variety`  
 **Gameplay/web version:** `1.40.0-alpha.24.0`  
-**Status:** V140–V158 **CLOSED / LOCKED** once the exact current checkpoint HEAD passes canonical QA.  
-**Implementation HEAD validated:** `501f5f7d4a72678b094e7080eb458a022301d6f4`  
-**Implementation QA run:** `34470627889` — **SUCCESS**  
-**Main:** intentionally **not merged / untouched**.  
-**Rule:** current branch source is truth. Do not merge `main` unless the user explicitly asks.
+**Baseline:** V140–V158 CLOSED / LOCKED.  
+**V159 implementation HEAD validated:** `0e208ba126ecf9452116af7b7c4358f3363979a3`  
+**V159 canonical QA run:** `34478194159` — SUCCESS.  
+**Main:** intentionally untouched at `6c9f462efe6a87725d61845809e82474df6c58e9`.  
+**Rule:** current feature-branch HEAD is source of truth. Never merge `main` unless the user explicitly asks.
 
 ## 1. Closed baseline
-
-V140–V157 remain closed exactly as recorded by the previous checkpoint. V158 adds a cross-system player-journey closure; it does not rebuild those systems or create a second gameplay architecture.
 
 - V140 — Tu Luyện / Bế Quan.
 - V141 — Săn Yêu × Tu Luyện.
@@ -24,153 +22,76 @@ V140–V157 remain closed exactly as recorded by the previous checkpoint. V158 a
 - V149–V151 — Pháp Bảo / no-Bảo-Khí / Chí Bảo.
 - V152 — Công Pháp.
 - V153 — Luân Hồi.
-- V154 — six-Lục-Đạo Phân Thân authority.
+- V154 — exactly six Lục Đạo Phân Thân.
 - V155 — Skills / Tâm Pháp authority.
 - V156 — Động Phủ.
 - V157 — Endgame continuity.
-- **V158 — Full Gameplay Integration / Player Journey: CLOSED.**
+- V158 — Full Gameplay Integration / Player Journey.
 
-Do not reopen a closed system because of old chat text, old save compatibility fields or historical tests. Reopen only for a real regression or a new explicit requirement.
+Do not reopen a closed subsystem because of stale chat, old compatibility fields or obsolete handoff files. Reopen only for a real regression or an explicit new requirement.
 
-## 2. V158 canonical player loop
+## 2. V159 scope actually implemented
 
-The player-facing loop is now explicitly locked as:
+V159 does not add another progression architecture. It measures the existing progression baseline and makes the Immortal+ cadence more action-oriented using existing authorities.
 
-`Tu Luyện → Farm → Nuôi Build → Công Phá → Luân Hồi`
+### Pacing ledger
 
-The guide exposes 16 distinct player-facing systems. Every system must explain:
+- `CULTIVATION_REALMS_V140` remains the authority.
+- Exactly 118 realm entries are covered: orders 0–116 have positive baseline target time; order 117 is terminal Sáng Thế Chủ with target time 0.
+- The V159 report splits baseline Tu Vi time into Mortal→Độ Kiếp, Immortal foundation, transcendent, creation and total baseline buckets.
+- These numbers are a **baseline Tu Vi budget**, not a promise of real calendar completion time; Linh Căn, Công Pháp, Luân Hồi, Bế Quan and other accelerators remain separate modifiers.
 
-- purpose;
-- what the player does;
-- what it costs;
-- what it gives;
-- where its source/reward comes from.
+### Immortal+ variety
 
-The progression guide spans all **29 major milestones** from Phàm Nhân through Sáng Thế Chủ and remains verified through realm order **117**.
+All 18 Immortal+ major stages keep real five-floor dungeons, first-clear resource bursts and time-based farm output. Their player-facing cadence is grouped into five distinct identities rather than one repeated generic refinement label:
 
-## 3. V158 findings fixed
+`immortal-foundation → law-refinement → limit-break → cosmic-refinement → genesis-cycle`
 
-### Hunt/Tu Vi contradiction
+### Real endgame actions
 
-The old player-facing guide incorrectly said Săn Yêu directly granted Tu Vi. V141 production authority already forbids this.
+- Cực Hạn exposes the existing **Phá Cực** authority only at the real boundary.
+- Sáng Thế Chủ final gate requires real creation metrics plus Genesis resources before **Khai Kỷ Nguyên**.
+- Genesis Epoch is repeatable and partially resets creation metrics while preserving bounded/log-scaled epoch authority; it is not a one-click permanent max.
+- Sáng Thế Nguyên Hải supplies both the refinement currency and the mandatory epoch token.
+- Public gameplay dispatch exposes existing manifestation / Phá Cực / Genesis Epoch actions without constructing a second CombatEngine or CombatKernel.
+- Journey UI mounts real Phá Cực / Khai Kỷ Nguyên controls through the existing `/api/action` + `perform` transport and persists returned state.
+- Immortal+ player-journey milestones are no longer marked provisional through realm order 117.
 
-V158 now states:
+## 3. V159 implementation chain from V158
 
-- Săn Yêu gives Linh Thạch, Yêu Đan and loot/materials;
-- Săn Yêu does **not** mint Tu Vi directly;
-- Tu Luyện continues independently at **100%** while hunting/farming.
+V159 is exactly 8 commits ahead of V158 and 0 behind. The implementation sequence is:
 
-### Stale Luân Hồi “Thí Luyện” copy
+1. expose canonical endgame actions through gameplay dispatch;
+2. make Immortal+ cadence action-oriented;
+3. add V159 economy/pacing/endgame-variety gate;
+4. wire the V159 gate into canonical CI;
+5. align the terminal gate with Genesis Epoch canonical behavior;
+6. make Phá Cực and Genesis Epoch clickable in the journey UI;
+7. mount the endgame journey UI bridge;
+8. lock production journey UI reachability.
 
-The old guide still described `kết toán → thí luyện → chốt reward`, although the current lifecycle no longer requires a fake trial/min-age/min-realm/first-clear gate.
+## 4. QA evidence
 
-V158 player-facing lifecycle is:
+Exact implementation HEAD: `0e208ba126ecf9452116af7b7c4358f3363979a3`  
+Canonical run: `34478194159` — **SUCCESS**.
 
-`xem reward dự kiến → Tọa Hóa → kết toán → chọn kế thừa → mở đời kế`
+Observed on that exact SHA:
 
-Luân Hồi uses actual life achievements and Reincarnation Energy / CP rules. No fake mandatory Thí Luyện step is presented to the player.
-
-### Độ Kiếp guidance ordering
-
-The old smart guide could recommend **Dẫn Thiên Kiếp** while the mandatory matching floor in **Thiên Kiếp Cổ Trường** was not yet first-cleared, producing an action guaranteed to be blocked.
-
-V158 now orders this correctly:
-
-1. If Tu Vi is full but the mandatory Luyện Kiếp gate is missing, the primary task is `tribulation-prep` and routes to the required dungeon first-clear.
-2. Only after that gate is ready does the guide offer **Dẫn Thiên Kiếp**.
-
-### Duplicate stage-content recommendation
-
-The smart session loop could add the same `stage-content` recommendation from both progression and content-loop surfaces. V158 deduplicates this so the player sees one actionable task instead of repeated guidance.
-
-## 4. Cross-system journey invariants
-
-The permanent V158 integration gate verifies:
-
-- 5-step core loop and 16 unique player-facing systems;
-- all 29 major progression milestones through order 117;
-- unlock coherence at Phàm Nhân, Luyện Khí, Trúc Cơ, Tử Phủ, Kim Đan, Nguyên Anh and Hóa Thần;
-- Hunt never claims direct Tu Vi and explicitly coexists with 100% Tu Luyện;
-- Luân Hồi has no resurrected min-age/min-realm/first-clear fake gate;
-- specialized resource content uses **CombatKernel V2 first-clear → real time-based farm**;
-- repeat guardian combat cannot spam progression materials or bypass gacha-specific fragments;
-- all **261 Công Pháp** remain Lv1–1000 with ten 100-level gates and no Action Speed/hidden Chân Nguyên package;
-- roster remains **8 Linh Thú + 8 Tri Kỷ + 12 Pháp Bảo + 8 Chí Bảo**;
-- fresh Động Phủ has exactly **8 facilities**;
-- production Phân Thân authority remains exactly **6 Lục Đạo**;
-- blocked Độ Kiếp guidance resolves Luyện Kiếp before offering real tribulation;
-- smart guidance has no duplicate task ids/stage-content duplication;
-- Immortal+ contains **18 explicit four-order stages**, each with a five-floor content objective;
-- Sáng Thế Chủ is the terminal major milestone rather than a fake next realm.
-
-## 5. V158 test philosophy
-
-V158 does **not** fabricate a compressed “played 500 hours” simulation and call that production PASS.
-
-Instead:
-
-- the V158 gate checks the cross-system journey, unlocks, contracts and player-facing guidance;
-- the same canonical workflow also runs the existing real production gates for cultivation, Hunt, equipment, Linh Căn, alchemy, confidants, artifacts, relics, Công Pháp, Luân Hồi, Phân Thân, Động Phủ and endgame;
-- CombatKernel V2 remains the shared real combat authority;
-- source/sink and first-clear/farm behavior remain tested in their production subsystem gates.
-
-This is the canonical meaning of “full gameplay integration” for V158.
-
-## 6. Canonical journey by phase
-
-- **Phàm Nhân:** Tu Luyện begins; Linh Căn and origin/core-stat foundations are available.
-- **Luyện Khí:** Săn Yêu, Phó Bản, loot/equipment and social gameplay create the first `fight → first-clear → farm → upgrade` loop while Tu Luyện continues in parallel.
-- **Trúc Cơ:** player chooses Đạo identity; Skills/Tâm Pháp, Đan, Động Phủ, Collection/Gacha and Luân Hồi/meta tools open.
-- **Tử Phủ / Kim Đan:** faction layer becomes available; asynchronous Đấu Pháp opens at Kim Đan as a build benchmark.
-- **Nguyên Anh:** Thần Hồn and exactly six Lục Đạo Phân Thân turn already-cleared content into parallel/offline farm capacity.
-- **Hóa Thần → Đại Thừa:** Đạo Ý/Đạo Vực and stage-specific build objectives become more important; Hợp Thể checks body–soul–dao–artifact balance rather than only one power number.
-- **Độ Kiếp:** unique hard cadence break; matching Thiên Kiếp Cổ Trường floor must be first-cleared before the real Heavenly Tribulation.
-- **Nhân Tiên → Vĩnh Sinh:** named Immortal+ refinements and five-floor stage dungeons accompany the continuing realm climb.
-- **Sáng Thế Chủ:** reaches orders 114–117; terminal Sáng Thế content feeds the Genesis Epoch endgame loop.
-
-Across the whole journey, learned Công Pháp remain active, build systems layer onto shared CombatEntity/CombatKernel, one active Chí Bảo changes a combat law, Động Phủ improves long-term efficiency, and Luân Hồi converts the achievements of one life into persistent advantages for later lives.
-
-## 7. Known design risk — not a closure regression
-
-The strongest remaining design risk is the **Immortal+ ladder from Nhân Tiên through Vĩnh Sinh**.
-
-Source currently gives 18 named major stages with escalating fantasy identity, but much of the mechanical cadence follows the same template: improve stage metrics + clear a five-floor dungeon. This is valid production content and V158 does not rewrite it, but it risks feeling like renamed/reskinned repetition compared with the more varied Mortal→Độ Kiếp journey.
-
-This should be treated as a future game-design/pacing improvement, not as a reason to reopen V140–V158.
-
-A second UX risk is Trúc Cơ: many long-term systems unlock together. The systems are individually valid, but onboarding/hierarchy may need simplification during UI/UX production.
-
-## 8. Known technical debt — cleanup later
-
-A stale compatibility API surface still exists around `runReincarnationTrialV2` in facade/API code while the current player-facing lifecycle no longer uses a mandatory reincarnation trial. Current app flow does not use this as the normal Luân Hồi path.
-
-Do not reintroduce trial gameplay merely to justify that legacy surface. Retire or reconcile it during a dedicated code-cleanup phase.
-
-## 9. QA evidence
-
-Implementation exact HEAD: `501f5f7d4a72678b094e7080eb458a022301d6f4`  
-Canonical run: `34470627889` — **SUCCESS**.
-
-Observed on that exact implementation SHA:
-
-- V140–V157 canonical gates: PASS.
-- **V158 Full player journey integration: PASS.**
-- Backend fast: PASS.
-- Frontend fast: PASS.
+- V140–V158 canonical gates: PASS.
+- V159 Economy pacing and endgame variety: PASS.
+- Backend fast gate: PASS.
+- Frontend fast gate: PASS.
 - Backend closure: PASS.
 - Frontend closure: PASS.
 
-The exact current checkpoint/documentation HEAD must also have a SUCCESS canonical workflow run. If that final run is not SUCCESS, V158 is not considered locked regardless of this file title.
+The final documentation-sync HEAD must also pass canonical QA before V159 is treated as formally CLOSED / LOCKED.
 
-## 10. V158 changed files
+## 5. Known remaining design questions
 
-- `dist/core/player-experience-v105.js` — corrected Hunt/Luân Hồi player truth, tribulation guidance ordering and duplicate task guidance.
-- `qa/tests/v158-player-journey-integration-test.js` — cross-system player-journey gate.
-- `.github/workflows/v140-ci.yml` — V158 canonical gate.
-- `CURRENT_CHECKPOINT.md` — this closure record.
+- Trúc Cơ still unlocks many long-term systems close together; this is primarily an onboarding/UI hierarchy issue.
+- V159 improves Immortal+ cadence and action reachability but does not claim that all economy values have been globally rebalanced by a real-time full-life simulation.
+- Do not invent V160 automatically. The next implementation scope must follow the user's next explicit priority.
 
-No second gameplay resolver, duplicate progression system or fake accelerated farm simulator was added.
+## 6. Next-session rule
 
-## 11. Next-session rule
-
-Start from `feature/v158-full-gameplay-integration` after confirming the exact checkpoint HEAD is green. Treat V140–V158 as CLOSED. Do not reopen closed systems without a real regression or explicit new user requirement. Do not merge `main` unless explicitly instructed.
+Start from `feature/v159-economy-pacing-endgame-variety`, confirm the exact current branch HEAD is green, then treat that branch as canonical. `main` remains intentionally untouched.

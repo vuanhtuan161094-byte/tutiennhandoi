@@ -1,89 +1,69 @@
 # NEXT CHAT TASKS — GAME TU TIÊN NHÀN DỖI
 
-**Date:** 2026-09-08  
-**Canonical branch:** `feature/v142-equipment-hunt`  
+**Date:** 2026-09-10  
+**Canonical branch:** `feature/v159-economy-pacing-endgame-variety`  
 **Gameplay/web version:** `1.40.0-alpha.24.0`
 
 ## 0. Quy tắc bắt buộc
 
-1. Dùng current branch HEAD làm source of truth.
+1. Dùng current feature-branch HEAD làm source of truth.
 2. Đọc `CHAT_MOI_START_HERE.md` → `CURRENT_CHECKPOINT.md` → file này trước khi sửa.
-3. Không dùng branch/handoff cũ làm canonical nếu mâu thuẫn current HEAD.
-4. Không phục hồi mechanic đã retired chỉ vì old save/test/chat/file lịch sử còn nhắc tới.
-5. Mỗi subsystem phải rà đủ backend + frontend + save + source/sink + consumer thật + targeted QA.
-6. Không merge `main` nếu user chưa yêu cầu.
-7. Không tự bắt đầu subsystem kế tiếp khi user chưa chọn.
+3. Không dùng `main`, branch cũ, chat cũ hoặc handoff cũ làm canonical nếu mâu thuẫn current HEAD.
+4. Không phục hồi mechanic đã retired chỉ vì compatibility code/test cũ còn tồn tại.
+5. Không merge `main` nếu user chưa yêu cầu rõ.
+6. Không tự đặt tên V160 hoặc tự mở subsystem mới khi user chưa chọn ưu tiên.
 
 ## 1. Baseline đã khóa
 
-- V140 Tu Luyện — CLOSED.
-- V141 Săn Yêu × Tu Luyện — CLOSED.
-- V142 Trang Bị × Hunt — CLOSED.
-- V143 reward authority + Set Resonance — CLOSED.
-- V144 legacy Công Pháp/Bí Thuật retirement — CLOSED.
-- V145 Linh Căn vô hạn + Căn Mạch + Căn Ngộ + combat core buff — CLOSED.
-- **V146 Đan Dược production closure — CLOSED.**
+V140–V158 CLOSED / LOCKED.
 
-Canonical V146 closure source HEAD: `ddd2242c10c516be470dc21b879ea313b04b9ef0`.
-Full canonical run: **`34224883992` — SUCCESS**.
+Mốc V158 cuối:
+- branch `feature/v158-full-gameplay-integration`;
+- exact HEAD `63f43800cabeca54c97ffa1c0d46d8558d0d9e6d`;
+- canonical QA `34470829575` — SUCCESS.
 
-## 2. V146 — không mở lại nếu không có regression thật
+## 2. V159 hiện tại
 
-Canonical V146:
+Branch: `feature/v159-economy-pacing-endgame-variety`.
 
-- authority player-facing: `alchemy.v146`;
-- 11 họ Đan, 299 Đan Phương theo availability;
-- 2 nguyên liệu Alchemy duy nhất: Linh Thảo + Yêu Đan theo đại cảnh;
-- Dược Viên là source Linh Thảo;
-- Săn Yêu/Săn Ảo là source Yêu Đan;
-- realm-gating cứng cho material tier;
-- Đan Đạo 9 bậc × 9 Chuyển;
-- mastery theo 11 họ, max 1000;
-- tối đa 4 lò;
-- không research bằng alchemy essence, không Chuyên Tinh player-facing;
-- V112 chỉ compatibility/migration, không production authority;
-- migration deterministic/idempotent;
-- Công Lực/Khí Huyết/Hộ Thể Đan là ba lane raw stat vĩnh viễn có quota đời;
-- Tu Vi Đan exact-major, không ăn Tụ Linh V145;
-- Trị Thương Đan không heal HP/CN combat;
-- combat pill dùng shared buff authority, không resolver riêng.
+Implementation HEAD trước đồng bộ tài liệu: `0e208ba126ecf9452116af7b7c4358f3363979a3`.
+Canonical QA: `34478194159` — SUCCESS.
 
-## 3. Việc tiếp theo — chờ user chọn
+Branch V159 đang đúng 8 commit ahead V158, 0 behind.
 
-Nếu user nói tiếp tục theo roadmap, module kế tiếp là:
+V159 đã:
 
-### V147 — Linh Thú
+- tạo pacing ledger cho toàn progression 0→117 bằng target time canonical hiện có;
+- giữ rõ đây là baseline Tu Vi budget, không phải lời hứa thời gian hoàn thành thực tế;
+- xác nhận 18 Immortal+ major stage đều có dungeon 5 tầng + first-clear reward + time-based farm;
+- chia nhịp Immortal+ thành 5 cadence identity thay vì một template refinement duy nhất;
+- expose existing manifestation / Phá Cực / Genesis Epoch qua public gameplay dispatch;
+- nối Phá Cực và Khai Kỷ Nguyên vào journey UI thật;
+- giữ một shared gameplay/combat authority, không tạo CombatEngine/CombatKernel thứ hai;
+- xác nhận player journey production through realm order 117 không còn provisional Immortal+ milestone.
 
-Phải audit source-first và production closure theo cùng chuẩn:
+## 3. QA gate hiện tại
 
-- inventory/danh sách Linh Thú live hiện tại;
-- progression level/star/bloodline hoặc mechanic tương đương đang thật sự tồn tại;
-- nguồn Linh Thú và nguyên liệu nâng cấp;
-- sink của mọi material/currency;
-- stat passive lên nhân vật và trợ chiến active;
-- consumer trong CombatKernel/shared combat path;
-- save migration/legacy retirement nếu cần;
-- API/action/read-model/UI path thật;
-- offline/idle interaction nếu có;
-- targeted QA + full canonical QA.
+Canonical run `34478194159` trên HEAD `0e208ba...` đã PASS toàn bộ:
 
-Không tự invent mechanic mới nếu source hiện tại đã có contract phù hợp; trước hết phải audit live authority và lỗ hổng source/sink/consumer.
+- V140–V158 gates;
+- V159 Economy pacing and endgame variety;
+- Backend fast;
+- Frontend fast;
+- Backend closure;
+- Frontend closure.
 
-Sau V147 roadmap đề xuất:
+Sau commit đồng bộ tài liệu, phải kiểm tra canonical QA của exact new HEAD trước khi gọi V159 **CLOSED / LOCKED** chính thức.
 
-- V148 Tri Kỷ;
-- V149 Pháp Bảo;
-- V150 Luân Hồi Production Closure;
-- V151 Economy/source-authority toàn game.
+## 4. Việc tiếp theo
 
-## 4. Pháp Tắc / Lĩnh Vực
+Chưa có V160 canonical.
 
-Không code mặc định trong V147–V151 nếu user chưa chọn.
+Không tự phát minh roadmap mới. Khi user yêu cầu tiếp tục, trước hết xác nhận exact current HEAD/QA rồi thực hiện đúng ưu tiên mới nhất của user.
 
-- Pháp Tắc tương lai sở hữu Ngũ Hành + Băng/Lôi/Phong/Huyết/Độc/Ám/Quang/Hư Không và combat identity/khắc chế/build interaction.
-- Lĩnh Vực là subsystem chí cao sau đó.
-- Không nhét elemental identity trở lại V145 Linh Căn.
+Nếu tiếp tục theo mục tiêu gameplay hiện tại, các câu hỏi còn mở đáng audit gồm:
 
-## 5. Câu mở đầu cho chat mới
-
-> Tiếp tục Game Tu Tiên Nhàn Dỗi từ GitHub branch `feature/v142-equipment-hunt`. Dùng current HEAD làm source of truth. V140–V146 đã CLOSED; V146 Đan Dược dùng `alchemy.v146`, chỉ có Linh Thảo + Yêu Đan làm nguyên liệu canonical. Không merge main. Chờ yêu cầu mới nhất của tôi rồi audit subsystem tiếp theo source-first, đủ backend/frontend/save/source-sink/consumer/QA.
+- pacing/economy thực tế có choke point hay trivialization ở đâu khi tính các accelerator thật;
+- Trúc Cơ cần onboarding/hierarchy thế nào để không mở quá nhiều hệ một lúc;
+- Immortal+ sau V159 đã có cadence khác nhau nhưng mức độ khác biệt gameplay thực chiến còn đủ hay chưa;
+- technical debt compatibility cũ chỉ cleanup khi có task riêng, không hồi sinh mechanic legacy.
