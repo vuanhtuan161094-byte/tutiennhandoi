@@ -16,6 +16,7 @@ import {
 
 export const ARTIFACT_RESOURCE_SCHEMA_V150 = 'artifact.resource.v150';
 export const ARTIFACT_RESOURCE_MODE_V150 = 'trigger-cooldown';
+export const ARTIFACT_NO_RESOURCE_COOLDOWN_MULTIPLIER_V150 = 1.05;
 export const ARTIFACT_COMBO_SCHEMA_V149 = 'artifact.combo.v149';
 
 const ARTIFACT_TEXT_V150 = Object.freeze({
@@ -195,8 +196,12 @@ function augmentArtifactTriggerV149(trigger) {
 function noBaoQiTriggerV150(trigger) {
   if (!['artifactSkill','relicRule'].includes(trigger?.runtimeV88?.kind)) return trigger;
   const { baoQiCost: _cost, baoQiGain: _gain, ...runtime } = trigger.runtimeV88;
+  const cooldown = runtime.kind === 'artifactSkill'
+    ? Number((Math.max(0, Number(trigger.cooldown) || 0) * ARTIFACT_NO_RESOURCE_COOLDOWN_MULTIPLIER_V150).toFixed(2))
+    : trigger.cooldown;
   return {
     ...trigger,
+    cooldown,
     runtimeV88: {
       ...runtime,
       resourceMode: ARTIFACT_RESOURCE_MODE_V150,
@@ -276,6 +281,7 @@ export function artifactResourceSummaryV150() {
     schema: ARTIFACT_RESOURCE_SCHEMA_V150,
     mode: ARTIFACT_RESOURCE_MODE_V150,
     baoQiEnabled: false,
+    cooldownMultiplier: ARTIFACT_NO_RESOURCE_COOLDOWN_MULTIPLIER_V150,
     rule: 'Pháp Bảo không dùng thanh tài nguyên riêng; mỗi món được điều tiết bằng trigger, hồi chiêu và điều kiện combat.',
   };
 }
