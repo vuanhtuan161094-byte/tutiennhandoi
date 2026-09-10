@@ -1,0 +1,38 @@
+name: V148 Balance Patch
+on:
+  push:
+    branches:
+      - feature/v148-confidant-rebuild
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Trim Lạc Dao offense to support envelope
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('dist/core/confidant-v87.js')
+          s=p.read_text(encoding='utf-8')
+          replacements={
+            "effects: [spirit(12), status('status.wind_step', 2.5, 'self'), damage(.22, 4, 'Wind')]":"effects: [spirit(12), status('status.wind_step', 2, 'self'), damage(.18, 4, 'Wind')]",
+            "effects: [spirit(20), status('status.wind_step', 4, 'self'), damage(.50, 12, 'Wind')]":"effects: [spirit(20), status('status.wind_step', 3, 'self'), damage(.42, 12, 'Wind')]",
+            "'companion.5': [{event:'OnHit',sourceTags:['ActiveHit'],gain:6},{event:'OnDodge',gain:10}]":"'companion.5': [{event:'OnHit',sourceTags:['ActiveHit'],gain:5},{event:'OnDodge',gain:10}]",
+          }
+          for old,new in replacements.items():
+            count=s.count(old)
+            if count!=1: raise SystemExit(f'Expected exactly 1 match, found {count}: {old}')
+            s=s.replace(old,new)
+          p.write_text(s,encoding='utf-8')
+      - name: Commit patch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add dist/core/confidant-v87.js
+          git commit -m "balance(v148): trim Lac Dao offense to support envelope"
+          git push origin HEAD:feature/v148-confidant-rebuild
