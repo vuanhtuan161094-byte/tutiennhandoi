@@ -1,9 +1,9 @@
-# CURRENT CHECKPOINT — V148 TRI KỶ + V129 BALANCE CLOSED
+# CURRENT CHECKPOINT — V148 TRI KỶ + V129 CROSS-BUILD BALANCE CLOSED
 
 **Date:** 2026-09-10  
 **Branch:** `feature/v148-confidant-rebuild`  
 **Gameplay/web version:** `1.40.0-alpha.24.0`  
-**Status:** V140–V148 **CLOSED / V129 combat balance LOCKED / canonical QA PASS**.  
+**Status:** V140–V148 **CLOSED / V129 three-archetype combat balance LOCKED / canonical QA PASS**.  
 **Main:** intentionally **not merged / untouched**.  
 **Rule:** current branch source is truth. **Do not merge `main`** unless the user explicitly asks.
 
@@ -17,7 +17,7 @@
 - V145 — Linh Căn vô hạn + Căn Mạch + Căn Ngộ + combat core buff: CLOSED.
 - V146 — Đan Dược production closure: CLOSED.
 - V147 — Linh Thú progression/economy/combat integration: CLOSED.
-- **V148 — Tri Kỷ progression/economy/combat integration + V129 combat calibration: CLOSED.**
+- **V148 — Tri Kỷ progression/economy/combat integration + V129 cross-build combat calibration: CLOSED.**
 
 Không mở lại hệ đã CLOSED vì chat cũ, save cũ, test lịch sử hoặc compatibility field còn tồn tại. Chỉ mở lại khi có regression thật hoặc user đổi yêu cầu.
 
@@ -34,7 +34,7 @@ Live stack:
 - `dist/core/combat.js` — Đồng Tâm/Hợp Kích trong shared CombatKernel;
 - `modules/confidant-presentation-v87.js` — presentation bridge hỗ trợ `confidant.v148`;
 - `qa/tests/v148-confidant-rebuild-test.js` — progression/economy/migration/runtime regression;
-- `qa/tests/v148-confidant-v129-balance-test.js` — permanent V129 combat benchmark + role-envelope regression.
+- `qa/tests/v148-confidant-v129-balance-test.js` — permanent V129 **three-archetype** combat matrix + role-envelope regression.
 
 Temporary V148 apply/audit/balance workflows, patch tools và staging artifacts đã bị xóa khỏi production tree.
 
@@ -76,6 +76,22 @@ Giữ đúng **8 Tri Kỷ**; không mở roster chỉ để làm loãng gacha.
 - Hợp Kích **không dùng cooldown**; đủ 100 Đồng Tâm thì tự kích và tiêu 100.
 - 8 Tri Kỷ có gauge profile riêng dựa trên event thật: `OnHit`, `OnCrit`, `OnDamageTaken`, `OnShieldBreak`, `OnDodge`, `OnTargetDodge`, `Summon`.
 - Canonical trigger IDs: `confidant.v148.*`.
+
+### Heart Power damage scaling — cross-build lock
+
+V129 matrix phát hiện flat damage từ `Tâm Lực` làm Tri Kỷ gánh tỷ lệ sát thương quá lớn trên build có personal DPS thấp. Cơ chế này đã bị loại khỏi V148 damage authority.
+
+Canonical mới:
+
+- authored `flatDamage` vẫn được tôn trọng nếu effect thật sự có authored flat;
+- **Tâm Lực không còn bơm flat damage trực tiếp**;
+- Tâm Lực chuyển thành attack-scaled coefficient có hard cap:
+  - Trợ Chiến: tối đa **+0.12 coefficient**;
+  - Hộ Đạo damage: tối đa **+0.10 coefficient**;
+  - Hợp Kích: tối đa **+0.28 coefficient**;
+- relation scale, branch bonus và Phá Thế vẫn giữ bounded cap riêng.
+
+Kết quả: build Tâm/Thể không còn bị Tri Kỷ chiếm +70–80% DPS chỉ vì baseline cá nhân thấp.
 
 ## 5. Phúc Duyên / Sở Trường
 
@@ -122,81 +138,88 @@ Legacy Duyên chuyển một lần:
 
 Migration deterministic + idempotent. Save cũ đã mở Trợ Chiến/Hộ Đạo/Hợp Kích được bảo toàn mechanic bằng compatibility entitlement, không tặng giả Thân Mật/Level mới.
 
-## 8. V129 combat balance closure — LOCKED
+## 8. V129 three-archetype combat matrix — LOCKED
 
 Permanent benchmark: `qa/tests/v148-confidant-v129-balance-test.js`.
 
-Representative V129 fixture:
+Shared fixture:
 
-- Kiếm Đạo / Kim Linh Căn;
-- Potential = 1000, phân bổ Công 60% / Thể 20% / Phòng 20%;
-- Đạo Hạnh 70;
+- Potential tổng = **1000**;
+- Đạo Hạnh = **70**;
 - 4-piece thematic attire;
 - grade Immortal;
-- 8 deterministic seeds;
+- **6 deterministic seeds** mỗi archetype;
 - 60 giây offense dummy + 60 giây pressure boss;
-- Tri Kỷ fixture Lv5100 / 100★, Tâm Ý 0/0/0 để benchmark base kit thay vì trộn thêm branch investment.
+- Tri Kỷ fixture Lv5100 / 100★;
+- Tâm Ý 0/0/0 để đo base kit, không trộn branch investment.
 
-Baseline: **262,803 damage/60s offense**, **210,322 damage/60s pressure**, survival score **61.40**.
+Ba archetype canonical:
 
-Final calibrated snapshot:
+1. **Kiếm–Kim · thiên Công** — Công 65% / Thể 20% / Phòng 15%.
+2. **Thể–Thổ · sinh tồn** — Công 20% / Thể 50% / Phòng 30%.
+3. **Tâm–Thủy · khống chế** — Công 40% / Thể 20% / Phòng 40%.
 
-| Tri Kỷ | Vai trò | Offense gain | Pressure gain | Survival Δ | Control Δ | Harmony/60s |
-|---|---|---:|---:|---:|---:|---:|
-| Mộc Quỳnh | Sustain | +0.0% | +7.1% | +13.60 | +0.00 | 0.50 |
-| Ninh Tố | Control | +27.4% | +25.5% | +1.49 | +13.25 | 2.31 |
-| Hạ Liên | Support | +21.5% | +20.3% | +5.69 | +4.88 | 2.53 |
-| Tạ Vân | Burst | +29.8% | +20.4% | +0.93 | +13.00 | 2.25 |
-| Lạc Dao | Support | +18.1% | +16.9% | +0.69 | +10.88 | 1.00 |
-| Cố Thanh Hà | Control | +16.3% | +13.3% | +2.52 | +9.88 | 0.78 |
-| Yến Vũ | Burst | +33.1% | +26.1% | +1.05 | +4.25 | 2.34 |
-| Bạch Tố Tâm | Guard | +10.2% | +13.8% | +5.35 | +11.88 | 0.75 |
+### Aggregate cuối — trung bình 3 archetype
 
-Calibration outcome:
+| Tri Kỷ | Vai trò | Offense gain | Pressure gain | Survival Δ | Control Δ |
+|---|---|---:|---:|---:|---:|
+| Mộc Quỳnh | Sustain | **+0.0%** | +0.3% | **+8.99** | +0.00 |
+| Ninh Tố | Control | +22.8% | +21.9% | +0.83 | **+13.22** |
+| Hạ Liên | Support | +17.1% | +12.1% | +3.61 | +4.56 |
+| Tạ Vân | Burst | **+26.5%** | +21.6% | +0.62 | +13.11 |
+| Lạc Dao | Support | +17.5% | +12.1% | +0.81 | +10.67 |
+| Cố Thanh Hà | Control | +12.8% | +14.4% | +1.65 | **+9.67** |
+| Yến Vũ | Burst / Tiên | **+28.4%** | **+27.6%** | +0.53 | +4.44 |
+| Bạch Tố Tâm | Guard | +8.8% | +11.8% | **+3.72** | +11.89 |
 
-- Mộc Quỳnh giữ sustain anchor mạnh nhất, không bị biến thành DPS.
-- Tạ Vân tăng nhịp Hợp Kích thường dụng và đạt burst đúng vai trò.
-- Lạc Dao đã hạ khỏi vùng DPS, giữ support/tempo ở +18.1% offense.
-- Yến Vũ từ outlier +46.1% về **+33.1%**, vẫn là offense cao nhất nhưng nằm trong cap burst.
-- Bạch Tố Tâm từ survival +1.67 lên **+5.35**, có guard identity thật; damage không lấn support/burst.
-- Ninh Tố/Cố Thanh Hà giữ control identity; Hạ Liên giữ hybrid support/sustain.
+### Cross-build interpretation
 
-Role envelopes đã khóa bằng assertion, không chỉ snapshot:
+- **Yến Vũ** là burst leader theo aggregate: +28.4%, cao hơn Tạ Vân +26.5%.
+- Ở Thể–Thổ, Tạ Vân có thể nhỉnh hơn Yến Vũ do `armor_fracture` hợp build; đây là synergy hợp lệ, không ép mọi build có cùng ranking.
+- **Tạ Vân** vẫn vượt hai support ở cả 3 archetype.
+- **Mộc Quỳnh** giữ sustain anchor; aggregate survival +8.99 cao nhất.
+- **Bạch Tố Tâm** giữ guard identity: offense chỉ +8.8%, survival +3.72 và control +11.89.
+- **Ninh Tố/Cố Thanh Hà** giữ control identity trên cả 3 build.
+- Hạ Liên/Lạc Dao không vượt burst envelope ở aggregate.
+- Sau scaler fix, archetype Tâm–Thủy có mức offense cao nhất riêng lẻ là Yến Vũ **+44.3%**, vẫn dưới hard safety envelope 55%; không còn outlier 75–81%.
 
-- Sustain Mộc Quỳnh: offense -2..10%, survival Δ ≥10.
-- Ninh Tố control: offense 20..32%, control Δ ≥10.
-- Hạ Liên support: offense 15..26%, survival Δ ≥4.
-- Tạ Vân burst: offense 25..36% và phải vượt Hạ Liên.
-- Lạc Dao support: offense 12..24% và không được vượt Tạ Vân.
-- Cố Thanh Hà control: offense 10..24%, control Δ ≥8.
-- Yến Vũ burst: offense 30..40% và phải là offense cao nhất.
-- Bạch Tố Tâm guard: offense 5..18%, survival Δ ≥4 và phải rõ ràng cao hơn Yến Vũ burst.
-- Harmony của mọi Tri Kỷ phải reachable và không spam >8 lần/60s trung bình.
+Role hierarchy regression đã khóa:
+
+- mọi archetype: Tri Kỷ phải có Assist, Harmony reachable và Harmony không spam >8 lần/60s;
+- mọi archetype: offense gain phải nằm trong **(-5%, 55%)**;
+- Tạ Vân phải vượt Hạ Liên và Lạc Dao trên từng archetype;
+- Ninh Tố control Δ ≥10 trên từng archetype;
+- Cố Thanh Hà control Δ ≥8 trên từng archetype;
+- Bạch Tố Tâm không được drift thành burst; Lạc Dao không được drift thành burst;
+- aggregate Yến Vũ phải vượt Tạ Vân;
+- aggregate Tạ Vân phải vượt support;
+- aggregate survival hierarchy: **Sustain > Guard > Burst**;
+- aggregate Guard offense phải thấp hơn Support offense.
 
 ## 9. Canonical QA — PASS
 
-Balance source + permanent role-envelope candidate:
+Cross-build source + permanent role hierarchy lock:
 
-`cbe8a0a40e2189e86f3fcb6a5bcef5a207ca4ad7`
+`8080cc1e44c519468da65d0a9457a4e4eef1e69b`
 
 Full `V140 Canonical QA` run:
 
-**`34438237851` — SUCCESS**
+**`34439513061` — SUCCESS**
 
 PASS gồm:
 
 - codebase health;
 - V140–V147 closed-system regression;
 - dedicated V148 Tri Kỷ progression/economy/migration/runtime regression;
-- dedicated `V148 Confidant × V129 balance` role-envelope benchmark;
-- backend fast gate;
-- frontend fast gate;
+- dedicated `V148 Confidant × V129 balance` **three-archetype** matrix;
+- backend fast **15/15**;
+- frontend fast **6/6**;
 - backend closure **79/79**;
 - frontend closure **20/20**.
 
-Production tree không còn one-off V148 balance patch workflow.
+Production tree không còn one-off V148 balance/scaler/Yến Vũ patch workflow.
 
-**V148 + V129 balance is CLOSED on `feature/v148-confidant-rebuild`. `main` chưa merge.**
+**V148 + V129 cross-build balance is CLOSED on `feature/v148-confidant-rebuild`. `main` chưa merge.**
 
 ## 10. Existing invariants still active
 
