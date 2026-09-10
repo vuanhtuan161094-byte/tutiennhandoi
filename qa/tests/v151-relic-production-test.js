@@ -98,8 +98,9 @@ const resonance=runWith('relic.5',{activeArtifacts:ART_LOADOUT,enemyStats:{attac
 const resonanceLogs=relicLogs(resonance,'relic.5');
 check(resonanceLogs.length>=2&&resonanceLogs.length<=7,'Vạn Pháp Đạo Chung receives real Pháp Bảo/triệu hồi hit traffic without runaway recursion');
 
-const counter=runWith('relic.6',{playerStats:{attack:20,physique:2400,defense:250},enemyStats:{attack:900,physique:4000,defense:500},duration:50,seed:151003});
+const counter=runWith('relic.6',{playerStats:{attack:20,physique:2400,defense:250},enemyStats:{attack:3000,physique:4000,defense:500},duration:50,seed:151003});
 const counterLogs=relicLogs(counter,'relic.6');
+check(counter.finalState.P.hp<2400*20*.70,'Hỗn Độn Đỉnh pressure fixture genuinely crosses the authored 70% HP gate');
 check(counterLogs.length>=1&&counterLogs.length<=6,'Hỗn Độn Đỉnh actually counter-triggers under incoming combat pressure and remains cooldown-bounded');
 
 const dodge=runWith('relic.7',{playerStats:{attack:100,physique:1000,defense:600,accuracy:1},enemyStats:{attack:1,physique:5000,defense:1000,dodge:90,mobility:200},duration:60,seed:151004});
