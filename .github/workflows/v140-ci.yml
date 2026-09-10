@@ -123,6 +123,9 @@ jobs:
       - name: V158 Full player journey integration
         run: node qa/tests/v158-player-journey-integration-test.js
 
+      - name: V159 Economy pacing and endgame variety
+        run: node qa/tests/v159-economy-pacing-variety-test.js
+
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
 
