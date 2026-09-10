@@ -83,12 +83,24 @@ check(view?.v151?.schema===RELIC_SCHEMA_V151&&view.v151.active===true&&view.v151
 const registry=buildRegistry();
 const STRIKE='skill.v151.relic.strike';
 const IDLE='skill.v151.relic.idle';
+const CONTROL_STRIKE='skill.v151.relic.control-strike';
 if(!registry.skills.has(STRIKE))registry.registerSkill({id:STRIKE,name:'V151 Thử Kích',description:'Đòn thử combat thật.',tags:['BalanceSimV151'],spiritCost:0,cooldown:0,castTime:0,recoveryTime:1,effects:[{type:'damage',coefficient:.16,sourceTag:'ActiveHit',canCrit:false,canDodge:true,procCoefficient:1}]});
 if(!registry.skills.has(IDLE))registry.registerSkill({id:IDLE,name:'V151 Tĩnh Thủ',description:'Không gây sát thương.',tags:['BalanceSimV151'],spiritCost:0,cooldown:0,castTime:0,recoveryTime:1,effects:[]});
+if(!registry.skills.has(CONTROL_STRIKE))registry.registerSkill({id:CONTROL_STRIKE,name:'V151 Khống Chế Thử',description:'Áp khống chế rồi gây sát thương để thử thanh tẩy.',tags:['BalanceSimV151'],spiritCost:0,cooldown:0,castTime:0,recoveryTime:1,effects:[{type:'applyStatus',statusId:'status.stun',duration:30,target:'target'},{type:'damage',coefficient:.16,sourceTag:'ActiveHit',canCrit:false,canDodge:false,procCoefficient:1}]});
 function stats({attack=500,physique=900,defense=500,dodge=0,mobility=1,accuracy=100}={}){return{maxHp:180000,attack,physique,defense,maxSpirit:100,spiritStandard:100,spiritRegenStandardPctPerSecond:0,mobility,accuracy,critChancePct:0,critPowerPerLayer:.5,heartChancePct:0,dodgeChancePct:dodge,controlPower:1,resolve:100,actionSpeed:1,elementalAffinities:{},elementalResistancesPct:{},dominantElement:'Earth'};}
 function entity(id,name,skillId,overrides={}){return{id,combatModel:'locked-v1',name,tags:[],stats:stats(overrides),skillIds:[skillId],aiProfile:{name:`${id}-ai`,rules:[{skillId,priority:1,conditions:[{type:'always'}]}]}};}
-function runWith(relicId,{activeArtifacts=[],playerStats={},enemyStats={},duration=45,seed=151001}={}){const state=stateFor(relicId,{activeArtifacts});const player=applyArtifactsV88ToEntity(entity('P','V151 Player',STRIKE,playerStats),state);const enemy=entity('E','V151 Enemy',STRIKE,enemyStats);return runCombatKernelV2({registry,seed,entities:[player,enemy],maxDuration:duration,mode:'simulation'}).battle;}
+function runWith(relicId,{activeArtifacts=[],playerStats={},enemyStats={},playerSkill=STRIKE,enemySkill=STRIKE,duration=45,seed=151001}={}){const state=stateFor(relicId,{activeArtifacts});const player=applyArtifactsV88ToEntity(entity('P','V151 Player',playerSkill,playerStats),state);const enemy=entity('E','V151 Enemy',enemySkill,enemyStats);return runCombatKernelV2({registry,seed,entities:[player,enemy],maxDuration:duration,mode:'simulation'}).battle;}
 const relicLogs=(battle,id)=>battle.logs.filter(x=>x.type==='trigger'&&x.actorId==='P'&&x.data?.artifactRuntime==='artifact.v88'&&x.data?.artifactEvent==='relicRule'&&x.data?.artifactId===id);
+
+const mountain=runWith('relic.1',{playerStats:{attack:20,physique:2400,defense:250},enemyStats:{attack:5000,physique:4000,defense:500},duration:60,seed:151000});
+const mountainLogs=relicLogs(mountain,'relic.1');
+check(mountainLogs.length===1,'Sơn Hà Đồ really opens exactly one emergency-reset window after HP falls below 35%');
+check(mountain.logs.some(x=>x.type==='shield'&&x.actorId==='P'),'Sơn Hà Đồ emergency-reset creates a real shared-engine shield');
+
+const execute=runWith('relic.3',{playerStats:{attack:500,physique:900,defense:500},enemyStats:{attack:1,physique:100,defense:100},duration:45,seed:151001});
+const executeLogs=relicLogs(execute,'relic.3');
+check(executeLogs.length>=1,'Trảm Tiên Đài really enters its execute rule after target HP falls below 20%');
+check(execute.logs.some(x=>x.type==='damage'&&x.actorId==='P'&&x.data?.trueDamage===true),'Trảm Tiên Đài execute produces real true damage in the shared CombatEngine');
 
 const tempo=runWith('relic.4',{enemyStats:{attack:1,physique:5000,defense:1000},duration:45});
 const tempoLogs=relicLogs(tempo,'relic.4');
@@ -108,7 +120,12 @@ const dodgeLogs=relicLogs(dodge,'relic.7');
 check(dodgeLogs.length>=1,'Càn Khôn Xích actually fires from a real target-dodge event');
 check(dodge.logs.some(x=>x.type==='mark'&&String(x.message??'').includes('Phá Vọng')),'Càn Khôn Xích produces Phá Vọng in the shared CombatEngine mark system');
 
-const lethal=runWith('relic.2',{playerStats:{attack:1,physique:10,defense:1},enemyStats:{attack:100000,physique:5000,defense:500},duration:12,seed:151005});
+const cleanse=runWith('relic.8',{playerStats:{attack:1,physique:2400,defense:250},enemyStats:{attack:6500,physique:4000,defense:500},enemySkill:CONTROL_STRIKE,duration:55,seed:151005});
+const cleanseLogs=relicLogs(cleanse,'relic.8');
+check(cleanseLogs.length>=1,'Tịnh Thế Liên really triggers when controlled under its low-HP threshold');
+check(cleanse.logs.some(x=>x.type==='info'&&x.actorId==='P'&&Number(x.data?.removed??0)>=1),'Tịnh Thế Liên really removes a BodyControl/SpiritControl status in shared CombatEngine state');
+
+const lethal=runWith('relic.2',{playerStats:{attack:1,physique:10,defense:1},enemyStats:{attack:100000,physique:5000,defense:500},duration:12,seed:151006});
 check(lethal.logs.some(x=>x.type==='trigger'&&x.actorId==='P'&&x.data?.artifactId==='relic.2'&&String(x.message??'').includes('Luân Hồi Kính')),'Luân Hồi Kính intercepts a real lethal hit through the shared CombatEngine anti-death path');
 check((lethal.finalState?.P?.marks?.['__birth_antideath_used']??0)===1,'Luân Hồi Kính consumes the shared one-per-battle anti-death charge');
 
