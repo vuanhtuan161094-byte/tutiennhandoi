@@ -84,6 +84,9 @@ jobs:
       - name: V149 Artifact combo combat
         run: node qa/tests/v149-artifact-combo-test.js
 
+      - name: V149 Artifact x V129 balance
+        run: node qa/tests/v149-artifact-v129-balance-test.js
+
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
 
