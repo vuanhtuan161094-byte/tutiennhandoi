@@ -78,6 +78,9 @@ jobs:
       - name: V149 Artifact core
         run: node qa/tests/v149-artifact-core-test.js
 
+      - name: V149 Artifact production
+        run: node qa/tests/v149-artifact-production-test.js
+
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
 
