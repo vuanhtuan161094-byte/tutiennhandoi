@@ -42,9 +42,9 @@ export const CONFIDANTS_V87 = [
     {
         id: 'companion.5', code: 'ld', name: 'Lạc Dao', grade: 'mystic', title: 'Tĩnh Tu Cầm Sư', fantasy: 'Thanh tĩnh, bền bỉ; dùng nhịp cầm và hô hấp kéo người đồng hành về trạng thái nhập định.', asset: '/assets/hubs/companion.jpg', combatStyle: 'support',
         specialty: { id: 'cultivation', name: 'Tu Luyện', description: 'Tăng tốc nhận Tu Vi khi Đồng Hành và đã mở Sở Trường.' },
-        assist: { name: 'Thanh Âm Trợ Đạo', description: 'Âm luật bồi Chân Nguyên rồi hóa thành linh nhận.', event: 'OnHit', cooldown: 8, effects: [spirit(12), status('status.wind_step', 2.5, 'self'), damage(.22, 4, 'Wind')] },
+        assist: { name: 'Thanh Âm Trợ Đạo', description: 'Âm luật bồi Chân Nguyên rồi hóa thành linh nhận.', event: 'OnHit', cooldown: 8, effects: [spirit(12), status('status.wind_step', 2, 'self'), damage(.18, 4, 'Wind')] },
         guard: { name: 'Tĩnh Tâm Quy Nguyên', description: 'Khi HP nguy hiểm, hồi sinh lực và Chân Nguyên; tối đa 1 lần/trận.', hpBelowPct: 36, effects: [heal(4), spirit(20)] },
-        harmony: { name: 'Tâm Ý Hợp Kích · Thiên Âm Đồng Luật', description: 'Đồng bộ nhịp chiến, hồi Chân Nguyên và tung âm nhận liên hoàn.', cooldown: 12, effects: [spirit(20), status('status.wind_step', 4, 'self'), damage(.50, 12, 'Wind')] },
+        harmony: { name: 'Tâm Ý Hợp Kích · Thiên Âm Đồng Luật', description: 'Đồng bộ nhịp chiến, hồi Chân Nguyên và tung âm nhận liên hoàn.', cooldown: 12, effects: [spirit(20), status('status.wind_step', 3, 'self'), damage(.42, 12, 'Wind')] },
     },
     {
         id: 'companion.6', code: 'cth', name: 'Cố Thanh Hà', grade: 'mystic', title: 'Ngự Thú Linh Nữ', fantasy: 'Nhanh nhẹn, gần gũi linh thú; giỏi trấn an và dẫn nhịp bản năng chiến đấu.', asset: '/assets/hubs/companion.jpg', combatStyle: 'control',
@@ -262,7 +262,7 @@ const CONFIDANT_GAUGE_PROFILE_V148 = Object.freeze({
   'companion.2': [{event:'OnHit',sourceTags:['ActiveHit'],gain:10},{event:'OnShieldBreak',gain:20}],
   'companion.3': [{event:'OnHit',sourceTags:['ActiveHit'],gain:9},{event:'OnCrit',sourceTags:['ActiveHit'],gain:4}],
   'companion.4': [{event:'OnHit',sourceTags:['ActiveHit'],gain:10},{event:'OnShieldBreak',gain:30}],
-  'companion.5': [{event:'OnHit',sourceTags:['ActiveHit'],gain:6},{event:'OnDodge',gain:10}],
+  'companion.5': [{event:'OnHit',sourceTags:['ActiveHit'],gain:5},{event:'OnDodge',gain:10}],
   'companion.6': [{event:'OnHit',sourceTags:['Summon'],gain:18},{event:'OnHit',sourceTags:['ActiveHit'],gain:4}],
   'companion.7': [{event:'OnHit',sourceTags:['ActiveHit'],gain:4},{event:'OnCrit',sourceTags:['ActiveHit'],gain:14},{event:'OnShieldBreak',gain:24}],
   'companion.8': [{event:'OnDamageTaken',gain:12},{event:'OnDodge',gain:20},{event:'OnTargetDodge',gain:8}],
