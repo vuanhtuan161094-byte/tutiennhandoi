@@ -1,0 +1,32 @@
+name: V148 Cross-Build Damage Scaling Fix
+on:
+  push:
+    branches:
+      - feature/v148-confidant-rebuild
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Replace Heart Power flat damage with bounded attack-scaled coefficient
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('dist/core/confidant-v87.js')
+          s=p.read_text(encoding='utf-8')
+          old="  if(e.type==='damage')return {...e,coefficient:e.coefficient*Math.min(1.55,scale)*branchBonus,flatDamage:Math.round((e.flatDamage??0)+heartPower*(kind==='harmony'?1.4:.45)*branchBonus),breakDamagePct:(e.breakDamagePct??0)*Math.min(1.35,scale)};"
+          new="  if(e.type==='damage'){const heartCoefficient=Math.min(kind==='harmony'?.28:kind==='guard'?.10:.12,heartPower*(kind==='harmony'?.00008:.000035))*branchBonus;return {...e,coefficient:e.coefficient*Math.min(1.55,scale)*branchBonus+heartCoefficient,flatDamage:Math.max(0,Number(e.flatDamage??0)),breakDamagePct:(e.breakDamagePct??0)*Math.min(1.35,scale)};}"
+          if s.count(old)!=1: raise SystemExit(f'Expected exactly one V148 damage scaler, found {s.count(old)}')
+          p.write_text(s.replace(old,new),encoding='utf-8')
+      - name: Commit source fix
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add dist/core/confidant-v87.js
+          git commit -m "balance(v148): normalize confidant damage across V129 builds"
+          git push origin HEAD:feature/v148-confidant-rebuild
