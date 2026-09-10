@@ -56,9 +56,9 @@ export const CONFIDANTS_V87 = [
     {
         id: 'companion.7', code: 'yv', name: 'Yến Vũ', grade: 'immortal', title: 'Trảm Yêu Du Hiệp', fantasy: 'Quyết đoán, ưa chiến; đọc thế Boss nhanh và chuyên chớp cửa sổ bạo phát.', asset: '/assets/hubs/companion.jpg', combatStyle: 'burst',
         specialty: { id: 'hunt', name: 'Săn Yêu', description: 'Tăng Linh Thạch/tài nguyên Săn Yêu khi Đồng Hành và đã mở Sở Trường.' },
-        assist: { name: 'Truy Yêu Nhất Trảm', description: 'Trợ kích đơn mục tiêu với Phá Thế cao.', event: 'OnHit', cooldown: 7, effects: [damage(.42, 18, 'Metal')] },
-        guard: { name: 'Nghịch Cảnh Phản Trảm', description: 'Khi HP nguy hiểm, dựng khiên rồi phản kích; tối đa 1 lần/trận.', hpBelowPct: 30, effects: [shield(.09, 2), damage(.38, 14, 'Metal')] },
-        harmony: { name: 'Tâm Ý Hợp Kích · Tuyệt Sát Trảm Yêu', description: 'Đòn hợp kích bạo phát cực mạnh vào mục tiêu đang bị ép thế.', cooldown: 13, effects: [status('status.rhino_armor_broken', 4), damage(.82, 34, 'Metal')] },
+        assist: { name: 'Truy Yêu Nhất Trảm', description: 'Trợ kích đơn mục tiêu với Phá Thế cao.', event: 'OnHit', cooldown: 7, effects: [damage(.52, 18, 'Metal')] },
+        guard: { name: 'Nghịch Cảnh Phản Trảm', description: 'Khi HP nguy hiểm, dựng khiên rồi phản kích; tối đa 1 lần/trận.', hpBelowPct: 30, effects: [shield(.09, 2), damage(.45, 14, 'Metal')] },
+        harmony: { name: 'Tâm Ý Hợp Kích · Tuyệt Sát Trảm Yêu', description: 'Đòn hợp kích bạo phát cực mạnh vào mục tiêu đang bị ép thế.', cooldown: 13, effects: [status('status.rhino_armor_broken', 4), damage(1.05, 34, 'Metal')] },
     },
     {
         id: 'companion.8', code: 'btt', name: 'Bạch Tố Tâm', grade: 'heaven', title: 'Hồng Trần Thương Chủ', fantasy: 'Điềm đạm, linh hoạt; giỏi quan sát dòng tài nguyên và đổi thế bất lợi thành cơ hội.', asset: '/assets/hubs/companion.jpg', combatStyle: 'guard',
@@ -264,7 +264,7 @@ const CONFIDANT_GAUGE_PROFILE_V148 = Object.freeze({
   'companion.4': [{event:'OnHit',sourceTags:['ActiveHit'],gain:10},{event:'OnShieldBreak',gain:30}],
   'companion.5': [{event:'OnHit',sourceTags:['ActiveHit'],gain:5},{event:'OnDodge',gain:10}],
   'companion.6': [{event:'OnHit',sourceTags:['Summon'],gain:18},{event:'OnHit',sourceTags:['ActiveHit'],gain:4}],
-  'companion.7': [{event:'OnHit',sourceTags:['ActiveHit'],gain:4},{event:'OnCrit',sourceTags:['ActiveHit'],gain:14},{event:'OnShieldBreak',gain:24}],
+  'companion.7': [{event:'OnHit',sourceTags:['ActiveHit'],gain:5},{event:'OnCrit',sourceTags:['ActiveHit'],gain:16},{event:'OnShieldBreak',gain:24}],
   'companion.8': [{event:'OnDamageTaken',gain:12},{event:'OnDodge',gain:20},{event:'OnTargetDodge',gain:8}],
 });
 
