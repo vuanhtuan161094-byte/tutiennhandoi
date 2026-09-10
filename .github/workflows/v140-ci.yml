@@ -93,6 +93,9 @@ jobs:
       - name: V151 Relic production combat
         run: node qa/tests/v151-relic-production-test.js
 
+      - name: V151 Relic x V129 balance
+        run: node qa/tests/v151-relic-v129-balance-test.js
+
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
 
