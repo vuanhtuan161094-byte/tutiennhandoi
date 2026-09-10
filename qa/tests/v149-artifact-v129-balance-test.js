@@ -3,6 +3,7 @@ import { buildRegistry } from '../../dist/content/registry.js';
 import { runCombatKernelV2 } from '../../dist/core/combat-kernel-v2.js';
 import { analyzeBattle } from '../../dist/core/combat-analytics.js';
 import { applyArtifactsV88ToEntity, ARTIFACTS_V88 } from '../../dist/core/artifact-v88.js';
+import { applyArtifactsV88ToEntity as applyArtifactsPreComboV149 } from '../../dist/core/artifact-v149-base.js';
 import { buildBalanceEntityV120, thematicAttireSetIdV120 } from '../simulations/balance-lab-v120.js';
 
 const registry=buildRegistry();
@@ -39,10 +40,11 @@ function target(){
   const axis=1000;
   return {id:'E',combatModel:'locked-v1',name:'Mộc Nhân V149',tags:['BalanceSimV149'],stats:{maxHp:axis*20*1500,physique:axis*1500,maxSpirit:1000,spiritStandard:1000,spiritRegenStandardPctPerSecond:0,attack:1,defense:axis,mobility:1,accuracy:1,critChancePct:0,critPowerPerLayer:.5,heartChancePct:0,dodgeChancePct:0,controlPower:1,resolve:100,actionSpeed:1,elementalAffinities:{},elementalResistancesPct:{},dominantElement:'Earth'},skillIds:[IDLE],aiProfile:{name:'idle',rules:[{skillId:IDLE,priority:1,conditions:[{type:'always'}]}]}};
 }
-function one(spec,withArtifacts,seed){
+function one(spec,mode,seed){
   let p=buildBalanceEntityV120(spec);
   p={...p,id:'P',name:`V149 ${spec.label}`};
-  if(withArtifacts)p=applyArtifactsV88ToEntity(p,artifactState(5));
+  if(mode==='v88')p=applyArtifactsPreComboV149(p,artifactState(5));
+  if(mode==='v149')p=applyArtifactsV88ToEntity(p,artifactState(5));
   const battle=runCombatKernelV2({registry,seed,entities:[p,target()],maxDuration:60,mode:'simulation'}).battle;
   const a=analyzeBattle(battle).combatants.P??{};
   const artTriggers=battle.logs.filter(x=>x.type==='trigger'&&x.actorId==='P'&&x.data?.artifactRuntime==='artifact.v88'&&x.data?.artifactEvent==='artifactSkill');
@@ -53,27 +55,32 @@ function avg(rows,key){return rows.reduce((n,x)=>n+Number(x[key]??0),0)/rows.len
 
 const matrix=[];
 for(const spec of ARCHETYPES){
-  const base=SEEDS.map(seed=>one(spec,false,seed));
-  const art=SEEDS.map(seed=>one(spec,true,seed));
-  const baseDamage=avg(base,'damage'),artifactDamage=avg(art,'damage');
-  const gainPct=(artifactDamage/Math.max(1,baseDamage)-1)*100;
-  const row={id:spec.id,label:spec.label,baseDamage,artifactDamage,gainPct,triggers:avg(art,'triggers'),lai:avg(art,'lai')};
-  matrix.push(row);
+  const noArtifact=SEEDS.map(seed=>one(spec,'none',seed));
+  const preCombo=SEEDS.map(seed=>one(spec,'v88',seed));
+  const v149=SEEDS.map(seed=>one(spec,'v149',seed));
+  const baseDamage=avg(noArtifact,'damage'),v88Damage=avg(preCombo,'damage'),artifactDamage=avg(v149,'damage');
+  const totalGainPct=(artifactDamage/Math.max(1,baseDamage)-1)*100;
+  const contributionSharePct=(artifactDamage-baseDamage)/Math.max(1,artifactDamage)*100;
+  const comboIncrementPct=(artifactDamage/Math.max(1,v88Damage)-1)*100;
+  matrix.push({id:spec.id,label:spec.label,baseDamage,v88Damage,artifactDamage,totalGainPct,contributionSharePct,comboIncrementPct,triggers:avg(v149,'triggers'),lai:avg(v149,'lai')});
 }
 
 console.log('\nV149 PHÁP BẢO × V129 THREE-ARCHETYPE MATRIX');
-for(const r of matrix)console.log(`${r.label.padEnd(24)} | BASE ${r.baseDamage.toFixed(0).padStart(10)} | ART ${r.artifactDamage.toFixed(0).padStart(10)} | GAIN ${r.gainPct.toFixed(1).padStart(6)}% | trigger ${r.triggers.toFixed(1)} | Lôi Ấn ${r.lai.toFixed(1)}`);
+for(const r of matrix)console.log(`${r.label.padEnd(24)} | BASE ${r.baseDamage.toFixed(0).padStart(10)} | V88 ${r.v88Damage.toFixed(0).padStart(10)} | V149 ${r.artifactDamage.toFixed(0).padStart(10)} | TOTAL ${r.totalGainPct.toFixed(1).padStart(6)}% | SHARE ${r.contributionSharePct.toFixed(1).padStart(5)}% | COMBO +${r.comboIncrementPct.toFixed(1)}% | trigger ${r.triggers.toFixed(1)}`);
 
 assert.equal(matrix.length,3,'V149 must benchmark exactly three canonical V129 archetypes');
 for(const r of matrix){
-  assert.ok([r.baseDamage,r.artifactDamage,r.gainPct,r.triggers,r.lai].every(Number.isFinite),`${r.label}: all balance metrics must be finite`);
-  assert.ok(r.artifactDamage>r.baseDamage,`${r.label}: equipped production artifacts must contribute real combat output`);
-  assert.ok(r.gainPct>0&&r.gainPct<120,`${r.label}: artifact package must stay inside broad anti-runaway envelope`);
+  assert.ok(Object.values(r).filter(v=>typeof v==='number').every(Number.isFinite),`${r.label}: all balance metrics must be finite`);
+  assert.ok(r.v88Damage>r.baseDamage,`${r.label}: canonical V88 artifact package must contribute real combat output`);
+  assert.ok(r.artifactDamage>=r.v88Damage,`${r.label}: V149 combo must not silently reduce the canonical artifact package`);
+  assert.ok(r.contributionSharePct>0&&r.contributionSharePct<60,`${r.label}: Pháp Bảo must remain below 60% of final sustained output in this cross-build benchmark`);
+  assert.ok(r.comboIncrementPct>=0&&r.comboIncrementPct<20,`${r.label}: new V149 combo layer must add less than 20% over the same pre-combo artifact package`);
   assert.ok(r.triggers>=3,`${r.label}: artifact skills must participate repeatedly in a 60s fight`);
   assert.ok(r.lai>=1,`${r.label}: Lôi Ấn setup must actually occur in shared combat runtime`);
 }
-const gains=matrix.map(x=>x.gainPct),max=Math.max(...gains),min=Math.min(...gains);
-assert.ok(max-min<55,'V149 artifact package must not create >55pp gain spread across V129 archetypes');
+const shares=matrix.map(x=>x.contributionSharePct);
+assert.ok(Math.max(...shares)-Math.min(...shares)<25,'Artifact share of final output must not spread by >25pp across V129 archetypes');
+assert.ok(avg(matrix,'comboIncrementPct')>0,'V149 state-based combo must create measurable combat synergy on aggregate');
 
 const state=artifactState(5);
 const base=buildBalanceEntityV120(ARCHETYPES[0]);
