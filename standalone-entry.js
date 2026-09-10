@@ -1,4 +1,4 @@
-const WIP_CACHE_TOKEN='v147-spirit-beast-closure-20260909';
+const WIP_CACHE_TOKEN='v159-endgame-closure-20260910';
 
 function isLocalWipHost(hostname){
   const host=String(hostname||'').toLowerCase();
@@ -45,6 +45,9 @@ try{
 try{
   await import(`./app.js?v=${WIP_CACHE_TOKEN}`);
 }catch(error){showFatalBootError(error,'app.js');throw error;}
+try{
+  await import(`./modules/endgame-ui-v159.js?v=${WIP_CACHE_TOKEN}`);
+}catch(error){showFatalBootError(error,'endgame-ui-v159.js');throw error;}
 try{
   await import(`./modules/spirit-beast-ui-v147.js?v=${WIP_CACHE_TOKEN}`);
 }catch(error){showFatalBootError(error,'spirit-beast-ui-v147.js');throw error;}
