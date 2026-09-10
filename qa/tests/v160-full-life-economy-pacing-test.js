@@ -39,11 +39,11 @@ test('V160 manual envelopes use V127 flat Tu Vi and remain diagnostic scenarios'
   assert.match(audit.scope.disclaimer, /diagnostics|diagnostic/i);
 });
 
-test('V160 never applies breakthrough requirement reduction outside major gates and caps it at five percent', () => {
+test('V160 never applies major-gate requirement reduction outside major gates and caps it at five percent', () => {
   for (const authority of CULTIVATION_REALMS_V140.slice(0, -1)) {
-    const row = cultivationPacingRowV160(authority, { breakthroughRequirementReductionPct: 99 });
-    if (row.majorGate) assert.equal(row.breakthroughRequirementReductionPct, 5);
-    else assert.equal(row.breakthroughRequirementReductionPct, 0);
+    const row = cultivationPacingRowV160(authority, { majorRequirementReductionPct: 99 });
+    if (row.majorGate) assert.equal(row.majorRequirementReductionPct, 5);
+    else assert.equal(row.majorRequirementReductionPct, 0);
   }
 });
 
