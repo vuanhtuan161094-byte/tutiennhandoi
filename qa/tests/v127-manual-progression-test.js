@@ -27,6 +27,15 @@ assert.equal(manuals.at(-1).name,'Sáng Thế Chủ · Sinh Sinh Tạo Hóa Kinh
 assert(manuals.every(x=>x.maxLevel===1000 && x.maxAdvance===10));
 assert(manuals.every(x=>(x.stats||[]).every(st=>!String(st.id).toLowerCase().includes('requirement'))));
 
+// V152 contract: Công Pháp never grants action speed or a hidden Chân Nguyên package.
+assert(manuals.every(x=>x.noActionSpeed===true && x.noSpirit===true),'all manuals must declare the V152 no-speed/no-spirit contract');
+assert(manuals.every(x=>(x.stats||[]).every(st=>st.id!=='actionSpeedPct' && st.id!=='maxSpiritPct' && st.id!=='spiritFlat')),'manual stats must not contain action-speed or spirit-resource bonuses');
+const precisionManual=manuals.find(x=>x.manualArchetype==='precision');
+assert(precisionManual,'precision manual archetype must exist');
+assert(precisionManual.stats.some(st=>st.id==='dodgePct'),'Thiên Cơ Bộ Pháp must keep dodge identity');
+assert(precisionManual.stats.some(st=>st.id==='accuracyPct'),'Thiên Cơ Bộ Pháp must replace action speed with direct accuracy');
+assert(!precisionManual.stats.some(st=>st.id==='actionSpeedPct'),'Thiên Cơ Bộ Pháp must never reintroduce action speed');
+
 // V126 -> V127 one-time save migration preserves investment and maps Lv1..50 to Lv1..1000.
 const old=createCollectionProgressStateV12316();
 delete old.manualV127Migrated;
