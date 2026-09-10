@@ -3,6 +3,7 @@ import { CULTIVATION_REALMS_V140 } from '../../dist/core/cultivation-v140.js';
 import {
   FULL_LIFE_ECONOMY_PACING_V160_SCHEMA,
   buildFullLifeEconomyPacingAuditV160,
+  cultivationPacingRowV160,
   manualFlatTuViPer15sEnvelopeV160,
 } from '../../dist/core/full-life-economy-pacing-v160.js';
 
@@ -39,18 +40,12 @@ test('V160 manual envelopes use V127 flat Tu Vi and remain diagnostic scenarios'
 });
 
 test('V160 never applies breakthrough requirement reduction outside major gates and caps it at five percent', () => {
-  const { cultivationPacingRowV160 } = awaitImportGuard();
   for (const authority of CULTIVATION_REALMS_V140.slice(0, -1)) {
     const row = cultivationPacingRowV160(authority, { breakthroughRequirementReductionPct: 99 });
     if (row.majorGate) assert.equal(row.breakthroughRequirementReductionPct, 5);
     else assert.equal(row.breakthroughRequirementReductionPct, 0);
   }
 });
-
-function awaitImportGuard() {
-  // Kept synchronous deliberately: the imported namespace is loaded once above through the audit module.
-  return globalThis.__v160ModuleForTest;
-}
 
 test('V160 Alchemy audit keeps two real ingredient lanes and bounded cultivation pill shortcut', () => {
   assert.equal(audit.alchemy.familyCount, 11);
