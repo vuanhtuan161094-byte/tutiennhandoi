@@ -63,12 +63,12 @@ check(resourceCatalog.length===8&&resourceCatalog.every(x=>x.firstClearMode==='C
 check(resourceCatalog.every(x=>x.repeatGuardianMaterialReward===false&&x.specificFragments==='gacha-only'),'V158 resource farming cannot spam Boss rewards or bypass specific-fragment gacha ownership');
 
 const manuals=buildManualCatalogV127();
-check(manuals.length===261&&manuals.every(x=>x.levelCap===1000&&x.advanceCap===10),'V158 all 261 Công Pháp retain Lv1000 and ten 100-level gates');
-check(manuals.every(x=>x.stats.every(s=>s.id!=='actionSpeedPct'&&s.id!=='spiritFlat'&&s.id!=='spiritPct')),'V158 Công Pháp cannot silently reintroduce Action Speed or Chân Nguyên growth');
+check(manuals.length===261&&manuals.every(x=>x.maxLevel===1000&&x.maxAdvance===10),'V158 all 261 Công Pháp retain Lv1000 and ten 100-level gates');
+check(manuals.every(x=>(x.stats||[]).every(s=>!['actionSpeedPct','spiritFlat','spiritPct','maxSpiritPct'].includes(s.id))),'V158 Công Pháp cannot silently reintroduce Action Speed or Chân Nguyên growth');
 check(SPIRIT_BEAST_SPECIES.length===8&&CONFIDANTS_V87.length===8,'V158 collection roster retains 8 Linh Thú and 8 Tri Kỷ');
 check(ARTIFACTS_V88.length===12&&RELICS_V88.length===8,'V158 collection roster retains 12 Pháp Bảo and 8 Chí Bảo');
 
-const cave=fresh.state.collectionV12316?.cave?.facilities??[];
+const cave=fresh.session.stateValue.collectionV12316?.cave?.facilities??[];
 check(cave.length===8&&new Set(cave.map(x=>x.id)).size===8,'V158 fresh account owns one canonical 8-facility Động Phủ state');
 const soul=gameAt(42).game.soul();
 check(soul.cloneAuthorityMax===6&&soul.sixDao.length===6,'V158 midgame-to-lategame keeps exactly six Lục Đạo Phân Thân authorities');
