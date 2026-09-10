@@ -62,4 +62,17 @@ export class GameplayFacade extends GameplayFacadeBase {
         };
       });
   }
+
+  /**
+   * V159 keeps endgame mechanics on the existing Session authority but makes the three
+   * meaningful late-game decisions reachable through the same public `perform` transport
+   * as the rest of the web game. No second resolver or endgame state is introduced.
+   */
+  dispatch(command) {
+    const type = String(command?.type ?? '');
+    if (type === 'setActiveManifestationsV159') return this.session.setActiveManifestations(command.ids ?? []);
+    if (type === 'breakExtremityLayerV159') return this.session.breakExtremityLayer();
+    if (type === 'createGenesisEpochV159') return this.session.createGenesisEpoch();
+    return super.dispatch(command);
+  }
 }
