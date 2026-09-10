@@ -1,8 +1,0 @@
-name: V148 Apply Gate B (retired)
-on:
-  workflow_dispatch:
-jobs:
-  retired:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo 'V148 Gate B already committed; retired.'
