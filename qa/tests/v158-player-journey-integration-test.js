@@ -5,6 +5,7 @@ import { adventureEnemies } from '../../dist/content/entities.js';
 import { createPlayableAdventureState, playablePlayerProfile } from '../../dist/content/adventure.js';
 import { SimulationSession } from '../../dist/core/session.js';
 import { GameplayFacade } from '../../dist/core/gameplay.js';
+import { buildSessionLoopV104 } from '../../dist/core/player-experience-v105.js';
 import { buildManualCatalogV127 } from '../../dist/core/manual-progression-v127.js';
 import { resourcePveProductionCatalogV109 } from '../../dist/core/resource-pve-v12329.js';
 import { SPIRIT_BEAST_SPECIES } from '../../dist/core/spirit-beast-v147.js';
@@ -72,6 +73,20 @@ const cave=fresh.session.stateValue.collectionV12316?.cave?.facilities??[];
 check(cave.length===8&&new Set(cave.map(x=>x.id)).size===8,'V158 fresh account owns one canonical 8-facility Động Phủ state');
 const soul=gameAt(42).game.soul();
 check(soul.cloneAuthorityMax===6&&soul.sixDao.length===6,'V158 midgame-to-lategame keeps exactly six Lục Đạo Phân Thân authorities');
+
+const blockedTribulation=buildSessionLoopV104({
+  alive:true,
+  realmOrder:42,
+  overview:{cultivation:{ready:true,nextRealm:'Độ Kiếp nhị trọng',progressPct:100}},
+  progressionClosure:{
+    active:true,
+    finalGate:{applies:true,ready:false},
+    nextAction:{route:'dungeons',title:'First-clear Thiên Kiếp Cổ Trường tầng 1',detail:'Vượt mô phỏng trước.'},
+  },
+  contentLoop:{active:true,activePlay:{route:'dungeons',title:'Content trùng',reason:'fallback'}},
+});
+check(blockedTribulation.tasks[0]?.id==='tribulation-prep'&&!blockedTribulation.tasks.some(x=>x.id==='tribulation'),'V158 guidance resolves required Thiên Kiếp preparation before offering real tribulation');
+check(new Set(blockedTribulation.tasks.map(x=>x.id)).size===blockedTribulation.tasks.length&&blockedTribulation.tasks.filter(x=>x.id==='stage-content').length===1,'V158 session guidance never duplicates stage-content recommendations');
 
 check(IMMORTAL_MAJOR_STAGES_V114.length===18&&IMMORTAL_MAJOR_STAGES_V114.every(x=>x.end-x.start===3&&x.finalFloor===5),'V158 Immortal+ path has 18 explicit four-order stages with a five-floor content objective each');
 const terminal=gameAt(114).game.playerExperienceV105(1788210000000);
