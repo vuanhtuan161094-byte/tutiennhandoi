@@ -126,6 +126,9 @@ jobs:
       - name: V159 Economy pacing and endgame variety
         run: node qa/tests/v159-economy-pacing-variety-test.js
 
+      - name: V160 Full-life economy and pacing simulation
+        run: node qa/tests/v160-full-life-economy-pacing-test.js
+
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
 
