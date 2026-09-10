@@ -35,16 +35,16 @@ export const CONFIDANTS_V87 = [
     {
         id: 'companion.4', code: 'tv', name: 'Tạ Vân', grade: 'earth', title: 'Khí Văn Đoán Sư', fantasy: 'Ít lời, thực tế; quen nhìn kết cấu binh khí nên ra tay chuyên phá giáp và giữ tuyến.', asset: '/assets/hubs/companion.jpg', combatStyle: 'burst',
         specialty: { id: 'forging', name: 'Luyện Khí', description: 'Tăng xác suất thành công/phẩm chất Luyện Khí khi Đồng Hành và đã mở Sở Trường.' },
-        assist: { name: 'Phá Giáp Khí Văn', description: 'Một kích khí văn phá phòng và gây Phá Thế.', event: 'OnHit', cooldown: 7.5, effects: [damage(.40, 14, 'Metal'), status('status.armor_fracture', 4)] },
+        assist: { name: 'Phá Giáp Khí Văn', description: 'Một kích khí văn phá phòng và gây Phá Thế.', event: 'OnHit', cooldown: 7.5, effects: [damage(.42, 14, 'Metal'), status('status.armor_fracture', 4)] },
         guard: { name: 'Huyền Thiết Hộ Thân', description: 'Khi HP nguy hiểm, dựng khiên nặng; tối đa 1 lần/trận.', hpBelowPct: 34, effects: [shield(.18, 5)] },
-        harmony: { name: 'Tâm Ý Hợp Kích · Thiên Công Đoạn Giáp', description: 'Phá giáp trước rồi giáng trọng kích Kim hệ.', cooldown: 13, effects: [status('status.armor_fracture', 5), damage(.86, 30, 'Metal')] },
+        harmony: { name: 'Tâm Ý Hợp Kích · Thiên Công Đoạn Giáp', description: 'Phá giáp trước rồi giáng trọng kích Kim hệ.', cooldown: 13, effects: [status('status.armor_fracture', 5), damage(.90, 30, 'Metal')] },
     },
     {
         id: 'companion.5', code: 'ld', name: 'Lạc Dao', grade: 'mystic', title: 'Tĩnh Tu Cầm Sư', fantasy: 'Thanh tĩnh, bền bỉ; dùng nhịp cầm và hô hấp kéo người đồng hành về trạng thái nhập định.', asset: '/assets/hubs/companion.jpg', combatStyle: 'support',
         specialty: { id: 'cultivation', name: 'Tu Luyện', description: 'Tăng tốc nhận Tu Vi khi Đồng Hành và đã mở Sở Trường.' },
-        assist: { name: 'Thanh Âm Trợ Đạo', description: 'Âm luật bồi Chân Nguyên rồi hóa thành linh nhận.', event: 'OnHit', cooldown: 8, effects: [spirit(12), status('status.wind_step', 4, 'self'), damage(.28, 4, 'Wind')] },
+        assist: { name: 'Thanh Âm Trợ Đạo', description: 'Âm luật bồi Chân Nguyên rồi hóa thành linh nhận.', event: 'OnHit', cooldown: 8, effects: [spirit(12), status('status.wind_step', 2.5, 'self'), damage(.22, 4, 'Wind')] },
         guard: { name: 'Tĩnh Tâm Quy Nguyên', description: 'Khi HP nguy hiểm, hồi sinh lực và Chân Nguyên; tối đa 1 lần/trận.', hpBelowPct: 36, effects: [heal(4), spirit(20)] },
-        harmony: { name: 'Tâm Ý Hợp Kích · Thiên Âm Đồng Luật', description: 'Đồng bộ nhịp chiến, hồi Chân Nguyên và tung âm nhận liên hoàn.', cooldown: 12, effects: [spirit(20), status('status.wind_step', 6, 'self'), damage(.64, 12, 'Wind')] },
+        harmony: { name: 'Tâm Ý Hợp Kích · Thiên Âm Đồng Luật', description: 'Đồng bộ nhịp chiến, hồi Chân Nguyên và tung âm nhận liên hoàn.', cooldown: 12, effects: [spirit(20), status('status.wind_step', 4, 'self'), damage(.50, 12, 'Wind')] },
     },
     {
         id: 'companion.6', code: 'cth', name: 'Cố Thanh Hà', grade: 'mystic', title: 'Ngự Thú Linh Nữ', fantasy: 'Nhanh nhẹn, gần gũi linh thú; giỏi trấn an và dẫn nhịp bản năng chiến đấu.', asset: '/assets/hubs/companion.jpg', combatStyle: 'control',
@@ -56,16 +56,16 @@ export const CONFIDANTS_V87 = [
     {
         id: 'companion.7', code: 'yv', name: 'Yến Vũ', grade: 'immortal', title: 'Trảm Yêu Du Hiệp', fantasy: 'Quyết đoán, ưa chiến; đọc thế Boss nhanh và chuyên chớp cửa sổ bạo phát.', asset: '/assets/hubs/companion.jpg', combatStyle: 'burst',
         specialty: { id: 'hunt', name: 'Săn Yêu', description: 'Tăng Linh Thạch/tài nguyên Săn Yêu khi Đồng Hành và đã mở Sở Trường.' },
-        assist: { name: 'Truy Yêu Nhất Trảm', description: 'Trợ kích đơn mục tiêu với Phá Thế cao.', event: 'OnHit', cooldown: 7, effects: [damage(.46, 18, 'Metal')] },
+        assist: { name: 'Truy Yêu Nhất Trảm', description: 'Trợ kích đơn mục tiêu với Phá Thế cao.', event: 'OnHit', cooldown: 7, effects: [damage(.42, 18, 'Metal')] },
         guard: { name: 'Nghịch Cảnh Phản Trảm', description: 'Khi HP nguy hiểm, dựng khiên rồi phản kích; tối đa 1 lần/trận.', hpBelowPct: 30, effects: [shield(.09, 2), damage(.38, 14, 'Metal')] },
-        harmony: { name: 'Tâm Ý Hợp Kích · Tuyệt Sát Trảm Yêu', description: 'Đòn hợp kích bạo phát cực mạnh vào mục tiêu đang bị ép thế.', cooldown: 13, effects: [status('status.rhino_armor_broken', 4), damage(.94, 34, 'Metal')] },
+        harmony: { name: 'Tâm Ý Hợp Kích · Tuyệt Sát Trảm Yêu', description: 'Đòn hợp kích bạo phát cực mạnh vào mục tiêu đang bị ép thế.', cooldown: 13, effects: [status('status.rhino_armor_broken', 4), damage(.82, 34, 'Metal')] },
     },
     {
         id: 'companion.8', code: 'btt', name: 'Bạch Tố Tâm', grade: 'heaven', title: 'Hồng Trần Thương Chủ', fantasy: 'Điềm đạm, linh hoạt; giỏi quan sát dòng tài nguyên và đổi thế bất lợi thành cơ hội.', asset: '/assets/hubs/companion.jpg', combatStyle: 'guard',
         specialty: { id: 'market', name: 'Phường Thị', description: 'Giảm chi phí giao dịch Phường Thị khi Đồng Hành và đã mở Sở Trường.' },
-        assist: { name: 'Lưu Quang Ám Tiễn', description: 'Ám khí gây sát thương và làm suy yếu mục tiêu.', event: 'OnHit', cooldown: 8, effects: [damage(.34, 8, 'Poison'), status('status.poison_weakened', 4)] },
-        guard: { name: 'Tàng Phong Hộ Tâm', description: 'Khi HP nguy hiểm, giải bất lợi và hồi phục; tối đa 1 lần/trận.', hpBelowPct: 37, effects: [{ type: 'removeStatus', groups: ['Debuff', 'BodyControl', 'SpiritControl'], target: 'self' }, heal(4)] },
-        harmony: { name: 'Tâm Ý Hợp Kích · Hồng Trần Vạn Biến', description: 'Làm lộ sơ hở rồi tung liên kích hỗn hợp.', cooldown: 13.5, effects: [status('status.soul_exposed', 4), damage(.70, 20, 'Poison')] },
+        assist: { name: 'Lưu Quang Ám Tiễn', description: 'Ám khí gây sát thương và làm suy yếu mục tiêu.', event: 'OnHit', cooldown: 8, effects: [damage(.28, 8, 'Poison'), status('status.poison_weakened', 4)] },
+        guard: { name: 'Tàng Phong Hộ Tâm', description: 'Khi HP nguy hiểm, giải bất lợi và hồi phục; tối đa 1 lần/trận.', hpBelowPct: 37, effects: [{ type: 'removeStatus', groups: ['Debuff', 'BodyControl', 'SpiritControl'], target: 'self' }, heal(8), shield(.14, 5)] },
+        harmony: { name: 'Tâm Ý Hợp Kích · Hồng Trần Vạn Biến', description: 'Làm lộ sơ hở rồi tung liên kích hỗn hợp.', cooldown: 13.5, effects: [status('status.soul_exposed', 3), shield(.08, 2), damage(.55, 20, 'Poison')] },
     },
 ];
 export const CONFIDANT_COMBAT_TUNING_V108 = Object.freeze({
@@ -261,10 +261,10 @@ const CONFIDANT_GAUGE_PROFILE_V148 = Object.freeze({
   'companion.1': [{event:'OnDamageTaken',gain:16}],
   'companion.2': [{event:'OnHit',sourceTags:['ActiveHit'],gain:10},{event:'OnShieldBreak',gain:20}],
   'companion.3': [{event:'OnHit',sourceTags:['ActiveHit'],gain:9},{event:'OnCrit',sourceTags:['ActiveHit'],gain:4}],
-  'companion.4': [{event:'OnHit',sourceTags:['ActiveHit'],gain:6},{event:'OnShieldBreak',gain:35}],
-  'companion.5': [{event:'OnHit',sourceTags:['ActiveHit'],gain:8},{event:'OnDodge',gain:12}],
+  'companion.4': [{event:'OnHit',sourceTags:['ActiveHit'],gain:10},{event:'OnShieldBreak',gain:30}],
+  'companion.5': [{event:'OnHit',sourceTags:['ActiveHit'],gain:6},{event:'OnDodge',gain:10}],
   'companion.6': [{event:'OnHit',sourceTags:['Summon'],gain:18},{event:'OnHit',sourceTags:['ActiveHit'],gain:4}],
-  'companion.7': [{event:'OnHit',sourceTags:['ActiveHit'],gain:5},{event:'OnCrit',sourceTags:['ActiveHit'],gain:24},{event:'OnShieldBreak',gain:28}],
+  'companion.7': [{event:'OnHit',sourceTags:['ActiveHit'],gain:4},{event:'OnCrit',sourceTags:['ActiveHit'],gain:14},{event:'OnShieldBreak',gain:24}],
   'companion.8': [{event:'OnDamageTaken',gain:12},{event:'OnDodge',gain:20},{event:'OnTargetDodge',gain:8}],
 });
 
