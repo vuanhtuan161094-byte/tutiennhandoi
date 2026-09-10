@@ -132,6 +132,9 @@ jobs:
       - name: V160 Acquisition economy
         run: node qa/tests/v160-acquisition-economy-test.js
 
+      - name: V160 Reconciled full-life audit closure
+        run: node qa/tests/v160-full-life-audit-closure-test.js
+
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
 
