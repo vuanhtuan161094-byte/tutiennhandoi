@@ -77,7 +77,13 @@ for(const pet of SPIRIT_BEAST_SPECIES_V86){collection.activePetId=pet.id;check((
 collection.activePetId=undefined;
 check(CONFIDANTS_V87.length===8&&Object.keys(CONFIDANT_COMBAT_TUNING_V108).length===8,'V108 covers all 8 Confidants without touching Fortune/specialty progression');
 check(Object.values(CONFIDANT_COMBAT_TUNING_V108).every(x=>x>=.65&&x<=1.35),'V108 Confidant active-combat calibration stays bounded');
-for(const c of CONFIDANTS_V87){collection.activeCompanionId=c.id;check((session.personalCombatEntity().triggers||[]).filter(x=>x.id.startsWith('confidant.v87.')).length===3,`V108 ${c.name} keeps Assist + Guard + Harmony runtime live at max progression`);}
+for(const c of CONFIDANTS_V87){
+  const progress=collection.items[c.id]??(collection.items[c.id]={owned:true,level:1,advance:0,specificFragments:0});
+  progress.owned=true;progress.level=5100;progress.stars=100;progress.advance=4;progress.confidantV148Migrated=true;progress.confidantHeartV148={assist:10,guard:10,harmony:10,raw:0};
+  collection.activeCompanionId=c.id;
+  const kinds=new Set((session.personalCombatEntity().triggers||[]).map(x=>x.runtimeV148?.kind).filter(Boolean));
+  check(['assist','guard','gauge','harmony'].every(kind=>kinds.has(kind)),`V148 ${c.name} keeps Assist + Guard + Đồng Tâm + Harmony runtime live at representative max progression`);
+}
 collection.activeCompanionId=undefined;
 for(const a of ARTIFACTS_V88){collection.activeArtifactIds=[a.id];const e=session.personalCombatEntity();check(e.combatBuildV117?.artifactV88?.equippedCount===1&&(e.triggers||[]).some(x=>x.runtimeV88?.itemId===a.id),`V108 ${a.name} remains on canonical V88 Bao Qi trigger runtime`);}
 
