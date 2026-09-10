@@ -6,6 +6,7 @@ export * from './gacha-collection-economy-v12325-base.js';
 import * as base from './gacha-collection-economy-v12325-base.js';
 import {
   ARTIFACT_SCHEMA_V149,
+  artifactComboSummaryV149,
   artifactRawSummaryV149,
   refineArtifactBaoHonV149,
 } from './artifact-v88.js';
@@ -38,8 +39,8 @@ export function strengthenCollectionEconomyV12325(state, itemId, levels = 1) {
 }
 
 /**
- * Production read-model override: expose the infinite raw lane through the same collection DTO.
- * Percentage mechanics remain owned by V88 Fortune and are not derived from Bảo Hồn rank.
+ * Production read-model override: expose the infinite raw lane and combo grammar through
+ * the same collection DTO. Percentage mechanics remain owned by bounded V88 Fortune.
  */
 export function collectionEconomySummaryV12325(state, foundation, now = Date.now(), realmOrder = 10) {
   const out = base.collectionEconomySummaryV12325(state, foundation, now, realmOrder);
@@ -72,10 +73,12 @@ export function collectionEconomySummaryV12325(state, foundation, now = Date.now
         strengthenLabel,
         strengthenBlockedReason,
         v149,
+        comboV149: item.artifact?.comboV149 ?? v149.combo,
       };
     });
   }
   const raw = artifactRawSummaryV149(state);
+  const combo = artifactComboSummaryV149(state);
   const artifactV149 = {
     schema: ARTIFACT_SCHEMA_V149,
     mode: 'Bảo Hồn ∞',
@@ -94,8 +97,9 @@ export function collectionEconomySummaryV12325(state, foundation, now = Date.now
       baoHonRank: x.baoHonRank,
       raw: { ...x.raw },
     })),
+    combo,
   };
   out.artifactV149 = artifactV149;
-  if (out.artifactV88) out.artifactV88 = { ...out.artifactV88, v149: artifactV149 };
+  if (out.artifactV88) out.artifactV88 = { ...out.artifactV88, v149: artifactV149, comboV149: combo };
   return out;
 }
