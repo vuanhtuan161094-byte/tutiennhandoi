@@ -84,7 +84,10 @@ test('261 Công Pháp keep Crit scalable but bound naturally capped secondary so
   assert.ok(normal.armorPenPct<13 && max.armorPenPct<50);
   assert.ok(normal.damageReductionPct<10 && max.damageReductionPct<35);
   assert.ok(normal.controlResistPct<10 && max.controlResistPct<35);
-  assert.equal(normal.accuracyPct??0,0); assert.equal(normal.controlPct??0,0);
+  assert.ok(normal.accuracyPct>0 && normal.accuracyPct<10,'V152 precision manuals may grant bounded direct Accuracy');
+  assert.ok(max.accuracyPct<25,'V152 Accuracy package must remain bounded at max manual progression');
+  assert.equal(normal.actionSpeedPct??0,0,'V152 Công Pháp must never grant Action Speed');
+  assert.equal(normal.controlPct??0,0);
 });
 
 test('Phụ Kiếm Kiếm Ý is precision/crit identity and never a global Công multiplier',()=>{
