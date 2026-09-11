@@ -15,7 +15,10 @@ Read this first. Do not reconstruct project state from old chats.
 - V164 Linh Thú / Tri Kỷ Runtime Authority: CLOSED / LOCKED.
   - Executable closure: `1a1013d9cad94c9be341f26ea3e5e486232ee6d3`
   - Canonical QA: `34580265307` — SUCCESS
-- No V165 scope has been opened yet.
+- V165 Trang Bị / Set Runtime Authority: CLOSED / LOCKED.
+  - Executable closure: `9c2dbf976ac10952eb731a1d2c24fe6660e37e42`
+  - Canonical QA: `34581685047` — SUCCESS
+- No V166 scope has been opened yet.
 
 ## Locked Collection authority
 
@@ -52,6 +55,26 @@ Read this first. Do not reconstruct project state from old chats.
 - B1 Fast QA: `34579993824` — SUCCESS
 - B2/B3 Fast QA: `34580157430` — SUCCESS
 - Canonical closure: `34580265307` — SUCCESS
+
+## Locked V165 authority
+
+- Canonical Trang Bị state: `state.equipment`.
+- V142 progression authority: equipment Rank (`equipmentRankIndex`) + Enhancement capped at +15 + authored Affix + V142 Set engraving/resonance.
+- V142 does not use live Grade/Quality/Trait/Đạo Văn/Ngũ Hành Ngọc progression.
+- V115/V128 Đạo Văn/Gem mutation methods remain only for legacy equipment and reject `equipment.v142`.
+- V142 Set power is derived from equipped V142 item IDs through `equipmentSetPowerV142` and composed once by the equipment combat adapter.
+- V116 Set behavior remains a separate compatibility lane for legacy equipment; it is not a second V142 Set authority.
+- Restore canonicalization clamps V142 enhancement to +15 and removes retired legacy progression payloads from V142 items while preserving valid V142 Set/resonance state.
+- Legacy equipment compatibility semantics remain intact.
+- No equipment balance, fragment, Set bonus, Affix, Hunt reward or slot-count changes were made in V165.
+
+## V165 evidence
+
+- `qa/tests/v165-equipment-runtime-authority-test.js`
+- Fast QA: `34581569363` — SUCCESS
+- Canonical closure: `34581685047` — SUCCESS
+- Backend closure: PASS
+- Frontend closure: PASS
 
 ## Working rule
 
