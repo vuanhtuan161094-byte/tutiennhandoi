@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: V161 phase gates
+      - name: Active phase gates
         shell: bash
         run: |
           set -euo pipefail
@@ -53,6 +53,7 @@ jobs:
           run_quiet "V161 B4 manual pacing" node qa/tests/v161-manual-acquisition-pacing-test.js
           run_quiet "V161 B5 Spiritual Root × Hunt" node qa/tests/v161-spiritual-root-hunt-pacing-test.js
           run_quiet "V161 B6 economy source/sink" node qa/tests/v161-economy-source-sink-test.js
+          run_quiet "V162 B1 Collection/Gacha authority" node qa/tests/v162-collection-runtime-authority-test.js
 
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
@@ -126,7 +127,7 @@ jobs:
           run_quiet "V160 acquisition economy" node qa/tests/v160-acquisition-economy-test.js
           run_quiet "V160 reconciled closure" node qa/tests/v160-full-life-audit-closure-test.js
 
-      - name: V161 closure gates
+      - name: V161 locked closure gates
         shell: bash
         run: |
           set -euo pipefail
@@ -137,6 +138,13 @@ jobs:
           run_quiet "V161 B4 manual pacing" node qa/tests/v161-manual-acquisition-pacing-test.js
           run_quiet "V161 B5 Spiritual Root × Hunt" node qa/tests/v161-spiritual-root-hunt-pacing-test.js
           run_quiet "V161 B6 economy source/sink" node qa/tests/v161-economy-source-sink-test.js
+
+      - name: V162 active authority gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_quiet() { local label="$1"; shift; local log; log="$(mktemp)"; if "$@" >"$log" 2>&1; then echo "PASS · $label"; else echo "FAIL · $label"; cat "$log"; rm -f "$log"; exit 1; fi; rm -f "$log"; }
+          run_quiet "V162 B1 Collection/Gacha authority" node qa/tests/v162-collection-runtime-authority-test.js
 
       - name: Backend closure
         run: node qa/runners/v140-backend-gates.js closure

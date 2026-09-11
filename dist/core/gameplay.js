@@ -5,6 +5,14 @@ export * from './gameplay-v149-base.js';
 import { GameplayFacade as GameplayFacadeBase } from './gameplay-v149-base.js';
 import { ARTIFACTS_V88, artifactViewV88, artifactRawSummaryV149 } from './artifact-v88.js';
 
+// V162 public-authority cleanup: V12326 is the only callable Collection/Gacha path.
+// The V12325 progression methods remain live until their own authority migration.
+for (const legacyMethod of ['collectionGachaV12316', 'collectionGachaV12325']) {
+  if (Object.prototype.hasOwnProperty.call(GameplayFacadeBase.prototype, legacyMethod)) {
+    delete GameplayFacadeBase.prototype[legacyMethod];
+  }
+}
+
 export class GameplayFacade extends GameplayFacadeBase {
   overview() {
     const out = super.overview();
