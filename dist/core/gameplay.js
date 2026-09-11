@@ -43,6 +43,21 @@ export class GameplayFacade extends GameplayFacadeBase {
     return this.collectionUnequipV12326(itemId);
   }
 
+  // V162 B4: V12316 progression is no longer an independent public behavior path.
+  // Legacy callers are normalized to the same canonical V12326 authority.
+  collectionStrengthenV12316(itemId, levels = 1) {
+    return this.collectionStrengthenV12326(itemId, levels);
+  }
+  collectionAdvanceV12316(itemId) {
+    return this.collectionAdvanceV12326(itemId);
+  }
+  collectionEquipV12316(itemId, artifactSlotIndex) {
+    return this.collectionEquipV12326(itemId, artifactSlotIndex);
+  }
+  collectionUnequipV12316(itemId) {
+    return this.collectionUnequipV12326(itemId);
+  }
+
   overview() {
     const out = super.overview();
     const state = this.session.state;

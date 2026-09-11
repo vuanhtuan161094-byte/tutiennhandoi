@@ -47,6 +47,25 @@ test('V162 B3 V12325 progression names are compatibility shims routed through V1
   assert(apiBoundary.includes("strengthenCollectionV12326: 'strengthenCollectionV12325'"));
 });
 
+test('V162 B4 V12316 progression names are compatibility shims routed through V12326 authority', () => {
+  for (const [compatibility, canonical] of [
+    ['collectionStrengthenV12316','collectionStrengthenV12326'],
+    ['collectionAdvanceV12316','collectionAdvanceV12326'],
+    ['collectionEquipV12316','collectionEquipV12326'],
+    ['collectionUnequipV12316','collectionUnequipV12326'],
+  ]) {
+    assert(Object.prototype.hasOwnProperty.call(GameplayFacade.prototype, compatibility));
+    assert(GameplayFacade.prototype[compatibility].toString().includes(`this.${canonical}`));
+  }
+  const apiBoundary = readFileSync(new URL('../../dist/core/game-api.js', import.meta.url), 'utf8');
+  assert(apiBoundary.includes("strengthenCollectionV12316: 'strengthenCollectionV12326'"));
+  assert(apiBoundary.includes('return this[canonicalMethod](...args)'));
+  const app = readFileSync(new URL('../../app.js', import.meta.url), 'utf8');
+  for (const action of ['collectionStrengthenV12316','collectionAdvanceV12316','collectionEquipV12316','collectionUnequipV12316']) {
+    assert(!app.includes(action), `production UI still emits ${action}`);
+  }
+});
+
 test('V162 production V12326 Gacha still spends the canonical Bound Jade wallet', () => {
   const registry = buildRegistry();
   const state = createPlayableAdventureState();
@@ -69,6 +88,7 @@ test('V162 standalone transport keeps V12326 Gacha canonical and legacy Gacha ac
   assert(source.includes("case'collectionGachaV12326':result=rt.api.gachaCollectionV12326"));
   assert(source.includes("case'collectionGachaV12325':throw new Error"));
   assert(source.includes("case'collectionGachaV12316':throw new Error"));
+  assert(source.includes("case'collectionStrengthenV12316':result=rt.api.strengthenCollectionV12316"));
 });
 
 console.log(`\nV162 COLLECTION RUNTIME AUTHORITY: ${passed}/${passed} PASS`);

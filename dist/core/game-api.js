@@ -39,3 +39,22 @@ for (const [canonicalMethod, compatibilityMethod] of Object.entries(progressionP
     },
   });
 }
+
+// V162 B4: V12316 progression names are transport-only compatibility aliases. The old
+// standalone action labels may continue to exist for save/client compatibility, but they
+// cannot bypass the V12326 public authority.
+const v12316ProgressionAliases = {
+  strengthenCollectionV12316: 'strengthenCollectionV12326',
+  advanceCollectionV12316: 'advanceCollectionV12326',
+  equipCollectionV12316: 'equipCollectionV12326',
+  unequipCollectionV12316: 'unequipCollectionV12326',
+};
+for (const [legacyMethod, canonicalMethod] of Object.entries(v12316ProgressionAliases)) {
+  if (typeof LocalGameApplicationApi.prototype[legacyMethod] !== 'function') continue;
+  Object.defineProperty(LocalGameApplicationApi.prototype, legacyMethod, {
+    configurable: true,
+    value: function (...args) {
+      return this[canonicalMethod](...args);
+    },
+  });
+}
