@@ -5,6 +5,9 @@ on:
     branches:
       - 'feature/**'
       - 'refactor/**'
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
   workflow_dispatch:
 
 permissions:
