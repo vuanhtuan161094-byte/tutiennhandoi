@@ -126,6 +126,18 @@ jobs:
           run_quiet "V160 acquisition economy" node qa/tests/v160-acquisition-economy-test.js
           run_quiet "V160 reconciled closure" node qa/tests/v160-full-life-audit-closure-test.js
 
+      - name: V161 closure gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_quiet() { local label="$1"; shift; local log; log="$(mktemp)"; if "$@" >"$log" 2>&1; then echo "PASS · $label"; else echo "FAIL · $label"; cat "$log"; rm -f "$log"; exit 1; fi; rm -f "$log"; }
+          run_quiet "V161 B1 retreat" node qa/tests/v161-retreat-contract-audit-test.js
+          run_quiet "V161 B2 early pacing" node qa/tests/v161-early-pacing-test.js
+          run_quiet "V161 B3 Bound Jade" node qa/tests/v161-bound-jade-spend-model-test.js
+          run_quiet "V161 B4 manual pacing" node qa/tests/v161-manual-acquisition-pacing-test.js
+          run_quiet "V161 B5 Spiritual Root × Hunt" node qa/tests/v161-spiritual-root-hunt-pacing-test.js
+          run_quiet "V161 B6 economy source/sink" node qa/tests/v161-economy-source-sink-test.js
+
       - name: Backend closure
         run: node qa/runners/v140-backend-gates.js closure
 
