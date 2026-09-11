@@ -7,6 +7,7 @@ import { ensureSkillHeartProgressionV12317, resolveHeartMethodStatsV12317, upgra
 import { resolveTechniqueRuntimeV119 } from '../../dist/core/technique-runtime-v119.js';
 import { normalizeCanonicalSkillHeartAfterRestore } from '../../dist/core/session-restore.js';
 
+// V166 closure guard: authority boundaries below must remain stable across save/runtime/combat.
 // Công Pháp authority: one Collection state, all learned manuals stay effective without equip slots.
 const manuals = createCollectionProgressStateV12316();
 grantCollectionItemV12316(manuals, 'manual.1');
