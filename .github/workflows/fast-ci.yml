@@ -1,0 +1,50 @@
+name: Fast QA
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'refactor/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fast-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fast-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Codebase health scan
+        continue-on-error: true
+        run: node qa/tools/codebase-health.js
+
+      - name: V161 completed phase gates B1-B4
+        run: |
+          set -euo pipefail
+          node qa/tests/v161-retreat-contract-audit-test.js
+          node qa/tests/v161-early-pacing-test.js
+          node qa/tests/v161-bound-jade-spend-model-test.js
+          node qa/tests/v161-manual-acquisition-pacing-test.js
+
+      - name: V161 active phase B5
+        run: node qa/tests/v161-spiritual-root-hunt-pacing-test.js
+
+      - name: Backend fast gate
+        run: node qa/runners/v140-backend-gates.js fast
+
+      - name: Frontend fast gate
+        run: node qa/runners/v140-frontend-gates.js fast
