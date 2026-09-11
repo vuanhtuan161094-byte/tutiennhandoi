@@ -57,6 +57,7 @@ jobs:
           run_quiet "V163 B1 Artifact/Relic authority" node qa/tests/v163-artifact-runtime-authority-test.js
           run_quiet "V163 B2 Artifact/Relic mutation authority" node qa/tests/v163-artifact-mutation-authority-test.js
           run_quiet "V163 B3 Artifact/Relic read-combat authority" node qa/tests/v163-artifact-read-combat-authority-test.js
+          run_quiet "V163 B4 Artifact/Relic compatibility cleanup" node qa/tests/v163-artifact-compatibility-cleanup-test.js
 
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
