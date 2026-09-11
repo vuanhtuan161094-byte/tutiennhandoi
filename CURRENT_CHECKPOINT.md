@@ -1,61 +1,61 @@
-# CURRENT CHECKPOINT — GAME TU TIÊN NHÀN DỖI
+# CURRENT CHECKPOINT
 
-Date: 2026-09-11
+This file is the source of truth for a new chat.
+Read this first. Do not reconstruct project state by reading old chats.
 
-## Canonical state
+## Active state
 
-- Repository authority: **`main` only**.
-- Git history is the archive; do not keep duplicate snapshots for backup.
-- Locked baseline: **V161 CLOSED / LOCKED**.
-- V161 closure SHA: `d7e917a8ebc77dce767412e8ffad94bd1f085bb7`.
-- V161 canonical QA: `34557869821` — **SUCCESS**.
-- Active version: **V162 — Runtime Authority Consolidation**.
-- Gameplay/web version string remains `1.40.0-alpha.24.0` until deliberately changed.
+- Branch: `main` only.
+- V160: LOCKED.
+- V161: LOCKED.
+- V162 Runtime Authority Consolidation: CLOSED / LOCKED.
+- V162 closure executable HEAD: `f46c5e956f1410fa5228d691c16ddca4a594d09c`.
+- V162 closure Fast QA: `34562603034` — SUCCESS.
+- V163 Pháp Bảo / Chí Bảo Runtime Authority: ACTIVE.
+- V163 B1 Authority Discovery: IN PROGRESS.
 
-## V162 status
+## Locked V162 authority
 
-- B1 — Collection/Gacha public authority: **PASS**.
-  - Player-facing Gameplay/API exposes only V12326 Gacha.
-  - Legacy V12316/V12325 Gacha transport remains blocked.
-  - Internal Session compatibility methods are intentionally retained because moving/splitting `session.js` broke unrelated structural gates that inspect the canonical source file.
-  - Commit lineage stabilized at `81c1af2a502c65e9e166dbe2499d202f5ea99351`.
-  - Fast QA `34559739435`: targeted + backend + frontend **SUCCESS**.
-- B2 — Collection progression canonical API: **PASS**.
-  - Canonical V12326 strengthen/advance/equip/unequip methods now exist on Gameplay/API.
-  - They delegate to the locked V12325 progression engine; no progression math/state was rewritten.
-  - V12325 API names remain temporary compatibility shims because current standalone/UI transport still calls them.
-  - Executable HEAD: `54eae66a23dcc498130f4218a5b7136173740d53`.
-  - Fast QA `34559828970`: targeted + backend + frontend **SUCCESS**.
-- B3 — Collection progression transport/UI namespace migration: **NEXT**.
-- V162 closure: **PENDING**.
+- V12326 is the player-facing Collection/Gacha authority.
+- Collection strengthen / advance / equip / unequip public behavior routes through V12326.
+- Older V12325/V12316 progression names may remain only as compatibility shims, not independent behavior paths.
+- `collectionV12316` state remains a save/runtime compatibility structure.
+- V162 did not authorize gameplay balance changes.
 
-## Authority rules learned in V162
+## V163 current findings
 
-- Consolidate public authority before deleting lower-level implementation/state.
-- Do not rename or split large canonical files solely for cleanliness when locked tests legitimately inspect their source blocks.
-- `collectionV12316` save/state naming and V12325 progression internals are compatibility implementation details, not proof that they are the player-facing authority.
-- No gameplay rates, prices, reward math or save semantics changed in B1/B2.
+- Player-facing Pháp Bảo / Chí Bảo are read from Collection economy categories `artifact` / `relic`.
+- `dist/core/artifact-v88.js` is the current combat adapter over the V149 artifact base and V150/V151 behavior patches.
+- `dist/core/gameplay.js` exposes Collection-backed Pháp Bảo as the player-facing artifact view.
+- Legacy `state.artifacts` is not the player-facing combat loadout authority, but it still has verified consumers in late-game integration/history/reincarnation flows. It is not safe to delete yet.
+- `game-artifact.js` is not a current-main file; do not use that stale documentation path as authority.
 
-## Minimal-context protocol
+## V163 mission
 
-Read only:
+1. finish classifying every surviving legacy Pháp Bảo consumer;
+2. add focused executable authority proof;
+3. route replaceable player-facing reads/writes to the Collection-backed authority;
+4. preserve required history/save/reincarnation semantics;
+5. delete only paths proven dead;
+6. run targeted regression first, then Fast QA when the block is ready.
 
-1. `CURRENT_CHECKPOINT.md`
-2. `docs/versions/V162.md`
-3. `docs/systems/INDEX.md` only if routing is unclear
-4. exact live source/tests for the current subsystem
+## Do not reopen unless regression proves necessary
 
-Do not preload old reports/chats/raw simulations/full CI logs.
+- V161 gameplay/pacing closure.
+- V162 Collection/Gacha authority consolidation.
+- V160 economy-source/sink and wealth pacing.
+- Earlier locked gameplay systems unrelated to the active V163 authority block.
 
-## Execution rules
+## Required next read order
 
-- Search → narrow → authority patch → targeted gate → Fast QA.
-- Executable pushes to `main` run Fast QA.
-- Markdown/docs-only pushes do not run QA.
-- `[closure]` runs Fast QA then Canonical QA.
-- Inspect logs only on failure.
-- Current user instruction > live `main` source/tests > current V162 note > Git history.
+1. `docs/versions/V163.md`
+2. `docs/DEVELOPMENT_PROTOCOL.md`
+3. `docs/systems/INDEX.md` only when subsystem routing is unclear
+4. exact Pháp Bảo/Chí Bảo source/test regions needed for the active block
 
-## Next work
+## Working rule
 
-B3: migrate Collection strengthen/advance/equip/unequip transport/UI from V12325 names to the canonical V12326 names **without changing the V12325 progression engine**. Only after the live transport no longer needs V12325 compatibility names should those public aliases be retired.
+Repository current `main` is source of truth.
+Do not preload old chats or version history.
+Use search -> narrow read -> patch -> targeted proof.
+Do not run broad CI repeatedly while the authority block is still being investigated.
