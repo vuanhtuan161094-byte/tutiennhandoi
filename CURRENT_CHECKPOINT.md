@@ -18,7 +18,10 @@ Read this first. Do not reconstruct project state from old chats.
 - V165 Trang Bị / Set Runtime Authority: CLOSED / LOCKED.
   - Executable closure: `9c2dbf976ac10952eb731a1d2c24fe6660e37e42`
   - Canonical QA: `34581685047` — SUCCESS
-- No V166 scope has been opened yet.
+- V166 Công Pháp / Kỹ Năng / Tâm Pháp Runtime Authority: CLOSED / LOCKED.
+  - Executable closure: `d2ed13fd29755bd2675b958fe583fe10128787a1`
+  - Canonical QA: `34587204274` — SUCCESS
+- No V167 scope has been opened yet.
 
 ## Locked Collection authority
 
@@ -48,14 +51,6 @@ Read this first. Do not reconstruct project state from old chats.
 - Snapshot/restore preserves active pet/companion selectors and canonical progression.
 - No balance/rate/reward changes were made in V164.
 
-## V164 evidence
-
-- `qa/tests/v164-pet-confidant-runtime-authority-test.js`
-- `qa/tests/v164-pet-confidant-integration-authority-test.js`
-- B1 Fast QA: `34579993824` — SUCCESS
-- B2/B3 Fast QA: `34580157430` — SUCCESS
-- Canonical closure: `34580265307` — SUCCESS
-
 ## Locked V165 authority
 
 - Canonical Trang Bị state: `state.equipment`.
@@ -68,13 +63,25 @@ Read this first. Do not reconstruct project state from old chats.
 - Legacy equipment compatibility semantics remain intact.
 - No equipment balance, fragment, Set bonus, Affix, Hunt reward or slot-count changes were made in V165.
 
-## V165 evidence
+## Locked V166 authority
 
-- `qa/tests/v165-equipment-runtime-authority-test.js`
-- Fast QA: `34581569363` — SUCCESS
-- Canonical closure: `34581685047` — SUCCESS
-- Backend closure: PASS
-- Frontend closure: PASS
+- Công Pháp V127 ownership/progression remains in `state.collectionV12316.items`; all learned manuals stay effective simultaneously.
+- Kỹ Năng/Tâm Pháp progression authority is `state.character.buildFoundation.progressionV125` using V12317 levels, grades and fragment wallets.
+- Session skill upgrade/advance routes through `upgradeSkillLevelV12317` / `advanceSkillGradeV12317`.
+- V103/V119 technique/manual combat runtime remains retired and neutral.
+- Restore canonicalization removes duplicate and non-authored IDs from `learnedDaoPassiveIdsV118`, preventing stale/tampered saves from creating extra Tâm Pháp authority.
+- No manual/skill/heart balance, costs, caps, authored effects or combat coefficients were changed in V166.
+
+## Evidence
+
+- V164 guards: `qa/tests/v164-pet-confidant-runtime-authority-test.js`, `qa/tests/v164-pet-confidant-integration-authority-test.js`.
+- V164 canonical closure: `34580265307` — SUCCESS.
+- V165 guard: `qa/tests/v165-equipment-runtime-authority-test.js`.
+- V165 Fast QA: `34581569363` — SUCCESS.
+- V165 canonical closure: `34581685047` — SUCCESS.
+- V166 guard: `qa/tests/v166-manual-skill-heart-runtime-authority-test.js`.
+- V166 Fast QA: `34587119755` — SUCCESS.
+- V166 canonical closure: `34587204274` — SUCCESS.
 
 ## Working rule
 
