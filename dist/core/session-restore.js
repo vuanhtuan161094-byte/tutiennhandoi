@@ -2,10 +2,23 @@ import { cloneAdventureState } from './world.js';
 import { normalizeEquipmentStateV98 } from './equipment.js';
 import { EQUIPMENT_MAX_ENHANCEMENT_V142, equipmentSetDefinitionV142 } from './equipment-v142.js';
 import { battleDaoV2Passive } from '../content/battle-dao-v2-catalog.js';
-import { normalizeCanonicalAlchemyInventoryAfterRestore } from './alchemy-runtime-authority-v167.js';
+import { parseAlchemyPillResourceId } from './alchemy-v112.js';
+import { alchemyPillResourceIdV146, alchemyRecipeAvailableV146, parseAlchemyPillResourceIdV146 } from './alchemy-v146.js';
 import { clonePotentialState } from './potential.js';
 import { cloneCurrentLifeMeta, cloneMetaProgressState } from './life.js';
 import { repairAdventureStateReferences } from './save-stability.js';
+
+const LEGACY_ALCHEMY_TIER_TO_MAJOR_V167 = Object.freeze([1, 4, 8, 11, 15, 18, 22, 25]);
+const LEGACY_ALCHEMY_FAMILY_TO_V146_V167 = Object.freeze({
+    cultivation: 'cultivation', injury: 'injury', lifespan: 'lifespan', daoSuy: 'daoSuy',
+    lifePower: 'lifePower', lifeBody: 'lifeBody', lifeDefense: 'lifeDefense',
+    buffPower: 'buffPower', buffGuard: 'buffGuard', buffSpirit: 'buffSpirit', forbidden: 'forbidden',
+    daoPower: 'lifePower', daoBody: 'lifeBody', daoDefense: 'lifeDefense',
+});
+function safeAlchemyInventoryCountV167(value) {
+    if (typeof value === 'bigint') return Number(value > BigInt(Number.MAX_SAFE_INTEGER) ? BigInt(Number.MAX_SAFE_INTEGER) : value);
+    return Math.max(0, Math.floor(Number(value) || 0));
+}
 
 // V165: restore must enforce the same canonical V142 contract as live mutation.
 // V142 progression is Rank + Enhancement(+15) + Affix + V142 Set only. Retired legacy
@@ -37,6 +50,29 @@ export function normalizeCanonicalSkillHeartAfterRestore(state) {
     const learned = foundation.learnedDaoPassiveIdsV118 ?? [];
     foundation.learnedDaoPassiveIdsV118 = [...new Set(learned.filter(id => Boolean(battleDaoV2Passive(id))))];
     return foundation;
+}
+
+// V167: current saves must not carry a second, realm-gated V112 pill authority.
+// Preserve every valid legacy pill by converting it immediately to its V146 ID, including future-realm pills.
+export function normalizeCanonicalAlchemyInventoryAfterRestore(state) {
+    const inventory = state?.inventory;
+    if (!inventory || typeof inventory !== 'object') return inventory;
+    for (const [resourceId, raw] of Object.entries({ ...inventory })) {
+        if (parseAlchemyPillResourceIdV146(resourceId)) continue;
+        const legacy = parseAlchemyPillResourceId(resourceId);
+        if (!legacy) continue;
+        const family = LEGACY_ALCHEMY_FAMILY_TO_V146_V167[legacy.family];
+        if (!family) continue;
+        let majorRealmIndex = LEGACY_ALCHEMY_TIER_TO_MAJOR_V167[Math.max(1, Math.min(8, Math.floor(Number(legacy.realmTier) || 1))) - 1];
+        if (family === 'daoSuy') majorRealmIndex = Math.max(11, majorRealmIndex);
+        if (!alchemyRecipeAvailableV146(family, majorRealmIndex)) continue;
+        const count = safeAlchemyInventoryCountV167(raw);
+        delete inventory[resourceId];
+        if (count <= 0) continue;
+        const canonicalId = alchemyPillResourceIdV146(family, majorRealmIndex, legacy.quality);
+        inventory[canonicalId] = safeAlchemyInventoryCountV167(inventory[canonicalId]) + count;
+    }
+    return inventory;
 }
 
 // V141 pre-release policy: only the current canonical save schema is supported.
