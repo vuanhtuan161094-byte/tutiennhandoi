@@ -1,4 +1,4 @@
-# DEVELOPMENT PROTOCOL — MINIMAL CONTEXT
+# DEVELOPMENT PROTOCOL — SINGLE MAIN / MINIMAL CONTEXT
 
 This repository is the project source of truth. Conversation history is not the project database.
 
@@ -23,73 +23,69 @@ Normal task context target:
 - 2–5 relevant source regions
 - targeted tests
 
-Open a complete large source file only when the architecture cannot be resolved from targeted regions.
+Open a complete large source file only when architecture cannot be resolved from targeted regions.
 
-## 3. Testing pyramid
+## 3. Git strategy
 
-- G0: unit/targeted test after a local mechanic change
+Use **`main` as the only working branch** unless the user explicitly requests isolation.
+
+Rules:
+- commit small, coherent changes directly to `main`;
+- use Git history as rollback/archive instead of keeping duplicate legacy files;
+- do not create B1/B2/B3 or version branches merely as checkpoints;
+- before creating a new source file, verify that the current authority cannot be safely extended;
+- remove obsolete duplicate implementations only after references are checked and tests remain green.
+
+## 4. Testing pyramid
+
+- G0: targeted/unit test after a local mechanic change
 - G1: affected subsystem tests after mechanic completion
-- G2: Fast QA after a feature block
-- G3: Canonical Closure QA only on a closure candidate
+- G2: Fast QA after executable/source commits
+- G3: Canonical QA only for an explicit closure candidate
 
-Do not run full canonical closure after every feature commit.
+Do not run full canonical closure after every normal commit.
 
-## 4. GitHub Actions
+## 5. GitHub Actions
 
-Feature/refactor branches use `.github/workflows/fast-ci.yml`.
+The repository should have one active workflow: `.github/workflows/qa.yml`.
 
-Full canonical QA runs only on:
-- `closure/**`
-- `main`
-- pull request into `main`
-- manual dispatch
+Behavior:
+- normal executable push to `main` -> Fast QA;
+- Markdown/docs-only push -> no QA run;
+- commit message containing `[closure]` -> Fast QA then Canonical QA;
+- manual workflow dispatch -> Fast QA then Canonical QA.
 
-For a CI check:
-1. read run status
-2. if green, stop
-3. if failed, read job/step summary
-4. fetch the failing log only if the summary is insufficient
+For CI inspection:
+1. read run status;
+2. if green, stop;
+3. if failed, read failed job/step summary;
+4. fetch the failing log only when needed.
 
-Never fetch complete job logs for a successful run.
+Never fetch complete successful job logs. Passing simulation/audit steps should print compact PASS summaries.
 
-Passing simulations/audits should print compact PASS summaries. Detailed output is retained only on failure or in dedicated report artifacts.
+## 6. Repository structure policy
 
-## 5. Branch strategy
+Prefer stable semantic filenames over version-suffixed filenames for future work.
 
-V161 keeps its existing branch lineage to avoid disruptive history surgery.
+Do not rename a live versioned authority just for aesthetics. Rename/consolidate only when:
+- all imports/consumers are known;
+- tests cover the move;
+- no gameplay behavior changes.
 
-Starting with the next version, prefer one development branch per version:
-
-`feature/v162`
-
-Use commits/checkpoints for B1/B2/B3... instead of creating one branch per block.
-
-When ready for full closure, create/use:
-
-`closure/v162`
-
-Only merge to `main` when the user explicitly authorizes it.
-
-## 6. Documentation-only changes
-
-Fast QA ignores Markdown/docs-only pushes. A commit containing executable/source changes still runs Fast QA.
+Retired patch scripts, generated backup snapshots and stale handoff docs should be deleted because Git history already preserves them.
 
 ## 7. Version closure
 
-At closure, record only:
-- version/status
-- exact closure SHA
-- exact green CI run
-- material changes
-- known debt
-- next version/task
+At closure record only:
+- version/status;
+- exact closure SHA;
+- exact green QA run;
+- material changes;
+- known debt;
+- next task/version.
 
-Then update `CURRENT_CHECKPOINT.md` so the next chat does not need the closed version's development history.
+Then update `CURRENT_CHECKPOINT.md` so the next chat does not need development history.
 
-## 8. Historical material
+## 8. Authority order
 
-Historical reports remain available for forensic regression work but are cold context by default. Do not delete historical evidence merely to reduce model context; simply stop loading it unless needed.
-
-## 9. Main protection recommendation
-
-`main` should eventually be protected against accidental direct pushes and should require Canonical Closure QA before merge. This is repository administration, not required for V161 work, and should be configured separately without changing the current locked/development branch state.
+Current user instruction > live `main` production code/tests > active version spec > Git history.
