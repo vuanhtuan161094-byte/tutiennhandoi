@@ -79,10 +79,10 @@ test('V163 B2 standalone compatibility labels route through Game API and never d
   const standalone = readFileSync(new URL('../../standalone-runtime.js', import.meta.url), 'utf8');
   for (const action of ['collectionStrengthenV12325', 'collectionAdvanceV12325', 'collectionEquipV12325', 'collectionUnequipV12325']) {
     assert(standalone.includes(action), `expected current compatibility transport ${action}`);
-    assert(standalone.includes(`gameApi.${action}`), `${action} must enter through Game API`);
+    assert(standalone.includes(`rt.api.${action}`), `${action} must enter through Game API`);
   }
-  assert(!standalone.includes('gameApi.activateArtifact('));
-  assert(!standalone.includes('gameApi.deactivateArtifact('));
+  assert(!standalone.includes('rt.api.activateArtifact('));
+  assert(!standalone.includes('rt.api.deactivateArtifact('));
   assert(!standalone.includes('session.activateArtifact('));
   assert(!standalone.includes('session.deactivateArtifact('));
 });
