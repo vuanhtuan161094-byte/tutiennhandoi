@@ -58,3 +58,16 @@ for (const [legacyMethod, canonicalMethod] of Object.entries(v12316ProgressionAl
     },
   });
 }
+
+// V162 B5: the old DEV grant is only a compatibility action label. It now routes to the
+// current V12326 workshop max-grant path, which covers the complete live collection set.
+// The V12325 simulator is intentionally not aliased because its three historical banners
+// have different semantics from the eight V12326 category banners.
+if (typeof LocalGameApplicationApi.prototype.devGrantCollectionV12325 === 'function') {
+  Object.defineProperty(LocalGameApplicationApi.prototype, 'devGrantCollectionV12325', {
+    configurable: true,
+    value: function (...args) {
+      return this.devGrantCollectionV12326(...args);
+    },
+  });
+}
