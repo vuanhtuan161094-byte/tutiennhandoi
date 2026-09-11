@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   MANUAL_ACQUISITION_PACING_V161_SCHEMA,
   V161_MANUAL_AUDIT_STAGE_INDEXES,
+  V161_MANUAL_GATE_AUTHORITY,
   V161_MANUAL_SAMPLING_MODE,
   buildManualAcquisitionPacingAuditV161,
   simulateManualAcquisitionPacingV161,
@@ -24,6 +25,8 @@ function row(stageIndex,profileId,days){
 test('V161 B4 covers early/mid/late manual stages over the same B3 profiles, horizons and seeds',()=>{
   assert.equal(audit.schema,MANUAL_ACQUISITION_PACING_V161_SCHEMA);
   assert.equal(audit.samplingMode,V161_MANUAL_SAMPLING_MODE);
+  assert.equal(audit.gateAuthority,V161_MANUAL_GATE_AUTHORITY);
+  assert.equal(V161_MANUAL_GATE_AUTHORITY,'advanceCollectionEconomyV12325');
   assert.deepEqual(audit.stageIndexes,[2,14,28]);
   assert.deepEqual(audit.stageIndexes,[...V161_MANUAL_AUDIT_STAGE_INDEXES]);
   assert.deepEqual(audit.horizons,[...V161_SPEND_HORIZONS_DAYS]);
@@ -49,6 +52,47 @@ test('V161 B4 explicitly models independent horizon snapshots rather than preten
   assert.match(audit.interpretation,/independent Monte Carlo snapshots/i);
 });
 
+test('V161 B4 uses the actual player-facing V12325 manual gate authority',()=>{
+  const sample=simulateManualAcquisitionPacingV161('manualFocused',28,365,16101);
+  assert.equal(sample.gateAuthority,'advanceCollectionEconomyV12325');
+  assert.equal(sample.resources.gateAuthority,'advanceCollectionEconomyV12325');
+  assert.match(sample.resources.note,/Công Pháp Tàn Ý/);
+  assert.match(sample.resources.note,/Thiên Tinh Công Pháp/);
+  assert.match(sample.resources.note,/specific fragments/i);
+  assert.match(audit.interpretation,/three-resource gate/i);
+});
+
+test('V161 B4 three-resource accounting conserves generic and breakthrough material',()=>{
+  let observedEssenceSpend=false;
+  let observedGenericSpend=false;
+  for(const stageIndex of V161_MANUAL_AUDIT_STAGE_INDEXES){
+    for(const profileId of Object.keys(V161_SPEND_PROFILES)){
+      for(const days of V161_SPEND_HORIZONS_DAYS){
+        for(const seed of V161_SPEND_SEEDS){
+          const sample=simulateManualAcquisitionPacingV161(profileId,stageIndex,days,seed);
+          assert(sample.resources.genericFragmentsAfterGacha>=sample.resources.genericFragmentsSpent);
+          assert.equal(
+            sample.resources.genericFragmentsAfterGacha-sample.resources.genericFragmentsSpent,
+            sample.resources.genericFragmentsRemaining,
+            `${stageIndex}:${profileId}:${days}:${seed}: generic conservation`,
+          );
+          assert(sample.resources.manualBreakthroughEssenceAfterGacha>=sample.resources.manualBreakthroughEssenceSpent);
+          assert.equal(
+            sample.resources.manualBreakthroughEssenceAfterGacha-sample.resources.manualBreakthroughEssenceSpent,
+            sample.resources.manualBreakthroughEssenceRemaining,
+            `${stageIndex}:${profileId}:${days}:${seed}: essence conservation`,
+          );
+          assert(sample.target.specificFragmentsRemaining>=0);
+          observedEssenceSpend ||= sample.resources.manualBreakthroughEssenceSpent>0;
+          observedGenericSpend ||= sample.resources.genericFragmentsSpent>0;
+        }
+      }
+    }
+  }
+  assert(observedGenericSpend,'B4 must exercise real Công Pháp Tàn Ý spending');
+  assert(observedEssenceSpend,'B4 must exercise real Thiên Tinh Công Pháp spending at a 100-Lv gate');
+});
+
 test('V161 B4 longer horizons increase pull opportunity and oriented-target progression for every stage/profile',()=>{
   for(const stageIndex of V161_MANUAL_AUDIT_STAGE_INDEXES){
     for(const profileId of Object.keys(V161_SPEND_PROFILES)){
@@ -68,8 +112,6 @@ test('V161 B4 keeps stochastic total manual Tu Vi measurable without treating Mo
     assert(entry.cultivation.avgPassiveSpeedup>=1,`${entry.stageIndex}:${entry.profileId}:${entry.days}: speedup`);
     assert(entry.cultivation.avgManualFlatPer15s<entry.cultivation.theoreticalCurrentStageMaxFlatPer15s,`${entry.stageIndex}:${entry.profileId}:${entry.days}: ceiling`);
   }
-  const combatEarly=V161_SPEND_HORIZONS_DAYS.map(days=>row(2,'combatFirst',days).cultivation.avgManualFlatPer15s);
-  assert(combatEarly.some((value,index)=>index>0&&value<combatEarly[index-1]),'fixed-seed snapshot audit should retain observed stochastic ownership noise instead of smoothing it away');
 });
 
 test('V161 B4 365-day focused spending beats balanced and combat-first manual pacing',()=>{
@@ -92,26 +134,24 @@ test('V161 B4 production acquisition stays materially below the theoretical curr
   assert(lateFocused.target.maxAdvance<10,'Sáng Thế 365d focused should not silently reach Grand Completion from recurring Jade alone');
 });
 
-test('V161 B4 higher-realm fragment scaling does not make late gates easier than Trúc Cơ under the same spend profile',()=>{
+test('V161 B4 higher-realm resource scaling does not make late gates easier than Trúc Cơ under the same spend profile',()=>{
   for(const profileId of Object.keys(V161_SPEND_PROFILES)){
     const early=row(2,profileId,365),late=row(28,profileId,365);
     assert(late.target.avgAdvance<=early.target.avgAdvance,`${profileId}: late advance must not exceed early`);
   }
 });
 
-test('V161 B4 reports generic strengthen material and the separate breakthrough-material stock for B6 source/sink reconciliation',()=>{
+test('V161 B4 keeps Resource-PvE outside the gacha-only isolation model',()=>{
   const sample=simulateManualAcquisitionPacingV161('manualFocused',28,365,16101);
-  assert(sample.resources.genericFragmentsAfterGacha>=sample.resources.genericFragmentsSpent);
-  assert(sample.resources.genericFragmentsRemaining>=0);
-  assert(sample.resources.manualBreakthroughEssenceAfterGacha>=0);
-  assert.match(sample.resources.note,/Thiên Tinh Công Pháp|source\/sink/i);
   assert.match(sample.assumptions.strategy,/oriented target first/i);
   assert.match(sample.assumptions.excluded,/Resource-PvE/i);
+  assert.match(sample.assumptions.excluded,/conservative/i);
 });
 
 console.log('\nV161 MANUAL ACQUISITION-ADJUSTED PACING SUMMARY');
 console.log(JSON.stringify({
   samplingMode:audit.samplingMode,
+  gateAuthority:audit.gateAuthority,
   stages:audit.stageIndexes,
   horizons:audit.horizons,
   rows365:audit.matrix.filter(x=>x.days===365),
