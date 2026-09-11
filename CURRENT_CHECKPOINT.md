@@ -8,23 +8,23 @@ Date: 2026-09-11
 - Active version: **V161 — Economy & Pacing Fixes**
 - Active phase: **B5 — Linh Căn Hunt-linked pacing**
 - Canonical working branch: `feature/v161-b5-spiritual-root-hunt-pacing`
+- Current branch HEAD: `8c4c6420542ae6bf78a14315f89201c0813f03fc`
 - `main`: intentionally untouched; never merge unless the user explicitly orders it
 - Gameplay/web version remains `1.40.0-alpha.24.0`
 
 ## Current gate state
 
-V161 B1–B4 are green on the current B5 ancestry.
-
-Implementation HEAD before context-optimization commits: `3a8cffe34a4f3fbdb00ccf07a166893df975ec7b`.
-Canonical QA run `34549092702` failed only when reaching `V161 Spiritual Root x Hunt pacing`; B5 must be fixed before B6 or V161 closure.
+- V161 B1–B4: PASS on current branch ancestry.
+- B5 root cause found: test referenced obsolete/nonexistent top-level `firstClearOrigins` instead of canonical `origins.firstClearGenerated`.
+- B5 targeted gate: PASS after patch `9491e36d6d824be2edf957e3205877b76010fdc5`.
+- Fast QA run `34553626937`: B1–B5 PASS; backend fast gate was still running at the last status read. Do not poll repeatedly; inspect again only when needed for the next decision.
 
 ## Next work
 
-1. Diagnose/fix B5 targeted failure.
-2. Run B5 + V161 fast/integration gates.
-3. Execute B6 economy/source-sink review.
-4. Run full canonical closure once on the V161 closure candidate.
-5. Lock V161 only after the exact closure candidate is green.
+1. Confirm Fast QA final status once before advancing the gate.
+2. Execute B6 economy/source-sink review.
+3. Run full canonical closure once on the V161 closure candidate.
+4. Lock V161 only after the exact closure candidate is green.
 
 ## Minimal-context protocol
 
