@@ -61,6 +61,7 @@ jobs:
           run_quiet "V164 B1 Pet/Confidant runtime authority" node qa/tests/v164-pet-confidant-runtime-authority-test.js
           run_quiet "V164 B2/B3 Pet/Confidant transport-combat" node qa/tests/v164-pet-confidant-integration-authority-test.js
           run_quiet "V165 B1 Equipment runtime authority" node qa/tests/v165-equipment-runtime-authority-test.js
+          run_quiet "V166 Manual/Skill/Heart authority" node qa/tests/v166-manual-skill-heart-runtime-authority-test.js
 
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
@@ -177,6 +178,13 @@ jobs:
           set -euo pipefail
           run_quiet() { local label="$1"; shift; local log; log="$(mktemp)"; if "$@" >"$log" 2>&1; then echo "PASS · $label"; else echo "FAIL · $label"; cat "$log"; rm -f "$log"; exit 1; fi; rm -f "$log"; }
           run_quiet "V165 B1 runtime authority" node qa/tests/v165-equipment-runtime-authority-test.js
+
+      - name: V166 Manual / Skill / Heart authority closure
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_quiet() { local label="$1"; shift; local log; log="$(mktemp)"; if "$@" >"$log" 2>&1; then echo "PASS · $label"; else echo "FAIL · $label"; cat "$log"; rm -f "$log"; exit 1; fi; rm -f "$log"; }
+          run_quiet "V166 runtime authority" node qa/tests/v166-manual-skill-heart-runtime-authority-test.js
 
       - name: Backend closure
         run: node qa/runners/v140-backend-gates.js closure
