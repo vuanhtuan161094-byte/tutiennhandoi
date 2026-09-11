@@ -2,6 +2,7 @@ import { cloneAdventureState } from './world.js';
 import { normalizeEquipmentStateV98 } from './equipment.js';
 import { EQUIPMENT_MAX_ENHANCEMENT_V142, equipmentSetDefinitionV142 } from './equipment-v142.js';
 import { battleDaoV2Passive } from '../content/battle-dao-v2-catalog.js';
+import { normalizeCanonicalAlchemyInventoryAfterRestore } from './alchemy-runtime-authority-v167.js';
 import { clonePotentialState } from './potential.js';
 import { cloneCurrentLifeMeta, cloneMetaProgressState } from './life.js';
 import { repairAdventureStateReferences } from './save-stability.js';
@@ -54,6 +55,7 @@ export function restoreSimulationSession(SessionClass, saveVersion, registry, wo
     normalizeEquipmentStateV98(state.equipment, registry.equipmentTemplates);
     normalizeCanonicalEquipmentAfterRestore(state);
     normalizeCanonicalSkillHeartAfterRestore(state);
+    normalizeCanonicalAlchemyInventoryAfterRestore(state);
     repairAdventureStateReferences(state, world, registry);
     state.character.potential = clonePotentialState(undefined);
     return new SessionClass(registry, world, entityDefinitions, profile, save.rootSeed, state, save.actionIndex, save.history, meta, currentLife);
