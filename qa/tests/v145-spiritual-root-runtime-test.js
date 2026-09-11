@@ -34,7 +34,9 @@ assert.equal(boss.origin,1); assert.equal(BigInt(inventory[root.SPIRITUAL_ROOT_O
 
 const session = fs.readFileSync('dist/core/session.js','utf8');
 const gameplay = fs.readFileSync('dist/core/gameplay.js','utf8');
-const api = fs.readFileSync('dist/core/game-api.js','utf8');
+const apiBoundary = fs.readFileSync('dist/core/game-api.js','utf8');
+const apiCore = fs.readFileSync('dist/core/game-api-core.js','utf8');
+const api = `${apiBoundary}\n${apiCore}`;
 for (const token of ['rootQualityMaterialDropsFromHuntV131','rollTargetRootOriginV131','setRootFocusStateV131','setRootOriginTargetStateV131','breakthroughRootQualityV131']) assert.ok(!session.includes(token), 'session still owns V131: '+token);
 for (const token of ['spiritualRootsV131','setRootFocusV131','setRootOriginTargetV131','activateRootOriginV131','breakthroughRootQualityV131']) {
   assert.ok(!gameplay.includes(token), 'gameplay still exposes V131: '+token);
