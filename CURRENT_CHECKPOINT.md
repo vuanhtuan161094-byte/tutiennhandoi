@@ -21,7 +21,9 @@ Read this first. Do not reconstruct project state from old chats.
 - V166 Công Pháp / Kỹ Năng / Tâm Pháp Runtime Authority: CLOSED / LOCKED.
   - Executable closure: `d2ed13fd29755bd2675b958fe583fe10128787a1`
   - Canonical QA: `34587204274` — SUCCESS
-- No V167 scope has been opened yet.
+- V167 Đan Dược / Nguyên Liệu / Luyện Đan Runtime Authority: CLOSED / LOCKED.
+  - Executable closure: `79d000cffd9f38fc8ec8bcc825ffb14d52090d47`
+  - Canonical QA: `34653220649` — SUCCESS
 
 ## Locked Collection authority
 
@@ -72,6 +74,17 @@ Read this first. Do not reconstruct project state from old chats.
 - Restore canonicalization removes duplicate and non-authored IDs from `learnedDaoPassiveIdsV118`, preventing stale/tampered saves from creating extra Tâm Pháp authority.
 - No manual/skill/heart balance, costs, caps, authored effects or combat coefficients were changed in V166.
 
+## Locked V167 authority
+
+- `alchemy.v146` owns production, read model and current pill runtime authority.
+- V112 method names/state remain compatibility surfaces; they are not a second production authority.
+- Restore converts all valid V112 pill inventory IDs into V146 IDs immediately, including future-realm stock, without losing quantity.
+- Retired `daoPower` / `daoBody` / `daoDefense` pills map to V146 `lifePower` / `lifeBody` / `lifeDefense`.
+- V146 consumer remains authoritative for realm eligibility, quotas and effects at use time.
+- V146 ingredient authority remains exactly Linh Thảo + Yêu Đan.
+- Frontend eager static graph stays within the existing 193-module performance lock.
+- No pill values, recipes, quality rates, quotas, costs, craft times or balance were changed in V167.
+
 ## Evidence
 
 - V164 guards: `qa/tests/v164-pet-confidant-runtime-authority-test.js`, `qa/tests/v164-pet-confidant-integration-authority-test.js`.
@@ -82,6 +95,9 @@ Read this first. Do not reconstruct project state from old chats.
 - V166 guard: `qa/tests/v166-manual-skill-heart-runtime-authority-test.js`.
 - V166 Fast QA: `34587119755` — SUCCESS.
 - V166 canonical closure: `34587204274` — SUCCESS.
+- V167 guard: `qa/tests/v167-alchemy-runtime-authority-test.js`.
+- V167 Fast QA: `34653147356` — SUCCESS.
+- V167 canonical closure: `34653220649` — SUCCESS.
 
 ## Working rule
 
