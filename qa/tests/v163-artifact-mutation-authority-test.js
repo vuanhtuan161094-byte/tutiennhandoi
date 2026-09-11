@@ -77,9 +77,15 @@ test('V163 B2 Game API and Gameplay legacy progression methods structurally dele
 
 test('V163 B2 standalone compatibility labels route through Game API and never directly mutate Session artifact state', () => {
   const standalone = readFileSync(new URL('../../standalone-runtime.js', import.meta.url), 'utf8');
-  for (const action of ['collectionStrengthenV12325', 'collectionAdvanceV12325', 'collectionEquipV12325', 'collectionUnequipV12325']) {
+  const transport = {
+    collectionStrengthenV12325: 'strengthenCollectionV12325',
+    collectionAdvanceV12325: 'advanceCollectionV12325',
+    collectionEquipV12325: 'equipCollectionV12325',
+    collectionUnequipV12325: 'unequipCollectionV12325',
+  };
+  for (const [action, method] of Object.entries(transport)) {
     assert(standalone.includes(action), `expected current compatibility transport ${action}`);
-    assert(standalone.includes(`rt.api.${action}`), `${action} must enter through Game API`);
+    assert(standalone.includes(`rt.api.${method}`), `${action} must enter through Game API method ${method}`);
   }
   assert(!standalone.includes('rt.api.activateArtifact('));
   assert(!standalone.includes('rt.api.deactivateArtifact('));
