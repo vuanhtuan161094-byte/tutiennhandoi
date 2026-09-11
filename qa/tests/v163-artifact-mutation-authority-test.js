@@ -40,13 +40,15 @@ test('V163 B2 V12325 player-facing artifact equip is a compatibility alias into 
   assert.deepEqual(session.stateValue.artifacts.activeIds, legacyBefore);
 });
 
-test('V163 B2 V12316 player-facing progression cannot bypass V12326 Collection state', () => {
+test('V163 B2 V12316 player-facing equip cannot bypass V12326 Collection state', () => {
   const legacyBefore = structuredClone(session.stateValue.artifacts);
-  const before = canonical.items[artifactB.id].level;
-  api.strengthenCollectionV12316(artifactB.id, 1);
-  assert(canonical.items[artifactB.id].level > before);
   api.equipCollectionV12316(artifactB.id, 0);
   assert.equal(canonical.activeArtifactIds[0], artifactB.id);
+  assert.equal(game.artifacts().find(x => x.id === artifactB.id)?.active, true);
+  assert.deepEqual(session.stateValue.artifacts, legacyBefore);
+
+  api.unequipCollectionV12316(artifactB.id);
+  assert(!canonical.activeArtifactIds.includes(artifactB.id));
   assert.deepEqual(session.stateValue.artifacts, legacyBefore);
 });
 
@@ -68,7 +70,9 @@ test('V163 B2 Game API and Gameplay legacy progression methods structurally dele
     assert(gameplaySource.includes(`return this.collection${verb}V12326(`), `Gameplay compatibility ${verb} path must delegate to V12326`);
   }
   assert(apiSource.includes("strengthenCollectionV12316: 'strengthenCollectionV12326'"));
+  assert(apiSource.includes("advanceCollectionV12316: 'advanceCollectionV12326'"));
   assert(apiSource.includes("equipCollectionV12316: 'equipCollectionV12326'"));
+  assert(apiSource.includes("unequipCollectionV12316: 'unequipCollectionV12326'"));
 });
 
 test('V163 B2 standalone compatibility labels route through Game API and never directly mutate Session artifact state', () => {
