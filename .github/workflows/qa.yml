@@ -54,6 +54,7 @@ jobs:
           run_quiet "V161 B5 Spiritual Root × Hunt" node qa/tests/v161-spiritual-root-hunt-pacing-test.js
           run_quiet "V161 B6 economy source/sink" node qa/tests/v161-economy-source-sink-test.js
           run_quiet "V162 Collection authority B1-B5" node qa/tests/v162-collection-runtime-authority-test.js
+          run_quiet "V163 B1 Artifact/Relic authority" node qa/tests/v163-artifact-runtime-authority-test.js
 
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
