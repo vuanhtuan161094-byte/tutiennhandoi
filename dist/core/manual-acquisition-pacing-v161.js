@@ -27,6 +27,7 @@ import {
 
 export const MANUAL_ACQUISITION_PACING_V161_SCHEMA='manual-acquisition-pacing.v161';
 export const V161_MANUAL_AUDIT_STAGE_INDEXES=Object.freeze([2,14,28]);
+export const V161_MANUAL_SAMPLING_MODE='independent-horizon-production-rng';
 const GRADE_ORDER=['mundane','spirit','mystic','earth','heaven','immortal','extreme','breaker'];
 const round=(v,d=3)=>Number(Number(v||0).toFixed(d));
 
@@ -129,6 +130,7 @@ export function simulateManualAcquisitionPacingV161(profileId,stageIndex,days,se
   const ownedCurrentStage=stagePool(stage.index).filter(def=>state.items?.[def.id]?.owned).length;
   return {
     schema:MANUAL_ACQUISITION_PACING_V161_SCHEMA,
+    samplingMode:V161_MANUAL_SAMPLING_MODE,
     profileId,
     profileLabel:V161_SPEND_PROFILES[profileId]?.label??profileId,
     stageIndex:stage.index,
@@ -169,6 +171,7 @@ export function simulateManualAcquisitionPacingV161(profileId,stageIndex,days,se
     },
     assumptions:{
       strategy:'Spend the B3 profile manual allocation on the current-stage oriented banner, then invest generic material and specific fragments into the oriented target first. Other manuals obtained by item drops remain active at their acquired level.',
+      sampling:'Each horizon is an independent deterministic production-RNG Monte Carlo snapshot using the fixed B3 seed set. It is not a continuation of the same player save, so incidental Lv1 non-target ownership and total flat Tu Vi need not be monotonic between adjacent horizons. Pull opportunity and oriented-target progression are the monotonic pacing signals.',
       excluded:'No Resource-PvE material farming, no previous-realm manual inventory, no reincarnation manual-tree bonuses. This isolates Vạn Tượng acquisition and is conservative for total long-life manual power.',
     },
   };
@@ -179,6 +182,7 @@ function aggregate(stageIndex,profileId,days){
   const runs=V161_SPEND_SEEDS.map(seed=>simulateManualAcquisitionPacingV161(profileId,stageIndex,days,seed));
   return {
     stageIndex:runs[0].stageIndex,stageName:runs[0].stageName,profileId,days,runCount:runs.length,
+    samplingMode:V161_MANUAL_SAMPLING_MODE,
     avgManualPulls:round(avg(runs.map(x=>x.manualPulls)),2),
     avgOwnedCurrentStageManuals:round(avg(runs.map(x=>x.currentStageOwnedManuals)),2),
     target:{
@@ -214,11 +218,12 @@ export function buildManualAcquisitionPacingAuditV161(){
   }
   return {
     schema:MANUAL_ACQUISITION_PACING_V161_SCHEMA,
+    samplingMode:V161_MANUAL_SAMPLING_MODE,
     stageIndexes:[...V161_MANUAL_AUDIT_STAGE_INDEXES],
     horizons:[...V161_SPEND_HORIZONS_DAYS],
     seeds:[...V161_SPEND_SEEDS],
     profiles:Object.keys(V161_SPEND_PROFILES),
     matrix,
-    interpretation:'Acquisition-adjusted current-stage Công Pháp pacing. Theoretical V160 max envelopes are retained only as ceilings; production gacha ownership, generic strengthen material and specific-fragment gates determine reachable V127 Tu Vi here.',
+    interpretation:'Acquisition-adjusted current-stage Công Pháp pacing. Theoretical V160 max envelopes are retained only as ceilings. Production gacha ownership, generic strengthen material and specific-fragment gates determine reachable V127 Tu Vi. Horizon rows are independent Monte Carlo snapshots, not one save replayed through time.',
   };
 }
