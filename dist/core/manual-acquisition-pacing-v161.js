@@ -1,9 +1,11 @@
 import {
   createCollectionProgressStateV12316,
   collectionManualCultivationPer15sV127,
-  strengthenCollectionItemV12316,
-  advanceCollectionItemV12316,
 } from './collection-progression-v12316.js';
+import {
+  advanceCollectionEconomyV12325,
+  strengthenCollectionEconomyV12325,
+} from './gacha-collection-economy-v12325.js';
 import {
   collectionCatalogV12326,
   composeCollectionItemV12326,
@@ -13,7 +15,6 @@ import {
 } from './collection-workshop-gacha-v12326.js';
 import {
   MANUAL_REALM_STAGES_V127,
-  manualAdvanceCostV127,
   manualCanAdvanceV127,
   manualComposeCostV127,
 } from './manual-progression-v127.js';
@@ -28,6 +29,7 @@ import {
 export const MANUAL_ACQUISITION_PACING_V161_SCHEMA='manual-acquisition-pacing.v161';
 export const V161_MANUAL_AUDIT_STAGE_INDEXES=Object.freeze([2,14,28]);
 export const V161_MANUAL_SAMPLING_MODE='independent-horizon-production-rng';
+export const V161_MANUAL_GATE_AUTHORITY='advanceCollectionEconomyV12325';
 const GRADE_ORDER=['mundane','spirit','mystic','earth','heaven','immortal','extreme','breaker'];
 const round=(v,d=3)=>Number(Number(v||0).toFixed(d));
 
@@ -69,8 +71,13 @@ function maxCurrentStageManualFlat(stageIndex){
   return collectionManualCultivationPer15sV127(state);
 }
 
+function manualEssence(state){
+  return Math.max(0,Number(state.economyV12325?.ascensionEssence?.manual)||0);
+}
+
 function progressTargetFirst(state,target,realmOrder){
   const beforeGeneric=Math.max(0,Number(state.genericFragments?.manual)||0);
+  const beforeEssence=manualEssence(state);
   const beforeTarget={...(state.items?.[target.id]??{owned:false,level:1,advance:0,specificFragments:0})};
   let composed=false;
   if(!beforeTarget.owned&&Number(beforeTarget.specificFragments||0)>=manualComposeCostV127(target)){
@@ -83,29 +90,38 @@ function progressTargetFirst(state,target,realmOrder){
     let moved=false;
     if(Number(p.level||1)<1000){
       try{
-        const out=strengthenCollectionItemV12316(state,target.id,1000);
+        const out=strengthenCollectionEconomyV12325(state,target.id,1000);
         if(Number(out?.levels||0)>0)moved=true;
-      }catch{}
+      }catch(error){
+        if(!/Không đủ|Thiếu/.test(String(error?.message||error)))throw error;
+      }
     }
     const afterStrength=state.items?.[target.id];
     if(afterStrength?.owned&&Number(afterStrength.advance||0)<10&&manualCanAdvanceV127(afterStrength)){
-      const cost=manualAdvanceCostV127(target,afterStrength);
-      if(Number(afterStrength.specificFragments||0)>=cost){
-        advanceCollectionItemV12316(state,target.id);
+      try{
+        advanceCollectionEconomyV12325(state,target.id);
         moved=true;
         continue;
+      }catch(error){
+        if(!/Thiếu/.test(String(error?.message||error)))throw error;
       }
     }
     if(!moved)break;
   }
   const after={...(state.items?.[target.id]??{owned:false,level:1,advance:0,specificFragments:0})};
+  const afterGeneric=Math.max(0,Number(state.genericFragments?.manual)||0);
+  const afterEssence=manualEssence(state);
   return {
     composed,
     before:beforeTarget,
     after,
+    gateAuthority:V161_MANUAL_GATE_AUTHORITY,
     genericFragmentsBefore:beforeGeneric,
-    genericFragmentsSpent:beforeGeneric-Math.max(0,Number(state.genericFragments?.manual)||0),
-    genericFragmentsRemaining:Math.max(0,Number(state.genericFragments?.manual)||0),
+    genericFragmentsSpent:beforeGeneric-afterGeneric,
+    genericFragmentsRemaining:afterGeneric,
+    breakthroughEssenceBefore:beforeEssence,
+    breakthroughEssenceSpent:beforeEssence-afterEssence,
+    breakthroughEssenceRemaining:afterEssence,
   };
 }
 
@@ -117,7 +133,7 @@ export function simulateManualAcquisitionPacingV161(profileId,stageIndex,days,se
   const state=createCollectionProgressStateV12316();
   replayManualPulls(state,stage,target,manualPulls,seed);
   const gachaGenericFragments=Math.max(0,Number(state.genericFragments?.manual)||0);
-  const gachaBreakthroughEssence=Math.max(0,Number(state.economyV12325?.ascensionEssence?.manual)||0);
+  const gachaBreakthroughEssence=manualEssence(state);
   const progression=progressTargetFirst(state,target,stage.requiredRealmOrder);
   const manualFlatPer15s=collectionManualCultivationPer15sV127(state);
   const stageMaxFlatPer15s=maxCurrentStageManualFlat(stage.index);
@@ -131,6 +147,7 @@ export function simulateManualAcquisitionPacingV161(profileId,stageIndex,days,se
   return {
     schema:MANUAL_ACQUISITION_PACING_V161_SCHEMA,
     samplingMode:V161_MANUAL_SAMPLING_MODE,
+    gateAuthority:V161_MANUAL_GATE_AUTHORITY,
     profileId,
     profileLabel:V161_SPEND_PROFILES[profileId]?.label??profileId,
     stageIndex:stage.index,
@@ -156,7 +173,10 @@ export function simulateManualAcquisitionPacingV161(profileId,stageIndex,days,se
       genericFragmentsSpent:progression.genericFragmentsSpent,
       genericFragmentsRemaining:progression.genericFragmentsRemaining,
       manualBreakthroughEssenceAfterGacha:gachaBreakthroughEssence,
-      note:'Manual levels consume Công Pháp Tàn Ý; 100-level gates consume specific manual fragments through V127 collection authority. Thiên Tinh Công Pháp is reported separately for the later source/sink audit.',
+      manualBreakthroughEssenceSpent:progression.breakthroughEssenceSpent,
+      manualBreakthroughEssenceRemaining:progression.breakthroughEssenceRemaining,
+      gateAuthority:progression.gateAuthority,
+      note:'Player-facing Công Pháp gate authority is V12325: every 100-level breakthrough validates and spends Công Pháp Tàn Ý + Thiên Tinh Công Pháp + specific fragments atomically. Strengthening between gates uses the same player-facing V12325 route.',
     },
     currentStageOwnedManuals:ownedCurrentStage,
     cultivation:{
@@ -170,7 +190,7 @@ export function simulateManualAcquisitionPacingV161(profileId,stageIndex,days,se
       passiveSpeedup:round(base>0?adjustedRate/base:1,4),
     },
     assumptions:{
-      strategy:'Spend the B3 profile manual allocation on the current-stage oriented banner, then invest generic material and specific fragments into the oriented target first. Other manuals obtained by item drops remain active at their acquired level.',
+      strategy:'Spend the B3 profile manual allocation on the current-stage oriented banner, then invest production generic material, breakthrough essence and specific fragments into the oriented target first. Other manuals obtained by item drops remain active at their acquired level.',
       sampling:'Each horizon is an independent deterministic production-RNG Monte Carlo snapshot using the fixed B3 seed set. It is not a continuation of the same player save, so incidental Lv1 non-target ownership and total flat Tu Vi need not be monotonic between adjacent horizons. Pull opportunity and oriented-target progression are the monotonic pacing signals.',
       excluded:'No Resource-PvE material farming, no previous-realm manual inventory, no reincarnation manual-tree bonuses. This isolates Vạn Tượng acquisition and is conservative for total long-life manual power.',
     },
@@ -183,6 +203,7 @@ function aggregate(stageIndex,profileId,days){
   return {
     stageIndex:runs[0].stageIndex,stageName:runs[0].stageName,profileId,days,runCount:runs.length,
     samplingMode:V161_MANUAL_SAMPLING_MODE,
+    gateAuthority:V161_MANUAL_GATE_AUTHORITY,
     avgManualPulls:round(avg(runs.map(x=>x.manualPulls)),2),
     avgOwnedCurrentStageManuals:round(avg(runs.map(x=>x.currentStageOwnedManuals)),2),
     target:{
@@ -205,6 +226,8 @@ function aggregate(stageIndex,profileId,days){
       avgGenericAfterGacha:round(avg(runs.map(x=>x.resources.genericFragmentsAfterGacha)),2),
       avgGenericSpent:round(avg(runs.map(x=>x.resources.genericFragmentsSpent)),2),
       avgBreakthroughEssenceAfterGacha:round(avg(runs.map(x=>x.resources.manualBreakthroughEssenceAfterGacha)),2),
+      avgBreakthroughEssenceSpent:round(avg(runs.map(x=>x.resources.manualBreakthroughEssenceSpent)),2),
+      avgBreakthroughEssenceRemaining:round(avg(runs.map(x=>x.resources.manualBreakthroughEssenceRemaining)),2),
     },
   };
 }
@@ -219,11 +242,12 @@ export function buildManualAcquisitionPacingAuditV161(){
   return {
     schema:MANUAL_ACQUISITION_PACING_V161_SCHEMA,
     samplingMode:V161_MANUAL_SAMPLING_MODE,
+    gateAuthority:V161_MANUAL_GATE_AUTHORITY,
     stageIndexes:[...V161_MANUAL_AUDIT_STAGE_INDEXES],
     horizons:[...V161_SPEND_HORIZONS_DAYS],
     seeds:[...V161_SPEND_SEEDS],
     profiles:Object.keys(V161_SPEND_PROFILES),
     matrix,
-    interpretation:'Acquisition-adjusted current-stage Công Pháp pacing. Theoretical V160 max envelopes are retained only as ceilings. Production gacha ownership, generic strengthen material and specific-fragment gates determine reachable V127 Tu Vi. Horizon rows are independent Monte Carlo snapshots, not one save replayed through time.',
+    interpretation:'Acquisition-adjusted current-stage Công Pháp pacing. Theoretical V160 max envelopes are ceilings only. Production gacha ownership plus the player-facing V12325 three-resource gate (generic Tàn Ý, Thiên Tinh and specific fragments) determine reachable V127 Tu Vi. Horizon rows are independent Monte Carlo snapshots, not one save replayed through time.',
   };
 }
