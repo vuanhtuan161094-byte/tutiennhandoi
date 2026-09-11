@@ -20,6 +20,24 @@ function row(stageIndex,profileId,days){
   return audit.matrix.find(x=>x.stageIndex===stageIndex&&x.profileId===profileId&&x.days===days);
 }
 
+function diagnosticRows(stageIndex,profileId){
+  return V161_SPEND_HORIZONS_DAYS.map(days=>{
+    const x=row(stageIndex,profileId,days);
+    return {
+      days,
+      pulls:x.avgManualPulls,
+      flat:x.cultivation.avgManualFlatPer15s,
+      speedup:x.cultivation.avgPassiveSpeedup,
+      owned:x.avgOwnedCurrentStageManuals,
+      targetLevel:x.target.avgLevel,
+      targetAdvance:x.target.avgAdvance,
+      targetOwned:x.target.ownedAfterSpendCount,
+      genericAfterGacha:x.resources.avgGenericAfterGacha,
+      genericSpent:x.resources.avgGenericSpent,
+    };
+  });
+}
+
 test('V161 B4 covers early/mid/late manual stages over the same B3 profiles, horizons and seeds',()=>{
   assert.equal(audit.schema,MANUAL_ACQUISITION_PACING_V161_SCHEMA);
   assert.deepEqual(audit.stageIndexes,[2,14,28]);
@@ -38,6 +56,13 @@ test('V161 B4 reuses the exact B3 manual allocation instead of inventing another
     assert.equal(b4.manualBudget,b3.categories.manual.allocatedBudget);
   }
 });
+
+console.log('\nV161 B4 HORIZON DIAGNOSTICS');
+for(const stageIndex of V161_MANUAL_AUDIT_STAGE_INDEXES){
+  for(const profileId of Object.keys(V161_SPEND_PROFILES)){
+    console.log(`${stageIndex}:${profileId} ${JSON.stringify(diagnosticRows(stageIndex,profileId))}`);
+  }
+}
 
 test('V161 B4 acquisition-adjusted manual power grows monotonically with time for every stage/profile',()=>{
   for(const stageIndex of V161_MANUAL_AUDIT_STAGE_INDEXES){
