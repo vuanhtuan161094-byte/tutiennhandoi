@@ -12,7 +12,10 @@ Read this first. Do not reconstruct project state by reading old chats.
 - V162 closure executable HEAD: `f46c5e956f1410fa5228d691c16ddca4a594d09c`.
 - V162 closure Fast QA: `34562603034` — SUCCESS.
 - V163 Pháp Bảo / Chí Bảo Runtime Authority: ACTIVE.
-- V163 B1 Authority Discovery: IN PROGRESS.
+- V163 B1 Authority Discovery: PASS.
+- V163 B1 executable/CI checkpoint: `04a07c36dad5f12f7ad133838b7c34a0a272c39c`.
+- V163 B1 Fast QA run: `34574636743` — SUCCESS.
+- Next scoped block: V163 B2 Mutation Authority.
 
 ## Locked V162 authority
 
@@ -22,27 +25,33 @@ Read this first. Do not reconstruct project state by reading old chats.
 - `collectionV12316` state remains a save/runtime compatibility structure.
 - V162 did not authorize gameplay balance changes.
 
-## V163 current findings
+## V163 B1 locked findings
 
-- Player-facing Pháp Bảo / Chí Bảo are read from Collection economy categories `artifact` / `relic`.
-- `dist/core/artifact-v88.js` is the current combat adapter over the V149 artifact base and V150/V151 behavior patches.
-- `dist/core/gameplay.js` exposes Collection-backed Pháp Bảo as the player-facing artifact view.
-- Legacy `state.artifacts` is not the player-facing combat loadout authority, but it still has verified consumers in late-game integration/history/reincarnation flows. It is not safe to delete yet.
-- `game-artifact.js` is not a current-main file; do not use that stale documentation path as authority.
+- Player-facing Pháp Bảo ownership/progression is Collection-backed: `state.collectionV12316.items`.
+- Equipped Pháp Bảo authority is `state.collectionV12316.activeArtifactIds`.
+- Chí Bảo active authority is `state.collectionV12316.economyV12325.activeRelicId`; it remains a separate one-slot combat-law system.
+- `dist/core/artifact-v88.js` is the current Pháp Bảo/Chí Bảo combat adapter over the V149 artifact base and V150/V151 behavior patches.
+- `applyCollectionEconomyToEntityV12325()` composes the Collection runtime once through `applyCollectionToEntityV12316()`.
+- `SimulationSession.personalCombatEntityForState()` deliberately skips legacy `state.artifacts` as direct Pháp Bảo combat power and applies Collection artifact/relic power once.
+- Legacy `dist/core/artifact.js` / `state.artifacts` is required compatibility/history state with verified nourishment, Khí Linh, ownership-year, battle-history, lost/recovered and Integration/reincarnation consumers. It is not safe to delete.
+- Save/restore clones legacy `artifacts` and canonical `collectionV12316` independently; B1 found no state merge.
+- Focused guard: `qa/tests/v163-artifact-runtime-authority-test.js`.
+- B1 did not change gameplay balance or production rates.
 
-## V163 mission
+## V163 B2 mission
 
-1. finish classifying every surviving legacy Pháp Bảo consumer;
-2. add focused executable authority proof;
-3. route replaceable player-facing reads/writes to the Collection-backed authority;
-4. preserve required history/save/reincarnation semantics;
-5. delete only paths proven dead;
-6. run targeted regression first, then Fast QA when the block is ready.
+1. audit all player-facing Pháp Bảo/Chí Bảo mutation entry points across UI, standalone transport, Game API, GameplayFacade and Session;
+2. prove they enter through the V12326 Collection public authority;
+3. distinguish player-facing mutations from intentional history-only `state.artifacts` mutations;
+4. remove only mutation paths proven unreachable or semantically duplicated;
+5. add targeted mutation-authority regression before broader cleanup;
+6. run targeted regression first, then Fast QA when B2 is ready.
 
 ## Do not reopen unless regression proves necessary
 
 - V161 gameplay/pacing closure.
 - V162 Collection/Gacha authority consolidation.
+- V163 B1 Artifact/Relic authority discovery and guard.
 - V160 economy-source/sink and wealth pacing.
 - Earlier locked gameplay systems unrelated to the active V163 authority block.
 
@@ -51,7 +60,7 @@ Read this first. Do not reconstruct project state by reading old chats.
 1. `docs/versions/V163.md`
 2. `docs/DEVELOPMENT_PROTOCOL.md`
 3. `docs/systems/INDEX.md` only when subsystem routing is unclear
-4. exact Pháp Bảo/Chí Bảo source/test regions needed for the active block
+4. exact Pháp Bảo/Chí Bảo mutation source/test regions needed for B2
 
 ## Working rule
 
