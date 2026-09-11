@@ -7,8 +7,8 @@ Read only this sequence before doing work:
 3. `docs/systems/INDEX.md` only if subsystem routing is unclear
 4. exact live source/tests needed for the current task
 
-Do not preload historical reports, old version files, old chats, raw simulations, full workflow jobs/logs, or unrelated source.
+`main` is the single current implementation authority.
 
-The current feature-branch HEAD is the implementation source of truth. `main` is intentionally untouched and must not be merged unless the user explicitly orders it.
+Do not preload historical reports, old version files, old chats, raw simulations, complete workflow jobs/logs, or unrelated source.
 
-If a current checkpoint conflicts with an older document, use the current checkpoint and live source/tests.
+If an older document conflicts with the current checkpoint or live source/tests, use the current checkpoint and live `main` implementation.
