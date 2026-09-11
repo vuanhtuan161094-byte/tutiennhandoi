@@ -66,6 +66,19 @@ test('V162 B4 V12316 progression names are compatibility shims routed through V1
   }
 });
 
+test('V162 B5 legacy DEV grant routes through current V12326 workshop grant while historical simulator stays distinct', () => {
+  assert(Object.prototype.hasOwnProperty.call(GameplayFacade.prototype, 'devCollectionGrantV12325'));
+  assert(GameplayFacade.prototype.devCollectionGrantV12325.toString().includes('this.devCollectionGrantV12326()'));
+  const apiBoundary = readFileSync(new URL('../../dist/core/game-api.js', import.meta.url), 'utf8');
+  assert(apiBoundary.includes("Object.defineProperty(LocalGameApplicationApi.prototype, 'devGrantCollectionV12325'"));
+  assert(apiBoundary.includes('return this.devGrantCollectionV12326(...args)'));
+  assert.equal(typeof LocalGameApplicationApi.prototype.simulateCollectionGachaV12325, 'function');
+  assert.equal(typeof LocalGameApplicationApi.prototype.simulateCollectionGachaV12326, 'function');
+  const standalone = readFileSync(new URL('../../standalone-runtime.js', import.meta.url), 'utf8');
+  assert(standalone.includes("case'devCollectionGrantV12325':"));
+  assert(standalone.includes("case'devCollectionGrantV12326':"));
+});
+
 test('V162 production V12326 Gacha still spends the canonical Bound Jade wallet', () => {
   const registry = buildRegistry();
   const state = createPlayableAdventureState();
