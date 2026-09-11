@@ -162,6 +162,14 @@ jobs:
           run_quiet "V163 B3 read/combat" node qa/tests/v163-artifact-read-combat-authority-test.js
           run_quiet "V163 B4 compatibility" node qa/tests/v163-artifact-compatibility-cleanup-test.js
 
+      - name: V164 Pet / Confidant authority closure
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_quiet() { local label="$1"; shift; local log; log="$(mktemp)"; if "$@" >"$log" 2>&1; then echo "PASS · $label"; else echo "FAIL · $label"; cat "$log"; rm -f "$log"; exit 1; fi; rm -f "$log"; }
+          run_quiet "V164 B1 runtime authority" node qa/tests/v164-pet-confidant-runtime-authority-test.js
+          run_quiet "V164 B2/B3 transport combat" node qa/tests/v164-pet-confidant-integration-authority-test.js
+
       - name: Backend closure
         run: node qa/runners/v140-backend-gates.js closure
 
