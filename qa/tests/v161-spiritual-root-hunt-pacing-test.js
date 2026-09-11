@@ -69,7 +69,8 @@ test('V161 B5 one first-clear credit per entered tier never increases virtual fa
   for(const targetLevel of V161_ROOT_TARGET_LEVELS){
     const pity=row(targetLevel,false),first=row(targetLevel,true);
     assert(first.virtualKills<=pity.virtualKills,`${targetLevel}: virtual kills`);
-    assert(first.firstClearOrigins<=28,`${targetLevel}: first-clear credits`);
+    assert(first.origins.firstClearGenerated<=28,`${targetLevel}: first-clear credits`);
+    assert(first.firstClearKills<=28,`${targetLevel}: first-clear kill overhead`);
     assert(first.totalKills<=pity.totalKills+28,`${targetLevel}: total kills including one-credit-per-tier overhead`);
   }
 });
