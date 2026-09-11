@@ -1,16 +1,27 @@
 import { cloneAdventureState } from './world.js';
 import { normalizeEquipmentStateV98 } from './equipment.js';
-import { EQUIPMENT_MAX_ENHANCEMENT_V142 } from './equipment-v142.js';
+import { EQUIPMENT_MAX_ENHANCEMENT_V142, equipmentSetDefinitionV142 } from './equipment-v142.js';
 import { clonePotentialState } from './potential.js';
 import { cloneCurrentLifeMeta, cloneMetaProgressState } from './life.js';
 import { repairAdventureStateReferences } from './save-stability.js';
 
-// V165: restore must enforce the same canonical enhancement cap as live V142 mutation.
-// Legacy normalization still supports older equipment up to +20, but V142 is locked to +15.
+// V165: restore must enforce the same canonical V142 contract as live mutation.
+// V142 progression is Rank + Enhancement(+15) + Affix + V142 Set only. Retired legacy
+// Grade/Quality/Trait/Dao-Wen/Gem lanes must never be resurrected by stale/tampered saves.
 export function normalizeCanonicalEquipmentAfterRestore(state) {
     for (const item of state?.equipment?.items ?? []) {
         if (item?.schema !== 'equipment.v142') continue;
         item.enhancementLevel = Math.max(0, Math.min(EQUIPMENT_MAX_ENHANCEMENT_V142, Math.floor(Number(item.enhancementLevel) || 0)));
+        item.tier = 0;
+        item.grade = 'mundane';
+        item.quality = 'mid';
+        item.traitIds = [];
+        item.daoInscription = undefined;
+        item.gemSockets = [];
+        if (item.setId && !equipmentSetDefinitionV142(item.setId)) {
+            item.setId = undefined;
+            item.setResonanceLevelV143 = 0;
+        }
     }
     return state?.equipment;
 }
