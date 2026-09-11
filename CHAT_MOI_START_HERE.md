@@ -1,14 +1,11 @@
-# CHAT MỚI — START HERE
+# New Chat Entry Point
 
-Read only this sequence before doing work:
+1. Read `CURRENT_CHECKPOINT.md`.
+2. Read `docs/versions/V163.md`.
+3. Read `docs/DEVELOPMENT_PROTOCOL.md`.
+4. Read `docs/systems/INDEX.md` only if subsystem routing is unclear.
+5. Inspect only the source/test regions needed for the active Pháp Bảo / Chí Bảo authority block.
 
-1. `CURRENT_CHECKPOINT.md`
-2. the active version file referenced there (`docs/versions/V161.md`)
-3. `docs/systems/INDEX.md` only if subsystem routing is unclear
-4. exact live source/tests needed for the current task
+Do **not** preload old version history, raw simulation output, successful CI logs, or unrelated source files.
 
-`main` is the single current implementation authority.
-
-Do not preload historical reports, old version files, old chats, raw simulations, complete workflow jobs/logs, or unrelated source.
-
-If an older document conflicts with the current checkpoint or live source/tests, use the current checkpoint and live `main` implementation.
+Current policy: repository `main` is source of truth and development stays on the single `main` branch unless explicitly changed.
