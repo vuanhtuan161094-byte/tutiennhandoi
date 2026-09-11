@@ -11,21 +11,29 @@ import { LocalGameApplicationApi, createGameApplicationApi } from '../../dist/co
 let passed = 0;
 const test = (name, fn) => { fn(); passed++; console.log(`✓ ${name}`); };
 
-test('V162 internal Session keeps compatibility implementation while public Gameplay/API remove legacy Gacha authority', () => {
+test('V162 B1 internal Session keeps compatibility implementation while public Gameplay/API remove legacy Gacha authority', () => {
   assert.equal(typeof SimulationSession.prototype.collectionGachaV12326, 'function');
   assert.equal(typeof SimulationSession.prototype.collectionGachaV12325, 'function');
   assert.equal(typeof SimulationSession.prototype.collectionGachaV12316, 'function');
   assert.equal(typeof GameplayFacade.prototype.collectionGachaV12326, 'function');
   assert.equal(GameplayFacade.prototype.collectionGachaV12325, undefined);
   assert.equal(GameplayFacade.prototype.collectionGachaV12316, undefined);
-});
-
-test('V162 application API exposes V12326 Gacha only and preserves live V12325 progression', () => {
   assert.equal(typeof LocalGameApplicationApi.prototype.gachaCollectionV12326, 'function');
   assert.equal(LocalGameApplicationApi.prototype.gachaCollectionV12325, undefined);
   assert.equal(LocalGameApplicationApi.prototype.gachaCollectionV12316, undefined);
-  assert.equal(typeof LocalGameApplicationApi.prototype.strengthenCollectionV12325, 'function');
-  assert.equal(typeof LocalGameApplicationApi.prototype.advanceCollectionV12325, 'function');
+});
+
+test('V162 B2 establishes canonical V12326 progression methods without changing the locked V12325 engine', () => {
+  for (const method of ['collectionStrengthenV12326','collectionAdvanceV12326','collectionEquipV12326','collectionUnequipV12326']) {
+    assert.equal(typeof GameplayFacade.prototype[method], 'function', `${method} missing on GameplayFacade`);
+  }
+  for (const method of ['strengthenCollectionV12326','advanceCollectionV12326','equipCollectionV12326','unequipCollectionV12326']) {
+    assert.equal(typeof LocalGameApplicationApi.prototype[method], 'function', `${method} missing on Game API`);
+  }
+  // Compatibility names remain temporarily because standalone/app transport has not migrated yet.
+  for (const method of ['strengthenCollectionV12325','advanceCollectionV12325','equipCollectionV12325','unequipCollectionV12325']) {
+    assert.equal(typeof LocalGameApplicationApi.prototype[method], 'function', `${method} compatibility shim missing`);
+  }
 });
 
 test('V162 production V12326 Gacha still spends the canonical Bound Jade wallet', () => {
@@ -56,6 +64,7 @@ test('V162 Game API has a stable public boundary separated from compatibility im
   const apiBoundary = readFileSync(new URL('../../dist/core/game-api.js', import.meta.url), 'utf8');
   assert(apiBoundary.includes("export * from './game-api-core.js'"));
   assert(apiBoundary.includes('gachaCollectionV12316') && apiBoundary.includes('gachaCollectionV12325'));
+  assert(apiBoundary.includes('strengthenCollectionV12326') && apiBoundary.includes('strengthenCollectionV12325'));
 });
 
 console.log(`\nV162 COLLECTION RUNTIME AUTHORITY: ${passed}/${passed} PASS`);

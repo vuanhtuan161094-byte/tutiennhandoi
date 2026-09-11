@@ -6,7 +6,7 @@ import { GameplayFacade as GameplayFacadeBase } from './gameplay-v149-base.js';
 import { ARTIFACTS_V88, artifactViewV88, artifactRawSummaryV149 } from './artifact-v88.js';
 
 // V162 public-authority cleanup: V12326 is the only callable Collection/Gacha path.
-// The V12325 progression methods remain live until their own authority migration.
+// The V12325 progression methods remain compatibility adapters until UI transport migration.
 for (const legacyMethod of ['collectionGachaV12316', 'collectionGachaV12325']) {
   if (Object.prototype.hasOwnProperty.call(GameplayFacadeBase.prototype, legacyMethod)) {
     delete GameplayFacadeBase.prototype[legacyMethod];
@@ -14,6 +14,21 @@ for (const legacyMethod of ['collectionGachaV12316', 'collectionGachaV12325']) {
 }
 
 export class GameplayFacade extends GameplayFacadeBase {
+  // V162 B2 canonical progression names. Implementation stays on the locked V12325
+  // progression engine until that lower-level module is separately consolidated.
+  collectionStrengthenV12326(itemId, levels = 1) {
+    return this.session.strengthenCollectionV12325(itemId, levels);
+  }
+  collectionAdvanceV12326(itemId) {
+    return this.session.advanceCollectionV12325(itemId);
+  }
+  collectionEquipV12326(itemId, artifactSlotIndex) {
+    return this.session.equipCollectionV12325(itemId, artifactSlotIndex);
+  }
+  collectionUnequipV12326(itemId) {
+    return this.session.unequipCollectionV12325(itemId);
+  }
+
   overview() {
     const out = super.overview();
     const state = this.session.state;
