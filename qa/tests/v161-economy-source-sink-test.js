@@ -68,7 +68,9 @@ test('B6 Gacha and acceleration shop are real Bound Jade sinks', () => {
 });
 
 test('B6 public session wiring records Bound Jade Gacha and DongFu spend in the ledger', () => {
-  const source = readFileSync(new URL('../../dist/core/session.js', import.meta.url), 'utf8');
+  const boundary = readFileSync(new URL('../../dist/core/session.js', import.meta.url), 'utf8');
+  assert(boundary.includes("export * from './session-core.js'"));
+  const source = readFileSync(new URL('../../dist/core/session-core.js', import.meta.url), 'utf8');
   assert(source.includes("recordBoundJadeSpendV89(state, `gacha.${bannerId}`, result.cost)"));
   assert(source.includes("recordBoundJadeSpendV89(state, `cave.${facilityId}`, result.cost.boundJade)"));
 });
