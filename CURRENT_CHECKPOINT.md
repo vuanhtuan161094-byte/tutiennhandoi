@@ -5,52 +5,68 @@ Date: 2026-09-11
 ## Canonical state
 
 - Repository authority: **`main` only**.
-- All former feature/refactor/tmp branches were deleted after `main` was fast-forwarded to the latest V161 lineage.
-- Do not create version/block branches unless the user explicitly requests isolation.
 - Git history is the archive. Do not keep duplicate legacy snapshots merely for backup.
-- Locked baseline: **V160 CLOSED / LOCKED**.
-- Active version: **V161 — Economy & Pacing Fixes**.
+- Locked baseline: **V161 CLOSED / LOCKED**.
+- Latest executable closure SHA: `d7e917a8ebc77dce767412e8ffad94bd1f085bb7`.
+- Canonical closure QA run: `34557869821` — **SUCCESS**.
 - Gameplay/web version string remains `1.40.0-alpha.24.0` until versioning is deliberately changed.
+- No next gameplay version is assumed until a new scoped task is selected.
 
-## V161 gate state
+## V161 final gate state
 
 - B1 — Bế Quan contract audit: PASS.
 - B2 — Early pacing classification: PASS.
 - B3 — Bound Jade spend model: PASS.
 - B4 — Manual acquisition-adjusted Công Pháp pacing: PASS.
-- B5 — Linh Căn × Hunt pacing: PASS after the test contract was corrected to use `origins.firstClearGenerated`.
-- B6 — Economy/source-sink review: NEXT.
-- V161 full closure: PENDING.
+- B5 — Linh Căn × Hunt pacing: PASS.
+- B6 — Economy/source-sink review: PASS.
+- V161 full closure: **PASS / LOCKED**.
 
-## Repository consolidation — PASS
+## V161 B6 result
 
-Safe consolidation completed without changing gameplay behavior:
+B6 reconciled the live economy without changing gameplay prices, reward rates or progression rules.
 
-- removed obsolete V141/V142/V145 branch-specific workflows;
-- removed retired V142/V145 patch/migration tools;
-- removed stale V140 UI handoff/checkpoint files and duplicate next-chat/start routers;
-- removed stale source SHA manifest and historical reports already preserved by Git history;
-- removed unreferenced `app-legacy-v146.js`;
-- synchronized `CHAT_MOI_START_HERE.md`, `docs/DEVELOPMENT_PROTOCOL.md`, `docs/PROJECT_STRUCTURE.md`, `docs/systems/INDEX.md` and `docs/versions/V161.md` to the single-main model;
-- replaced multiple CI workflows with one `.github/workflows/qa.yml`.
+- Bound Jade daily gameplay cap: 140/day — reconciled to real award paths.
+- PvP Bound Jade: 5 paid wins/day × 8 — reconciled.
+- Weekly recurring Bound Jade: 300/week — reconciled.
+- First-clear Bound Jade: 75/week cap — reconciled.
+- Gacha: 160 single / 1,440 ten-pull — unchanged; real Bound Jade sink.
+- Gacha, DongFu and acceleration shop remain competing Bound Jade sinks.
+- Linh Thạch market buy/sell loop remains real with finite Phường Thị stock.
+- Resource farming stays uncapped; specific collection fragments remain Gacha-only.
+- Tiên Ngọc thường (`immortalJade`) remains a compatibility/optional spend channel with no authored recurring internal gameplay source and is explicitly excluded from V161 recurring-economy pacing.
 
-Consolidation validation:
+Dedicated regression gate: `qa/tests/v161-economy-source-sink-test.js`.
 
-- QA workflow run `34556128020`: **SUCCESS**.
-- V161 B1–B5: PASS.
-- Backend fast gate: PASS.
-- Frontend fast gate: PASS.
-- Canonical QA correctly did not run because the consolidation commit was not a `[closure]` commit.
-- `.github/workflows/` now contains only `qa.yml`.
+## Closure evidence
 
-Consolidation rule going forward: delete only files proven obsolete/unreferenced or migrate their live responsibility first. Do not change gameplay merely to make the tree look cleaner.
+Closure candidate: `d7e917a8ebc77dce767412e8ffad94bd1f085bb7`
+
+GitHub Actions run `34557869821`:
+
+- Fast QA: SUCCESS.
+- V161 B1–B6: SUCCESS.
+- V140–V151 locked baseline: SUCCESS.
+- V152–V159 locked authorities: SUCCESS.
+- V160 locked audit evidence: SUCCESS.
+- Backend closure: SUCCESS.
+- Frontend closure: SUCCESS.
+
+## Repository consolidation state
+
+- only `main` is used for development;
+- `.github/workflows/` contains one workflow: `qa.yml`;
+- obsolete branch-specific workflows and migration/patch tools were removed;
+- stale duplicate checkpoints/handoff docs and proven unreferenced legacy snapshots were removed;
+- current routing docs are `CHAT_MOI_START_HERE.md`, this checkpoint, `docs/DEVELOPMENT_PROTOCOL.md`, `docs/PROJECT_STRUCTURE.md`, and `docs/systems/INDEX.md`;
+- delete/rename further runtime files only after proving their live consumers and authority.
 
 ## Minimal-context protocol
 
 For every new task read only:
 
 1. `CURRENT_CHECKPOINT.md`
-2. `docs/versions/V161.md`
+2. latest relevant version/system note only when needed
 3. `docs/systems/INDEX.md` only when routing is unclear
 4. exact live source/tests for the affected subsystem
 
@@ -63,13 +79,9 @@ Do not preload old reports, old chats, raw simulations, complete CI logs, or unr
 - Normal executable pushes to `main` run Fast QA.
 - Markdown/docs-only pushes do not run QA.
 - A commit message containing `[closure]` runs Fast QA then Canonical QA.
-- Manual QA workflow dispatch also runs Fast QA then Canonical QA.
 - Read CI status first; inspect job/log details only on failure.
-- Current user instruction > live `main` source/tests > active version spec > Git history.
+- Current user instruction > live `main` source/tests > current system/version note > Git history.
 
 ## Next work
 
-1. Execute V161 B6 economy/source-sink review using minimal context.
-2. Run targeted/subsystem tests for any B6 changes.
-3. Commit the V161 closure candidate with `[closure]`.
-4. Lock V161 only after the exact closure candidate is fully green.
+Choose the next scoped gameplay/UI task. If repository consolidation continues, consolidate runtime authority **one subsystem at a time** (prove imports/consumers, migrate responsibility, run targeted tests, then delete/rename legacy files) rather than performing a bulk rename.
