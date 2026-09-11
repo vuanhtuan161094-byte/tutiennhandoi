@@ -5,83 +5,57 @@ Date: 2026-09-11
 ## Canonical state
 
 - Repository authority: **`main` only**.
-- Git history is the archive. Do not keep duplicate legacy snapshots merely for backup.
+- Git history is the archive; do not keep duplicate snapshots for backup.
 - Locked baseline: **V161 CLOSED / LOCKED**.
-- Latest executable closure SHA: `d7e917a8ebc77dce767412e8ffad94bd1f085bb7`.
-- Canonical closure QA run: `34557869821` — **SUCCESS**.
-- Gameplay/web version string remains `1.40.0-alpha.24.0` until versioning is deliberately changed.
-- No next gameplay version is assumed until a new scoped task is selected.
+- V161 closure SHA: `d7e917a8ebc77dce767412e8ffad94bd1f085bb7`.
+- V161 canonical QA: `34557869821` — **SUCCESS**.
+- Active version: **V162 — Runtime Authority Consolidation**.
+- Gameplay/web version string remains `1.40.0-alpha.24.0` until deliberately changed.
 
-## V161 final gate state
+## V162 status
 
-- B1 — Bế Quan contract audit: PASS.
-- B2 — Early pacing classification: PASS.
-- B3 — Bound Jade spend model: PASS.
-- B4 — Manual acquisition-adjusted Công Pháp pacing: PASS.
-- B5 — Linh Căn × Hunt pacing: PASS.
-- B6 — Economy/source-sink review: PASS.
-- V161 full closure: **PASS / LOCKED**.
+- B1 — Collection/Gacha public authority: **PASS**.
+  - Player-facing Gameplay/API exposes only V12326 Gacha.
+  - Legacy V12316/V12325 Gacha transport remains blocked.
+  - Internal Session compatibility methods are intentionally retained because moving/splitting `session.js` broke unrelated structural gates that inspect the canonical source file.
+  - Commit lineage stabilized at `81c1af2a502c65e9e166dbe2499d202f5ea99351`.
+  - Fast QA `34559739435`: targeted + backend + frontend **SUCCESS**.
+- B2 — Collection progression canonical API: **PASS**.
+  - Canonical V12326 strengthen/advance/equip/unequip methods now exist on Gameplay/API.
+  - They delegate to the locked V12325 progression engine; no progression math/state was rewritten.
+  - V12325 API names remain temporary compatibility shims because current standalone/UI transport still calls them.
+  - Executable HEAD: `54eae66a23dcc498130f4218a5b7136173740d53`.
+  - Fast QA `34559828970`: targeted + backend + frontend **SUCCESS**.
+- B3 — Collection progression transport/UI namespace migration: **NEXT**.
+- V162 closure: **PENDING**.
 
-## V161 B6 result
+## Authority rules learned in V162
 
-B6 reconciled the live economy without changing gameplay prices, reward rates or progression rules.
-
-- Bound Jade daily gameplay cap: 140/day — reconciled to real award paths.
-- PvP Bound Jade: 5 paid wins/day × 8 — reconciled.
-- Weekly recurring Bound Jade: 300/week — reconciled.
-- First-clear Bound Jade: 75/week cap — reconciled.
-- Gacha: 160 single / 1,440 ten-pull — unchanged; real Bound Jade sink.
-- Gacha, DongFu and acceleration shop remain competing Bound Jade sinks.
-- Linh Thạch market buy/sell loop remains real with finite Phường Thị stock.
-- Resource farming stays uncapped; specific collection fragments remain Gacha-only.
-- Tiên Ngọc thường (`immortalJade`) remains a compatibility/optional spend channel with no authored recurring internal gameplay source and is explicitly excluded from V161 recurring-economy pacing.
-
-Dedicated regression gate: `qa/tests/v161-economy-source-sink-test.js`.
-
-## Closure evidence
-
-Closure candidate: `d7e917a8ebc77dce767412e8ffad94bd1f085bb7`
-
-GitHub Actions run `34557869821`:
-
-- Fast QA: SUCCESS.
-- V161 B1–B6: SUCCESS.
-- V140–V151 locked baseline: SUCCESS.
-- V152–V159 locked authorities: SUCCESS.
-- V160 locked audit evidence: SUCCESS.
-- Backend closure: SUCCESS.
-- Frontend closure: SUCCESS.
-
-## Repository consolidation state
-
-- only `main` is used for development;
-- `.github/workflows/` contains one workflow: `qa.yml`;
-- obsolete branch-specific workflows and migration/patch tools were removed;
-- stale duplicate checkpoints/handoff docs and proven unreferenced legacy snapshots were removed;
-- current routing docs are `CHAT_MOI_START_HERE.md`, this checkpoint, `docs/DEVELOPMENT_PROTOCOL.md`, `docs/PROJECT_STRUCTURE.md`, and `docs/systems/INDEX.md`;
-- delete/rename further runtime files only after proving their live consumers and authority.
+- Consolidate public authority before deleting lower-level implementation/state.
+- Do not rename or split large canonical files solely for cleanliness when locked tests legitimately inspect their source blocks.
+- `collectionV12316` save/state naming and V12325 progression internals are compatibility implementation details, not proof that they are the player-facing authority.
+- No gameplay rates, prices, reward math or save semantics changed in B1/B2.
 
 ## Minimal-context protocol
 
-For every new task read only:
+Read only:
 
 1. `CURRENT_CHECKPOINT.md`
-2. latest relevant version/system note only when needed
-3. `docs/systems/INDEX.md` only when routing is unclear
-4. exact live source/tests for the affected subsystem
+2. `docs/versions/V162.md`
+3. `docs/systems/INDEX.md` only if routing is unclear
+4. exact live source/tests for the current subsystem
 
-Do not preload old reports, old chats, raw simulations, complete CI logs, or unrelated source.
+Do not preload old reports/chats/raw simulations/full CI logs.
 
 ## Execution rules
 
-- Search → narrow → read exact authority → patch → targeted test.
-- Small normal commits go directly to `main`.
-- Normal executable pushes to `main` run Fast QA.
+- Search → narrow → authority patch → targeted gate → Fast QA.
+- Executable pushes to `main` run Fast QA.
 - Markdown/docs-only pushes do not run QA.
-- A commit message containing `[closure]` runs Fast QA then Canonical QA.
-- Read CI status first; inspect job/log details only on failure.
-- Current user instruction > live `main` source/tests > current system/version note > Git history.
+- `[closure]` runs Fast QA then Canonical QA.
+- Inspect logs only on failure.
+- Current user instruction > live `main` source/tests > current V162 note > Git history.
 
 ## Next work
 
-Choose the next scoped gameplay/UI task. If repository consolidation continues, consolidate runtime authority **one subsystem at a time** (prove imports/consumers, migrate responsibility, run targeted tests, then delete/rename legacy files) rather than performing a bulk rename.
+B3: migrate Collection strengthen/advance/equip/unequip transport/UI from V12325 names to the canonical V12326 names **without changing the V12325 progression engine**. Only after the live transport no longer needs V12325 compatibility names should those public aliases be retired.
