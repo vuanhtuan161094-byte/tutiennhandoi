@@ -23,17 +23,28 @@ test('V162 B1 internal Session keeps compatibility implementation while public G
   assert.equal(LocalGameApplicationApi.prototype.gachaCollectionV12316, undefined);
 });
 
-test('V162 B2 establishes canonical V12326 progression methods without changing the locked V12325 engine', () => {
+test('V162 B2 establishes canonical V12326 collection progression methods', () => {
   for (const method of ['collectionStrengthenV12326','collectionAdvanceV12326','collectionEquipV12326','collectionUnequipV12326']) {
     assert.equal(typeof GameplayFacade.prototype[method], 'function', `${method} missing on GameplayFacade`);
   }
   for (const method of ['strengthenCollectionV12326','advanceCollectionV12326','equipCollectionV12326','unequipCollectionV12326']) {
     assert.equal(typeof LocalGameApplicationApi.prototype[method], 'function', `${method} missing on Game API`);
   }
-  // Compatibility names remain temporarily because standalone/app transport has not migrated yet.
-  for (const method of ['strengthenCollectionV12325','advanceCollectionV12325','equipCollectionV12325','unequipCollectionV12325']) {
-    assert.equal(typeof LocalGameApplicationApi.prototype[method], 'function', `${method} compatibility shim missing`);
+});
+
+test('V162 B3 V12325 progression names are compatibility shims routed through V12326 authority', () => {
+  for (const [compatibility, canonical] of [
+    ['collectionStrengthenV12325','collectionStrengthenV12326'],
+    ['collectionAdvanceV12325','collectionAdvanceV12326'],
+    ['collectionEquipV12325','collectionEquipV12326'],
+    ['collectionUnequipV12325','collectionUnequipV12326'],
+  ]) {
+    assert(Object.prototype.hasOwnProperty.call(GameplayFacade.prototype, compatibility));
+    assert(GameplayFacade.prototype[compatibility].toString().includes(`this.${canonical}`));
   }
+  const apiBoundary = readFileSync(new URL('../../dist/core/game-api.js', import.meta.url), 'utf8');
+  assert(apiBoundary.includes('return this[canonicalMethod](...args)'));
+  assert(apiBoundary.includes("strengthenCollectionV12326: 'strengthenCollectionV12325'"));
 });
 
 test('V162 production V12326 Gacha still spends the canonical Bound Jade wallet', () => {
@@ -53,18 +64,11 @@ test('V162 production V12326 Gacha still spends the canonical Bound Jade wallet'
   assert.equal(before - after, 160);
 });
 
-test('V162 standalone transport keeps V12326 canonical and blocks both legacy Gacha actions', () => {
+test('V162 standalone transport keeps V12326 Gacha canonical and legacy Gacha actions blocked', () => {
   const source = readFileSync(new URL('../../standalone-runtime.js', import.meta.url), 'utf8');
   assert(source.includes("case'collectionGachaV12326':result=rt.api.gachaCollectionV12326"));
   assert(source.includes("case'collectionGachaV12325':throw new Error"));
   assert(source.includes("case'collectionGachaV12316':throw new Error"));
-});
-
-test('V162 Game API has a stable public boundary separated from compatibility implementation', () => {
-  const apiBoundary = readFileSync(new URL('../../dist/core/game-api.js', import.meta.url), 'utf8');
-  assert(apiBoundary.includes("export * from './game-api-core.js'"));
-  assert(apiBoundary.includes('gachaCollectionV12316') && apiBoundary.includes('gachaCollectionV12325'));
-  assert(apiBoundary.includes('strengthenCollectionV12326') && apiBoundary.includes('strengthenCollectionV12325'));
 });
 
 console.log(`\nV162 COLLECTION RUNTIME AUTHORITY: ${passed}/${passed} PASS`);

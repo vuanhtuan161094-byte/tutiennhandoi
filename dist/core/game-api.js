@@ -12,21 +12,30 @@ for (const legacyMethod of ['gachaCollectionV12316', 'gachaCollectionV12325']) {
   }
 }
 
-// V162 B2: establish V12326 as the canonical progression namespace before the UI/transport
-// migration. V12325 names stay temporarily as compatibility shims because the current web
-// transport still calls them; all canonical calls delegate to the same locked implementation.
-const progressionAliases = {
+// V162 B2/B3: V12326 owns the public collection-progression authority while the locked
+// V12325 implementation remains underneath. Capture the original implementation once,
+// expose canonical V12326 methods, then turn the old V12325 names into compatibility
+// shims that route back through the canonical methods. This lets the current monolithic
+// standalone/UI action strings keep working without retaining a second public authority.
+const progressionPairs = {
   strengthenCollectionV12326: 'strengthenCollectionV12325',
   advanceCollectionV12326: 'advanceCollectionV12325',
   equipCollectionV12326: 'equipCollectionV12325',
   unequipCollectionV12326: 'unequipCollectionV12325',
 };
-for (const [canonicalMethod, compatibilityMethod] of Object.entries(progressionAliases)) {
-  if (typeof LocalGameApplicationApi.prototype[canonicalMethod] === 'function') continue;
+for (const [canonicalMethod, compatibilityMethod] of Object.entries(progressionPairs)) {
+  const implementation = LocalGameApplicationApi.prototype[compatibilityMethod];
+  if (typeof implementation !== 'function') continue;
   Object.defineProperty(LocalGameApplicationApi.prototype, canonicalMethod, {
     configurable: true,
     value: function (...args) {
-      return this[compatibilityMethod](...args);
+      return implementation.apply(this, args);
+    },
+  });
+  Object.defineProperty(LocalGameApplicationApi.prototype, compatibilityMethod, {
+    configurable: true,
+    value: function (...args) {
+      return this[canonicalMethod](...args);
     },
   });
 }

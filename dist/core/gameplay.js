@@ -6,7 +6,6 @@ import { GameplayFacade as GameplayFacadeBase } from './gameplay-v149-base.js';
 import { ARTIFACTS_V88, artifactViewV88, artifactRawSummaryV149 } from './artifact-v88.js';
 
 // V162 public-authority cleanup: V12326 is the only callable Collection/Gacha path.
-// The V12325 progression methods remain compatibility adapters until UI transport migration.
 for (const legacyMethod of ['collectionGachaV12316', 'collectionGachaV12325']) {
   if (Object.prototype.hasOwnProperty.call(GameplayFacadeBase.prototype, legacyMethod)) {
     delete GameplayFacadeBase.prototype[legacyMethod];
@@ -14,8 +13,8 @@ for (const legacyMethod of ['collectionGachaV12316', 'collectionGachaV12325']) {
 }
 
 export class GameplayFacade extends GameplayFacadeBase {
-  // V162 B2 canonical progression names. Implementation stays on the locked V12325
-  // progression engine until that lower-level module is separately consolidated.
+  // V162 B2: canonical collection progression names. The lower Session implementation
+  // stays V12325 for save/engine compatibility until that implementation is separately migrated.
   collectionStrengthenV12326(itemId, levels = 1) {
     return this.session.strengthenCollectionV12325(itemId, levels);
   }
@@ -27,6 +26,21 @@ export class GameplayFacade extends GameplayFacadeBase {
   }
   collectionUnequipV12326(itemId) {
     return this.session.unequipCollectionV12325(itemId);
+  }
+
+  // V162 B3: existing standalone/UI V12325 action labels are compatibility shims only.
+  // They must route through the canonical V12326 public methods, never directly to Session.
+  collectionStrengthenV12325(itemId, levels = 1) {
+    return this.collectionStrengthenV12326(itemId, levels);
+  }
+  collectionAdvanceV12325(itemId) {
+    return this.collectionAdvanceV12326(itemId);
+  }
+  collectionEquipV12325(itemId, artifactSlotIndex) {
+    return this.collectionEquipV12326(itemId, artifactSlotIndex);
+  }
+  collectionUnequipV12325(itemId) {
+    return this.collectionUnequipV12326(itemId);
   }
 
   overview() {
