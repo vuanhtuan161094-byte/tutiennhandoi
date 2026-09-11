@@ -1,6 +1,7 @@
 import { cloneAdventureState } from './world.js';
 import { normalizeEquipmentStateV98 } from './equipment.js';
 import { EQUIPMENT_MAX_ENHANCEMENT_V142, equipmentSetDefinitionV142 } from './equipment-v142.js';
+import { battleDaoV2Passive } from '../content/battle-dao-v2-catalog.js';
 import { clonePotentialState } from './potential.js';
 import { cloneCurrentLifeMeta, cloneMetaProgressState } from './life.js';
 import { repairAdventureStateReferences } from './save-stability.js';
@@ -26,6 +27,17 @@ export function normalizeCanonicalEquipmentAfterRestore(state) {
     return state?.equipment;
 }
 
+// V166: Tâm Pháp authority is the authored Bản Đạo V2 passive catalog.
+// Normal gameplay already learns passives through canonical progression, but save payloads must not
+// resurrect duplicate or invented passive IDs that would otherwise be interpreted as extra heart methods.
+export function normalizeCanonicalSkillHeartAfterRestore(state) {
+    const foundation = state?.character?.buildFoundation;
+    if (!foundation) return undefined;
+    const learned = foundation.learnedDaoPassiveIdsV118 ?? [];
+    foundation.learnedDaoPassiveIdsV118 = [...new Set(learned.filter(id => Boolean(battleDaoV2Passive(id))))];
+    return foundation;
+}
+
 // V141 pre-release policy: only the current canonical save schema is supported.
 // Historical migration ladders are intentionally removed; stale DEV saves must be reset.
 export function restoreSimulationSession(SessionClass, saveVersion, registry, world, entityDefinitions, profile, save) {
@@ -41,6 +53,7 @@ export function restoreSimulationSession(SessionClass, saveVersion, registry, wo
     state.timeModel = 'live-v1';
     normalizeEquipmentStateV98(state.equipment, registry.equipmentTemplates);
     normalizeCanonicalEquipmentAfterRestore(state);
+    normalizeCanonicalSkillHeartAfterRestore(state);
     repairAdventureStateReferences(state, world, registry);
     state.character.potential = clonePotentialState(undefined);
     return new SessionClass(registry, world, entityDefinitions, profile, save.rootSeed, state, save.actionIndex, save.history, meta, currentLife);
