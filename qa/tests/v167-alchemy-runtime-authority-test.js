@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { normalizeCanonicalAlchemyInventoryAfterRestore } from '../../dist/core/alchemy-runtime-authority-v167.js';
+import { normalizeCanonicalAlchemyInventoryAfterRestore } from '../../dist/core/session-restore.js';
 import { alchemyPillResourceId, parseAlchemyPillResourceId } from '../../dist/core/alchemy-v112.js';
 import {
   ALCHEMY_V146_RETIRED_FAMILY_IDS,
