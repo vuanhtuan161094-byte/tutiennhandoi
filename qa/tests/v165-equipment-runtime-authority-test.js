@@ -16,20 +16,38 @@ assert.match(session, /craftRankedEquipmentV142\(this\.stateValue, this\.stateVa
 assert.match(session, /equipmentCraftingSummaryV142\(this\.stateValue, this\.stateValue\.equipment\)/);
 assert.match(session, /applyEquipmentToEntity/);
 
-// Save/load authority: restore must enforce the same +15 cap as live V142 mutation.
+// Save/load authority: restore must enforce the same +15 cap and retired-lane rules as live V142 mutation.
 const restoreFixture = {
   equipment: {
     items: [
-      { id: 'v142-overcap', schema: EQUIPMENT_V142_SCHEMA, enhancementLevel: 20 },
-      { id: 'legacy20', schema: 'equipment.v1', enhancementLevel: 20 },
+      {
+        id: 'v142-overcap', schema: EQUIPMENT_V142_SCHEMA, enhancementLevel: 20,
+        tier: 9, grade: 'breaker', quality: 'perfect', traitIds: ['trait.crit_focus'],
+        daoInscription: { id: 'dao.v128.heavenly_craft' }, gemSockets: [{ element: 'fire', level: 5 }],
+        setId: 'set.v116.attire.taibach_canhkim', setResonanceLevelV143: 99,
+      },
+      { id: 'legacy20', schema: 'equipment.v1', enhancementLevel: 20, grade: 'breaker' },
       { id: 'v142-negative', schema: EQUIPMENT_V142_SCHEMA, enhancementLevel: -7 },
+      { id: 'v142-valid-set', schema: EQUIPMENT_V142_SCHEMA, enhancementLevel: 7, setId: 'set.v142.attire.metal', setResonanceLevelV143: 4 },
     ],
   },
 };
 normalizeCanonicalEquipmentAfterRestore(restoreFixture);
-assert.equal(restoreFixture.equipment.items[0].enhancementLevel, EQUIPMENT_MAX_ENHANCEMENT_V142);
+const sanitized = restoreFixture.equipment.items[0];
+assert.equal(sanitized.enhancementLevel, EQUIPMENT_MAX_ENHANCEMENT_V142);
+assert.equal(sanitized.tier, 0);
+assert.equal(sanitized.grade, 'mundane');
+assert.equal(sanitized.quality, 'mid');
+assert.deepEqual(sanitized.traitIds, []);
+assert.equal(sanitized.daoInscription, undefined);
+assert.deepEqual(sanitized.gemSockets, []);
+assert.equal(sanitized.setId, undefined, 'legacy V116 set cannot survive on a canonical V142 item');
+assert.equal(sanitized.setResonanceLevelV143, 0);
 assert.equal(restoreFixture.equipment.items[1].enhancementLevel, 20, 'legacy equipment keeps its independent +20 compatibility cap');
+assert.equal(restoreFixture.equipment.items[1].grade, 'breaker', 'legacy equipment semantics are not rewritten by V165');
 assert.equal(restoreFixture.equipment.items[2].enhancementLevel, 0);
+assert.equal(restoreFixture.equipment.items[3].setId, 'set.v142.attire.metal', 'valid V142 Set identity must be preserved');
+assert.equal(restoreFixture.equipment.items[3].setResonanceLevelV143, 4);
 
 // Canonical V142 crafting cannot silently resurrect retired Grade/Gem/Dao-Wen progression.
 assert.match(crafting, /gemSockets: \[\]/);
