@@ -94,6 +94,14 @@ export function buildEconomyProductionV111(input = {}) {
       status: budgetStatus,
       advice: budgetAdvice,
     },
+    premiumJade: {
+      balance: premiumJade,
+      sourceModel: 'external-or-dev-only',
+      recurringInGameSource: 0,
+      includedInBoundJadeBudget: false,
+      gachaSpendSupported: true,
+      rule: 'Runtime giữ Tiên Ngọc thường như kênh thanh toán tương thích/tùy chọn; gameplay hiện tại không phát nguồn lặp nội game, nên V161 không tính currency này vào pacing hay ngân sách Ngọc Khóa.',
+    },
     spiritStone: {
       balance: spiritStones,
       telemetry: {
@@ -120,12 +128,14 @@ export function buildEconomyProductionV111(input = {}) {
       autoMilestoneRewards: Boolean(activity?.rules?.autoMilestoneRewards ?? true),
       noManualClaimChores: Boolean(activity?.rules?.noManualClaimChores ?? true),
       phuongThiFiniteStock: (economy?.shop?.slots?.length ?? 0) > 0,
+      premiumJadeExcludedFromRecurringBudget: true,
       oneEconomyReadModel: true,
     },
     rules: [
       'Giới hạn nằm ở NGUỒN Ngọc Khóa lặp, không giới hạn gameplay hay lượt Gacha.',
       'Động Phủ = nơi nâng; Phó Bản = nơi farm; Vạn Tượng = mảnh sở hữu/rate-up/pity.',
       'Ngân Sách Tu Tiên chỉ tăng tốc và có weekly cap theo gói; không khóa progression.',
+      'Tiên Ngọc thường không phải nguồn farm lặp của gameplay hiện tại và không được cộng vào pacing V161.',
       'Phường Thị dùng Linh Thạch, stock hữu hạn và refresh tự nhiên mỗi 6 giờ thật.',
     ],
   };
