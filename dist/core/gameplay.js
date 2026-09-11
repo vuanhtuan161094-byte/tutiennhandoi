@@ -58,6 +58,13 @@ export class GameplayFacade extends GameplayFacadeBase {
     return this.collectionUnequipV12326(itemId);
   }
 
+  // V162 B5: old DEV action labels remain compatible, but current V12326 workshop
+  // grant is the only public behavior. Keep the historical simulator separate because its
+  // three-banner model is not semantically equivalent to the V12326 eight-category model.
+  devCollectionGrantV12325() {
+    return this.devCollectionGrantV12326();
+  }
+
   overview() {
     const out = super.overview();
     const state = this.session.state;
