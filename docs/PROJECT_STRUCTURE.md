@@ -1,65 +1,84 @@
-# PROJECT STRUCTURE — V140 CLEAN TREE
+# PROJECT STRUCTURE — CURRENT MAIN
+
+This document describes the live `main` tree only. Git history is the archive for removed snapshots, migration notes and obsolete patch machinery.
 
 ## Root — operational only
 
-Root contains launchers, browser/runtime entrypoints, current handoff docs and current source manifest.
+Keep only launch/runtime entrypoints and current routing documents in root.
 
 - `CHOI_WEB_GAME.cmd` — Windows launcher.
-- `START_WEBGAME_WINDOWS.bat` — compatibility launcher.
+- `CHOI_UI_DEV.cmd` — UI development launcher.
+- `START_WEBGAME_WINDOWS.bat` — Windows compatibility launcher.
 - `START_WEBGAME_LAN.sh` — LAN launcher.
-- `START_GAME_ANDROID.sh`, `STOP_GAME_ANDROID.sh` — Android/Termux.
+- `START_GAME_ANDROID.sh`, `STOP_GAME_ANDROID.sh` — Android/Termux launchers.
 - `index.html`, `app.js`, `standalone-entry.js`, `standalone-runtime.js` — web/standalone entry layer.
-- `styles.css`, `combat-v2.css` — current CSS bundles.
+- `styles.css`, `combat-v2.css` — main CSS bundles.
 - `manifest.webmanifest`, `pwa-register.js`, `pwa-sw.js` — PWA layer.
-- `CURRENT_CHECKPOINT.md`, `CHAT_MOI_START_HERE.md`, `CURRENT_UI_CHECKPOINT.md` — current handoff state.
-- `FULL_SOURCE_SHA256_MANIFEST.txt` — generated checksum manifest.
+- `CURRENT_CHECKPOINT.md` — single current project checkpoint.
+- `CHAT_MOI_START_HERE.md` — minimal new-chat router.
 
-No historical patch report or superseded checkpoint belongs in root.
+Do not keep historical closure reports, duplicate checkpoints, generated source manifests or backup copies of application source in root.
 
 ## Runtime source
 
 ### `dist/core/`
-Gameplay engines and canonical runtime logic. Tu Luyện canonical ownership is `cultivation-v140.js`; Session/API/facade consume that contract.
+Gameplay engines and runtime logic. Version suffixes on existing files are legacy naming, not proof of authority. Determine current authority from live imports/consumers plus regression tests.
 
 ### `dist/content/`
-Authored content and registries.
+Authored gameplay content and registries.
 
 ### `modules/`
-Frontend presentation/Pixi modules.
+Frontend presentation/runtime modules.
 
 ### `assets/`
-Game artwork/assets.
+Game artwork and runtime assets.
 
 ### `vendor/`
-Vendored third-party runtime.
+Vendored third-party runtime dependencies.
 
 ### `web/`
-Node static server / LAN delivery.
+Static/LAN server delivery.
 
 ## QA
 
 ### `qa/tests/`
-Current production, transport, balance and regression tests. Historical tests whose only contract was removed gameplay/UI are not retained in the current tree.
+Production contract, balance, integration and regression tests. Historical version numbers in test filenames are acceptable when the tests still protect a live contract.
 
 ### `qa/runners/`
-Canonical runners:
-- `node qa/runners/v140-backend-gates.js fast|closure`
-- `node qa/runners/v140-frontend-gates.js fast|closure`
+Fast and closure runners used by CI.
 
 ### `qa/simulations/`
-Only simulations still useful for live systems. Generated artifacts belong in `docs/simulations/`.
+Simulation code retained only when it still supports a live system or active balance decision.
+
+### `qa/tools/`
+Only reusable current diagnostics belong here. One-off migration/patch scripts must be deleted after their migration is complete.
 
 ## Documentation
 
-- `docs/CULTIVATION_V140_BALANCE.csv` — canonical cultivation balance table.
-- `docs/guides/` — install/use guides.
-- `docs/simulations/` — retained live-system simulation outputs.
-- `docs/ui/` — current UI implementation/reference material.
+- `docs/DEVELOPMENT_PROTOCOL.md` — single-main development rules.
+- `docs/PROJECT_STRUCTURE.md` — this live structure map.
+- `docs/systems/INDEX.md` — minimal subsystem routing.
+- `docs/versions/V161.md` — current active version status.
+- `docs/guides/` — current install/use guides.
+- `docs/ui/` — current UI reference material.
+- `docs/simulations/` — retained simulation outputs only when still relevant.
+- `docs/CULTIVATION_V140_BALANCE.csv` — retained while live cultivation code/tests still consume or protect this balance contract.
+
+## CI
+
+The active workflow is `.github/workflows/qa.yml`.
+
+- normal executable push to `main` -> Fast QA;
+- docs-only push -> no QA run;
+- commit message containing `[closure]` -> Fast QA then Canonical QA;
+- manual dispatch -> Fast QA then Canonical QA.
 
 ## Hygiene rules
 
-1. Runtime code lives only in approved runtime directories.
-2. Tests live in `qa/tests`; runners in `qa/runners`; simulations in `qa/simulations`.
-3. Current root contains no patch-history/archive dump.
-4. Removed gameplay must be purged through state → engine → API → frontend → content → QA, not merely hidden from UI.
-5. Structural changes require V140 core/transport/zero-legacy gates plus backend/frontend closure before packaging.
+1. `main` is the only normal working branch.
+2. Git history replaces backup/legacy source snapshots.
+3. Before creating a new source file, check whether the live authority can be safely extended.
+4. Before deleting or consolidating a runtime file, prove references/consumers and keep regression coverage green.
+5. Do not rename version-suffixed live authorities solely for aesthetics; rename only as a tested structural migration.
+6. Removed gameplay must be purged through state -> engine -> API -> frontend -> content -> QA, not merely hidden from UI.
+7. New tasks should read only the current checkpoint, active version spec, optional system router and exact source/tests needed.
