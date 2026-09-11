@@ -31,6 +31,7 @@ assert.equal(state.inventory[canonicalCultivation], 8, 'canonical restore must m
 assert.equal(state.inventory[canonicalLifePower], 4, 'retired Dao Dan must map to the V146 permanent-stat family');
 assert.equal(state.inventory[canonicalBuff], 2);
 assert(parseAlchemyPillResourceIdV146(canonicalCultivation));
+assert.equal(parseAlchemyPillResourceIdV146(canonicalLifePower)?.family, 'lifePower');
 assert.equal(parseAlchemyPillResourceId(legacyFutureCultivation)?.realmTier, 8);
 
 // Running normal V146 migration afterward must not find a second legacy pill authority.
