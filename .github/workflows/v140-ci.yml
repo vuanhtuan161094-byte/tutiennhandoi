@@ -147,6 +147,9 @@ jobs:
       - name: V161 Manual acquisition-adjusted pacing
         run: node qa/tests/v161-manual-acquisition-pacing-test.js
 
+      - name: V161 Spiritual Root x Hunt pacing
+        run: node qa/tests/v161-spiritual-root-hunt-pacing-test.js
+
       - name: Backend fast gate
         run: node qa/runners/v140-backend-gates.js fast
 
