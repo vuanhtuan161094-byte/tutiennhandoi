@@ -323,6 +323,52 @@ export function installOfflineReplayGuardV169(session) {
     return session;
 }
 
+// V174: one-shot settlement leaves durable mirrors. Restore must not let deletion of one mirror
+// replay an already-accounted Content Event or Dungeon first-clear reward.
+export function normalizeCanonicalOneShotSettlementAfterRestore(state, world) {
+    const contentEvents = state?.flow?.contentEvents;
+    const eventDefinitions = world?.contentEvents ?? {};
+    if (contentEvents) {
+        const validChoices = {};
+        for (const [eventId, rawChoiceId] of Object.entries(contentEvents.choicesByEventId ?? {})) {
+            const definition = eventDefinitions[eventId];
+            const choiceId = String(rawChoiceId ?? '');
+            if (!definition || !(definition.choices ?? []).some(choice => choice.id === choiceId)) continue;
+            validChoices[eventId] = choiceId;
+        }
+        const completed = [];
+        const seen = new Set();
+        for (const eventId of [...(contentEvents.completedEventIds ?? []), ...Object.keys(validChoices)]) {
+            if (typeof eventId !== 'string' || !eventDefinitions[eventId] || seen.has(eventId)) continue;
+            seen.add(eventId);
+            completed.push(eventId);
+        }
+        contentEvents.completedEventIds = completed;
+        contentEvents.choicesByEventId = validChoices;
+    }
+
+    const dungeons = state?.dungeons;
+    const progressionAwardedIds = state?.collectionV12316?.economyV89?.progressionAwardedIds;
+    if (dungeons && Array.isArray(progressionAwardedIds)) {
+        dungeons.highestClearedFloor ??= {};
+        for (const dungeon of Object.values(world?.dungeons ?? {})) {
+            if (!dungeon?.id) continue;
+            const prefix = `first-clear.${dungeon.id}.`;
+            let highest = highestClearedDungeonFloor(dungeons, dungeon.id);
+            for (const rawKey of progressionAwardedIds) {
+                const key = String(rawKey ?? '');
+                if (!key.startsWith(prefix)) continue;
+                const floor = Number(key.slice(prefix.length));
+                if (!Number.isInteger(floor) || floor < 1 || !dungeon.floors?.some(candidate => candidate.floor === floor)) continue;
+                highest = Math.max(highest, floor);
+            }
+            if (highest > highestClearedDungeonFloor(dungeons, dungeon.id))
+                dungeons.highestClearedFloor[dungeon.id] = highest;
+        }
+    }
+    return state;
+}
+
 // V141 pre-release policy: only the current canonical save schema is supported.
 export function restoreSimulationSession(SessionClass, saveVersion, registry, world, entityDefinitions, profile, save) {
     if (save.profileId !== profile.id) {
@@ -340,6 +386,7 @@ export function restoreSimulationSession(SessionClass, saveVersion, registry, wo
     normalizeCanonicalSkillHeartAfterRestore(state);
     normalizeCanonicalAlchemyInventoryAfterRestore(state);
     repairAdventureStateReferences(state, world, registry);
+    normalizeCanonicalOneShotSettlementAfterRestore(state, world);
     normalizeCanonicalIdleRuntimeAfterRestore(state, world);
     normalizeCanonicalEndgameAfterRestore(state, currentLife);
     normalizeCanonicalReincarnationAfterRestore(meta, save.meta);
