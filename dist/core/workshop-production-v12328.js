@@ -1,18 +1,50 @@
 export const WORKSHOP_PRODUCTION_SCHEMA_V12328 = 'workshop-production.v12328';
 function emptyGear() { return { claw: 0, armor: 0, charm: 0 }; }
+function forgeSerialFromIdV169(id) {
+    const match = /^forge\.v2328\.(\d+)$/.exec(String(id ?? ''));
+    return match ? Math.max(0, Math.floor(Number(match[1]) || 0)) : 0;
+}
+function normalizeForgeQueuesV169(value) {
+    const seen = new Set();
+    const queues = [];
+    let maxSerial = 0;
+    for (const raw of value ?? []) {
+        const id = String(raw?.id ?? '').trim();
+        if (!id || seen.has(id))
+            continue;
+        seen.add(id);
+        maxSerial = Math.max(maxSerial, forgeSerialFromIdV169(id));
+        const startedAtUnixMs = Number.isFinite(Number(raw.startedAtUnixMs)) ? Number(raw.startedAtUnixMs) : 0;
+        const durationRealSeconds = Math.max(1, Number.isFinite(Number(raw.durationRealSeconds)) ? Number(raw.durationRealSeconds) : 1);
+        const canonicalComplete = startedAtUnixMs + durationRealSeconds * 1000;
+        const completesAtUnixMs = Number.isFinite(Number(raw.completesAtUnixMs)) ? Math.max(startedAtUnixMs, Number(raw.completesAtUnixMs)) : canonicalComplete;
+        queues.push({
+            ...raw,
+            id,
+            startedAtUnixMs,
+            completesAtUnixMs,
+            durationRealSeconds,
+            selections: (raw.selections ?? []).map(x => ({ ...x })),
+            reserved: (raw.reserved ?? []).map(x => ({ ...x, quantity: Math.max(0, Math.floor(Number(x?.quantity) || 0)) })).filter(x => x.quantity > 0),
+        });
+    }
+    return { queues, maxSerial };
+}
 export function ensureWorkshopProductionV12328(state) {
     const host = state;
     const w = host.workshopV12328 ?? (host.workshopV12328 = { schema: WORKSHOP_PRODUCTION_SCHEMA_V12328, petGear: {}, forgeQueues: [], forgeSerial: 0 });
     w.schema = WORKSHOP_PRODUCTION_SCHEMA_V12328;
     w.petGear ??= {};
-    w.forgeQueues ??= [];
-    w.forgeSerial = Math.max(0, Math.floor(w.forgeSerial ?? 0));
+    const normalized = normalizeForgeQueuesV169(w.forgeQueues);
+    w.forgeQueues = normalized.queues;
+    w.forgeSerial = Math.max(normalized.maxSerial, Math.max(0, Math.floor(Number(w.forgeSerial) || 0)));
     return w;
 }
 export function cloneWorkshopProductionV12328(value) {
     if (!value)
         return undefined;
-    return { schema: WORKSHOP_PRODUCTION_SCHEMA_V12328, petGear: Object.fromEntries(Object.entries(value.petGear ?? {}).map(([id, g]) => [id, { claw: Math.max(0, Math.floor(g?.claw ?? 0)), armor: Math.max(0, Math.floor(g?.armor ?? 0)), charm: Math.max(0, Math.floor(g?.charm ?? 0)) }])), forgeQueues: (value.forgeQueues ?? []).map((q) => ({ ...q, selections: (q.selections ?? []).map((x) => ({ ...x })), reserved: (q.reserved ?? []).map((x) => ({ ...x })) })), forgeSerial: Math.max(0, Math.floor(value.forgeSerial ?? 0)) };
+    const normalized = normalizeForgeQueuesV169(value.forgeQueues);
+    return { schema: WORKSHOP_PRODUCTION_SCHEMA_V12328, petGear: Object.fromEntries(Object.entries(value.petGear ?? {}).map(([id, g]) => [id, { claw: Math.max(0, Math.floor(g?.claw ?? 0)), armor: Math.max(0, Math.floor(g?.armor ?? 0)), charm: Math.max(0, Math.floor(g?.charm ?? 0)) }])), forgeQueues: normalized.queues, forgeSerial: Math.max(normalized.maxSerial, Math.max(0, Math.floor(Number(value.forgeSerial) || 0))) };
 }
 export function petGearProgressV12328(state, petId) {
     const w = ensureWorkshopProductionV12328(state);
