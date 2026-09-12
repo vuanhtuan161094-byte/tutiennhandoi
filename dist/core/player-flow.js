@@ -8,6 +8,7 @@ export function createPlayerFlowState() {
 export function clonePlayerFlowState(state) {
     if (!state)
         return createPlayerFlowState();
+    const anchor = Number(state.offlineLastResolvedUnixMsV169);
     return {
         offlineRoutine: state.offlineRoutine
             ? {
@@ -15,6 +16,7 @@ export function clonePlayerFlowState(state) {
                 request: { ...state.offlineRoutine.request },
             }
             : undefined,
+        ...(Number.isFinite(anchor) && anchor >= 0 ? { offlineLastResolvedUnixMsV169: anchor } : {}),
         firstLifeStory: createFirstLifeStoryState(state.firstLifeStory?.completedBeatIds ?? [], state.firstLifeStory?.path),
         contentEvents: cloneContentEventRuntimeState(state.contentEvents),
     };
