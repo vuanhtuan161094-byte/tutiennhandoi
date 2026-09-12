@@ -56,6 +56,14 @@ Read this first. Do not reconstruct project state from old chats.
   - Canonical QA: `34686279645` — SUCCESS
   - Backend closure: PASS
   - Frontend closure: PASS
+- V173 World → Hunt Runtime Authority Consolidation: CLOSED / LOCKED.
+  - Runtime fix: `a432a157ddb9d4ce69ccda5d1d236c6a90e3994c`
+  - Runtime candidate: `46e527040bb6f80fb867c71715715a77e2690c0b`
+  - Closure QA commit: `74a46c7fe69f49e59b70eb6b2341e0934acfc9ee`
+  - Fast QA: `34687485439` — SUCCESS
+  - Canonical QA: `34687519243` — SUCCESS
+  - Backend closure: PASS
+  - Frontend closure: PASS
 
 ## Locked Collection authority
 
@@ -178,6 +186,18 @@ Read this first. Do not reconstruct project state from old chats.
 - Invalid/negative `merit` and `lifetimeContribution` are repaired to finite non-negative values and cannot legitimize promotion authority.
 - V172 adds no eager runtime module and changes no faction/orthodoxy/economy balance values.
 
+## Locked V173 authority
+
+- Orthodoxy territory authority requires agreement between `territoryIds` and `territoryOwnerByLocation`; restore keeps only current-world territory entries whose owner mirror agrees, deduplicates them, then rebuilds the owner map.
+- Orthodoxy relation endpoints/identity/status and live bounded axes are canonicalized; malformed treasury/economic numeric fields are repaired only to finite non-negative/bounded values allowed by live runtime.
+- Inventory and economy restore only normalize impossible `NaN` / non-finite / negative values; legitimate positive balances and market stock are not capped or re-derived.
+- World opportunity claim authority is reconstructed from the valid union of global claim list, claim records and per-NPC claim mirrors, preventing one mirror deletion from replaying an already-accounted claim.
+- World relationship keys must match canonical live identities; authored relation axes are bounded, invalid endpoints are removed and player flags are deduplicated.
+- Genesis active world count cannot exceed `genesisWorldCapacity()` derived from Immortal authority; excess active worlds are removed while extinct history remains.
+- Hunt restore reconciles saved clear progress with per-floor boss-win first-clear evidence, derives sequential unlock, repairs aggregate/selected/farm pointers and removes stale already-cleared active boss authority.
+- V173 adds no standalone eager runtime module; the locked frontend performance gate remains unchanged.
+- No market, Orthodoxy, Genesis, Hunt reward/rate/power/pacing or other authored balance values were changed in V173.
+
 ## Evidence
 
 - V164 guards: `qa/tests/v164-pet-confidant-runtime-authority-test.js`, `qa/tests/v164-pet-confidant-integration-authority-test.js`.
@@ -209,6 +229,10 @@ Read this first. Do not reconstruct project state from old chats.
 - V172 Fast QA: `34686242499` — SUCCESS.
 - V172 canonical closure: `34686279645` — SUCCESS.
 - V172 closure QA commit: `aa75f9dbeb75a1a5f617ed157e676e3da1b047ba`.
+- V173 guard: `qa/tests/v173-world-to-hunt-runtime-authority-test.js` — 7/7 PASS.
+- V173 Fast QA: `34687485439` — SUCCESS.
+- V173 canonical closure: `34687519243` — SUCCESS.
+- V173 closure QA commit: `74a46c7fe69f49e59b70eb6b2341e0934acfc9ee`.
 
 ## Working rule
 
