@@ -1,0 +1,34 @@
+V176 — First-life Story Settlement Runtime Authority
+
+Runtime fix: bf1c1a84401c7568c48acdf8f27f041e6b75aa00
+Targeted proof: 2cee4508d6c9052e87b8cda6951935a68ec70f52
+Runtime candidate: fbe823f62c8b152f62767dccc8f7274b8982bdbd
+Fast QA: 34704276629 — SUCCESS
+
+Finding
+- resolveFirstLifeStory() grants real one-shot resources/effects, then records both flow.firstLifeStory.completedBeatIds and a durable FirstLife/GuidedContent history event containing data.beatId.
+- Restore previously trusted completedBeatIds independently from history.
+- If the completion mirror was lost while the valid current-life history event remained, the same beat could execute again and mint its one-shot reward/effects a second time.
+
+Fix
+- Restore reconstructs canonical first-life completion from the valid union of authored saved beat IDs and validated current-first-life history evidence.
+- History evidence must match the canonical beat ID, current first-life lifeId, numeric live event serial shape, and FirstLife + GuidedContent tags.
+- first.choose_path history additionally requires authored path sect/wanderer; a proven choose-path also proves the live-required first.first_clear predecessor.
+- Missing path may be recovered from valid choose-path history, while a legitimate saved path is preserved.
+- Unknown beat IDs are removed and later-life history cannot create first-life completion authority.
+- Existing eager session-restore.js is used; no new eager runtime module and no balance/reward values changed.
+
+Targeted proof
+- V176 B1 history reconstructs missing completion.
+- V176 B2 malformed/unknown/wrong-life history cannot forge completion.
+- V176 B3 choose-path history restores path + proven predecessor.
+- V176 B4 valid saved completion is monotonic and unknown IDs are removed.
+- V176 B5 later-life isolation.
+- V176 B6 full SimulationSession.restore() blocks the real first.awakening reward replay and does not append a second history event.
+
+Fast QA 34704276629
+- Backend Fast: 22/22 PASS, including v176-first-life-story-runtime-authority-test.js.
+- Frontend Fast: 6/6 PASS, including frontend performance lock.
+
+Closure condition
+- Canonical QA must PASS before V176 is recorded CLOSED / LOCKED.
