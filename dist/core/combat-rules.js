@@ -66,15 +66,15 @@ export function combineStatPctV129(key, current = 0, added = 0) {
 }
 export function combatMaxHp(stats) {
     const authoredMaxHp = Math.max(0, Number.isFinite(stats.maxHp) ? stats.maxHp : 0);
-    const derivedPhysiqueHp = Number.isFinite(stats.physique)
+    const hasPhysique = Number.isFinite(stats.physique);
+    const derivedPhysiqueHp = hasPhysique
         ? Math.max(0, stats.physique) * COMBAT_RULES.physiqueHpMultiplier
         : 0;
-    // V168 authority: physique owns the derived body lane, while authored maxHp may contain
-    // independent raw/% HP from equipment/collection/integration. Use the stronger authored base once;
-    // never add both representations of the same body HP together.
-    const base = Number.isFinite(stats.physique)
-        ? Math.max(derivedPhysiqueHp, authoredMaxHp)
-        : authoredMaxHp;
+    // V168 authority: unmarked legacy/synthetic entities keep the historical physique×20 rule.
+    // Production player entities are explicitly marked after Equipment + Collection has materialized
+    // every raw/% HP source into maxHp, and later Integration/Immortal/Alchemy preserve that marker.
+    const materialized = stats.maxHpAuthorityV168 === 'materialized';
+    const base = materialized ? authoredMaxHp : hasPhysique ? derivedPhysiqueHp : authoredMaxHp;
     return Math.max(1, base * Math.max(0.01, stats.combatHpMultiplierV124 ?? 1));
 }
 export function combatSpiritStandard(stats) {

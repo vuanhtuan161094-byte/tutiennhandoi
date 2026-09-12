@@ -36,14 +36,17 @@ test('V168 B1 provenance covers every live combat stat family required by the au
   ]) assert(rows.has(key), `missing V168 provenance stat: ${key}`);
 });
 
-test('V168 B3 HP authority keeps raw maxHp once, derives body at x20 once, then applies combat multiplier once', () => {
-  const base = { physique: 100, maxHp: 2600, combatHpMultiplierV124: 1.2 };
-  assert.equal(combatMaxHp(base), 3120, 'raw authored HP must survive when it is above physique-derived HP');
+test('V168 B3 HP authority distinguishes canonical materialized HP from legacy compatibility maxHp', () => {
+  const legacy = { physique: 100, maxHp: 2600, combatHpMultiplierV124: 1.2 };
+  assert.equal(combatMaxHp(legacy), 2400, 'unmarked legacy/synthetic entity must keep physique×20 authority');
+  const materialized = { ...legacy, maxHpAuthorityV168: 'materialized' };
+  assert.equal(combatMaxHp(materialized), 3120, 'canonical materialized raw/% HP must survive and receive the combat multiplier once');
 
-  const entity = { stats: { attack: 10, defense: 10, physique: 100, maxHp: 2600, maxSpirit: 100 } };
+  const entity = { stats: { attack: 10, defense: 10, physique: 100, maxHp: 2600, maxHpAuthorityV168: 'materialized', maxSpirit: 100 } };
   const unchanged = applyAlchemyStatBonuses(entity, { power: 0, body: 0, defense: 0 }, { power: 0, body: 0, defense: 0 });
   assert.equal(unchanged.stats.physique, 100);
-  assert.equal(unchanged.stats.maxHp, 2600, 'zero-pill compatibility pass must not erase raw/% HP from earlier sources');
+  assert.equal(unchanged.stats.maxHp, 2600, 'zero-pill pass must not erase canonical raw/% HP from earlier sources');
+  assert.equal(unchanged.stats.maxHpAuthorityV168, 'materialized');
 
   const bodyFive = applyAlchemyStatBonuses(entity, { power: 0, body: 5, defense: 0 }, { power: 0, body: 0, defense: 0 });
   assert.equal(bodyFive.stats.physique, 105);
@@ -138,8 +141,10 @@ test('V168 B2/B3 Collection raw HP survives the whole final combat pipeline inst
   collection.spiritBeastV147Migrated = true;
   const power = api.getPersonalPower();
   const hp = stat(power, 'maxHp');
+  const entity = s.personalCombatEntity();
+  assert.equal(entity.stats.maxHpAuthorityV168, 'materialized', 'production player combat must carry the explicit HP authority marker');
   assert(hp.sources.some(x => x.id === 'collection.pet'), 'pet raw/% HP must be observable at the final HP authority');
-  approx(hp.finalValue, combatMaxHp(s.personalCombatEntity().stats), 'pet HP provenance vs combat');
+  approx(hp.finalValue, combatMaxHp(entity.stats), 'pet HP provenance vs combat');
 });
 
 test('V168 B5 full build parity: source breakdown = sheet = public API = final CombatEntity with no duplicate source stage', () => {

@@ -33,6 +33,20 @@ function fortuneWithoutRemovedResourceV150(fortune = {}) {
 }
 
 /**
+ * V168 HP authority seam. The base Collection adapter is where raw/% HP from Equipment + Collection
+ * has been materialized into one maxHp value. Mark that value so combatMaxHp can distinguish it from
+ * legacy/synthetic entities whose maxHp field is only compatibility data beside canonical physique×20.
+ */
+export function applyCollectionEconomyToEntityV12325(entity, state) {
+  const collected = base.applyCollectionEconomyToEntityV12325(entity, state);
+  if (!state || !collected?.stats) return collected;
+  return {
+    ...collected,
+    stats: { ...collected.stats, maxHpAuthorityV168: 'materialized' },
+  };
+}
+
+/**
  * Existing public strengthening command remains the single mutation authority.
  * Before Lv100 it is ordinary Luyện Hóa. At Lv100 + Bảo Giai V it becomes Bảo Hồn ∞ for Pháp Bảo only.
  * Chí Bảo remain finite at Lv100 + Bảo Giai V.
