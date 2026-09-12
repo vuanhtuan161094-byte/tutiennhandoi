@@ -48,6 +48,14 @@ Read this first. Do not reconstruct project state from old chats.
   - Canonical QA: `34685583563` — SUCCESS
   - Backend closure: PASS
   - Frontend closure: PASS
+- V172 Faction Membership Runtime Authority Consolidation: CLOSED / LOCKED.
+  - Runtime fix: `42ab8c77b8ce3b9d0f3211e0c06716ba982b1413`
+  - Runtime candidate: `c889c956dcdc454a35f490504c00d64d094b4808`
+  - Closure QA commit: `aa75f9dbeb75a1a5f617ed157e676e3da1b047ba`
+  - Fast QA: `34686242499` — SUCCESS
+  - Canonical QA: `34686279645` — SUCCESS
+  - Backend closure: PASS
+  - Frontend closure: PASS
 
 ## Locked Collection authority
 
@@ -159,6 +167,17 @@ Read this first. Do not reconstruct project state from old chats.
 - The V171 restore canonicalizer is kept inside already-eager `session-restore.js`; the frontend initial static graph remains within the locked 193-module limit without raising the threshold.
 - No realm, Immortal, Dao Suy, Manifestation, combat, Genesis, economy or Luân Hồi balance value changed in V171.
 
+## Locked V172 authority
+
+- Faction membership rank is earned runtime authority; restore may remove impossible authority but must not invent promotion.
+- Ordinary joined-faction memberships are bounded by the authored `factionPromotionRequirements` using saved `lifetimeContribution` and current max realm order; they cannot restore as `leader`.
+- A valid underpromoted membership remains underpromoted; restore never auto-promotes it merely because requirements are met.
+- Legitimate player-founded leaders remain valid only on the canonical player-created faction path with matching `founderLifeId`.
+- Active membership requires a matching active `player:<lifeId>` member mirror with consistent player/member/source identity; dangling or identity-mismatched membership is deactivated rather than reconstructed with invented authority.
+- Surviving member rank is synchronized to the repaired membership rank.
+- Invalid/negative `merit` and `lifetimeContribution` are repaired to finite non-negative values and cannot legitimize promotion authority.
+- V172 adds no eager runtime module and changes no faction/orthodoxy/economy balance values.
+
 ## Evidence
 
 - V164 guards: `qa/tests/v164-pet-confidant-runtime-authority-test.js`, `qa/tests/v164-pet-confidant-integration-authority-test.js`.
@@ -186,6 +205,10 @@ Read this first. Do not reconstruct project state from old chats.
 - V171 Fast QA: `34685552086` — SUCCESS.
 - V171 canonical closure: `34685583563` — SUCCESS.
 - V171 closure QA commit: `31e6091af189f834ff68f3cf0a6d0705cc255812`.
+- V172 guard: `qa/tests/v172-faction-membership-runtime-authority-test.js` — 6/6 PASS.
+- V172 Fast QA: `34686242499` — SUCCESS.
+- V172 canonical closure: `34686279645` — SUCCESS.
+- V172 closure QA commit: `aa75f9dbeb75a1a5f617ed157e676e3da1b047ba`.
 
 ## Working rule
 
