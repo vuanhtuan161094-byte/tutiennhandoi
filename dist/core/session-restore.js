@@ -6,6 +6,9 @@ import { parseAlchemyPillResourceId } from './alchemy-v112.js';
 import { clonePotentialState } from './potential.js';
 import { cloneCurrentLifeMeta, cloneMetaProgressState } from './life.js';
 import { repairAdventureStateReferences } from './save-stability.js';
+import { highestClearedDungeonFloor } from './dungeon.js';
+import { normalizeSoulCloneAuthorityV169, soulCloneAuthorityCapacityV127, synchronizeSoulForRealm, syncSoulDungeonWorkers } from './soul.js';
+import { ensureWorkshopProductionV12328 } from './workshop-production-v12328.js';
 
 const LEGACY_ALCHEMY_TIER_TO_MAJOR_V167 = Object.freeze([1, 4, 8, 11, 15, 18, 22, 25]);
 const LEGACY_ALCHEMY_FAMILY_TO_V146_V167 = Object.freeze({
@@ -14,6 +17,7 @@ const LEGACY_ALCHEMY_FAMILY_TO_V146_V167 = Object.freeze({
     buffPower: 'buffPower', buffGuard: 'buffGuard', buffSpirit: 'buffSpirit', forbidden: 'forbidden',
     daoPower: 'lifePower', daoBody: 'lifeBody', daoDefense: 'lifeDefense',
 });
+const V169_CAVE_FACILITY_IDS = Object.freeze(['alchemy', 'forge', 'artifact', 'beast', 'companion', 'scripture', 'bloodline', 'physique']);
 function safeAlchemyInventoryCountV167(value) {
     if (typeof value === 'bigint') return Number(value > BigInt(Number.MAX_SAFE_INTEGER) ? BigInt(Number.MAX_SAFE_INTEGER) : value);
     return Math.max(0, Math.floor(Number(value) || 0));
@@ -75,6 +79,58 @@ export function normalizeCanonicalAlchemyInventoryAfterRestore(state) {
     return inventory;
 }
 
+// V169: canonicalize the three idle authorities before a restored session can execute rewards.
+// - Collection owns Động Phủ facility levels (1..10, one row per authored facility).
+// - Soul owns avatar workers; realm gates only active workers, not already-owned sealed clones.
+// - Dungeon assignments must point to one live worker and one first-cleared/unlocked dungeon.
+// - Workshop queue IDs are unique so one logical completed job cannot be consumed twice.
+export function normalizeCanonicalIdleRuntimeAfterRestore(state, world) {
+    const collection = state?.collectionV12316;
+    if (collection) {
+        collection.cave ??= { level: 1, facilities: [] };
+        const firstById = new Map();
+        for (const raw of collection.cave.facilities ?? []) {
+            const id = String(raw?.id ?? '');
+            if (!V169_CAVE_FACILITY_IDS.includes(id) || firstById.has(id)) continue;
+            firstById.set(id, { ...raw, id, level: Math.max(1, Math.min(10, Math.floor(Number(raw?.level) || 1))) });
+        }
+        collection.cave.facilities = V169_CAVE_FACILITY_IDS.map(id => firstById.get(id) ?? { id, level: 1 });
+        collection.cave.level = Math.max(1, ...collection.cave.facilities.map(x => x.level));
+        if (collection.workshopV12328)
+            ensureWorkshopProductionV12328(collection);
+    }
+
+    const soul = state?.soul;
+    const dungeons = state?.dungeons;
+    if (soul && dungeons) {
+        normalizeSoulCloneAuthorityV169(soul);
+        const cap = soulCloneAuthorityCapacityV127(state?.realm?.maxRealmOrder ?? 0);
+        synchronizeSoulForRealm(soul, state?.realm?.maxRealmOrder ?? 0, Math.max(0, Math.floor(Number(dungeons.parallelWorkerCapacity) || 0)));
+        syncSoulDungeonWorkers(soul, dungeons, cap);
+        const valid = {};
+        const occupiedDungeons = new Set();
+        for (const [workerId, raw] of Object.entries(dungeons.assignments ?? {})) {
+            if (!dungeons.workers.some(worker => worker.id === workerId)) continue;
+            const dungeonId = String(raw?.dungeonId ?? '');
+            const dungeon = world?.dungeons?.[dungeonId];
+            if (!dungeon || !dungeons.unlockedDungeonIds.includes(dungeonId) || occupiedDungeons.has(dungeonId)) continue;
+            const floor = Math.max(1, Math.floor(Number(raw?.floor) || 1));
+            if (!dungeon.floors?.some(candidate => candidate.floor === floor)) continue;
+            if (highestClearedDungeonFloor(dungeons, dungeonId) < floor) continue;
+            occupiedDungeons.add(dungeonId);
+            valid[workerId] = {
+                workerId,
+                dungeonId,
+                floor,
+                totalYears: Math.max(0, Number.isFinite(Number(raw?.totalYears)) ? Number(raw.totalYears) : 0),
+                totalRuns: Math.max(0, Math.floor(Number.isFinite(Number(raw?.totalRuns)) ? Number(raw.totalRuns) : 0)),
+            };
+        }
+        dungeons.assignments = valid;
+    }
+    return state;
+}
+
 // V141 pre-release policy: only the current canonical save schema is supported.
 // Historical migration ladders are intentionally removed; stale DEV saves must be reset.
 export function restoreSimulationSession(SessionClass, saveVersion, registry, world, entityDefinitions, profile, save) {
@@ -93,6 +149,7 @@ export function restoreSimulationSession(SessionClass, saveVersion, registry, wo
     normalizeCanonicalSkillHeartAfterRestore(state);
     normalizeCanonicalAlchemyInventoryAfterRestore(state);
     repairAdventureStateReferences(state, world, registry);
+    normalizeCanonicalIdleRuntimeAfterRestore(state, world);
     state.character.potential = clonePotentialState(undefined);
     return new SessionClass(registry, world, entityDefinitions, profile, save.rootSeed, state, save.actionIndex, save.history, meta, currentLife);
 }
