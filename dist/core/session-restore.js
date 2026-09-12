@@ -10,6 +10,7 @@ import { highestClearedDungeonFloor } from './dungeon.js';
 import { normalizeSoulCloneAuthorityV169, soulCloneAuthorityCapacityV127, synchronizeSoulForRealm, syncSoulDungeonWorkers } from './soul.js';
 import { ensureWorkshopProductionV12328 } from './workshop-production-v12328.js';
 import { FATE_BUILD_DEFINITIONS_V4, nodeSpentPoints, starterReincarnationTreeNodes } from './reincarnation-progression-v1102.js';
+import { normalizeCanonicalEndgameAfterRestore } from './endgame-restore-v171.js';
 
 const LEGACY_ALCHEMY_TIER_TO_MAJOR_V167 = Object.freeze([1, 4, 8, 11, 15, 18, 22, 25]);
 const LEGACY_ALCHEMY_FAMILY_TO_V146_V167 = Object.freeze({
@@ -259,6 +260,7 @@ export function restoreSimulationSession(SessionClass, saveVersion, registry, wo
     normalizeCanonicalAlchemyInventoryAfterRestore(state);
     repairAdventureStateReferences(state, world, registry);
     normalizeCanonicalIdleRuntimeAfterRestore(state, world);
+    normalizeCanonicalEndgameAfterRestore(state, currentLife);
     normalizeCanonicalReincarnationAfterRestore(meta, save.meta);
     state.character.potential = clonePotentialState(undefined);
     const session = new SessionClass(registry, world, entityDefinitions, profile, save.rootSeed, state, save.actionIndex, save.history, meta, currentLife);
