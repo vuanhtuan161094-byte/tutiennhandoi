@@ -1,7 +1,10 @@
 V175 — Social Family Identity Runtime Authority
 
+Status: CLOSED / LOCKED
 Runtime candidate: 48dc4f33716a8ad4d0cbe86b9f227b2f3ce73bb1
-Fast QA: https://github.com/vuanhtuan161094-byte/tutiennhandoi/actions/runs/34700817822
+Closure QA commit: d3858711bd95822b3a2894b820dcfc40598b8fed
+Fast QA: https://github.com/vuanhtuan161094-byte/tutiennhandoi/actions/runs/34700817822 — SUCCESS
+Canonical QA: https://github.com/vuanhtuan161094-byte/tutiennhandoi/actions/runs/34700863946 — SUCCESS
 
 Finding
 - familyMembers[].id is durable allocated identity evidence for child serials.
@@ -25,5 +28,12 @@ Fast QA 34700817822
 - Backend Fast: 21/21 PASS, including v175-social-family-identity-runtime-authority-test.js.
 - Frontend Fast: 6/6 PASS, including frontend performance lock.
 
-Closure condition
-- Canonical QA must PASS before V175 is recorded CLOSED / LOCKED.
+Canonical QA 34700863946
+- Fast QA: PASS.
+- Locked baseline V140-V151: PASS.
+- Locked authorities V152-V159: PASS.
+- V160-V169 closure steps: PASS.
+- Backend closure: PASS.
+- Frontend closure: PASS.
+
+V175 is CLOSED / LOCKED.
