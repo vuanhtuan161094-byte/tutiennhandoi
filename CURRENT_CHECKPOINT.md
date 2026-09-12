@@ -33,6 +33,11 @@ Read this first. Do not reconstruct project state from old chats.
   - Closure QA commit: `249037cdcedcbbc1606762e6774aab4edc9bacd1`
   - Fast QA: `34679058612` — SUCCESS
   - Canonical QA V140→V169: `34679093062` — SUCCESS
+- V170 Luân Hồi / Life Settlement / Meta Progress Runtime Authority Consolidation: CLOSED / LOCKED.
+  - Runtime candidate: `5d47f4593c9eba911aa1a88fad14ad4746426275`
+  - Closure QA commit: `7b6de1ee81fca1954019fdd46bbfc75207f12d99`
+  - Fast QA: `34679623942` — SUCCESS
+  - Canonical QA: `34679660149` — SUCCESS
   - Backend closure: PASS
   - Frontend closure: PASS
 
@@ -122,6 +127,18 @@ Read this first. Do not reconstruct project state from old chats.
 - Existing V154 clone authority and V156 Động Phủ production/transport gates remain green.
 - No offline cap, Phân Thân strength, Động Phủ discount, Hunt reward, production time or authored rate was changed in V169.
 
+## Locked V170 authority
+
+- Saved `tree.lifetimePointsEarned` is the only restore-time RP budget authority.
+- Tree ranks plus shared/Fate spend cannot exceed earned RP after restore.
+- Fate paid nodes require authored prerequisite chains and paid `sharedSpentPoints`; free mortal starters remain authored.
+- Active Fate must be a valid unlocked Fate.
+- Permanent Potential restore never increases `lifetimeEarned` from allocations; `allocations + unspent` reconciles exactly to saved earned Potential.
+- Duplicate Luân Hồi `rewardHistory` rows and settlement archives collapse to one row per `lifeId`.
+- Live `finalizeReincarnationRewards()` remains idempotent: repeated finalize on the same life does not mint RP/Potential/archive again.
+- Valid saves remain unchanged; only impossible/overspent/tampered restore states are reduced to their earned budget.
+- No RP formula, Tree/Fate cost/effect, Permanent Potential conversion, energy, birth or settlement balance value changed in V170.
+
 ## Evidence
 
 - V164 guards: `qa/tests/v164-pet-confidant-runtime-authority-test.js`, `qa/tests/v164-pet-confidant-integration-authority-test.js`.
@@ -142,6 +159,9 @@ Read this first. Do not reconstruct project state from old chats.
 - V169 guard: `qa/tests/v169-idle-runtime-authority-test.js`.
 - V169 Fast QA: `34679058612` — SUCCESS.
 - V169 canonical closure: `34679093062` — SUCCESS.
+- V170 guard: `qa/tests/v170-reincarnation-meta-runtime-authority-test.js`.
+- V170 Fast QA: `34679623942` — SUCCESS.
+- V170 canonical closure: `34679660149` — SUCCESS.
 
 ## Working rule
 
