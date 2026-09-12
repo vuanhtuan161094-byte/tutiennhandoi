@@ -1,0 +1,29 @@
+V175 — Social Family Identity Runtime Authority
+
+Runtime candidate: 48dc4f33716a8ad4d0cbe86b9f227b2f3ce73bb1
+Fast QA: https://github.com/vuanhtuan161094-byte/tutiennhandoi/actions/runs/34700817822
+
+Finding
+- familyMembers[].id is durable allocated identity evidence for child serials.
+- familySerial was independently restorable and could lag behind already allocated child IDs.
+- createChildForLife() consumed familySerial directly, so a stale restored serial could mint a duplicate family member ID.
+
+Fix
+- derive the minimum safe next familySerial from allocated family.child.<lifeId>.<serial> IDs.
+- preserve any legitimate higher saved serial.
+- apply normalization on Social clone/restore boundary and defensively before createChildForLife() allocates the next ID.
+- do not renumber/remove existing family members and do not change Social rewards, stats, relationship values, pacing, or balance.
+
+Targeted proof
+- V175 B1 stale serial repaired from allocated child ID.
+- V175 B2 highest allocated serial across lives is canonical authority.
+- V175 B3 legitimate higher serial is preserved.
+- V175 B4 malformed/unrelated IDs cannot forge authority.
+- V175 B5 full SimulationSession.restore() repairs identity before the real child-ID consumer runs.
+
+Fast QA 34700817822
+- Backend Fast: 21/21 PASS, including v175-social-family-identity-runtime-authority-test.js.
+- Frontend Fast: 6/6 PASS, including frontend performance lock.
+
+Closure condition
+- Canonical QA must PASS before V175 is recorded CLOSED / LOCKED.
