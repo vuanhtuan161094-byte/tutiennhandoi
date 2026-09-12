@@ -72,6 +72,15 @@ Read this first. Do not reconstruct project state from old chats.
   - Canonical QA: `34689259930` — SUCCESS
   - Backend closure: PASS
   - Frontend closure: PASS
+- V175 Social Family Identity Runtime Authority: CLOSED / LOCKED.
+  - Runtime fix: `646d925c9ed08750ad03b7932d3de84961b1c6ab`
+  - Targeted proof: `3ef41b447b4438a2e01e6baf7135636faddee089`
+  - Runtime candidate: `48dc4f33716a8ad4d0cbe86b9f227b2f3ce73bb1`
+  - Closure QA commit: `d3858711bd95822b3a2894b820dcfc40598b8fed`
+  - Fast QA: `34700817822` — SUCCESS
+  - Canonical QA: `34700863946` — SUCCESS
+  - Backend closure: PASS
+  - Frontend closure: PASS
 
 ## Locked Collection authority
 
@@ -215,6 +224,16 @@ Read this first. Do not reconstruct project state from old chats.
 - Generic Activity daily/weekly counters were audited but are not reconstructed because there is no independent period-specific authority that can safely distinguish current-period settlement from legitimate later-period rewards.
 - V174 uses the already-eager `session-restore.js` path, adds no new eager module and does not change Content Event, Dungeon, Activity or V89 reward/rate/pacing values.
 
+## Locked V175 authority
+
+- Allocated child IDs in `state.social.familyMembers[].id` are durable lower-bound identity evidence for the next `familySerial`.
+- Restore/clone derives the minimum safe next serial from authored `family.child.<lifeId>.<serial>` IDs and preserves any legitimate higher saved serial.
+- Malformed or unrelated family IDs cannot forge serial authority.
+- `createChildForLife()` defensively rechecks the same authority immediately before allocating the next child ID, preventing a stale restored serial from minting a duplicate family member identity.
+- Existing family members are never renumbered or removed by V175.
+- Hunt→Alchemy V146 settlement and PvP season payout were audited during discovery but were not patched because no current replay/runtime bug was proven.
+- V175 adds no new eager module and changes no Social reward, stat, bond, relationship, lifespan, probability, pacing or balance value.
+
 ## Evidence
 
 - V164 guards: `qa/tests/v164-pet-confidant-runtime-authority-test.js`, `qa/tests/v164-pet-confidant-integration-authority-test.js`.
@@ -254,6 +273,10 @@ Read this first. Do not reconstruct project state from old chats.
 - V174 Fast QA: `34689227022` — SUCCESS.
 - V174 canonical closure: `34689259930` — SUCCESS.
 - V174 closure QA commit: `90a7b9832d93193da20f286cb61238edaf4cac2d`.
+- V175 guard: `qa/tests/v175-social-family-identity-runtime-authority-test.js` — 5/5 PASS.
+- V175 Fast QA: `34700817822` — SUCCESS.
+- V175 canonical closure: `34700863946` — SUCCESS.
+- V175 closure QA commit: `d3858711bd95822b3a2894b820dcfc40598b8fed`.
 
 ## Working rule
 
