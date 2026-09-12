@@ -4,7 +4,7 @@ import { thanhHaWorld } from '../../dist/content/world.js';
 import { adventureEnemies } from '../../dist/content/entities.js';
 import { createPlayableAdventureState, playablePlayerProfile } from '../../dist/content/adventure.js';
 import { SimulationSession } from '../../dist/core/session.js';
-import { normalizeCanonicalEndgameAfterRestore, immortalManifestationCapacityV171 } from '../../dist/core/endgame-restore-v171.js';
+import { normalizeCanonicalEndgameAfterRestore, immortalManifestationCapacityV171 } from '../../dist/core/session-restore.js';
 
 let passed = 0;
 const test = (name, fn) => { fn(); passed += 1; console.log(`✓ [${passed}] ${name}`); };
