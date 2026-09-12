@@ -28,7 +28,13 @@ Read this first. Do not reconstruct project state from old chats.
   - Executable closure: `8c087d5ed34dd7bfadf2dc8c8bb9a84b0b7f223d`
   - Closure QA commit: `60218e515d55ff105035b4694c56b5c02bafd814`
   - Canonical QA: `34671514410` — SUCCESS
-- V169 Động Phủ / Phân Thân / Offline Runtime Authority Consolidation: OPEN — next implementation scope.
+- V169 Động Phủ / Phân Thân / Offline Runtime Authority Consolidation: CLOSED / LOCKED.
+  - Executable/runtime candidate: `979b198c2fee38c44753db6cba0b195f8370decb`
+  - Closure QA commit: `249037cdcedcbbc1606762e6774aab4edc9bacd1`
+  - Fast QA: `34679058612` — SUCCESS
+  - Canonical QA V140→V169: `34679093062` — SUCCESS
+  - Backend closure: PASS
+  - Frontend closure: PASS
 
 ## Locked Collection authority
 
@@ -102,17 +108,19 @@ Read this first. Do not reconstruct project state from old chats.
 - Full-build parity is locked between stat-source breakdown, Personal Power sheet/facade, public API and final CombatEntity.
 - No balance values, coefficients, rates or rewards were changed in V168.
 
-## Active V169 scope
+## Locked V169 authority
 
-V169 is the next implementation scope: **Động Phủ / Phân Thân / Offline Runtime Authority Consolidation**.
-
-- B1 — State Authority: identify the single authority for Động Phủ facility state, six Lục Đạo Phân Thân, dungeon workers/assignments, offline timestamps/caps and Reincarnation automation/clone modifiers. `dongfu-v99.js` must remain a read/composition surface unless source proves otherwise; legacy parallel-worker capacity must not become a second Phân Thân authority.
-- B2 — Offline Aggregation: prove every offline/idle source settles once. Detect duplicate login/offline resolution, Hunt settlement duplication, Phân Thân efficiency applied in both Soul and Dungeon, and facility modifiers applied both at producer and reward settlement.
-- B3 — Time / Cap Authority: lock `real elapsed → canonical cap → world/game time → jobs/rewards`; verify 24h base offline cap and authored Reincarnation extensions are composed once; reject negative/backdated/future-clock exploitation without changing authored balance.
-- B4 — Save / Restore: sanitize stale worker assignments, duplicate clone IDs/slots, invalid Lục Đạo ownership beyond realm authority, stale/future timestamps, completed jobs restored twice, and retired facility/parallel-worker payloads that could revive old authority.
-- B5 — Full Idle Parity: for the same authored elapsed time and state, compare online progression vs offline settlement where semantics are intended to match; verify runtime → API/UI snapshot parity and no duplicated rewards/efficiency.
-- No rebalance in V169. Do not change offline caps, Phân Thân strength, Động Phủ discounts, Hunt rewards, production times or authored rates unless a separate balance scope is explicitly opened.
-- Execution order remains: search → narrow source → audit → minimal patch → V169 targeted proof → Backend Fast → Frontend Fast → Canonical V140→V169. Mark CLOSED / LOCKED only when all are green.
+- Động Phủ facility mutation authority remains the canonical Collection cave state; `dongfu-v99.js` is read/composition only.
+- Six Lục Đạo Phân Thân are owned by Soul state plus V127 realm-gated milestones; legacy `parallelWorkerCapacity` cannot unlock extra clones.
+- Soul→Dungeon synchronization canonicalizes clone identity, active avatar workers and assignments before settlement.
+- Duplicate/tampered avatar workers cannot cause one assignment to settle more than once.
+- Duplicate clone IDs/Lục Đạo slots, stale assignments and out-of-authority workers are sanitized on restore.
+- Forge queues are canonicalized so duplicate job IDs cannot settle twice.
+- Động Phủ facilities are restored to the authored facility set with Lv1–10 bounds.
+- Offline return keeps the authored 24h cap and has a restore-safe replay guard so the same elapsed interval cannot mint Tự Tu reward twice.
+- No second Phân Thân offline reward channel was introduced.
+- Existing V154 clone authority and V156 Động Phủ production/transport gates remain green.
+- No offline cap, Phân Thân strength, Động Phủ discount, Hunt reward, production time or authored rate was changed in V169.
 
 ## Evidence
 
@@ -131,8 +139,9 @@ V169 is the next implementation scope: **Động Phủ / Phân Thân / Offline R
 - V168 authority matrix: `qa/tools/v168-combat-stat-authority-matrix.json`.
 - V168 Fast QA: `34671477519` — SUCCESS.
 - V168 canonical closure: `34671514410` — SUCCESS.
-- V168 Backend closure: PASS.
-- V168 Frontend closure: PASS.
+- V169 guard: `qa/tests/v169-idle-runtime-authority-test.js`.
+- V169 Fast QA: `34679058612` — SUCCESS.
+- V169 canonical closure: `34679093062` — SUCCESS.
 
 ## Working rule
 
