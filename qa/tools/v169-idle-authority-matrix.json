@@ -1,0 +1,47 @@
+{
+  "version": "V169",
+  "scope": "Dong Phu / Luc Dao clone / worker / offline runtime authority",
+  "status": "closure-candidate",
+  "balanceChanged": false,
+  "authorities": [
+    {
+      "system": "Dong Phu",
+      "stateAuthority": "state.collectionV12316.cave.facilities",
+      "mutationAuthority": "upgradeCaveFacilityV12316",
+      "readProjection": "buildDongfuV99",
+      "restoreGuard": "normalizeCanonicalIdleRuntimeAfterRestore",
+      "rules": ["8 authored facilities", "level 1..10", "one row per facility"]
+    },
+    {
+      "system": "Luc Dao clones",
+      "stateAuthority": "state.soul.clones",
+      "mutationAuthority": "createSoulClone/dismissSoulClone/setSoulCloneProtectorV127",
+      "projection": "syncSoulDungeonWorkers",
+      "restoreGuard": "normalizeSoulCloneAuthorityV169",
+      "rules": ["max 6 owned", "unique clone id", "unique sixDaoId", "realm gate controls active workers only"]
+    },
+    {
+      "system": "Dungeon workers",
+      "stateAuthority": "state.dungeons.workers + state.dungeons.assignments",
+      "consumer": "DungeonEngine.resolveParallel",
+      "projectionAuthority": "SoulState for kind=avatar",
+      "rules": ["unique worker id", "one live assignment per worker", "one worker per dungeon", "dangling/protector/sealed avatar assignments removed"]
+    },
+    {
+      "system": "Forge production queue",
+      "stateAuthority": "state.collectionV12316.workshopV12328.forgeQueues",
+      "consumer": "syncForgingV12328",
+      "restoreGuard": "ensureWorkshopProductionV12328",
+      "rules": ["unique logical job id", "forgeSerial >= highest restored queue serial", "completed queue cannot be replayed through duplicate rows"]
+    },
+    {
+      "system": "Offline return",
+      "stateAuthority": "restored session + state.flow.offlineLastResolvedUnixMsV169",
+      "consumer": "resolveRealtimeOffline/resolveOffline",
+      "restoreGuard": "installOfflineReplayGuardV169",
+      "rules": ["canonical cap remains 24h", "negative/backward interval resolves to zero", "same restored wall-clock interval is consumed once", "offline return does not create a second clone/dungeon reward lane"]
+    }
+  ],
+  "targetedGate": "qa/tests/v169-idle-runtime-authority-test.js",
+  "fastRun": 34679058612
+}
