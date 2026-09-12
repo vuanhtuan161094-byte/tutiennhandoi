@@ -131,6 +131,35 @@ export function normalizeCanonicalIdleRuntimeAfterRestore(state, world) {
     return state;
 }
 
+export function canonicalOfflineWindowV169(flow, lastSeenUnixMs, nowUnixMs) {
+    const rawLast = Number(lastSeenUnixMs);
+    const requestedLast = Number.isFinite(rawLast) && rawLast >= 0 ? rawLast : 0;
+    const rawNow = Number(nowUnixMs);
+    const requestedNow = Number.isFinite(rawNow) && rawNow >= 0 ? rawNow : requestedLast;
+    const stored = Number(flow?.offlineLastResolvedUnixMsV169);
+    const consumedThrough = Number.isFinite(stored) && stored >= 0 ? stored : requestedLast;
+    const effectiveLastSeenUnixMs = Math.max(requestedLast, consumedThrough);
+    const effectiveNowUnixMs = Math.max(effectiveLastSeenUnixMs, requestedNow);
+    return { requestedLastSeenUnixMs: requestedLast, requestedNowUnixMs: requestedNow, effectiveLastSeenUnixMs, effectiveNowUnixMs, replayGuardApplied: effectiveLastSeenUnixMs > requestedLast };
+}
+
+// Offline rewards are meaningful only after restoring a previous save. Install a per-session consumption
+// barrier there so a stale UI/API retry cannot mint the same elapsed wall-clock interval twice.
+export function installOfflineReplayGuardV169(session) {
+    if (!session || session.offlineReplayGuardV169Installed) return session;
+    const rawResolve = session.resolveRealtimeOffline.bind(session);
+    session.resolveRealtimeOffline = (plan, lastSeenUnixMs, nowUnixMs) => {
+        session.stateValue.flow ??= {};
+        const window = canonicalOfflineWindowV169(session.stateValue.flow, lastSeenUnixMs, nowUnixMs);
+        const result = rawResolve(plan, window.effectiveLastSeenUnixMs, window.effectiveNowUnixMs);
+        session.stateValue.flow.offlineLastResolvedUnixMsV169 = window.effectiveNowUnixMs;
+        return result;
+    };
+    session.resolveOffline = (plan, lastSeenUnixMs, nowUnixMs) => session.resolveRealtimeOffline(plan, lastSeenUnixMs, nowUnixMs);
+    Object.defineProperty(session, 'offlineReplayGuardV169Installed', { value: true, enumerable: false, configurable: false, writable: false });
+    return session;
+}
+
 // V141 pre-release policy: only the current canonical save schema is supported.
 // Historical migration ladders are intentionally removed; stale DEV saves must be reset.
 export function restoreSimulationSession(SessionClass, saveVersion, registry, world, entityDefinitions, profile, save) {
@@ -151,5 +180,6 @@ export function restoreSimulationSession(SessionClass, saveVersion, registry, wo
     repairAdventureStateReferences(state, world, registry);
     normalizeCanonicalIdleRuntimeAfterRestore(state, world);
     state.character.potential = clonePotentialState(undefined);
-    return new SessionClass(registry, world, entityDefinitions, profile, save.rootSeed, state, save.actionIndex, save.history, meta, currentLife);
+    const session = new SessionClass(registry, world, entityDefinitions, profile, save.rootSeed, state, save.actionIndex, save.history, meta, currentLife);
+    return installOfflineReplayGuardV169(session);
 }
