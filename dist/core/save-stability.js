@@ -1,5 +1,6 @@
 import { normalizeGuidanceAutomationPolicy } from './guidance.js';
 import { factionPromotionRequirements } from './faction.js';
+import { genesisWorldCapacity } from './genesis-world.js';
 function duplicateIds(values) {
     const seen = new Set();
     const duplicate = new Set();
@@ -67,6 +68,198 @@ export function normalizeCanonicalFactionAfterRestore(state) {
         member.rank = canonicalRank;
     }
     return factionState;
+}
+function v173FiniteNonNegative(value) {
+    const n = Number(value);
+    return Number.isFinite(n) ? Math.max(0, n) : 0;
+}
+function v173NonNegativeInt(value) { return Math.floor(v173FiniteNonNegative(value)); }
+function v173Clamp100(value) { return Math.min(100, v173FiniteNonNegative(value)); }
+function v173PairKey(a, b) { return a < b ? `${a}|${b}` : `${b}|${a}`; }
+function v173HuntMajor(floor) { return Math.floor((Math.max(1, Math.floor(floor)) - 1) / 800) + 1; }
+function v173HuntLocal(floor) { return ((Math.max(1, Math.floor(floor)) - 1) % 800) + 1; }
+function v173HuntGlobal(major, local) { return (Math.max(1, Math.floor(major)) - 1) * 800 + Math.max(1, Math.min(800, Math.floor(local))); }
+/** V173: consolidate mirrored World/Economy/Genesis/Hunt runtime authority after restore. */
+export function normalizeCanonicalWorldToHuntAfterRestore(state, world) {
+    if (state?.inventory && typeof state.inventory === 'object') {
+        for (const [resourceId, raw] of Object.entries(state.inventory))
+            state.inventory[resourceId] = v173FiniteNonNegative(raw);
+    }
+    const economy = state?.economy;
+    if (economy) {
+        for (const market of Object.values(economy.markets ?? {}))
+            for (const listing of Object.values(market.listings ?? {})) {
+                listing.stock = v173FiniteNonNegative(listing.stock);
+                listing.boughtByPlayer = v173FiniteNonNegative(listing.boughtByPlayer);
+                listing.soldByPlayer = v173FiniteNonNegative(listing.soldByPlayer);
+            }
+        for (const key of Object.keys(economy.lifetime ?? {}))
+            economy.lifetime[key] = v173FiniteNonNegative(economy.lifetime[key]);
+        economy.transactionSerial = v173NonNegativeInt(economy.transactionSerial);
+    }
+    const orthodoxyState = state?.orthodoxy;
+    if (orthodoxyState?.orthodoxies) {
+        const savedOwners = orthodoxyState.territoryOwnerByLocation ?? {};
+        const canonicalOwners = {};
+        for (const [factionId, orthodoxy] of Object.entries(orthodoxyState.orthodoxies)) {
+            orthodoxy.factionId = factionId;
+            orthodoxy.level = Math.max(1, v173NonNegativeInt(orthodoxy.level));
+            orthodoxy.doctrineAuthority = v173Clamp100(orthodoxy.doctrineAuthority);
+            orthodoxy.militaryPower = v173FiniteNonNegative(orthodoxy.militaryPower);
+            orthodoxy.warFatigue = v173Clamp100(orthodoxy.warFatigue);
+            orthodoxy.victories = v173NonNegativeInt(orthodoxy.victories);
+            orthodoxy.defeats = v173NonNegativeInt(orthodoxy.defeats);
+            orthodoxy.treasury = v173FiniteNonNegative(orthodoxy.treasury);
+            orthodoxy.prosperity = v173Clamp100(orthodoxy.prosperity);
+            orthodoxy.logistics = v173Clamp100(orthodoxy.logistics);
+            orthodoxy.tradePower = v173Clamp100(orthodoxy.tradePower);
+            orthodoxy.tributeReceivedLifetime = v173FiniteNonNegative(orthodoxy.tributeReceivedLifetime);
+            orthodoxy.tradeIncomeLifetime = v173FiniteNonNegative(orthodoxy.tradeIncomeLifetime);
+            orthodoxy.territoryIds = [...new Set((orthodoxy.territoryIds ?? []).filter(locationId => typeof locationId === 'string'
+                && Boolean(world?.locations?.[locationId])
+                && savedOwners[locationId] === factionId))];
+            for (const locationId of orthodoxy.territoryIds)
+                canonicalOwners[locationId] = factionId;
+        }
+        orthodoxyState.territoryOwnerByLocation = canonicalOwners;
+        const validOrthodoxies = new Set(Object.keys(orthodoxyState.orthodoxies));
+        for (const [key, relation] of Object.entries({ ...(orthodoxyState.relations ?? {}) })) {
+            const a = relation?.aFactionId;
+            const b = relation?.bFactionId;
+            if (!validOrthodoxies.has(a) || !validOrthodoxies.has(b) || a === b || key !== v173PairKey(a, b)) {
+                delete orthodoxyState.relations[key];
+                continue;
+            }
+            relation.id = key;
+            relation.trust = v173Clamp100(relation.trust);
+            relation.tension = v173Clamp100(relation.tension);
+            relation.tributeRate = Math.min(1, v173FiniteNonNegative(relation.tributeRate));
+            if (!['neutral', 'allied', 'hostile', 'vassal'].includes(relation.status))
+                relation.status = 'neutral';
+            if (relation.status === 'vassal') {
+                const endpoints = new Set([a, b]);
+                if (!endpoints.has(relation.overlordFactionId) || !endpoints.has(relation.vassalFactionId) || relation.overlordFactionId === relation.vassalFactionId) {
+                    relation.status = 'neutral';
+                    relation.overlordFactionId = undefined;
+                    relation.vassalFactionId = undefined;
+                    relation.tributeRate = 0;
+                }
+            }
+            else {
+                relation.overlordFactionId = undefined;
+                relation.vassalFactionId = undefined;
+                relation.tributeRate = 0;
+            }
+        }
+    }
+    const simulation = state?.worldSimulation;
+    if (simulation) {
+        const validOpportunities = new Set(Object.keys(world?.opportunities ?? {}));
+        const claimed = new Set();
+        for (const id of simulation.claimedOpportunityIds ?? [])
+            if (validOpportunities.has(id)) claimed.add(id);
+        for (const [id, claim] of Object.entries(simulation.opportunityClaims ?? {}))
+            if (validOpportunities.has(id) && claim?.opportunityId === id) claimed.add(id);
+        for (const npc of Object.values(simulation.npcs ?? {})) {
+            npc.claimedOpportunityIds = [...new Set((npc.claimedOpportunityIds ?? []).filter(id => validOpportunities.has(id)))];
+            for (const id of npc.claimedOpportunityIds) claimed.add(id);
+        }
+        simulation.claimedOpportunityIds = [...claimed];
+        for (const id of Object.keys(simulation.opportunityClaims ?? {}))
+            if (!validOpportunities.has(id) || simulation.opportunityClaims[id]?.opportunityId !== id)
+                delete simulation.opportunityClaims[id];
+        const validNpcs = new Set(Object.keys(world?.npcs ?? {}));
+        for (const [key, relation] of Object.entries({ ...(simulation.relationships ?? {}) })) {
+            if (!validNpcs.has(relation?.aId) || !validNpcs.has(relation?.bId) || relation.aId === relation.bId || key !== v173PairKey(relation.aId, relation.bId)) {
+                delete simulation.relationships[key];
+                continue;
+            }
+            relation.trust = v173Clamp100(relation.trust);
+            relation.respect = v173Clamp100(relation.respect);
+            relation.grudge = v173Clamp100(relation.grudge);
+            relation.karmaDepth = v173Clamp100(relation.karmaDepth);
+        }
+        for (const [key, relation] of Object.entries({ ...(simulation.playerRelationships ?? {}) })) {
+            const canonicalKey = `${relation?.lifeId ?? ''}|${relation?.npcId ?? ''}`;
+            if (!relation?.lifeId || !validNpcs.has(relation?.npcId) || key !== canonicalKey) {
+                delete simulation.playerRelationships[key];
+                continue;
+            }
+            relation.trust = v173Clamp100(relation.trust);
+            relation.respect = v173Clamp100(relation.respect);
+            relation.debt = v173Clamp100(relation.debt);
+            relation.grudge = v173Clamp100(relation.grudge);
+            relation.karmaDepth = v173Clamp100(relation.karmaDepth);
+            relation.interactionCount = v173NonNegativeInt(relation.interactionCount);
+            relation.flags = [...new Set((relation.flags ?? []).filter(flag => typeof flag === 'string' && flag.length > 0))];
+        }
+    }
+    const genesis = state?.genesisWorlds;
+    if (genesis?.worlds) {
+        const cap = genesisWorldCapacity(v173NonNegativeInt(state?.immortal?.creationEpochs), v173Clamp100(state?.immortal?.genesisAuthority));
+        const active = Object.entries(genesis.worlds)
+            .filter(([, created]) => !created?.extinct)
+            .sort((a, b) => v173FiniteNonNegative(a[1]?.createdAtWorldYear) - v173FiniteNonNegative(b[1]?.createdAtWorldYear) || a[0].localeCompare(b[0]));
+        const keepActive = new Set(active.slice(0, cap).map(([id]) => id));
+        for (const [id, created] of Object.entries({ ...genesis.worlds })) {
+            if (!created?.extinct && !keepActive.has(id)) {
+                delete genesis.worlds[id];
+                continue;
+            }
+            created.id = id;
+        }
+        genesis.serial = v173NonNegativeInt(genesis.serial);
+    }
+    const hunt = state?.endlessHunt;
+    if (hunt) {
+        hunt.floorStats ??= {};
+        const majors = new Set([
+            ...Object.keys(hunt.highestUnlockedByMajor ?? {}),
+            ...Object.keys(hunt.highestClearedByMajor ?? {}),
+        ]);
+        const bossEvidence = {};
+        for (const [key, stats] of Object.entries(hunt.floorStats)) {
+            const floor = Math.floor(Number(key));
+            if (!Number.isFinite(floor) || floor < 1) continue;
+            stats.bossWins = v173NonNegativeInt(stats.bossWins) > 0 ? 1 : 0;
+            if (stats.bossWins > 0) {
+                const major = v173HuntMajor(floor);
+                const local = v173HuntLocal(floor);
+                majors.add(String(major));
+                bossEvidence[String(major)] = Math.max(bossEvidence[String(major)] ?? 0, local);
+            }
+        }
+        const canonicalUnlocked = {};
+        const canonicalCleared = {};
+        for (const rawKey of majors) {
+            const major = Math.max(1, Math.floor(Number(rawKey) || 1));
+            const key = String(major);
+            const savedCleared = Math.min(800, v173NonNegativeInt(hunt.highestClearedByMajor?.[key]));
+            const evidencedCleared = Math.min(800, v173NonNegativeInt(bossEvidence[key]));
+            const cleared = Math.max(savedCleared, evidencedCleared);
+            const hadMap = v173NonNegativeInt(hunt.highestUnlockedByMajor?.[key]) > 0 || cleared > 0;
+            if (cleared > 0) canonicalCleared[key] = cleared;
+            if (hadMap) canonicalUnlocked[key] = cleared >= 800 ? 800 : Math.max(1, cleared + 1);
+        }
+        if (Object.keys(canonicalUnlocked).length === 0) canonicalUnlocked['1'] = 1;
+        hunt.highestUnlockedByMajor = canonicalUnlocked;
+        hunt.highestClearedByMajor = canonicalCleared;
+        hunt.highestClearedFloor = Object.entries(canonicalCleared).reduce((max, [major, local]) => Math.max(max, v173HuntGlobal(Number(major), local)), 0);
+        hunt.highestUnlockedFloor = Object.entries(canonicalUnlocked).reduce((max, [major, local]) => Math.max(max, v173HuntGlobal(Number(major), local)), 1);
+        const isUnlocked = floor => v173HuntLocal(floor) <= (canonicalUnlocked[String(v173HuntMajor(floor))] ?? 0);
+        const isCleared = floor => v173HuntLocal(floor) <= (canonicalCleared[String(v173HuntMajor(floor))] ?? 0);
+        hunt.selectedFloor = Math.max(1, Math.floor(Number(hunt.selectedFloor) || 1));
+        if (!isUnlocked(hunt.selectedFloor)) hunt.selectedFloor = hunt.highestUnlockedFloor;
+        hunt.farmFloor = Math.max(0, Math.floor(Number(hunt.farmFloor) || 0));
+        if (hunt.farmFloor > 0 && !isCleared(hunt.farmFloor)) hunt.farmFloor = hunt.highestClearedFloor;
+        hunt.totalBossKills = Math.max(v173NonNegativeInt(hunt.totalBossKills), Object.values(canonicalCleared).reduce((sum, value) => sum + value, 0));
+        if (hunt.activeMonster) {
+            const floor = Math.max(1, Math.floor(Number(hunt.activeMonster.floor) || hunt.selectedFloor));
+            if (floor !== hunt.selectedFloor || !isUnlocked(floor) || (hunt.activeMonster.grade === 'boss' && isCleared(floor)))
+                hunt.activeMonster = undefined;
+        }
+    }
+    return state;
 }
 /** Audit references that can break a long-lived save without mutating it. */
 export function auditAdventureState(state, history, world, registry) {
@@ -163,6 +356,7 @@ export function repairAdventureStateReferences(state, world, registry) {
         }
     }
     normalizeCanonicalFactionAfterRestore(state);
+    normalizeCanonicalWorldToHuntAfterRestore(state, world);
     const policy = normalizeGuidanceAutomationPolicy(state.guidance.automationPolicy);
     const blocked = policy.blockedDungeonIds.filter(id => Boolean(world.dungeons[id]));
     if (blocked.length !== policy.blockedDungeonIds.length)
