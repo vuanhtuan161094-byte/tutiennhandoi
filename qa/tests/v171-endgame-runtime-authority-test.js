@@ -60,7 +60,7 @@ test('V171 B4 full SimulationSession.restore applies endgame canonicalization be
   assert.equal(restored.stateValue.immortal.awakened, true);
   assert.equal(restored.stateValue.immortal.mysticLawWeave, 100);
   assert.equal(restored.stateValue.immortal.manifestationCapacity, 3);
-  assert.deepEqual(restored.stateValue.immortal.activeManifestationIds, ['law']);
+  assert.deepEqual(restored.stateValue.immortal.activeManifestationIds, ['law', 'origin']);
   assert.equal(restored.stateValue.immortal.daoSuyTribulationsPassed, 2);
 });
 
