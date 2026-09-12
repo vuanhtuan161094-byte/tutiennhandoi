@@ -120,21 +120,53 @@ export function createSoulState() {
         clones: [],
     };
 }
+export function normalizeSoulCloneAuthorityV169(state) {
+    const source = Array.isArray(state?.clones) ? state.clones : [];
+    const seenIds = new Set();
+    const usedDaoIds = new Set();
+    const clones = [];
+    for (const raw of source) {
+        if (clones.length >= V127_SIX_DAO_CLONES.length)
+            break;
+        const id = String(raw?.id ?? '').trim();
+        if (!id || seenIds.has(id))
+            continue;
+        let dao = V127_SIX_DAO_CLONES.find(x => x.id === raw?.sixDaoId);
+        if (!dao || usedDaoIds.has(dao.id))
+            dao = V127_SIX_DAO_CLONES.find(x => !usedDaoIds.has(x.id));
+        if (!dao)
+            break;
+        const index = V127_SIX_DAO_CLONES.findIndex(x => x.id === dao.id);
+        const normalized = normalizeSixDaoCloneV127({ ...raw, id, sixDaoId: dao.id }, index);
+        normalized.soulLoad = Math.max(0, Number.isFinite(Number(raw?.soulLoad)) ? Number(raw.soulLoad) : 0);
+        normalized.baseEfficiency = Number.isFinite(Number(raw?.baseEfficiency)) && Number(raw.baseEfficiency) > 0 ? Number(raw.baseEfficiency) : 0.58;
+        normalized.stability = clamp(Number.isFinite(Number(raw?.stability)) ? Number(raw.stability) : 72, 0, 100);
+        normalized.yearsActive = Math.max(0, Number.isFinite(Number(raw?.yearsActive)) ? Number(raw.yearsActive) : 0);
+        normalized.dungeonWorkYears = Math.max(0, Number.isFinite(Number(raw?.dungeonWorkYears)) ? Number(raw.dungeonWorkYears) : 0);
+        normalized.dungeonWorkRuns = Math.max(0, Math.floor(Number.isFinite(Number(raw?.dungeonWorkRuns)) ? Number(raw.dungeonWorkRuns) : 0));
+        normalized.createdWorldYear = Number.isFinite(Number(raw?.createdWorldYear)) ? Number(raw.createdWorldYear) : 0;
+        seenIds.add(id);
+        usedDaoIds.add(dao.id);
+        clones.push(normalized);
+    }
+    state.clones = clones;
+    return state;
+}
 export function cloneSoulState(state) {
     const source = state ?? createSoulState();
-    return {
+    return normalizeSoulCloneAuthorityV169({
         awakened: Boolean(source.awakened),
         strength: source.strength,
         purity: source.purity,
         stability: source.stability,
         loadCapacity: source.loadCapacity,
         insight: source.insight,
-        clones: source.clones.map((clone, index) => normalizeSixDaoCloneV127(clone, index)),
-    };
+        clones: (source.clones ?? []).map(clone => ({ ...clone })),
+    });
 }
 export function totalSoulLoad(state, authorityCap = Number.POSITIVE_INFINITY) {
     const cap = Number.isFinite(authorityCap) ? Math.max(0, Math.floor(authorityCap)) : state.clones.length;
-    return state.clones.slice(0, cap).reduce((sum, clone) => sum + clone.soulLoad, 0);
+    return state.clones.slice(0, cap).reduce((sum, clone) => sum + Math.max(0, Number(clone.soulLoad) || 0), 0);
 }
 export function soulPressureMultiplier(state, authorityCap = Number.POSITIVE_INFINITY) {
     const load = totalSoulLoad(state, authorityCap);
@@ -180,14 +212,24 @@ function cloneWorker(clone, pressure) {
     };
 }
 export function syncSoulDungeonWorkers(soul, dungeons, authorityCap = Number.POSITIVE_INFINITY) {
-    const pressure = soulPressureMultiplier(soul, authorityCap);
-    const cap = Number.isFinite(authorityCap) ? Math.max(0, Math.floor(authorityCap)) : soul.clones.length;
-    for (let i = 0; i < soul.clones.length; i++) Object.assign(soul.clones[i], normalizeSixDaoCloneV127(soul.clones[i], i));
+    normalizeSoulCloneAuthorityV169(soul);
+    const cap = Number.isFinite(authorityCap) ? Math.max(0, Math.min(V127_SIX_DAO_CLONES.length, Math.floor(authorityCap))) : soul.clones.length;
+    const pressure = soulPressureMultiplier(soul, cap);
     const authorizedClones = soul.clones.slice(0, cap);
     const activeClones = authorizedClones.filter(clone => clone.role !== 'protector');
     const cloneIds = new Set(activeClones.map(clone => clone.id));
-    // Remove stale Phân Thân workers but keep dev/puppet workers that do not belong to SoulState.
-    dungeons.workers = dungeons.workers.filter(worker => worker.kind !== 'avatar' || cloneIds.has(worker.id));
+    const seenWorkerIds = new Set();
+    // V169: SoulState is the only authority for avatar workers. Duplicate avatar rows from stale/tampered saves
+    // must not make DungeonEngine resolve the same assignment twice.
+    dungeons.workers = (dungeons.workers ?? []).filter(worker => {
+        const id = String(worker?.id ?? '').trim();
+        if (!id || seenWorkerIds.has(id))
+            return false;
+        if (worker.kind === 'avatar' && !cloneIds.has(id))
+            return false;
+        seenWorkerIds.add(id);
+        return true;
+    });
     for (const clone of activeClones) {
         const worker = cloneWorker(clone, pressure);
         const index = dungeons.workers.findIndex(existing => existing.id === clone.id);
@@ -196,9 +238,22 @@ export function syncSoulDungeonWorkers(soul, dungeons, authorityCap = Number.POS
         else
             dungeons.workers.push(worker);
     }
+    dungeons.assignments ??= {};
+    const assignedDungeons = new Set();
     for (const workerId of Object.keys(dungeons.assignments)) {
-        if (!dungeons.workers.some(worker => worker.id === workerId))
+        const assignment = dungeons.assignments[workerId];
+        const workerExists = dungeons.workers.some(worker => worker.id === workerId);
+        const dungeonId = String(assignment?.dungeonId ?? '').trim();
+        if (!workerExists || !dungeonId || assignedDungeons.has(dungeonId)) {
             delete dungeons.assignments[workerId];
+            continue;
+        }
+        assignedDungeons.add(dungeonId);
+        assignment.workerId = workerId;
+        assignment.dungeonId = dungeonId;
+        assignment.floor = Math.max(1, Math.floor(Number(assignment.floor) || 1));
+        assignment.totalYears = Math.max(0, Number.isFinite(Number(assignment.totalYears)) ? Number(assignment.totalYears) : 0);
+        assignment.totalRuns = Math.max(0, Math.floor(Number.isFinite(Number(assignment.totalRuns)) ? Number(assignment.totalRuns) : 0));
     }
 }
 export function nourishSoul(soul, inventory, requestedBatches = 1) {
@@ -234,27 +289,35 @@ export function nourishSoul(soul, inventory, requestedBatches = 1) {
         loadCapacityGain: capacityGain,
     };
 }
-export function createSoulClone(soul, dungeons, inventory, options) {
+export function createSoulClone(soul, dungeons, inventory, options = {}) {
     if (!soul.awakened)
         throw new Error('Chỉ sau khi kết Nguyên Anh mới có thể tạo Phân Thân ổn định.');
+    normalizeSoulCloneAuthorityV169(soul);
     const authorityCap = Number.isFinite(options.authorityCap) ? Math.max(0, Math.floor(options.authorityCap)) : dungeons.parallelWorkerCapacity;
-    const effectiveCap = authorityCap;
+    const effectiveCap = Math.min(V127_SIX_DAO_CLONES.length, authorityCap);
     if (soul.clones.length >= effectiveCap) {
         throw new Error(`Không còn Phân Thân V127 đã mở: ${Math.min(soul.clones.length, effectiveCap)}/${effectiveCap}. parallelWorkerCapacity legacy không mở thêm Lục Đạo.`);
     }
+    const usedDaoIds = new Set(soul.clones.map(clone => clone.sixDaoId));
+    const dao = V127_SIX_DAO_CLONES.find(candidate => !usedDaoIds.has(candidate.id));
+    if (!dao)
+        throw new Error('Lục Đạo Phân Thân đã đủ 6/6.');
+    const canonicalSlot = V127_SIX_DAO_CLONES.findIndex(candidate => candidate.id === dao.id) + 1;
+    const requestedId = options.id === undefined ? '' : String(options.id).trim();
+    const cloneId = requestedId || `soul.clone.${canonicalSlot}`;
+    if (soul.clones.some(existing => existing.id === cloneId))
+        throw new Error(`Phân Thân đã tồn tại: ${cloneId}`);
     const dewCost = 18 + soul.clones.length * 8;
     const essenceCost = 6 + soul.clones.length * 3;
     if ((inventory['resource.soul_dew'] ?? 0) < dewCost || (inventory['resource.soul_essence'] ?? 0) < essenceCost) {
         throw new Error(`Tạo Phân Thân cần ${dewCost} Dưỡng Hồn Lộ và ${essenceCost} Thần Hồn Tinh Hoa.`);
     }
-    const loadBefore = totalSoulLoad(soul, authorityCap);
+    const loadBefore = totalSoulLoad(soul, effectiveCap);
     inventory['resource.soul_dew'] -= dewCost;
     inventory['resource.soul_essence'] -= essenceCost;
-    const index = soul.clones.length + 1;
-    const dao = sixDaoDefinitionForIndex(index - 1);
     const specialization = dao.primaryPurpose;
     const clone = {
-        id: options.id ?? `soul.clone.${index}`,
+        id: cloneId,
         name: options.name ?? dao.title,
         sixDaoId: dao.id,
         sixDaoName: dao.name,
@@ -275,15 +338,15 @@ export function createSoulClone(soul, dungeons, inventory, options) {
         createdWorldYear: options.worldYear,
     };
     soul.clones.push(clone);
-    syncSoulDungeonWorkers(soul, dungeons, authorityCap);
+    syncSoulDungeonWorkers(soul, dungeons, effectiveCap);
     return {
         clone: { ...clone },
-        authorityCap,
+        authorityCap: effectiveCap,
         spentSoulDew: dewCost,
         spentSoulEssence: essenceCost,
         loadBefore,
-        loadAfter: totalSoulLoad(soul, authorityCap),
-        pressureMultiplier: soulPressureMultiplier(soul, authorityCap),
+        loadAfter: totalSoulLoad(soul, effectiveCap),
+        pressureMultiplier: soulPressureMultiplier(soul, effectiveCap),
     };
 }
 export function dismissSoulClone(soul, dungeons, cloneId, authorityCap = Number.POSITIVE_INFINITY) {
@@ -353,11 +416,11 @@ export function upgradeSoulCloneSealV128(soul, inventory, cloneId) {
     return { clone: { ...clone }, spentSoulDew: cost.soulDew, spentSoulEssence: cost.soulEssence, progression: cloneProgressionProfileV128(clone) };
 }
 export function setSoulCloneProtectorV127(soul, dungeons, cloneId, enabled, authorityCap = Number.POSITIVE_INFINITY) {
+    normalizeSoulCloneAuthorityV169(soul);
     const index = soul.clones.findIndex(clone => clone.id === cloneId);
     if (index < 0) throw new Error(`Không tìm thấy Phân Thân: ${cloneId}`);
     const cap = Number.isFinite(authorityCap) ? Math.max(0, Math.floor(authorityCap)) : soul.clones.length;
     if (index >= cap) throw new Error('Phân Thân này chưa được quyền hoạt động ở cảnh giới hiện tại.');
-    for (let i=0;i<soul.clones.length;i++) Object.assign(soul.clones[i], normalizeSixDaoCloneV127(soul.clones[i], i));
     const clone = soul.clones[index];
     if (enabled) {
         const activeProtectors = soul.clones.slice(0, cap).filter(x => x.role === 'protector' && x.id !== cloneId);
@@ -369,8 +432,9 @@ export function setSoulCloneProtectorV127(soul, dungeons, cloneId, enabled, auth
     return { ...clone };
 }
 export function soulProtectorCultivationBonusPctV127(soul, authorityCap = Number.POSITIVE_INFINITY, treeEffectPct = 0) {
-    const cap = Number.isFinite(authorityCap) ? Math.max(0, Math.floor(authorityCap)) : soul.clones.length;
+    const canonical = cloneSoulState(soul);
+    const cap = Number.isFinite(authorityCap) ? Math.max(0, Math.floor(authorityCap)) : canonical.clones.length;
     const treeRelative = 1 + Math.max(0, Math.min(100, Number(treeEffectPct) || 0)) / 100;
-    return soul.clones.slice(0, cap).map((clone,index)=>normalizeSixDaoCloneV127(clone,index)).filter(clone=>clone.role==='protector').slice(0,2).reduce((sum,clone)=>sum + clone.protectorBasePct * treeRelative * cloneProtectorQualityMultiplierV128(clone), 0);
+    return canonical.clones.slice(0, cap).filter(clone=>clone.role==='protector').slice(0,2).reduce((sum,clone)=>sum + clone.protectorBasePct * treeRelative * cloneProtectorQualityMultiplierV128(clone), 0);
 }
 //# sourceMappingURL=soul.js.map
