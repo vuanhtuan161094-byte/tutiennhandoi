@@ -23,6 +23,25 @@ function childName(seed) {
     const rng = new SeededRng(seed >>> 0);
     return `${rngPick(rng, surnames)} ${rngPick(rng, given)}`;
 }
+function allocatedChildSerialV175(id) {
+    const match = /^family\.child\..+\.(\d+)$/.exec(String(id ?? ''));
+    if (!match)
+        return undefined;
+    const serial = Number(match[1]);
+    return Number.isSafeInteger(serial) && serial >= 0 && serial < Number.MAX_SAFE_INTEGER ? serial : undefined;
+}
+/** V175: allocated family child IDs are durable authority for the next identity serial. */
+export function normalizeSocialFamilyIdentityV175(state) {
+    let nextSerial = Number.isSafeInteger(state?.familySerial) && state.familySerial >= 0 ? state.familySerial : 0;
+    for (const member of state?.familyMembers ?? []) {
+        const allocated = allocatedChildSerialV175(member?.id);
+        if (allocated !== undefined)
+            nextSerial = Math.max(nextSerial, allocated + 1);
+    }
+    if (state)
+        state.familySerial = nextSerial;
+    return state;
+}
 export function createSocialState(currentWorldYear = 0) {
     return {
         simulatedUntilWorldYear: currentWorldYear,
@@ -34,7 +53,7 @@ export function createSocialState(currentWorldYear = 0) {
     };
 }
 export function cloneSocialState(state) {
-    return {
+    const cloned = {
         simulatedUntilWorldYear: state.simulatedUntilWorldYear,
         bonds: state.bonds.map(bond => ({ ...bond, transmittedKnowledgeIds: [...bond.transmittedKnowledgeIds] })),
         familyMembers: state.familyMembers.map(member => ({
@@ -45,6 +64,7 @@ export function cloneSocialState(state) {
         eventSerial: state.eventSerial,
         familySerial: state.familySerial,
     };
+    return normalizeSocialFamilyIdentityV175(cloned);
 }
 export function socialBond(state, lifeId, npcId, role) {
     return state.bonds.find(bond => bond.lifeId === lifeId && bond.npcId === npcId && bond.role === role && bond.active);
@@ -113,6 +133,7 @@ export function ensureParentsForLife(state, lifeId, birth, character, worldYear,
     return state.familyMembers.filter(member => member.sourceLifeId === lifeId && (member.relation === 'father' || member.relation === 'mother'));
 }
 export function createChildForLife(state, lifeId, partner, character, worldYear, locationId, seed, playerAptitude) {
+    normalizeSocialFamilyIdentityV175(state);
     const rng = new SeededRng(seed >>> 0);
     const rootPool = ['root.mixed', 'root.wood', 'root.fire', 'root.wind', 'root.lightning', 'root.ice', 'root.five_elements'];
     const rootId = rng.next() < 0.62 ? character.spiritualRootId : rngPick(rng, rootPool);
