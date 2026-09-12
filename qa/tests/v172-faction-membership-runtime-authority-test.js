@@ -15,7 +15,7 @@ test('V172 B1 joined faction cannot restore forged leader rank', () => {
   const state = createPlayableAdventureState();
   const faction = firstFaction(state);
   const lifeId = 'life.v172.joined';
-  const membership = joinFaction(state.factions, lifeId, faction.id, 0);
+  const membership = joinFaction(state.factions, faction.id, lifeId, 0);
   state.realm.maxRealmOrder = 3;
   membership.lifetimeContribution = 50;
   membership.merit = 50;
@@ -30,7 +30,7 @@ test('V172 B2 restore only downgrades impossible rank and never auto-promotes a 
   const state = createPlayableAdventureState();
   const faction = firstFaction(state);
   const lifeId = 'life.v172.underpromoted';
-  const membership = joinFaction(state.factions, lifeId, faction.id, 0);
+  const membership = joinFaction(state.factions, faction.id, lifeId, 0);
   state.realm.maxRealmOrder = 14;
   membership.lifetimeContribution = 999;
   membership.merit = 999;
@@ -44,7 +44,7 @@ test('V172 B3 legitimate player-founded leader remains leader', () => {
   const state = createPlayableAdventureState();
   state.realm.maxRealmOrder = 14;
   const lifeId = 'life.v172.founder';
-  const created = foundPlayerFaction(state.factions, lifeId, 'V172 Test Sect', ['Test'], state.locationId, 0);
+  const created = foundPlayerFaction(state.factions, lifeId, 0, 'V172 Test Sect', state.locationId, ['Test']);
   normalizeCanonicalFactionAfterRestore(state);
   assert.equal(created.membership.rank, 'leader');
   assert.equal(created.faction.members[`player:${lifeId}`].rank, 'leader');
@@ -54,7 +54,7 @@ test('V172 B4 dangling or identity-mismatched active membership loses runtime au
   const state = createPlayableAdventureState();
   const faction = firstFaction(state);
   const lifeId = 'life.v172.dangling';
-  const membership = joinFaction(state.factions, lifeId, faction.id, 0);
+  const membership = joinFaction(state.factions, faction.id, lifeId, 0);
   delete faction.members[`player:${lifeId}`];
   membership.rank = 'leader';
   normalizeCanonicalFactionAfterRestore(state);
@@ -84,7 +84,7 @@ test('V172 B6 malformed negative/NaN contribution cannot legitimize restored pro
   const state = createPlayableAdventureState();
   const faction = firstFaction(state);
   const lifeId = 'life.v172.numeric';
-  const membership = joinFaction(state.factions, lifeId, faction.id, 0);
+  const membership = joinFaction(state.factions, faction.id, lifeId, 0);
   state.realm.maxRealmOrder = 18;
   membership.lifetimeContribution = Number.NaN;
   membership.merit = -100;
