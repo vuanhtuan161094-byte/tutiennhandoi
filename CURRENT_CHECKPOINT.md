@@ -40,6 +40,14 @@ Read this first. Do not reconstruct project state from old chats.
   - Canonical QA: `34679660149` — SUCCESS
   - Backend closure: PASS
   - Frontend closure: PASS
+- V171 Endgame / Immortal / Dao Suy Runtime Authority Consolidation: CLOSED / LOCKED.
+  - Primary runtime fix: `fd1717a020703b320d8e4e073f6d4e3a6ae2624e`
+  - Runtime candidate: `af7d823178d496bbf0f4c5b6d021b8b181e60d52`
+  - Closure QA commit: `31e6091af189f834ff68f3cf0a6d0705cc255812`
+  - Fast QA: `34685552086` — SUCCESS
+  - Canonical QA: `34685583563` — SUCCESS
+  - Backend closure: PASS
+  - Frontend closure: PASS
 
 ## Locked Collection authority
 
@@ -139,6 +147,18 @@ Read this first. Do not reconstruct project state from old chats.
 - Valid saves remain unchanged; only impossible/overspent/tampered restore states are reduced to their earned budget.
 - No RP formula, Tree/Fate cost/effect, Permanent Potential conversion, energy, birth or settlement balance value changed in V170.
 
+## Locked V171 authority
+
+- Restore is not allowed to trust impossible Immortal/endgame state from save.
+- Immortal authored axes whose live mutation range is `0..100` are clamped to the same range during restore; valid values are preserved.
+- `immortal.awakened` is derived from realm authority.
+- Manifestation capacity is derived from realm milestones, not from the saved capacity field.
+- Restored active manifestations are deduplicated, filtered by actual current ownership/eligibility and capped to the realm-derived capacity.
+- `daoSuyTribulationsPassed` cannot be lower than the successes accounted in `daoSuyTribulationsPassedByMajor`; per-major counts remain bounded to the authored maximum.
+- New-life carry-over was audited: `buildReincarnatedState()` already creates fresh Soul/Dao/Tribulation/Immortal state, so no endgame progress leaks across Luân Hồi.
+- The V171 restore canonicalizer is kept inside already-eager `session-restore.js`; the frontend initial static graph remains within the locked 193-module limit without raising the threshold.
+- No realm, Immortal, Dao Suy, Manifestation, combat, Genesis, economy or Luân Hồi balance value changed in V171.
+
 ## Evidence
 
 - V164 guards: `qa/tests/v164-pet-confidant-runtime-authority-test.js`, `qa/tests/v164-pet-confidant-integration-authority-test.js`.
@@ -162,6 +182,10 @@ Read this first. Do not reconstruct project state from old chats.
 - V170 guard: `qa/tests/v170-reincarnation-meta-runtime-authority-test.js`.
 - V170 Fast QA: `34679623942` — SUCCESS.
 - V170 canonical closure: `34679660149` — SUCCESS.
+- V171 guard: `qa/tests/v171-endgame-runtime-authority-test.js` — 6/6 PASS.
+- V171 Fast QA: `34685552086` — SUCCESS.
+- V171 canonical closure: `34685583563` — SUCCESS.
+- V171 closure QA commit: `31e6091af189f834ff68f3cf0a6d0705cc255812`.
 
 ## Working rule
 
