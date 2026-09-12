@@ -64,15 +64,15 @@ test('V163 B4 saved loadouts preserve canonical Artifact, canonical Relic, and l
   assert.deepEqual(session.stateValue.artifacts.activeIds, [legacy.id]);
 });
 
-test('V163 B4 legacy active Artifact still has distinct Integration semantics and therefore cannot be deleted as dead state', () => {
+test('V163 B4 compatibility/history Artifact state remains retained but V168 supersedes its old Integration combat semantics', () => {
   const withLegacy = session.integrationSummary();
   assert.equal(withLegacy.awakened, true);
-  assert(withLegacy.artifact > 52, `expected progressed legacy Artifact to raise Integration artifact score, got ${withLegacy.artifact}`);
+  assert.equal(withLegacy.artifact, 52, 'V168: legacy ArtifactState must not raise Integration combat power');
 
   session.deactivateArtifact(legacy.id);
   const withoutLegacy = session.integrationSummary();
   assert.equal(withoutLegacy.artifact, 52);
-  assert(withLegacy.artifact > withoutLegacy.artifact);
+  assert.equal(withLegacy.artifact, withoutLegacy.artifact, 'legacy activeIds/items are history/loadout compatibility only');
   session.activateArtifact(legacy.id);
 });
 
@@ -122,10 +122,11 @@ test('V163 B4 compatibility consumers remain explicit and Collection combat auth
   assert(worldSource.includes('artifacts: cloneArtifactState(state.artifacts)'));
   assert(worldSource.includes('collectionV12316: cloneCollectionProgressStateV12316(state.collectionV12316)'));
   assert(lifeSource.includes('artifactRelics: (meta.artifactRelics ?? []).map'));
-  assert(integrationSource.includes('artifacts.items.filter(item => artifacts.activeIds.includes(item.id))'));
+  assert(integrationSource.includes('const artifactScore = 52'));
+  assert(!integrationSource.includes('artifacts.items.filter(item => artifacts.activeIds.includes(item.id))'));
 
-  // B1-B3 already prove Collection is the direct Artifact/Relic combat authority. B4 protects
-  // legacy state only for compatibility/history semantics; do not reintroduce it as direct combat gear.
+  // B1-B3 already prove Collection is the direct Artifact/Relic combat authority. V168 supersedes
+  // the old Integration exception: legacy state survives only for compatibility/history semantics.
   assert(!sessionSource.includes('applyArtifactsToEntity('));
 });
 
