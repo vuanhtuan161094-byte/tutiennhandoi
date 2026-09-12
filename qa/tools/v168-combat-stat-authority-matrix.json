@@ -1,0 +1,150 @@
+{
+  "schema": "v168.combat-stat-authority.v1",
+  "version": "V168",
+  "status": "closure-candidate",
+  "fastQa": {
+    "runId": 34669328658,
+    "conclusion": "success"
+  },
+  "pipeline": [
+    "base CombatEntity",
+    "character: physique/bloodline -> corePotential -> fate -> daoNature -> spiritualRootV145 -> heartMethod",
+    "equipment + V142 set",
+    "collection: manual -> artifact/relic -> pet -> companion",
+    "reincarnation artifact talents",
+    "dao",
+    "integration",
+    "great vehicle",
+    "immortal/faction manifestation",
+    "reincarnation combat talents",
+    "birth origins",
+    "alchemy",
+    "combatMaxHp/effective combat stats"
+  ],
+  "sources": [
+    {
+      "source": "cultivation/realm",
+      "stateAuthority": "state.realm + state.cultivation; base profile remains the initial CombatEntity",
+      "rawOrPercent": "realm-gated derived packages; no independent duplicate base-stat adapter",
+      "consumer": "integrationSummary/applyIntegrationToEntity, greatVehicleSummary/applyGreatVehicleToEntity, immortal runtime",
+      "applyPosition": "after Dao, before reincarnation/birth/alchemy"
+    },
+    {
+      "source": "spiritual root",
+      "stateAuthority": "state.character.spiritualRootV145",
+      "rawOrPercent": "percentage combat bonuses plus authored secondary combat stats",
+      "consumer": "applySpiritualRootStatsV145",
+      "applyPosition": "character stage after Potential/Fate/Dao Nature and before Heart Method"
+    },
+    {
+      "source": "legacy technique/manual V103/V119",
+      "stateAuthority": "compatibility state only",
+      "rawOrPercent": "retired/neutral compatibility package",
+      "consumer": "resolveTechniqueRuntimeV119 compatibility surface",
+      "applyPosition": "character compatibility seam; not a second production manual authority"
+    },
+    {
+      "source": "skills",
+      "stateAuthority": "state.character.buildFoundation.progressionV125 + activeSkillIds",
+      "rawOrPercent": "skill coefficients/runtime effects rather than a duplicate static character sheet",
+      "consumer": "CombatKernel skill runtime",
+      "applyPosition": "during combat action resolution"
+    },
+    {
+      "source": "heart method",
+      "stateAuthority": "state.character.buildFoundation.progressionV125",
+      "rawOrPercent": "authored static bonuses",
+      "consumer": "applyHeartMethodStatsV12317",
+      "applyPosition": "last live static character substage"
+    },
+    {
+      "source": "equipment/set",
+      "stateAuthority": "state.equipment",
+      "rawOrPercent": "flat stats then authored multipliers; V142 set derived once from equipped V142 IDs",
+      "consumer": "applyEquipmentToEntity + equipmentSetPowerV142",
+      "applyPosition": "after character, before Collection"
+    },
+    {
+      "source": "artifact",
+      "stateAuthority": "state.collectionV12316.items + activeArtifactIds",
+      "rawOrPercent": "Collection artifact package",
+      "consumer": "applyCollectionEconomyToEntityV12325",
+      "applyPosition": "Collection artifact stage; legacy state.artifacts never re-adds combat power"
+    },
+    {
+      "source": "treasure/relic",
+      "stateAuthority": "state.collectionV12316.economyV12325.activeRelicId",
+      "rawOrPercent": "Collection relic package",
+      "consumer": "applyCollectionEconomyToEntityV12325",
+      "applyPosition": "inside canonical Collection composition"
+    },
+    {
+      "source": "spirit beast",
+      "stateAuthority": "state.collectionV12316.items + activePetId",
+      "rawOrPercent": "all-owned raw bond; active-pet percentage bond/triggers",
+      "consumer": "spiritBeastBondSummaryV147 via Collection economy adapter",
+      "applyPosition": "Collection pet stage"
+    },
+    {
+      "source": "confidant",
+      "stateAuthority": "state.collectionV12316.items + activeCompanionId",
+      "rawOrPercent": "canonical Collection progression; combat assist primarily trigger/runtime based",
+      "consumer": "confidant V148 + Collection economy adapter",
+      "applyPosition": "Collection companion stage / combat triggers"
+    },
+    {
+      "source": "pills/alchemy",
+      "stateAuthority": "V146 inventory/consumer; compatibility stat allocation stored in economy alchemy state",
+      "rawOrPercent": "raw power/body/defense/spirit bonuses and authored temporary effects",
+      "consumer": "applyAlchemyStatBonuses",
+      "applyPosition": "final static entity stage before combat instantiation"
+    },
+    {
+      "source": "reincarnation",
+      "stateAuthority": "state.inheritedOrigins",
+      "rawOrPercent": "artifact talents, combat talents, birth-origin packages",
+      "consumer": "applyReincarnationArtifactTalents + applyReincarnationCombatTalents + applyBirthCombatOrigins",
+      "applyPosition": "artifact talent before Dao; combat/birth after Immortal"
+    },
+    {
+      "source": "clones/soul",
+      "stateAuthority": "state.soul",
+      "rawOrPercent": "no separate clone-to-CombatEntity stat adapter found; soul state contributes to Integration",
+      "consumer": "integrationSummary",
+      "applyPosition": "Integration only; no second direct clone combat application"
+    },
+    {
+      "source": "dao/endgame",
+      "stateAuthority": "state.dao + integration/greatVehicle/immortal states",
+      "rawOrPercent": "authored derived multipliers/packages",
+      "consumer": "applyDaoToEntity -> applyIntegrationToEntity -> applyGreatVehicleToEntity -> applyImmortalToEntity",
+      "applyPosition": "between Collection/Reincarnation-artifact and final reincarnation/alchemy stages"
+    }
+  ],
+  "statAuthority": {
+    "attack": "base -> raw/additive sources -> percentage/package multipliers in pipeline order -> final entity.stats.attack",
+    "maxHp": "body/physique derives at x20; independent authored raw/% maxHp is preserved once; combatMaxHp chooses the stronger materialized HP representation once, then applies combatHpMultiplierV124 once",
+    "defense": "base -> raw/additive -> percentage/package multipliers -> final entity.stats.defense",
+    "maxSpirit": "base -> raw/additive -> percentage/package multipliers -> final entity.stats.maxSpirit",
+    "critChancePct": "direct additive and unbounded for crit layers",
+    "critDamagePct": "authored percentage-point bonuses -> final crit profile",
+    "armorPenPct": "bounded percentage authority -> defenseFactor consumer",
+    "dodgeChancePct": "bounded direct dodge probability; hit contest also consumes mobility vs accuracy",
+    "accuracy": "numeric live stat consumed by evade contest; now included in provenance",
+    "mobility": "numeric live stat consumed by evade contest; now included in provenance",
+    "controlPower": "numeric live stat consumed against target resolve for control duration; now included in provenance",
+    "resolve": "numeric live stat opposing controlPower; now included in provenance",
+    "controlDurationReductionPct": "bounded remaining-space percentage -> effectiveControlDuration",
+    "specialMultipliers": "combatHpMultiplierV124 and runtime/status/set/skill mechanics are consumed only at their dedicated combat seams, not re-authored into Collection/equipment state"
+  },
+  "v168Fixes": [
+    "character provenance order now matches applyCharacterToEntity",
+    "raw/% HP from Equipment/Collection/Integration survives the final Alchemy compatibility pass",
+    "body-derived HP is not added twice",
+    "legacy state.artifacts no longer increases Integration combat power",
+    "accuracy/mobility/controlPower/resolve are visible in stat provenance",
+    "adversarial restore guard covers V142 retired lanes, duplicate/invented heart passives, V112 pills, duplicate/dangling artifact and loadout references",
+    "full-build public API/sheet provenance is asserted equal to final CombatEntity values"
+  ],
+  "balanceChanges": false
+}
