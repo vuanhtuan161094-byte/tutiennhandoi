@@ -9,6 +9,7 @@ import { repairAdventureStateReferences } from './save-stability.js';
 import { highestClearedDungeonFloor } from './dungeon.js';
 import { normalizeSoulCloneAuthorityV169, soulCloneAuthorityCapacityV127, synchronizeSoulForRealm, syncSoulDungeonWorkers } from './soul.js';
 import { ensureWorkshopProductionV12328 } from './workshop-production-v12328.js';
+import { FATE_BUILD_DEFINITIONS_V4, nodeSpentPoints, starterReincarnationTreeNodes } from './reincarnation-progression-v1102.js';
 
 const LEGACY_ALCHEMY_TIER_TO_MAJOR_V167 = Object.freeze([1, 4, 8, 11, 15, 18, 22, 25]);
 const LEGACY_ALCHEMY_FAMILY_TO_V146_V167 = Object.freeze({
@@ -27,8 +28,6 @@ function canonicalAlchemyPillIdV167(family, majorRealmIndex, quality) {
 }
 
 // V165: restore must enforce the same canonical V142 contract as live mutation.
-// V142 progression is Rank + Enhancement(+15) + Affix + V142 Set only. Retired legacy
-// Grade/Quality/Trait/Dao-Wen/Gem lanes must never be resurrected by stale/tampered saves.
 export function normalizeCanonicalEquipmentAfterRestore(state) {
     for (const item of state?.equipment?.items ?? []) {
         if (item?.schema !== 'equipment.v142') continue;
@@ -48,8 +47,6 @@ export function normalizeCanonicalEquipmentAfterRestore(state) {
 }
 
 // V166: Tâm Pháp authority is the authored Bản Đạo V2 passive catalog.
-// Normal gameplay already learns passives through canonical progression, but save payloads must not
-// resurrect duplicate or invented passive IDs that would otherwise be interpreted as extra heart methods.
 export function normalizeCanonicalSkillHeartAfterRestore(state) {
     const foundation = state?.character?.buildFoundation;
     if (!foundation) return undefined;
@@ -59,7 +56,6 @@ export function normalizeCanonicalSkillHeartAfterRestore(state) {
 }
 
 // V167: current saves must not carry a second, realm-gated V112 pill authority.
-// Preserve every valid legacy pill by converting it immediately to its V146 ID, including future-realm pills.
 export function normalizeCanonicalAlchemyInventoryAfterRestore(state) {
     const inventory = state?.inventory;
     if (!inventory || typeof inventory !== 'object') return inventory;
@@ -80,10 +76,6 @@ export function normalizeCanonicalAlchemyInventoryAfterRestore(state) {
 }
 
 // V169: canonicalize the three idle authorities before a restored session can execute rewards.
-// - Collection owns Động Phủ facility levels (1..10, one row per authored facility).
-// - Soul owns avatar workers; realm gates only active workers, not already-owned sealed clones.
-// - Dungeon assignments must point to one live worker and one first-cleared/unlocked dungeon.
-// - Workshop queue IDs are unique so one logical completed job cannot be consumed twice.
 export function normalizeCanonicalIdleRuntimeAfterRestore(state, world) {
     const collection = state?.collectionV12316;
     if (collection) {
@@ -131,6 +123,97 @@ export function normalizeCanonicalIdleRuntimeAfterRestore(state, world) {
     return state;
 }
 
+function v170NonNegativeInt(value) {
+    return Math.max(0, Math.floor(Number(value) || 0));
+}
+function canonicalPermanentPotentialV170(raw) {
+    const earned = v170NonNegativeInt(raw?.lifetimeEarned);
+    const requested = {
+        power: v170NonNegativeInt(raw?.allocations?.power),
+        body: v170NonNegativeInt(raw?.allocations?.body),
+        defense: v170NonNegativeInt(raw?.allocations?.defense),
+    };
+    let remaining = earned;
+    const allocations = { power: 0, body: 0, defense: 0 };
+    for (const key of ['power', 'body', 'defense']) {
+        const kept = Math.min(requested[key], remaining);
+        allocations[key] = kept;
+        remaining -= kept;
+    }
+    return { lifetimeEarned: earned, unspent: remaining, allocations };
+}
+function canonicalFateBuildV170(rawFate, sharedBudget) {
+    const requested = new Set(rawFate?.unlockedIds ?? []);
+    const starters = FATE_BUILD_DEFINITIONS_V4.filter(def => def.unlockCostRp === 0);
+    const unlocked = new Set(starters.map(def => def.id));
+    let spent = 0;
+    for (const pathId of [...new Set(FATE_BUILD_DEFINITIONS_V4.map(def => def.pathId))]) {
+        const path = FATE_BUILD_DEFINITIONS_V4.filter(def => def.pathId === pathId).sort((a, b) => a.order - b.order);
+        for (const def of path) {
+            if (def.unlockCostRp <= 0) continue;
+            if (!requested.has(def.id)) break;
+            if (def.prerequisiteId && !unlocked.has(def.prerequisiteId)) break;
+            if (spent + def.unlockCostRp > sharedBudget) break;
+            unlocked.add(def.id);
+            spent += def.unlockCostRp;
+        }
+    }
+    const requestedActive = String(rawFate?.activeFateId ?? '');
+    const activeFateId = unlocked.has(requestedActive) ? requestedActive : 'fate.v4.cultivation.diligent';
+    return { state: { version: 4, unlockedIds: [...unlocked], activeFateId }, spent };
+}
+function canonicalTreeRanksV170(rawRanks, availableBudget) {
+    const ranks = {};
+    let spent = 0;
+    for (const node of starterReincarnationTreeNodes) {
+        const wanted = Math.max(0, Math.min(node.maxRank, v170NonNegativeInt(rawRanks?.[node.id])));
+        let kept = 0;
+        for (let rank = 1; rank <= wanted; rank++) {
+            const nextCost = nodeSpentPoints(node, rank) - nodeSpentPoints(node, rank - 1);
+            if (spent + nextCost > availableBudget) break;
+            spent += nextCost;
+            kept = rank;
+        }
+        if (kept > 0) ranks[node.id] = kept;
+    }
+    return { ranks, spent };
+}
+function dedupeLifeRowsV170(rows) {
+    const seen = new Set();
+    const out = [];
+    for (const row of rows ?? []) {
+        const lifeId = typeof row?.lifeId === 'string' && row.lifeId.length > 0 ? row.lifeId : undefined;
+        if (lifeId && seen.has(lifeId)) continue;
+        if (lifeId) seen.add(lifeId);
+        out.push(row);
+    }
+    return out;
+}
+
+// V170: earned meta progression is the authority. Restore may repair invalid allocation, but it may
+// never invent earned RP/Potential from a tampered allocation. Valid saves are preserved exactly.
+export function normalizeCanonicalReincarnationAfterRestore(meta, rawMeta) {
+    const rp = meta?.reincarnationProgress;
+    if (!rp) return meta;
+    const rawRp = rawMeta?.reincarnationProgress ?? {};
+    const lifetimePointsEarned = v170NonNegativeInt(rawRp?.tree?.lifetimePointsEarned);
+    const requestedSharedSpend = Math.min(lifetimePointsEarned, v170NonNegativeInt(rawRp?.tree?.sharedSpentPoints));
+    const fate = canonicalFateBuildV170(rawRp?.fateBuild, requestedSharedSpend);
+    const sharedSpentPoints = Math.max(fate.spent, Math.min(requestedSharedSpend, lifetimePointsEarned));
+    const treeBudget = Math.max(0, lifetimePointsEarned - sharedSpentPoints);
+    const tree = canonicalTreeRanksV170(rawRp?.tree?.ranks, treeBudget);
+
+    rp.tree.lifetimePointsEarned = lifetimePointsEarned;
+    rp.tree.sharedSpentPoints = sharedSpentPoints;
+    rp.tree.ranks = tree.ranks;
+    rp.tree.cultivationR3 = true;
+    rp.fateBuild = fate.state;
+    rp.permanentPotential = canonicalPermanentPotentialV170(rawRp?.permanentPotential);
+    rp.rewardHistory = dedupeLifeRowsV170(rp.rewardHistory);
+    meta.archives = dedupeLifeRowsV170(meta.archives);
+    return meta;
+}
+
 export function canonicalOfflineWindowV169(flow, lastSeenUnixMs, nowUnixMs) {
     const rawLast = Number(lastSeenUnixMs);
     const requestedLast = Number.isFinite(rawLast) && rawLast >= 0 ? rawLast : 0;
@@ -143,8 +226,6 @@ export function canonicalOfflineWindowV169(flow, lastSeenUnixMs, nowUnixMs) {
     return { requestedLastSeenUnixMs: requestedLast, requestedNowUnixMs: requestedNow, effectiveLastSeenUnixMs, effectiveNowUnixMs, replayGuardApplied: effectiveLastSeenUnixMs > requestedLast };
 }
 
-// Offline rewards are meaningful only after restoring a previous save. Install a per-session consumption
-// barrier there so a stale UI/API retry cannot mint the same elapsed wall-clock interval twice.
 export function installOfflineReplayGuardV169(session) {
     if (!session || session.offlineReplayGuardV169Installed) return session;
     const rawResolve = session.resolveRealtimeOffline.bind(session);
@@ -161,7 +242,6 @@ export function installOfflineReplayGuardV169(session) {
 }
 
 // V141 pre-release policy: only the current canonical save schema is supported.
-// Historical migration ladders are intentionally removed; stale DEV saves must be reset.
 export function restoreSimulationSession(SessionClass, saveVersion, registry, world, entityDefinitions, profile, save) {
     if (save.profileId !== profile.id) {
         throw new Error(`Save profile mismatch: ${save.profileId} != ${profile.id}`);
@@ -179,6 +259,7 @@ export function restoreSimulationSession(SessionClass, saveVersion, registry, wo
     normalizeCanonicalAlchemyInventoryAfterRestore(state);
     repairAdventureStateReferences(state, world, registry);
     normalizeCanonicalIdleRuntimeAfterRestore(state, world);
+    normalizeCanonicalReincarnationAfterRestore(meta, save.meta);
     state.character.potential = clonePotentialState(undefined);
     const session = new SessionClass(registry, world, entityDefinitions, profile, save.rootSeed, state, save.actionIndex, save.history, meta, currentLife);
     return installOfflineReplayGuardV169(session);
