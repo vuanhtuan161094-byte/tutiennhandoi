@@ -24,6 +24,10 @@ Read this first. Do not reconstruct project state from old chats.
 - V167 Đan Dược / Nguyên Liệu / Luyện Đan Runtime Authority: CLOSED / LOCKED.
   - Executable closure: `79d000cffd9f38fc8ec8bcc825ffb14d52090d47`
   - Canonical QA: `34653220649` — SUCCESS
+- V168 Combat / Stat Runtime Authority Consolidation: CLOSED / LOCKED.
+  - Executable closure: `8c087d5ed34dd7bfadf2dc8c8bb9a84b0b7f223d`
+  - Closure QA commit: `60218e515d55ff105035b4694c56b5c02bafd814`
+  - Canonical QA: `34671514410` — SUCCESS
 
 ## Locked Collection authority
 
@@ -37,7 +41,7 @@ Read this first. Do not reconstruct project state from old chats.
 - Equipped Pháp Bảo: `state.collectionV12316.activeArtifactIds`.
 - Active Chí Bảo: `state.collectionV12316.economyV12325.activeRelicId`.
 - Production combat applies Collection artifact/relic authority once.
-- Legacy `state.artifacts` is retained only because it still owns distinct history/Integration/Luân Hồi/world-relic compatibility semantics.
+- V168 supersedes the old Integration compatibility path: legacy `state.artifacts` remains only for history/Luân Hồi/world-relic compatibility and does not add combat power.
 
 ## Locked V164 authority
 
@@ -85,6 +89,18 @@ Read this first. Do not reconstruct project state from old chats.
 - Frontend eager static graph stays within the existing 193-module performance lock.
 - No pill values, recipes, quality rates, quotas, costs, craft times or balance were changed in V167.
 
+## Locked V168 authority
+
+- Final production stat composition is locked as: base CombatEntity → Character → Equipment/Set → Collection → Reincarnation Artifact talents → Đạo → Integration → Great Vehicle → Immortal → Reincarnation combat talents → Birth origins → Alchemy → combat consumers.
+- Character provenance replays the runtime order: Physique/Bloodline → Core Potential → Fate → Đạo Tính → Linh Căn V145 → Tâm Pháp.
+- HP authority is explicit: unmarked legacy/synthetic entities use `physique × 20`; after Equipment + Collection materializes raw/% HP, `maxHpAuthorityV168 = 'materialized'` makes that `maxHp` authoritative through later stages; body pills add `20 HP/body` once; `combatHpMultiplierV124` is applied once.
+- Raw/% HP from Equipment, Collection, Integration, Immortal and Alchemy is no longer silently erased or double-counted.
+- Legacy `state.artifacts` cannot re-enter combat through Integration; Collection remains the only production Pháp Bảo/Chí Bảo combat authority.
+- Accuracy, Mobility, Control Power and Resolve are included in stat provenance because they are live combat consumers.
+- Restore guards cover retired V142 equipment lanes, duplicate/invented Tâm Pháp passives, V112 pill IDs, and duplicate/dangling artifact/loadout references.
+- Full-build parity is locked between stat-source breakdown, Personal Power sheet/facade, public API and final CombatEntity.
+- No balance values, coefficients, rates or rewards were changed in V168.
+
 ## Evidence
 
 - V164 guards: `qa/tests/v164-pet-confidant-runtime-authority-test.js`, `qa/tests/v164-pet-confidant-integration-authority-test.js`.
@@ -98,6 +114,12 @@ Read this first. Do not reconstruct project state from old chats.
 - V167 guard: `qa/tests/v167-alchemy-runtime-authority-test.js`.
 - V167 Fast QA: `34653147356` — SUCCESS.
 - V167 canonical closure: `34653220649` — SUCCESS.
+- V168 guard: `qa/tests/v168-combat-stat-runtime-authority-test.js`.
+- V168 authority matrix: `qa/tools/v168-combat-stat-authority-matrix.json`.
+- V168 Fast QA: `34671477519` — SUCCESS.
+- V168 canonical closure: `34671514410` — SUCCESS.
+- V168 Backend closure: PASS.
+- V168 Frontend closure: PASS.
 
 ## Working rule
 
