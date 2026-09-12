@@ -64,6 +64,14 @@ Read this first. Do not reconstruct project state from old chats.
   - Canonical QA: `34687519243` — SUCCESS
   - Backend closure: PASS
   - Frontend closure: PASS
+- V174 Action Settlement & One-shot Reward Runtime Authority Consolidation: CLOSED / LOCKED.
+  - Runtime fix: `02ef3dd93fc7a53efbb5ec74f989b3cd7715462d`
+  - Runtime candidate: `ffd51b83984ed8591f46bbdf377fab98b57541cb`
+  - Closure QA commit: `90a7b9832d93193da20f286cb61238edaf4cac2d`
+  - Fast QA: `34689227022` — SUCCESS
+  - Canonical QA: `34689259930` — SUCCESS
+  - Backend closure: PASS
+  - Frontend closure: PASS
 
 ## Locked Collection authority
 
@@ -198,6 +206,15 @@ Read this first. Do not reconstruct project state from old chats.
 - V173 adds no standalone eager runtime module; the locked frontend performance gate remains unchanged.
 - No market, Orthodoxy, Genesis, Hunt reward/rate/power/pacing or other authored balance values were changed in V173.
 
+## Locked V174 authority
+
+- One-shot Content Event completion is reconstructed from the valid union of `completedEventIds` and current-world validated `choicesByEventId`; deleting only the completion-list mirror cannot replay an already-resolved event.
+- Dangling/non-authored Content Event IDs or choice IDs are removed during restore and cannot forge completion authority.
+- Dungeon first-clear settlement evidence in V89 `progressionAwardedIds` may raise a missing/lowered `dungeons.highestClearedFloor` only for a current-world authored dungeon/floor.
+- Restore never lowers legitimate Dungeon clear progress, does not treat Hunt first-clear keys as Dungeon evidence and ignores non-authored floor keys.
+- Generic Activity daily/weekly counters were audited but are not reconstructed because there is no independent period-specific authority that can safely distinguish current-period settlement from legitimate later-period rewards.
+- V174 uses the already-eager `session-restore.js` path, adds no new eager module and does not change Content Event, Dungeon, Activity or V89 reward/rate/pacing values.
+
 ## Evidence
 
 - V164 guards: `qa/tests/v164-pet-confidant-runtime-authority-test.js`, `qa/tests/v164-pet-confidant-integration-authority-test.js`.
@@ -233,6 +250,10 @@ Read this first. Do not reconstruct project state from old chats.
 - V173 Fast QA: `34687485439` — SUCCESS.
 - V173 canonical closure: `34687519243` — SUCCESS.
 - V173 closure QA commit: `74a46c7fe69f49e59b70eb6b2341e0934acfc9ee`.
+- V174 guard: `qa/tests/v174-one-shot-settlement-runtime-authority-test.js` — 6/6 PASS.
+- V174 Fast QA: `34689227022` — SUCCESS.
+- V174 canonical closure: `34689259930` — SUCCESS.
+- V174 closure QA commit: `90a7b9832d93193da20f286cb61238edaf4cac2d`.
 
 ## Working rule
 
