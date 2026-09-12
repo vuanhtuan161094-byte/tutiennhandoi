@@ -46,6 +46,13 @@ const V171_MANIFESTATION_CAPACITY_STEPS = Object.freeze([
     [114, 15], [110, 14], [106, 13], [102, 12], [98, 11], [94, 10],
     [90, 9], [86, 8], [82, 7], [78, 6], [74, 5], [66, 4], [62, 3],
 ]);
+const V176_FIRST_LIFE_BEAT_IDS = Object.freeze([
+    'first.awakening',
+    'first.qi_awakened',
+    'first.first_clear',
+    'first.choose_path',
+]);
+const V176_FIRST_LIFE_BEATS = new Set(V176_FIRST_LIFE_BEAT_IDS);
 function safeAlchemyInventoryCountV167(value) {
     if (typeof value === 'bigint') return Number(value > BigInt(Number.MAX_SAFE_INTEGER) ? BigInt(Number.MAX_SAFE_INTEGER) : value);
     return Math.max(0, Math.floor(Number(value) || 0));
@@ -369,6 +376,52 @@ export function normalizeCanonicalOneShotSettlementAfterRestore(state, world) {
     return state;
 }
 
+// V176: first-life guided beats are one-shot settlements. A valid current-life history event is
+// durable evidence that the beat already ran, so losing only the flow completion mirror must not
+// mint the beat rewards again after restore.
+export function normalizeCanonicalFirstLifeStoryAfterRestore(state, history, currentLife) {
+    const story = state?.flow?.firstLifeStory;
+    if (!story) return state;
+    const completed = [];
+    const seen = new Set();
+    for (const rawBeatId of story.completedBeatIds ?? []) {
+        const beatId = String(rawBeatId ?? '');
+        if (!V176_FIRST_LIFE_BEATS.has(beatId) || seen.has(beatId)) continue;
+        seen.add(beatId);
+        completed.push(beatId);
+    }
+    if (seen.has('first.choose_path') && !seen.has('first.first_clear')) {
+        seen.add('first.first_clear');
+        completed.push('first.first_clear');
+    }
+    if (Number(currentLife?.lifeNumber) === 1 && typeof currentLife?.lifeId === 'string' && currentLife.lifeId.length > 0) {
+        for (const event of Array.isArray(history) ? history : []) {
+            const beatId = String(event?.data?.beatId ?? '');
+            if (!V176_FIRST_LIFE_BEATS.has(beatId)) continue;
+            const prefix = `firstlife.${beatId}.${currentLife.lifeId}.`;
+            const eventId = String(event?.id ?? '');
+            const serial = eventId.startsWith(prefix) ? eventId.slice(prefix.length) : '';
+            if (!/^\d+$/.test(serial)) continue;
+            if (!Array.isArray(event?.tags) || !event.tags.includes('FirstLife') || !event.tags.includes('GuidedContent')) continue;
+            if (beatId === 'first.choose_path') {
+                const path = event?.data?.path;
+                if (path !== 'sect' && path !== 'wanderer') continue;
+                if (story.path !== 'sect' && story.path !== 'wanderer') story.path = path;
+                if (!seen.has('first.first_clear')) {
+                    seen.add('first.first_clear');
+                    completed.push('first.first_clear');
+                }
+            }
+            if (!seen.has(beatId)) {
+                seen.add(beatId);
+                completed.push(beatId);
+            }
+        }
+    }
+    story.completedBeatIds = completed;
+    return state;
+}
+
 // V141 pre-release policy: only the current canonical save schema is supported.
 export function restoreSimulationSession(SessionClass, saveVersion, registry, world, entityDefinitions, profile, save) {
     if (save.profileId !== profile.id) {
@@ -386,6 +439,7 @@ export function restoreSimulationSession(SessionClass, saveVersion, registry, wo
     normalizeCanonicalSkillHeartAfterRestore(state);
     normalizeCanonicalAlchemyInventoryAfterRestore(state);
     repairAdventureStateReferences(state, world, registry);
+    normalizeCanonicalFirstLifeStoryAfterRestore(state, save.history, currentLife);
     normalizeCanonicalOneShotSettlementAfterRestore(state, world);
     normalizeCanonicalIdleRuntimeAfterRestore(state, world);
     normalizeCanonicalEndgameAfterRestore(state, currentLife);
