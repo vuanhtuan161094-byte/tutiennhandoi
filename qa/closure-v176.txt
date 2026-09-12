@@ -1,9 +1,14 @@
 V176 — First-life Story Settlement Runtime Authority
 
+Status: CLOSED / LOCKED
 Runtime fix: bf1c1a84401c7568c48acdf8f27f041e6b75aa00
 Targeted proof: 2cee4508d6c9052e87b8cda6951935a68ec70f52
 Runtime candidate: fbe823f62c8b152f62767dccc8f7274b8982bdbd
+Closure QA commit: 8424625685087a72feabfc55ed9e94ffd9ca1ca5
 Fast QA: 34704276629 — SUCCESS
+Canonical QA: 34704323102 — SUCCESS
+Backend closure: PASS
+Frontend closure: PASS
 
 Finding
 - resolveFirstLifeStory() grants real one-shot resources/effects, then records both flow.firstLifeStory.completedBeatIds and a durable FirstLife/GuidedContent history event containing data.beatId.
@@ -30,5 +35,9 @@ Fast QA 34704276629
 - Backend Fast: 22/22 PASS, including v176-first-life-story-runtime-authority-test.js.
 - Frontend Fast: 6/6 PASS, including frontend performance lock.
 
-Closure condition
-- Canonical QA must PASS before V176 is recorded CLOSED / LOCKED.
+Canonical QA 34704323102
+- Locked baseline V140-V151: PASS.
+- Locked authorities V152-V159: PASS.
+- V160/V161 and V162-V169 closure steps: PASS.
+- Backend closure: PASS.
+- Frontend closure: PASS.
