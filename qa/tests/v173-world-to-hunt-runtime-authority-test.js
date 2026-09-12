@@ -6,6 +6,7 @@ import { createPlayableAdventureState, playablePlayerProfile } from '../../dist/
 import { SimulationSession } from '../../dist/core/session.js';
 import { createOrthodoxyState, createIndependentOrthodoxy } from '../../dist/core/orthodoxy.js';
 import { createGenesisWorldState, createGenesisWorld } from '../../dist/core/genesis-world.js';
+import { createEndlessHuntState } from '../../dist/core/endless-hunt.js';
 import { normalizeCanonicalWorldToHuntAfterRestore } from '../../dist/core/save-stability.js';
 
 let passed = 0;
@@ -96,6 +97,7 @@ test('V173 B5 Genesis active worlds cannot exceed Immortal-derived capacity', ()
 
 test('V173 B6 Hunt first-clear evidence repairs split clear/unlock authority and blocks boss replay', () => {
   const state = createPlayableAdventureState();
+  state.endlessHunt = createEndlessHuntState();
   const hunt = state.endlessHunt;
   hunt.highestClearedByMajor = {};
   hunt.highestUnlockedByMajor = { '1': 1 };
