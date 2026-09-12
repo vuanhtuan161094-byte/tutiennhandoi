@@ -3,7 +3,7 @@
   "version": "V168",
   "status": "closure-candidate",
   "fastQa": {
-    "runId": 34669328658,
+    "runId": 34671477519,
     "conclusion": "success"
   },
   "pipeline": [
@@ -123,7 +123,7 @@
   ],
   "statAuthority": {
     "attack": "base -> raw/additive sources -> percentage/package multipliers in pipeline order -> final entity.stats.attack",
-    "maxHp": "body/physique derives at x20; independent authored raw/% maxHp is preserved once; combatMaxHp chooses the stronger materialized HP representation once, then applies combatHpMultiplierV124 once",
+    "maxHp": "unmarked legacy/synthetic entities use physique x20; after Equipment + Collection materializes raw/% HP, applyCollectionEconomyToEntityV12325 sets maxHpAuthorityV168=materialized; later stages preserve that marker; combatMaxHp then consumes materialized maxHp once and applies combatHpMultiplierV124 once",
     "defense": "base -> raw/additive -> percentage/package multipliers -> final entity.stats.defense",
     "maxSpirit": "base -> raw/additive -> percentage/package multipliers -> final entity.stats.maxSpirit",
     "critChancePct": "direct additive and unbounded for crit layers",
@@ -140,6 +140,7 @@
   "v168Fixes": [
     "character provenance order now matches applyCharacterToEntity",
     "raw/% HP from Equipment/Collection/Integration survives the final Alchemy compatibility pass",
+    "legacy/synthetic combat fixtures keep the historical physique x20 authority unless they pass the canonical Collection materialization seam",
     "body-derived HP is not added twice",
     "legacy state.artifacts no longer increases Integration combat power",
     "accuracy/mobility/controlPower/resolve are visible in stat provenance",
