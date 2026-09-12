@@ -81,6 +81,15 @@ Read this first. Do not reconstruct project state from old chats.
   - Canonical QA: `34700863946` — SUCCESS
   - Backend closure: PASS
   - Frontend closure: PASS
+- V176 First-life Story Settlement Runtime Authority: CLOSED / LOCKED.
+  - Runtime fix: `bf1c1a84401c7568c48acdf8f27f041e6b75aa00`
+  - Targeted proof: `2cee4508d6c9052e87b8cda6951935a68ec70f52`
+  - Runtime candidate: `fbe823f62c8b152f62767dccc8f7274b8982bdbd`
+  - Closure QA commit: `8424625685087a72feabfc55ed9e94ffd9ca1ca5`
+  - Fast QA: `34704276629` — SUCCESS
+  - Canonical QA: `34704323102` — SUCCESS
+  - Backend closure: PASS
+  - Frontend closure: PASS
 
 ## Locked Collection authority
 
@@ -234,6 +243,17 @@ Read this first. Do not reconstruct project state from old chats.
 - Hunt→Alchemy V146 settlement and PvP season payout were audited during discovery but were not patched because no current replay/runtime bug was proven.
 - V175 adds no new eager module and changes no Social reward, stat, bond, relationship, lifespan, probability, pacing or balance value.
 
+## Locked V176 authority
+
+- First-life story beats are one-shot settlements; restore may reconstruct a missing completion mirror from validated durable history evidence for the current first life.
+- Authored beat IDs are exactly `first.awakening`, `first.qi_awakened`, `first.first_clear`, and `first.choose_path`.
+- Valid history evidence must match the live `firstlife.<beatId>.<lifeId>.<numericActionIndex>` identity shape and include `FirstLife` + `GuidedContent`.
+- `first.choose_path` history additionally requires authored `sect` / `wanderer`; a proven choice also proves `first.first_clear`, matching the live prerequisite.
+- Missing path may be restored from valid choice history; an already-valid saved path is preserved.
+- Unknown completion IDs are removed and later-life history cannot create first-life completion authority.
+- The repair stays in existing eager `session-restore.js`; no new eager module and no first-life reward/effect/pacing/balance values changed.
+- PvP season/reward settlement was audited immediately before V176 and remained unchanged because no valid replay path was proven.
+
 ## Evidence
 
 - V164 guards: `qa/tests/v164-pet-confidant-runtime-authority-test.js`, `qa/tests/v164-pet-confidant-integration-authority-test.js`.
@@ -277,6 +297,10 @@ Read this first. Do not reconstruct project state from old chats.
 - V175 Fast QA: `34700817822` — SUCCESS.
 - V175 canonical closure: `34700863946` — SUCCESS.
 - V175 closure QA commit: `d3858711bd95822b3a2894b820dcfc40598b8fed`.
+- V176 guard: `qa/tests/v176-first-life-story-runtime-authority-test.js` — 6/6 PASS.
+- V176 Fast QA: `34704276629` — SUCCESS.
+- V176 canonical closure: `34704323102` — SUCCESS.
+- V176 closure QA commit: `8424625685087a72feabfc55ed9e94ffd9ca1ca5`.
 
 ## Working rule
 
