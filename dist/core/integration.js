@@ -6,8 +6,10 @@ export function integrationSummary(realm, injury, soul, dao, artifacts) {
     const soulScore = clamp((clamp(soul.strength / 3.2) + soul.purity + soul.stability) / 3);
     const main = dao.mainDaoId ? dao.known[dao.mainDaoId] : undefined;
     const daoScore = clamp((main?.depth ?? 0) * 0.78 + (main?.marks ?? 0) * 2.2 + (dao.domain.active ? 12 : 0));
-    const active = artifacts.items.filter(item => artifacts.activeIds.includes(item.id));
-    const artifactScore = active.length === 0 ? 52 : clamp(active.reduce((sum, item) => sum + 50 + item.nourishmentStage * 7 + Math.min(18, item.history.battles / 40) + (item.spirit.state === 'awakened' ? 8 : 0), 0) / active.length);
+    // V168 authority: legacy ArtifactState is compatibility/history only. Canonical Pháp Bảo/Chí Bảo
+    // combat power is already applied through Collection before Integration, so old activeIds/items must
+    // not become a second stat source here. Keep the historical no-active baseline for Integration balance.
+    const artifactScore = 52;
     const entries = [['body', body], ['soul', soulScore], ['dao', daoScore], ['artifact', artifactScore]];
     const lowest = entries.reduce((a, b) => a[1] <= b[1] ? a : b);
     const avg = entries.reduce((s, x) => s + x[1], 0) / entries.length;

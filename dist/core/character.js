@@ -226,7 +226,6 @@ export function characterStatSourceStagesV129(entity, state, registry, technique
     const legacyRoot = registry.spiritualRoot(state.spiritualRootId);
     push('character.spiritual_root_legacy', 'Linh Căn bẩm sinh legacy · đã nghỉ', current.stats, { sourceId: state.spiritualRootId, retired: true });
     const v145State = resolveSpiritualRootStateV145(state);
-    push('character.spiritual_root_v145', 'Linh Căn', applySpiritualRootStatsV145(current.stats, v145State), { level: v145State.level, ascensions: v145State.ascensions });
 
     // V144: legacy manual stats remain visible only as a zero-delta provenance marker for migrated saves.
     const techniqueRuntimeV119 = resolveTechniqueRuntimeV119(state, id => registry.technique(id));
@@ -275,6 +274,9 @@ export function characterStatSourceStagesV129(entity, state, registry, technique
         secondaryDaoId: foundation.battleDao.secondaryDaoId,
         bonuses: daoNatureApplied.bonuses,
     });
+    // V168: V145 Linh Căn is applied here in runtime, after Potential/Fate/Đạo Tính.
+    // Provenance must replay the same non-commutative order (especially physique → maxHp).
+    push('character.spiritual_root_v145', 'Linh Căn', applySpiritualRootStatsV145(current.stats, v145State), { level: v145State.level, ascensions: v145State.ascensions });
 
     let techniqueRuntimeStats = cloneStatsV129(current.stats);
     techniqueRuntimeStats.dodgeChancePct = combineStatPctV129('dodgeChancePct', techniqueRuntimeStats.dodgeChancePct ?? 0, techniqueRuntimeV119.staticDodgeFlatPct);

@@ -65,9 +65,16 @@ export function combineStatPctV129(key, current = 0, added = 0) {
     return cap === undefined ? (current ?? 0) + (added ?? 0) : combineBoundedPct(current, added, cap);
 }
 export function combatMaxHp(stats) {
-    const base = stats.physique !== undefined
-        ? stats.physique * COMBAT_RULES.physiqueHpMultiplier
-        : stats.maxHp;
+    const authoredMaxHp = Math.max(0, Number.isFinite(stats.maxHp) ? stats.maxHp : 0);
+    const derivedPhysiqueHp = Number.isFinite(stats.physique)
+        ? Math.max(0, stats.physique) * COMBAT_RULES.physiqueHpMultiplier
+        : 0;
+    // V168 authority: physique owns the derived body lane, while authored maxHp may contain
+    // independent raw/% HP from equipment/collection/integration. Use the stronger authored base once;
+    // never add both representations of the same body HP together.
+    const base = Number.isFinite(stats.physique)
+        ? Math.max(derivedPhysiqueHp, authoredMaxHp)
+        : authoredMaxHp;
     return Math.max(1, base * Math.max(0.01, stats.combatHpMultiplierV124 ?? 1));
 }
 export function combatSpiritStandard(stats) {

@@ -314,7 +314,22 @@ export function activeAlchemyBuff(state, worldYear) { const b = state.life.activ
 } return b; }
 export function daoPillStat(family) { return family === 'daoPower' ? 'power' : family === 'daoBody' ? 'body' : family === 'daoDefense' ? 'defense' : undefined; }
 export function lifePillStat(family) { return family === 'lifePower' ? 'power' : family === 'lifeBody' ? 'body' : family === 'lifeDefense' ? 'defense' : undefined; }
-export function applyAlchemyStatBonuses(entity, life, permanent, buff) { const power = Math.max(0, life.power) + Math.max(0, permanent.power) + Math.max(0, buff?.powerFlat ?? 0), body = Math.max(0, life.body) + Math.max(0, permanent.body) + Math.max(0, buff?.bodyFlat ?? 0), defense = Math.max(0, life.defense) + Math.max(0, permanent.defense) + Math.max(0, buff?.defenseFlat ?? 0), spirit = Math.max(0, buff?.spiritFlat ?? 0); const basePhysique = Number.isFinite(entity.stats.physique) ? Math.max(0, entity.stats.physique) : Math.max(0, entity.stats.maxHp / 20), physique = basePhysique + body; return { ...entity, stats: { ...entity.stats, attack: entity.stats.attack + power, defense: entity.stats.defense + defense, physique, maxHp: physique * 20, maxSpirit: entity.stats.maxSpirit + spirit, spiritStandard: Math.max(entity.stats.spiritStandard ?? entity.stats.maxSpirit, (entity.stats.spiritStandard ?? entity.stats.maxSpirit) + spirit) } }; }
+export function applyAlchemyStatBonuses(entity, life, permanent, buff) {
+    const power = Math.max(0, life.power) + Math.max(0, permanent.power) + Math.max(0, buff?.powerFlat ?? 0);
+    const body = Math.max(0, life.body) + Math.max(0, permanent.body) + Math.max(0, buff?.bodyFlat ?? 0);
+    const defense = Math.max(0, life.defense) + Math.max(0, permanent.defense) + Math.max(0, buff?.defenseFlat ?? 0);
+    const spirit = Math.max(0, buff?.spiritFlat ?? 0);
+    const basePhysique = Number.isFinite(entity.stats.physique)
+        ? Math.max(0, entity.stats.physique)
+        : Math.max(0, entity.stats.maxHp / 20);
+    const baseDerivedHp = basePhysique * 20;
+    const authoredMaxHp = Math.max(baseDerivedHp, Math.max(0, Number(entity.stats.maxHp) || 0));
+    const physique = basePhysique + body;
+    // V168 authority: body pills add their derived 20 HP/body once, while raw/% maxHp already authored
+    // by earlier Equipment/Collection/Integration stages remains intact instead of being overwritten.
+    const maxHp = authoredMaxHp + body * 20;
+    return { ...entity, stats: { ...entity.stats, attack: entity.stats.attack + power, defense: entity.stats.defense + defense, physique, maxHp, maxSpirit: entity.stats.maxSpirit + spirit, spiritStandard: Math.max(entity.stats.spiritStandard ?? entity.stats.maxSpirit, (entity.stats.spiritStandard ?? entity.stats.maxSpirit) + spirit) } };
+}
 export function emptyAlchemyAllocation() { return { power: 0, body: 0, defense: 0 }; }
 export function cloneAlchemyLegacy(value) { return { highestRank: Math.max(1, Math.min(9, Math.floor(Number(value?.highestRank) || 1))), highestTurn: Math.max(1, Math.min(9, Math.floor(Number(value?.highestTurn) || 1))), bestMasteryByRecipe: { ...(value?.bestMasteryByRecipe ?? {}) }, knownRecipeIds: [...new Set(value?.knownRecipeIds ?? [])] }; }
 export function archiveAlchemyLegacy(legacy, state) { const next = cloneAlchemyLegacy(legacy); if (state.rank > next.highestRank || (state.rank === next.highestRank && state.turn > next.highestTurn)) {
