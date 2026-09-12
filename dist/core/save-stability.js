@@ -1,4 +1,5 @@
 import { normalizeGuidanceAutomationPolicy } from './guidance.js';
+import { factionPromotionRequirements } from './faction.js';
 function duplicateIds(values) {
     const seen = new Set();
     const duplicate = new Set();
@@ -12,6 +13,61 @@ function duplicateIds(values) {
 }
 function finite(label, value, errors) { if (!Number.isFinite(value))
     errors.push(`${label} không phải số hữu hạn.`); }
+function v172NonNegative(value) {
+    const n = Number(value);
+    return Number.isFinite(n) ? Math.max(0, n) : 0;
+}
+const V172_FACTION_RANKS = Object.freeze(factionPromotionRequirements.map(x => x.rank));
+function v172RankIndex(rank) { return V172_FACTION_RANKS.indexOf(rank); }
+function v172MaxJoinedRank(membership, realmOrder) {
+    let maxRank = 'outerDisciple';
+    const contribution = v172NonNegative(membership?.lifetimeContribution);
+    const realm = Math.max(0, Math.floor(Number(realmOrder) || 0));
+    for (const requirement of factionPromotionRequirements) {
+        if (requirement.rank === 'leader') break;
+        if (contribution + 1e-9 >= requirement.minMerit && realm >= requirement.minRealmOrder)
+            maxRank = requirement.rank;
+    }
+    return maxRank;
+}
+/** V172: membership rank is live-earned authority; restore may only remove impossible authority. */
+export function normalizeCanonicalFactionAfterRestore(state) {
+    const factionState = state?.factions;
+    if (!factionState?.playerMemberships || !factionState?.factions)
+        return factionState;
+    const realmOrder = state?.realm?.maxRealmOrder ?? 0;
+    for (const [lifeKey, membership] of Object.entries(factionState.playerMemberships)) {
+        if (!membership?.active)
+            continue;
+        const faction = factionState.factions[membership.factionId];
+        const member = faction?.members?.[`player:${lifeKey}`];
+        const identityValid = Boolean(faction
+            && membership.lifeId === lifeKey
+            && member
+            && member.memberId === lifeKey
+            && member.memberType === 'player'
+            && member.sourceLifeId === lifeKey
+            && member.active);
+        if (!identityValid) {
+            membership.active = false;
+            if (member)
+                member.active = false;
+            continue;
+        }
+        membership.merit = v172NonNegative(membership.merit);
+        membership.lifetimeContribution = v172NonNegative(membership.lifetimeContribution);
+        const founder = faction.id === membership.factionId
+            && faction.id.startsWith('faction.player.')
+            && faction.founderLifeId === lifeKey;
+        const maxRank = founder ? 'leader' : v172MaxJoinedRank(membership, realmOrder);
+        const savedIndex = v172RankIndex(membership.rank);
+        const maxIndex = v172RankIndex(maxRank);
+        const canonicalRank = savedIndex < 0 ? 'outerDisciple' : V172_FACTION_RANKS[Math.min(savedIndex, maxIndex)];
+        membership.rank = canonicalRank;
+        member.rank = canonicalRank;
+    }
+    return factionState;
+}
 /** Audit references that can break a long-lived save without mutating it. */
 export function auditAdventureState(state, history, world, registry) {
     const errors = [];
@@ -106,6 +162,7 @@ export function repairAdventureStateReferences(state, world, registry) {
             loadout.equipmentIds = Object.fromEntries(Object.entries(loadout.equipmentIds).filter(([, id]) => validEquipment.has(id)));
         }
     }
+    normalizeCanonicalFactionAfterRestore(state);
     const policy = normalizeGuidanceAutomationPolicy(state.guidance.automationPolicy);
     const blocked = policy.blockedDungeonIds.filter(id => Boolean(world.dungeons[id]));
     if (blocked.length !== policy.blockedDungeonIds.length)
