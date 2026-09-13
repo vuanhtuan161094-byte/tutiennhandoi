@@ -1,0 +1,31 @@
+/* Character/Home visual bridge.
+   Clears legacy card chrome that still survives around Home-aligned Character surfaces.
+   Presentation only; loaded after ui-character-target-v1.css. */
+
+html body[data-game-screen="character"] .v138237-identity{
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+html body[data-game-screen="character"] .v138237-identity::after{
+  content:none!important;
+  display:none!important;
+}
+
+html body[data-game-screen="character"] .v138237-action-grid button,
+html body[data-game-screen="character"] .v138237-action-grid button:first-child,
+html body[data-game-screen="character"] .v138237-action-grid button:last-child{
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+html body[data-game-screen="character"] .v138237-action-grid button::before,
+html body[data-game-screen="character"] .v138237-action-grid button::after{
+  content:none!important;
+  display:none!important;
+}
