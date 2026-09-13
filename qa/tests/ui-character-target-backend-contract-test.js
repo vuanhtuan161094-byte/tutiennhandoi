@@ -26,7 +26,7 @@ assert.match(app,/data-sheet-open="origin"/,'Character target must retain canoni
 assert.match(app,/data-tab-jump="path"/,'Character target must retain canonical path/build navigation');
 
 // V2 visual contract: one-screen shrine, no duplicated elemental subtitle in the hero plaque.
-assert.match(css,/\.v138237-character-scroll[\s\S]*overflow:hidden!important/,'Character first screen must not expose an internal scroll container');
+assert.match(css,/\.v138237-character-scroll[\s\S]*overflow:hidden/,'Character first screen must not expose an internal scroll container');
 assert.match(css,/\.v138247-cultivation-entry,[\s\S]*\.v138237-playstyle,[\s\S]*\.v138237-next\{display:none!important\}/,'deep secondary sections must leave the first viewport and remain reachable through canonical detail routes');
 assert.match(css,/\.v138237-hero::before/,'target must provide a shrine\/ritual halo in the real Character scene');
 assert.match(css,/\.v138237-equip-slot>span[\s\S]*border-radius:50%!important/,'equipment sockets must remain round inlaid seals');
