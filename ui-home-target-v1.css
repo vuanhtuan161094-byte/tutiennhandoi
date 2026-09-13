@@ -1,0 +1,51 @@
+/* UI HOME TARGET V1 · HOME TARGET PASS · 2026-09-13
+   Candidate-only presentation layer for visual review.
+   Canonical backend/read-model remains authoritative; unsupported target concepts are not introduced. */
+
+body[data-game-screen="cultivation"][data-ux-shell="p0"]{
+  --ht-gold:#d8b66e;--ht-gold-hi:#f1d58e;--ht-ivory:#f7efdc;--ht-jade:#8fd0b7;--ht-navy:#061621;--ht-panel:rgba(5,21,31,.9)
+}
+body[data-game-screen="cultivation"] .ui-home-hero{min-height:clamp(538px,70dvh,612px)}
+body[data-game-screen="cultivation"] .ui-home-bg{filter:saturate(.96) contrast(1.05) brightness(.9)}
+body[data-game-screen="cultivation"] .ui-home-hero::before{background:linear-gradient(180deg,rgba(3,13,20,.01) 0%,rgba(3,13,20,0) 28%,rgba(4,15,22,.04) 49%,rgba(4,14,21,.4) 76%,#05131c 100%),radial-gradient(circle at 50% 35%,rgba(214,230,225,.1),transparent 28%),radial-gradient(circle at 50% 58%,rgba(75,159,202,.1),transparent 34%),linear-gradient(90deg,rgba(4,13,20,.22),transparent 29%,transparent 74%,rgba(4,13,20,.2))}
+body[data-game-screen="cultivation"] .ui-home-runes{top:108px;left:50%;width:306px;height:306px;opacity:.68;border-color:rgba(230,202,137,.15);box-shadow:0 0 0 28px rgba(216,182,108,.018),0 0 0 58px rgba(216,182,108,.012),0 0 76px rgba(84,161,190,.12)}
+body[data-game-screen="cultivation"] .ui-home-character{left:50%;right:auto;bottom:105px;width:min(112%,458px);height:72%;max-height:458px;transform:translateX(-47%);filter:drop-shadow(0 25px 32px rgba(0,0,0,.4)) drop-shadow(0 0 18px rgba(76,158,199,.2))}
+body[data-game-screen="cultivation"] .ui-home-identity{top:18px;left:17px;width:min(62%,240px)}
+body[data-game-screen="cultivation"] .ui-home-identity>span{color:#e2c274;letter-spacing:.18em}
+body[data-game-screen="cultivation"] .ui-home-identity>strong{margin-top:6px;color:#fff2d6;font-size:clamp(30px,8vw,36px);text-shadow:0 2px 16px rgba(0,0,0,.76),0 0 24px rgba(220,184,98,.08)}
+body[data-game-screen="cultivation"] .ui-home-identity>small{color:#c7d3ce}
+body[data-game-screen="cultivation"] .ui-home-vitals{top:17px;right:11px;min-width:116px;gap:0;padding:5px 8px;border-left:1px solid rgba(229,198,124,.2);background:linear-gradient(90deg,rgba(5,18,26,.04),rgba(5,18,26,.34));backdrop-filter:blur(4px)}
+body[data-game-screen="cultivation"] .ui-home-vitals>span{justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid rgba(235,241,238,.055)}
+body[data-game-screen="cultivation"] .ui-home-vitals>span:last-child{border-bottom:0}
+body[data-game-screen="cultivation"] .ui-home-progress{left:25px;right:25px;bottom:106px;padding:12px 18px 11px;border:1px solid rgba(231,201,127,.36);border-radius:18px;background:linear-gradient(180deg,rgba(8,31,44,.91),rgba(4,18,29,.96));box-shadow:0 12px 30px rgba(0,0,0,.34),inset 0 1px rgba(255,246,217,.04);backdrop-filter:blur(12px)}
+body[data-game-screen="cultivation"] .ui-home-progress::before{content:"";position:absolute;inset:4px 8px;border:1px solid rgba(234,203,127,.085);border-radius:14px;pointer-events:none}
+body[data-game-screen="cultivation"] .ui-home-progress::after{content:"◆";position:absolute;left:50%;top:-9px;transform:translateX(-50%);padding:0 4px;color:#e7c778;background:#0a2431;font-size:11px;text-shadow:0 0 10px rgba(228,196,119,.5)}
+body[data-game-screen="cultivation"] .ui-home-progress header,body[data-game-screen="cultivation"] .ui-home-progress footer{position:relative;z-index:1}
+body[data-game-screen="cultivation"] .ui-home-progress header>span{color:#e7c97d;font-family:Georgia,"Times New Roman",serif;font-size:10px}
+body[data-game-screen="cultivation"] .ui-home-progress-track{position:relative;z-index:1;height:6px;border:1px solid rgba(220,233,229,.09);background:rgba(1,9,15,.66);box-shadow:inset 0 1px 4px rgba(0,0,0,.5)}
+body[data-game-screen="cultivation"] .ui-home-progress-track>i{background:linear-gradient(90deg,#75a8cf,#8cc7ef 38%,#d6c17b 82%,#f2dd9c);box-shadow:0 0 14px rgba(115,182,223,.36)}
+body[data-game-screen="cultivation"] .ui-home-primary{left:19px;right:19px;bottom:18px;min-height:70px;grid-template-columns:44px minmax(0,1fr) 34px;padding:9px 14px 9px 12px;border:1px solid rgba(242,210,133,.68);border-radius:15px;clip-path:none;background:radial-gradient(circle at 12% 50%,rgba(230,190,92,.22),transparent 29%),linear-gradient(100deg,rgba(104,74,31,.91),rgba(57,51,31,.94) 39%,rgba(16,40,39,.97));box-shadow:0 13px 32px rgba(0,0,0,.36),0 0 20px rgba(218,177,83,.12),inset 0 1px rgba(255,244,208,.13);overflow:hidden}
+body[data-game-screen="cultivation"] .ui-home-primary::before{content:"";position:absolute;inset:5px;height:auto;border:1px solid rgba(246,216,145,.18);border-radius:11px;background:none;pointer-events:none}
+body[data-game-screen="cultivation"] .ui-home-primary::after{content:"☯";position:relative;grid-column:1;grid-row:1;width:40px;height:40px;display:grid;place-items:center;border:1px solid rgba(239,208,132,.42);border-radius:50%;color:#f1d58f;background:radial-gradient(circle,rgba(236,199,111,.19),rgba(14,35,35,.17));box-shadow:0 0 14px rgba(231,192,100,.14);font-size:19px}
+body[data-game-screen="cultivation"] .ui-home-primary>span{grid-column:2;grid-row:1}
+body[data-game-screen="cultivation"] .ui-home-primary>b{grid-column:3;grid-row:1}
+body[data-game-screen="cultivation"] .ui-home-primary strong{color:#fff0cf;font-size:18px}
+body[data-game-screen="cultivation"] .ui-home-primary.ready{background:radial-gradient(circle at 12% 50%,rgba(223,190,98,.23),transparent 29%),linear-gradient(100deg,rgba(98,77,31,.92),rgba(39,63,43,.95) 48%,rgba(14,48,40,.98))}
+body[data-game-screen="cultivation"] .ui-home-primary.danger{border-color:rgba(232,156,126,.62);background:radial-gradient(circle at 12% 50%,rgba(217,91,68,.18),transparent 29%),linear-gradient(100deg,rgba(103,45,34,.92),rgba(56,32,31,.96) 48%,rgba(25,27,31,.98))}
+body[data-game-screen="cultivation"] .ui-home-quick{gap:2px;padding:16px 8px 12px;background:linear-gradient(180deg,rgba(5,18,26,.99),rgba(6,21,29,.95))}
+body[data-game-screen="cultivation"] .ui-home-quick::before{left:7%;right:7%;background:linear-gradient(90deg,transparent,rgba(223,191,115,.31),transparent)}
+body[data-game-screen="cultivation"] .ui-home-quick>button{min-height:80px;gap:6px}
+body[data-game-screen="cultivation"] .ui-home-quick>button>i{position:relative;width:47px;height:47px;border-color:rgba(225,192,115,.36);background:radial-gradient(circle at 50% 42%,rgba(223,188,104,.13),rgba(6,25,34,.76) 62%);color:#e2c16f;font-size:17px;box-shadow:inset 0 0 0 5px rgba(255,255,255,.012),0 7px 18px rgba(0,0,0,.23)}
+body[data-game-screen="cultivation"] .ui-home-quick>button>i::after{content:"";position:absolute;inset:-5px;border:1px solid rgba(220,188,112,.09);border-radius:50%}
+body[data-game-screen="cultivation"] .ui-home-quick>button b{color:#f0eadb}
+body[data-game-screen="cultivation"] .v90-journey-card{position:relative;margin:5px 12px 15px;padding:14px 14px 12px;border:1px solid rgba(224,192,115,.3);border-radius:13px;background:radial-gradient(circle at 8% 18%,rgba(210,176,92,.075),transparent 25%),linear-gradient(145deg,rgba(11,31,41,.9),rgba(5,20,29,.97));box-shadow:0 12px 30px rgba(0,0,0,.23),inset 0 1px rgba(255,255,255,.025);overflow:hidden}
+body[data-game-screen="cultivation"] .v90-journey-card::before{content:"";display:block;position:absolute;inset:5px;border:1px solid rgba(222,190,114,.085);border-radius:9px;pointer-events:none}
+body[data-game-screen="cultivation"] .v90-journey-card::after{content:"◆";position:absolute;left:50%;top:-7px;transform:translateX(-50%);padding:0 5px;color:#d9b66c;background:#071c27;font-size:11px}
+body[data-game-screen="cultivation"] .v90-journey-card header,body[data-game-screen="cultivation"] .v90-journey-card>p,body[data-game-screen="cultivation"] .v90-journey-progress,body[data-game-screen="cultivation"] .v90-journey-card footer,body[data-game-screen="cultivation"] .v90-journey-condition,body[data-game-screen="cultivation"] .v90-journey-next,body[data-game-screen="cultivation"] .v90-journey-budget{position:relative;z-index:1}
+body[data-game-screen="cultivation"] .v90-journey-card header strong{color:#f1ead9;font-family:Georgia,"Times New Roman",serif;font-size:15px}
+body[data-game-screen="cultivation"] .v90-journey-progress i>em{background:linear-gradient(90deg,#a98a48,#dfbc69,#f1d68a);box-shadow:0 0 10px rgba(218,181,97,.18)}
+body[data-game-screen="cultivation"][data-ux-shell="p0"] .bottom-nav{background:linear-gradient(180deg,rgba(6,23,32,.96),rgba(3,13,20,.998))!important;border-top-color:rgba(222,189,111,.18)!important;box-shadow:0 -10px 30px rgba(0,0,0,.31)!important}
+body[data-game-screen="cultivation"][data-ux-shell="p0"] .nav-button[aria-current="page"],body[data-game-screen="cultivation"][data-ux-shell="p0"] .nav-button.active{background:radial-gradient(circle at 50% 72%,rgba(219,183,99,.11),transparent 64%)!important}
+@media(max-width:380px){body[data-game-screen="cultivation"] .ui-home-hero{min-height:516px}body[data-game-screen="cultivation"] .ui-home-character{width:118%;height:70%;bottom:106px;transform:translateX(-46%)}body[data-game-screen="cultivation"] .ui-home-progress{left:18px;right:18px;padding-inline:14px}body[data-game-screen="cultivation"] .ui-home-primary{left:12px;right:12px;grid-template-columns:39px minmax(0,1fr) 31px;padding-left:10px}body[data-game-screen="cultivation"] .ui-home-primary::after{width:36px;height:36px}body[data-game-screen="cultivation"] .ui-home-primary strong{font-size:16px}body[data-game-screen="cultivation"] .ui-home-quick>button>i{width:43px;height:43px}}
+@media(max-height:760px){body[data-game-screen="cultivation"] .ui-home-hero{min-height:496px}body[data-game-screen="cultivation"] .ui-home-character{height:68%;max-height:408px;bottom:103px}body[data-game-screen="cultivation"] .ui-home-runes{top:98px;width:260px;height:260px}body[data-game-screen="cultivation"] .ui-home-progress{bottom:101px}body[data-game-screen="cultivation"] .ui-home-primary{bottom:16px;min-height:66px}}
+@media(prefers-reduced-motion:reduce){body[data-game-screen="cultivation"] .ui-home-runes{animation:none}}
