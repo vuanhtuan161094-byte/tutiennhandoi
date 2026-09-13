@@ -422,6 +422,31 @@ export function normalizeCanonicalFirstLifeStoryAfterRestore(state, history, cur
     return state;
 }
 
+function validatedRetreatActionIndexV177(event) {
+    if (event?.type !== 'cultivation' || !Array.isArray(event?.tags) || !event.tags.includes('Retreat') || !event.tags.includes('CultivationV140')) return undefined;
+    const match = /^retreat\.v140\.(.+)\.(\d+)$/.exec(String(event?.id ?? ''));
+    if (!match) return undefined;
+    const index = Number(match[2]);
+    const hoursUsed = Number(event?.data?.hoursUsed);
+    const gain = Number(event?.data?.gain);
+    if (!Number.isSafeInteger(index) || index < 0 || index >= Number.MAX_SAFE_INTEGER) return undefined;
+    if (!Number.isFinite(hoursUsed) || hoursUsed < 0 || !Number.isFinite(gain) || gain < 0) return undefined;
+    return index;
+}
+
+// V177: a canonical retreat event is durable evidence that actionIndex had already consumed that
+// serial. Restore may raise a stale/lowered mirror to the minimum safe next value, but never lowers
+// a legitimate saved actionIndex and never derives authority from unrelated history IDs.
+export function canonicalSessionActionIndexAfterRestore(rawActionIndex, history) {
+    const raw = Number(rawActionIndex);
+    let next = Number.isSafeInteger(raw) && raw >= 0 ? raw : 0;
+    for (const event of Array.isArray(history) ? history : []) {
+        const used = validatedRetreatActionIndexV177(event);
+        if (used !== undefined) next = Math.max(next, used + 1);
+    }
+    return next;
+}
+
 // V141 pre-release policy: only the current canonical save schema is supported.
 export function restoreSimulationSession(SessionClass, saveVersion, registry, world, entityDefinitions, profile, save) {
     if (save.profileId !== profile.id) {
@@ -445,6 +470,7 @@ export function restoreSimulationSession(SessionClass, saveVersion, registry, wo
     normalizeCanonicalEndgameAfterRestore(state, currentLife);
     normalizeCanonicalReincarnationAfterRestore(meta, save.meta);
     state.character.potential = clonePotentialState(undefined);
-    const session = new SessionClass(registry, world, entityDefinitions, profile, save.rootSeed, state, save.actionIndex, save.history, meta, currentLife);
+    const actionIndex = canonicalSessionActionIndexAfterRestore(save.actionIndex, save.history);
+    const session = new SessionClass(registry, world, entityDefinitions, profile, save.rootSeed, state, actionIndex, save.history, meta, currentLife);
     return installOfflineReplayGuardV169(session);
 }
