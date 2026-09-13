@@ -1,0 +1,71 @@
+/* UI SYSTEM V1 · APP SHELL / HUD · 2026-09-13
+   Presentation-only. Runtime/save/navigation/gameplay authority remains canonical in app.js.
+   Kept separate from historical styles.css so later UI migration does not add another legacy block. */
+body[data-ux-shell="p0"]{--ui-shell-ink:#07131f;--ui-shell-panel:rgba(8,22,34,.985);--ui-shell-line:rgba(206,174,104,.18);--ui-shell-line-strong:rgba(222,190,112,.36);--ui-shell-gold:#e1bd70;--ui-shell-jade:#7ed0b0;--ui-shell-danger:#df8177;--ui-shell-text:#edf4f3;--ui-shell-muted:#93a8ac;--ui-shell-focus:#f0d18a;--ui-shell-radius-sm:10px;--ui-shell-radius-md:14px;--ui-shell-touch:44px;--ui-shell-shadow:0 12px 34px rgba(0,0,0,.28)}
+
+/* Top HUD */
+body[data-ux-shell="p0"] .topbar{isolation:isolate;gap:8px;padding-inline:max(10px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-right))!important;background:linear-gradient(180deg,rgba(10,31,46,.985),rgba(6,20,31,.96)),radial-gradient(circle at 18% 0%,rgba(225,189,112,.08),transparent 42%)!important;border-bottom-color:var(--ui-shell-line)!important;box-shadow:0 8px 24px rgba(0,0,0,.18)!important}
+body[data-ux-shell="p0"] .topbar::after{display:none!important}
+body[data-ux-shell="p0"] .player-header{min-width:0;display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:8px!important}
+body[data-ux-shell="p0"] .player-seal{width:42px!important;height:42px!important;min-width:42px;flex-basis:42px!important;border:1px solid var(--ui-shell-line-strong);border-radius:50%;overflow:hidden;box-shadow:0 0 0 2px rgba(225,189,112,.05),0 5px 16px rgba(0,0,0,.3);background:rgba(255,255,255,.025)}
+body[data-ux-shell="p0"] .player-seal img,body[data-ux-shell="p0"] .player-seal picture{width:100%;height:100%;object-fit:cover}
+body[data-ux-shell="p0"] .player-meta{min-width:0;display:grid;align-content:center;gap:2px}
+body[data-ux-shell="p0"] .player-meta>strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ui-shell-text);font-family:Georgia,"Times New Roman",serif;font-size:13px!important;line-height:1.15;font-weight:700;letter-spacing:.01em}
+body[data-ux-shell="p0"] .player-meta>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ui-shell-muted)!important;font-size:10px!important;line-height:1.25;font-variant-numeric:tabular-nums;margin-top:0!important}
+body[data-ux-shell="p0"] .player-meta>span b{color:var(--ui-shell-jade);font-weight:700}
+body[data-ux-shell="p0"] .v1084-header-progress{position:relative;display:block;width:100%;height:3px;margin-top:2px;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.065)}
+body[data-ux-shell="p0"] .v1084-header-progress>em{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#b68e45,var(--ui-shell-gold));box-shadow:0 0 8px rgba(225,189,112,.28)}
+body[data-ux-shell="p0"] .header-resources{display:flex;align-items:center;justify-content:flex-end;gap:4px!important}
+body[data-ux-shell="p0"] .resource-chip{min-height:26px;display:inline-flex;align-items:center;gap:4px;padding:3px 6px 3px 4px!important;border:1px solid rgba(222,190,112,.12)!important;border-radius:999px;background:rgba(255,255,255,.035)!important;color:#dce8e7;white-space:nowrap;font-size:10px!important;font-variant-numeric:tabular-nums}
+body[data-ux-shell="p0"] .resource-chip img{width:17px;height:17px;object-fit:contain}
+body[data-ux-shell="p0"] .resource-chip b{color:#f1dfb4;font-size:10px!important;font-weight:750}
+body[data-ux-shell="p0"] .topbar-actions{min-width:44px;display:flex;align-items:center;justify-content:flex-end;gap:5px}
+body[data-ux-shell="p0"] .save-state{max-width:78px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ui-shell-muted);font-size:10px;line-height:1.1}
+
+/* System menu */
+body[data-ux-shell="p0"] .system-menu{position:relative}
+body[data-ux-shell="p0"] .system-menu>summary{position:relative;width:var(--ui-shell-touch)!important;height:var(--ui-shell-touch)!important;min-width:var(--ui-shell-touch);min-height:var(--ui-shell-touch);display:grid;place-items:center;border:1px solid rgba(222,190,112,.16)!important;border-radius:12px;background:rgba(255,255,255,.035)!important;color:#dbe7e6;cursor:pointer;list-style:none;font-size:18px;line-height:1}
+body[data-ux-shell="p0"] .system-menu>summary::-webkit-details-marker{display:none}
+body[data-ux-shell="p0"] .system-menu.has-notify>summary::after{content:"";position:absolute;top:6px;right:6px;width:7px;height:7px;border:2px solid #0a1f2d;border-radius:50%;background:var(--ui-shell-gold);box-shadow:0 0 8px rgba(225,189,112,.42)}
+body[data-ux-shell="p0"] .system-menu-panel{right:0;width:min(330px,calc(100vw - 20px));max-height:min(72vh,600px);overflow:auto;overscroll-behavior:contain;border:1px solid var(--ui-shell-line-strong);border-radius:var(--ui-shell-radius-md);background:var(--ui-shell-panel);box-shadow:var(--ui-shell-shadow);backdrop-filter:blur(18px)}
+body[data-ux-shell="p0"] .system-quick-title{color:#cfb77d;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+body[data-ux-shell="p0"] .system-quick-grid button,body[data-ux-shell="p0"] .menu-action{min-height:var(--ui-shell-touch);border-radius:var(--ui-shell-radius-sm)}
+body[data-ux-shell="p0"] .system-quick-grid button b,body[data-ux-shell="p0"] .menu-action{font-size:11px}
+body[data-ux-shell="p0"] .system-quick-grid button small{color:var(--ui-shell-muted);font-size:10px}
+
+/* Global feedback + StatePanel grammar. Feature presenters may opt in; this creates no UI-owned gameplay state. */
+body[data-ux-shell="p0"] .viewport-shell{background:radial-gradient(circle at 50% -12%,rgba(89,134,139,.08),transparent 34%),var(--ui-shell-ink)}
+body[data-ux-shell="p0"] .notice{margin:8px 10px 0;padding:9px 11px;border:1px solid rgba(225,189,112,.2);border-radius:var(--ui-shell-radius-sm);background:rgba(225,189,112,.08);color:#ead9af;box-shadow:0 8px 22px rgba(0,0,0,.14);font-size:11px;line-height:1.35}
+body[data-ux-shell="p0"] .notice.error,body[data-ux-shell="p0"] .notice.danger{border-color:rgba(223,129,119,.34);background:rgba(223,129,119,.1);color:#f1b0aa}
+body[data-ux-shell="p0"] .ui-state-panel{min-height:136px;display:grid;place-items:center;gap:8px;padding:20px 16px;border:1px solid var(--ui-shell-line);border-radius:var(--ui-shell-radius-md);background:rgba(255,255,255,.025);color:var(--ui-shell-muted);text-align:center}
+body[data-ux-shell="p0"] .ui-state-panel>strong{color:var(--ui-shell-text);font-size:14px}
+body[data-ux-shell="p0"] .ui-state-panel>p{max-width:34ch;margin:0;font-size:11px;line-height:1.45}
+body[data-ux-shell="p0"] .ui-state-panel[data-state="loading"]::before{content:"";width:24px;height:24px;border:2px solid rgba(225,189,112,.18);border-top-color:var(--ui-shell-gold);border-radius:50%;animation:ui-shell-spin .8s linear infinite}
+body[data-ux-shell="p0"] .ui-state-panel[data-state="empty"]{border-style:dashed}
+body[data-ux-shell="p0"] .ui-state-panel[data-state="blocked"]{border-color:rgba(147,168,172,.2)}
+body[data-ux-shell="p0"] .ui-state-panel[data-state="error"]{border-color:rgba(223,129,119,.34)}
+body[data-ux-shell="p0"] .ui-state-panel[data-state="error"]>strong{color:#f1b0aa}
+body[data-ux-shell="p0"] .ui-state-panel[data-state="success"]{border-color:rgba(126,208,176,.28)}
+body[data-ux-shell="p0"] .ui-state-panel[data-state="success"]>strong{color:var(--ui-shell-jade)}
+
+/* Five-destination dock */
+body[data-ux-shell="p0"] .bottom-nav{padding-inline:max(6px,env(safe-area-inset-left)) max(6px,env(safe-area-inset-right))!important;gap:2px;border-top-color:var(--ui-shell-line)!important;background:linear-gradient(180deg,rgba(8,26,39,.975),rgba(5,17,27,.995))!important;box-shadow:0 -8px 24px rgba(0,0,0,.18)!important;backdrop-filter:blur(18px)}
+body[data-ux-shell="p0"] .nav-button{position:relative;min-width:0;display:grid;grid-template-rows:28px auto;place-items:center;align-content:center;gap:1px;padding:4px 3px 3px;border:0;border-radius:12px;background:transparent;color:#748e95;cursor:pointer;-webkit-tap-highlight-color:transparent}
+body[data-ux-shell="p0"] .nav-button>b{display:grid;place-items:center;border-radius:9px;color:currentColor;transition:transform 140ms ease,color 140ms ease,background-color 140ms ease}
+body[data-ux-shell="p0"] .nav-button svg{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+body[data-ux-shell="p0"] .nav-button>span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px!important;line-height:1.1;font-weight:650!important;letter-spacing:0}
+body[data-ux-shell="p0"] .nav-button[aria-current="page"],body[data-ux-shell="p0"] .nav-button.active{color:#efd596;background:linear-gradient(180deg,rgba(225,189,112,.105),rgba(225,189,112,.035))!important;box-shadow:none!important}
+body[data-ux-shell="p0"] .nav-button.active::before{content:none!important}
+body[data-ux-shell="p0"] .nav-button[aria-current="page"]>b,body[data-ux-shell="p0"] .nav-button.active>b{color:#f0cf82;background:rgba(225,189,112,.08)!important;box-shadow:none!important;transform:translateY(-1px)}
+body[data-ux-shell="p0"] .nav-button.active>b svg{stroke:currentColor!important;filter:none!important}
+body[data-ux-shell="p0"] .nav-button[aria-current="page"]>span,body[data-ux-shell="p0"] .nav-button.active>span{color:#efd596!important}
+body[data-ux-shell="p0"] .nav-button[aria-current="page"]::after,body[data-ux-shell="p0"] .nav-button.active::after{content:"";position:absolute;left:50%;bottom:1px;width:18px;height:2px;border-radius:999px;background:var(--ui-shell-gold);transform:translateX(-50%);box-shadow:0 0 8px rgba(225,189,112,.38)}
+
+/* Accessibility and input modes */
+body[data-ux-shell="p0"] .nav-button:focus-visible,body[data-ux-shell="p0"] .system-menu>summary:focus-visible,body[data-ux-shell="p0"] .system-menu-panel button:focus-visible,body[data-ux-shell="p0"] .system-menu-panel .file-button:focus-within{outline:2px solid var(--ui-shell-focus);outline-offset:2px}
+body[data-ux-shell="p0"] button:disabled,body[data-ux-shell="p0"] [aria-disabled="true"]{cursor:not-allowed}
+@media(hover:hover) and (pointer:fine){body[data-ux-shell="p0"] .nav-button:hover:not(.active){color:#a9bdbe;background:rgba(255,255,255,.025)}body[data-ux-shell="p0"] .system-menu>summary:hover{border-color:var(--ui-shell-line-strong)!important;background:rgba(225,189,112,.07)!important}}
+@media(max-width:410px){body[data-ux-shell="p0"] .player-header{grid-template-columns:38px minmax(0,1fr) auto;gap:6px!important}body[data-ux-shell="p0"] .player-seal{width:38px!important;height:38px!important;min-width:38px;flex-basis:38px!important}body[data-ux-shell="p0"] .resource-chip{padding-right:5px!important}body[data-ux-shell="p0"] .resource-chip img{width:15px;height:15px}body[data-ux-shell="p0"] .topbar-actions{gap:3px}body[data-ux-shell="p0"] .save-state{max-width:58px}}
+@media(max-width:360px){body[data-ux-shell="p0"] .header-resources{gap:2px!important}body[data-ux-shell="p0"] .resource-chip{padding-inline:3px!important}}
+@media(prefers-reduced-motion:reduce){body[data-ux-shell="p0"] .nav-button>b,body[data-ux-shell="p0"] .ui-state-panel[data-state="loading"]::before{transition:none;animation:none}}
+@keyframes ui-shell-spin{to{transform:rotate(360deg)}}
