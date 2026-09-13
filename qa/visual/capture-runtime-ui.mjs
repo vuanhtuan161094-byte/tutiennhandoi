@@ -172,6 +172,19 @@ async function capture(client, name, width, height, screen) {
   return { name, file: `${name}.png`, width, height, screen, metrics };
 }
 
+async function smokeHomeSideRail(client) {
+  const selector='[data-home-target-side-rail="left"] [data-home-target-route="roots"]';
+  await waitFor(client, `document.querySelector(${JSON.stringify(selector)})`, 'Home canonical Linh Căn side-rail control');
+  const before=await client.evaluate(`({screen:document.body.dataset.gameScreen,label:document.querySelector(${JSON.stringify(selector)})?.getAttribute('aria-label')||''})`);
+  await client.evaluate(`(()=>{const button=document.querySelector(${JSON.stringify(selector)});if(!button)throw new Error('Home roots side rail missing');button.click();return true;})()`);
+  await waitFor(client, `document.body.dataset.gameScreen === 'roots' && document.querySelector('.v2314-roots')`, 'Home side rail canonical roots navigation');
+  const after=await client.evaluate(`({screen:document.body.dataset.gameScreen,heading:document.querySelector('.v2314-roots h1')?.textContent||''})`);
+  if(before.screen!=='cultivation'||after.screen!=='roots')throw new Error(`Home side-rail smoke failed: ${before.screen} -> ${after.screen}`);
+  await navigate(client, `${baseUrl}/?tab=cultivation&visualqa=1`);
+  await waitForVisualReady(client, 'cultivation');
+  return {name:'home-side-rail-roots',from:before.screen,to:after.screen,label:before.label,heading:after.heading,canonicalProxy:true};
+}
+
 let client;
 try {
   const version = await pollJson(`http://127.0.0.1:${cdpPort}/json/version`);
@@ -205,9 +218,11 @@ try {
   })()`);
 
   const screens = [];
+  const interactionChecks = [];
   await navigate(client, `${baseUrl}/?tab=cultivation&visualqa=1`);
   await waitForVisualReady(client, 'cultivation');
   screens.push(await capture(client, 'home-hud-390x844', 390, 844, 'cultivation'));
+  interactionChecks.push(await smokeHomeSideRail(client));
   screens.push(await capture(client, 'home-hud-412x915', 412, 915, 'cultivation'));
 
   await navigate(client, `${baseUrl}/?tab=character&visualqa=1`);
@@ -222,10 +237,12 @@ try {
     fixture,
     sourceMode: 'actual-runtime-production-url-after-save-safe-dev-fixture-bootstrap',
     mockOrReconstruction: false,
+    interactionChecks,
     screens,
   };
   await writeFile(resolve(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
-  console.log(`VISUAL PROOF PASS · ${screens.length} runtime screenshots · ${outDir}`);
+  console.log(`VISUAL PROOF PASS · ${screens.length} runtime screenshots · ${interactionChecks.length} runtime interaction smoke · ${outDir}`);
+  for (const check of interactionChecks) console.log(`- interaction ${check.name} · ${check.from} -> ${check.to}`);
   for (const screen of screens) console.log(`- ${screen.file} · ${screen.width}x${screen.height} · ${screen.screen}`);
 } catch (error) {
   console.error(`[ui-visual] ${error?.stack || error}`);

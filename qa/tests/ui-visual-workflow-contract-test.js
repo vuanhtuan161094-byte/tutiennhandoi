@@ -23,6 +23,9 @@ assert.match(capture,/\?tab=cultivation&visualqa=1/,'final Home capture must use
 assert.match(capture,/\?tab=character&visualqa=1/,'baseline Character capture must use the production URL without dev=1');
 assert.match(capture,/home-hud-390x844/,'390×844 reference viewport must be captured');
 assert.match(capture,/home-hud-412x915/,'412×915 tall viewport must be captured');
+assert.match(capture,/data-home-target-route=\\?"roots\\?"/,'visual proof must exercise the Home canonical Linh Căn side rail');
+assert.match(capture,/document\.body\.dataset\.gameScreen === 'roots'/,'visual proof must verify the rail reaches the real roots runtime screen');
+assert.match(capture,/interactionChecks\.push\(await smokeHomeSideRail\(client\)\)/,'runtime side-rail smoke must be part of exact-SHA proof');
 assert.match(capture,/mockOrReconstruction:\s*false/,'manifest must explicitly reject mock/reconstruction proof');
 assert.doesNotMatch(capture,/\.innerHTML\s*=/,'visual runner must not reconstruct or replace game markup');
 
