@@ -13,7 +13,7 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - Do not reopen locked runtime systems without a proven regression.
 - **All selected non-UI runtime/authority work is CLOSED / LOCKED through V179.**
 - **V180 is NOT OPEN.** The attempted final cross-system audit did not justify another numbered patch because the existing player-journey gate plus Canonical closure already cover the selected non-UI objective.
-- **UI/UX presentation phase is OPEN. Home / Tu Luyện and App Shell / HUD are CLOSED / LOCKED under Workflow V2 after exact-runtime visual proof, explicit user approval, and Canonical QA. Character / Equipment is the next active UI slice.**
+- **UI/UX presentation phase is OPEN. Home / Tu Luyện, App Shell / HUD, and Character / Equipment are CLOSED / LOCKED under Workflow V2. Combat Readability is the next active UI slice.**
 
 ## UI/UX phase
 
@@ -24,7 +24,7 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - **No reconstructed mock, partial HTML/CSS recreation, concept image, or placeholder preview counts as visual proof.**
 - **No UI slice may move from candidate to LOCKED without screenshots from the actual runtime candidate and explicit user approval.**
 - Implementation order remains: **Home/Tu Luyện → App Shell/HUD → Character/Equipment → Combat readability → Dungeon/Hunt → Collection/Alchemy → Reincarnation/Automation → World/Faction/Social**.
-- Immediate UI action: start **Character / Equipment** from the actual runtime baseline, preserve V165 Equipment and V168 Combat/Stat authority, make a narrow presentation slice, then repeat the Workflow V2 visual approval gate.
+- Immediate UI action: start **Combat Readability** from the actual runtime baseline, preserve locked V168 Combat/Stat authority, keep the approved Home/Character chibi-manhua visual family, and repeat the Workflow V2 visual approval gate.
 
 ### Home / Tu Luyện — CLOSED / LOCKED (Workflow V2)
 
@@ -75,6 +75,26 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - Existing frontend performance hard lock passed; thresholds were not raised.
 - Workflow V2 status: **CLOSED / LOCKED**.
 
+### Character / Equipment — CLOSED / LOCKED (Workflow V2)
+
+- Final approved exact-runtime candidate: `cc57f08c592c93e4eb4011e4105359c9c5c75edc`.
+- Exact candidate Fast QA run `34778776376` — **SUCCESS**.
+  - Backend Fast: **25/25 PASS**.
+  - Frontend Fast: **13/13 PASS**.
+- Exact Runtime Visual Proof run `34778776385` — **SUCCESS**.
+- Artifact: `ui-visual-cc57f08c592c93e4eb4011e4105359c9c5c75edc`.
+- Runtime proof is from the actual production candidate; no reconstructed mock or placeholder preview.
+- User explicitly approved the final Character / Equipment visual on 2026-09-13.
+- Canonical art direction is now locked to the same **chibi/manhua** hero family as Home / Tu Luyện.
+- Locked presentation: hero-first composition; equipment slots float around the hero without dark vertical rail panels; labels use local readability plates; current-path plaque is compact; core stats are summary-first; `Tăng Điểm` is the dominant compact CTA; quick actions use the Home circular-destination grammar.
+- Visual closure note: `docs/ui/UI_CHARACTER_EQUIPMENT_VISUAL_CLOSURE_20260913.md`.
+- `[closure]` commit: `6a896d20e75ac27d763316a853b158916d1b51c9`.
+- Canonical QA run `34779034544` — **SUCCESS**.
+  - Backend Canonical Closure: **123/123 PASS**.
+  - Frontend Canonical Closure: **27/27 PASS**.
+- This slice changes presentation only; V165 Equipment and V168 Combat/Stat authorities remain CLOSED / LOCKED.
+- Workflow V2 status: **CLOSED / LOCKED**.
+
 ## Locked versions
 
 - V160 — full-life audit: LOCKED.
@@ -122,6 +142,18 @@ For the latest approved Home / Tu Luyện + App Shell / HUD Workflow V2 closure:
   - Backend closure: **122/122 PASS**
   - Frontend closure: **26/26 PASS**
 
+For the latest approved Character / Equipment Workflow V2 closure:
+
+- Approved runtime candidate: `cc57f08c592c93e4eb4011e4105359c9c5c75edc`
+- Exact candidate Fast QA run `34778776376` — **SUCCESS**
+  - Backend Fast: **25/25 PASS**
+  - Frontend Fast: **13/13 PASS**
+- Exact runtime Visual Proof run `34778776385` — **SUCCESS**
+- `[closure]` commit: `6a896d20e75ac27d763316a853b158916d1b51c9`
+- Canonical QA run `34779034544` — **SUCCESS**
+  - Backend closure: **123/123 PASS**
+  - Frontend closure: **27/27 PASS**
+
 ### Frontend performance lock
 
 `qa/tests/v129-frontend-performance-test.js` is a hard lock:
@@ -131,7 +163,7 @@ For the latest approved Home / Tu Luyện + App Shell / HUD Workflow V2 closure:
 - never raise these thresholds to make a change pass.
 
 V177–V179 added no new eager frontend runtime module; Fast and Canonical frontend gates remained green.
-UI Home and App Shell/HUD Workflow V2 closure also passed the same performance hard lock without raising thresholds.
+Home/App Shell and Character/Equipment Workflow V2 closures also passed the same performance hard lock without raising thresholds.
 
 ## Locked runtime authorities
 
@@ -327,4 +359,4 @@ Evidence:
 4. Do not create V180 merely to continue numbering.
 5. Non-UI runtime work is considered complete for the selected scope.
 6. UI/UX phase follows `docs/ui/UI_UX_WORKFLOW_V2_20260913.md`; no UI closure before actual runtime visual proof and explicit user approval.
-7. Home / Tu Luyện + App Shell / HUD are CLOSED / LOCKED. Next UI slice is Character / Equipment, starting from the actual runtime baseline and preserving locked V165/V168 authorities.
+7. Home / Tu Luyện + App Shell / HUD + Character / Equipment are CLOSED / LOCKED. Next UI slice is **Combat Readability**, starting from the actual runtime baseline and preserving locked V168 Combat/Stat authority.
