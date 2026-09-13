@@ -19,6 +19,7 @@ on:
       - 'web/server.mjs'
       - 'qa/visual/**'
       - 'qa/tests/ui-visual-workflow-contract-test.js'
+      - 'qa/tests/ui-frontend-home-v2-art-direction-test.js'
       - 'qa/runners/v140-frontend-gates.js'
       - '.github/workflows/ui-visual.yml'
 
