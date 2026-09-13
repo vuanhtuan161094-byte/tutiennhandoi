@@ -1,9 +1,15 @@
 V177 — Session Action Identity Runtime Authority
 
+Status: CLOSED / LOCKED
+
 Runtime fix: d1c9b43bb015c5fd2fbc4b5e35ff25cca5f65595
 Targeted proof: fe22e5e0e38a4bd3394fefaa2076f413d804a2f0
 Runtime candidate: e7124505c1eb66f63b82d76a4cf601423e06dccf
+Closure QA commit: 0b40b23c18f43568001b9f82cd524149f42acb7b
 Fast QA: 34734822116 — SUCCESS
+Canonical QA: 34734862042 — SUCCESS
+Backend closure: PASS
+Frontend closure: PASS
 
 Finding
 - snapshot() persists actionIndex independently from EventHistory.
@@ -31,5 +37,9 @@ Fast QA 34734822116
 - Backend Fast: 23/23 PASS, including v177-session-action-identity-runtime-authority-test.js.
 - Frontend Fast: 6/6 PASS, including the locked frontend performance gate.
 
-Closure condition
-- Canonical QA must PASS before V177 is recorded CLOSED / LOCKED.
+Canonical QA 34734862042
+- Locked baseline V140-V151: PASS.
+- Locked authorities V152-V159: PASS.
+- V160-V169 named closure gates: PASS.
+- Backend closure: PASS.
+- Frontend closure: PASS.
