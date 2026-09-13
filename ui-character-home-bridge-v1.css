@@ -1,7 +1,8 @@
-/* Character/Home visual bridge.
-   Clears legacy card chrome that still survives around Home-aligned Character surfaces.
-   Presentation only; loaded after ui-character-target-v1.css. */
+/* Character/Home visual bridge — P0→P2 production polish.
+   Home/Tu Luyen remains the visual source of truth.
+   Presentation only: no runtime/save/equipment/combat authority changes. */
 
+/* Keep title floating directly on the scene, never as a legacy card. */
 html body[data-game-screen="character"] .v138237-identity{
   padding:0!important;
   border:0!important;
@@ -31,9 +32,184 @@ html body[data-game-screen="character"] .v138237-identity>div::after{
   box-shadow:none!important;
 }
 
+/* P0 — Character screen uses the full-body white-mist production render instead
+   of the compact combat-idle render. Combat itself keeps its locked asset. */
+html body[data-game-screen="character"] .v138237-character-art{
+  content:url('/assets/v1074/skin-white-mist.png')!important;
+  width:350px!important;
+  height:430px!important;
+  bottom:2px!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  filter:drop-shadow(0 24px 30px rgba(0,0,0,.42)) drop-shadow(0 0 16px rgba(197,219,215,.10))!important;
+}
+
+/* P2 — less cyan wash, more ink/ivory separation like Home. */
+html body[data-game-screen="character"] .v138237-hero .v138235-hero-bg{
+  filter:saturate(.86) contrast(1.07) brightness(.84) sepia(.035)!important;
+}
+html body[data-game-screen="character"] .v138237-sky-vignette{
+  background:
+    linear-gradient(180deg,rgba(4,13,18,.02) 0%,rgba(4,13,18,0) 30%,rgba(5,15,20,.04) 50%,rgba(4,14,19,.34) 78%,#05131c 100%),
+    radial-gradient(circle at 52% 34%,rgba(240,224,183,.08),transparent 27%),
+    linear-gradient(90deg,rgba(3,12,17,.15),transparent 30%,transparent 72%,rgba(3,12,17,.15));
+}
+html body[data-game-screen="character"] .v138237-orbit{
+  opacity:.78;
+  border-color:rgba(229,204,148,.12)!important;
+  box-shadow:0 0 0 28px rgba(216,182,108,.012),0 0 0 58px rgba(216,182,108,.008),0 0 62px rgba(94,155,163,.08)!important;
+}
+body[data-game-screen="character"] .v138237-spirit-runes,
+body[data-game-screen="character"] .v138237-particles{opacity:.24!important}
+
+/* P0 — Equipment rails float on artwork. Remove the two dark vertical strips. */
+html body[data-game-screen="character"] .v138237-equip-slot,
+html body[data-game-screen="character"] .v138237-equip-slot.filled,
+html body[data-game-screen="character"] .v138237-equip-slot.empty{
+  width:60px!important;
+  min-width:60px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  overflow:visible!important;
+}
+html body[data-game-screen="character"] .v138237-equip-slot::before,
+html body[data-game-screen="character"] .v138237-equip-slot::after{
+  content:none!important;
+  display:none!important;
+}
+html body[data-game-screen="character"] .v138237-equip-slot>span{
+  width:40px!important;
+  height:40px!important;
+  border:1px solid rgba(229,201,132,.38)!important;
+  background:radial-gradient(circle at 50% 36%,rgba(220,194,132,.13),rgba(4,19,27,.72) 65%)!important;
+  box-shadow:inset 0 0 0 3px rgba(255,255,255,.012),0 6px 14px rgba(0,0,0,.26),0 0 11px rgba(96,159,168,.06)!important;
+  backdrop-filter:blur(3px);
+}
+html body[data-game-screen="character"] .v138237-equip-slot.filled>span{
+  border-color:rgba(239,210,143,.54)!important;
+  background:radial-gradient(circle at 50% 36%,rgba(225,198,129,.17),rgba(4,19,27,.76) 65%)!important;
+}
+html body[data-game-screen="character"] .v138237-equip-slot img{
+  width:32px!important;
+  height:32px!important;
+}
+/* Local text plate only; no rail-wide panel. */
+html body[data-game-screen="character"] .v138237-equip-slot>small{
+  position:relative;
+  z-index:2;
+  width:max-content;
+  min-width:38px;
+  max-width:66px!important;
+  margin-top:1px!important;
+  padding:2px 5px 2px!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  border:1px solid rgba(223,198,140,.08);
+  border-radius:8px;
+  background:rgba(3,15,22,.48)!important;
+  box-shadow:0 2px 8px rgba(0,0,0,.22);
+  color:#e2ddd0!important;
+  font:700 9px/1.12 var(--char-ui)!important;
+  text-shadow:0 1px 4px rgba(0,0,0,.98)!important;
+  backdrop-filter:blur(3px);
+}
+body[data-game-screen="character"] .v138237-equip-slot.p0,
+body[data-game-screen="character"] .v138237-equip-slot.p1,
+body[data-game-screen="character"] .v138237-equip-slot.p2,
+body[data-game-screen="character"] .v138237-equip-slot.p3,
+body[data-game-screen="character"] .v138237-equip-slot.p4{left:1px!important}
+body[data-game-screen="character"] .v138237-equip-slot.p5,
+body[data-game-screen="character"] .v138237-equip-slot.p6,
+body[data-game-screen="character"] .v138237-equip-slot.p7,
+body[data-game-screen="character"] .v138237-equip-slot.p8,
+body[data-game-screen="character"] .v138237-equip-slot.p9{right:1px!important}
+
+/* Appearance is a utility, not an eleventh equipment slot. */
+html body[data-game-screen="character"] .v138237-identity>button{
+  width:38px!important;
+  height:38px!important;
+  min-width:38px!important;
+  border-radius:50%!important;
+  border-color:rgba(225,197,129,.20)!important;
+  background:rgba(5,21,29,.62)!important;
+  box-shadow:0 5px 14px rgba(0,0,0,.22)!important;
+}
+html body[data-game-screen="character"] .v138237-identity>button svg{width:16px!important;height:16px!important}
+
+/* P1 — Smaller path plaque so the full-body silhouette remains readable. */
+html body[data-game-screen="character"] .v138237-hero-plaque{
+  bottom:5px!important;
+  min-width:194px!important;
+  max-width:218px!important;
+  padding:5px 12px 6px!important;
+  border-radius:13px!important;
+  background:linear-gradient(180deg,rgba(8,29,40,.84),rgba(4,17,25,.92))!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.28),inset 0 1px rgba(255,246,217,.035)!important;
+}
+html body[data-game-screen="character"] .v138237-hero-plaque::before{inset:3px 7px!important;border-radius:9px!important}
+html body[data-game-screen="character"] .v138237-hero-plaque::after{top:-7px!important;font-size:9px!important}
+html body[data-game-screen="character"] .v138237-hero-plaque small{font-size:8px!important;letter-spacing:.12em!important}
+html body[data-game-screen="character"] .v138237-hero-plaque strong{font-size:15px!important;margin-top:1px!important}
+
+/* P1 — Core stats are summary, not a dashboard. */
+html body[data-game-screen="character"] .v138237-core{
+  flex:0 0 58px!important;
+  min-height:58px!important;
+  margin:4px 10px 0!important;
+  border-color:rgba(224,192,115,.20)!important;
+  border-radius:12px!important;
+  background:linear-gradient(145deg,rgba(10,28,37,.75),rgba(5,18,26,.88))!important;
+  box-shadow:0 7px 19px rgba(0,0,0,.16),inset 0 1px rgba(255,255,255,.018)!important;
+}
+html body[data-game-screen="character"] .v138237-core button{
+  min-height:56px!important;
+  padding:5px 4px!important;
+  grid-template-columns:24px 1fr!important;
+  gap:4px!important;
+}
+html body[data-game-screen="character"] .v138237-core button>i{
+  width:24px!important;
+  height:24px!important;
+  border-color:rgba(225,192,115,.22)!important;
+}
+html body[data-game-screen="character"] .v138237-core button>i svg{width:12px!important;height:12px!important}
+html body[data-game-screen="character"] .v138237-core small{
+  max-width:none!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  color:#c9d2cc!important;
+  font-size:8.5px!important;
+  line-height:1!important;
+}
+html body[data-game-screen="character"] .v138237-core strong{font-size:16px!important;line-height:1!important}
+html body[data-game-screen="character"] .v138237-core em{display:none!important}
+
+/* P1 — Primary action stays dominant but becomes a compact Home-style pill. */
+html body[data-game-screen="character"] .v138237-actions{padding:4px 10px 2px!important}
+html body[data-game-screen="character"] .v138237-primary-action{
+  height:42px!important;
+  min-height:42px!important;
+  padding:4px 11px!important;
+  border-radius:18px!important;
+  border-color:rgba(239,207,131,.42)!important;
+  background:radial-gradient(circle at 9% 50%,rgba(225,190,103,.13),transparent 26%),linear-gradient(100deg,rgba(68,57,31,.78),rgba(28,48,39,.86) 52%,rgba(11,34,35,.91))!important;
+  box-shadow:0 6px 16px rgba(0,0,0,.18),inset 0 1px rgba(255,244,208,.06)!important;
+}
+html body[data-game-screen="character"] .v138237-primary-action>i{width:28px!important;height:28px!important}
+html body[data-game-screen="character"] .v138237-primary-action strong{font-size:15px!important}
+html body[data-game-screen="character"] .v138237-primary-action em{font-size:9.5px!important;color:#bcc7c0!important}
+
+/* Quick actions are Home-like circular destinations, never cards. */
 html body[data-game-screen="character"] .v138237-action-grid button,
 html body[data-game-screen="character"] .v138237-action-grid button:first-child,
 html body[data-game-screen="character"] .v138237-action-grid button:last-child{
+  min-height:64px!important;
+  padding:4px 2px 2px!important;
   border:0!important;
   border-radius:0!important;
   background:transparent!important;
@@ -44,4 +220,30 @@ html body[data-game-screen="character"] .v138237-action-grid button::before,
 html body[data-game-screen="character"] .v138237-action-grid button::after{
   content:none!important;
   display:none!important;
+}
+html body[data-game-screen="character"] .v138237-action-grid button>i{
+  width:39px!important;
+  height:39px!important;
+  border-color:rgba(222,193,124,.20)!important;
+  background:radial-gradient(circle at 50% 38%,rgba(219,188,111,.08),rgba(5,22,29,.54) 68%)!important;
+  box-shadow:0 5px 13px rgba(0,0,0,.18)!important;
+}
+html body[data-game-screen="character"] .v138237-action-grid button span b{
+  color:#ddd6c4!important;
+  font-size:10px!important;
+  letter-spacing:.01em!important;
+}
+html body[data-game-screen="character"] .v138237-action-grid button span small{display:none!important}
+
+@media(max-width:360px){
+  html body[data-game-screen="character"] .v138237-character-art{
+    width:326px!important;
+    height:408px!important;
+  }
+  html body[data-game-screen="character"] .v138237-equip-slot{width:55px!important;min-width:55px!important}
+  html body[data-game-screen="character"] .v138237-equip-slot>small{max-width:58px!important;font-size:8.5px!important;padding-inline:4px!important}
+  html body[data-game-screen="character"] .v138237-core{margin-inline:8px!important}
+  html body[data-game-screen="character"] .v138237-core button{grid-template-columns:22px 1fr!important;padding-inline:3px!important}
+  html body[data-game-screen="character"] .v138237-core button>i{width:22px!important;height:22px!important}
+  html body[data-game-screen="character"] .v138237-primary-action em{font-size:9px!important}
 }
