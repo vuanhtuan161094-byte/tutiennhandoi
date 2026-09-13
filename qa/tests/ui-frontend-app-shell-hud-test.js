@@ -28,4 +28,8 @@ assert.match(css, /\.player-meta>span[\s\S]*font-size:10px!important/, 'essentia
 assert.match(css, /\.nav-button>span[\s\S]*font-size:10px!important/, 'essential dock labels must not drop below 10px');
 assert.doesNotMatch(css, /fetch\(|\/api\//, 'presentation layer must not introduce transport or gameplay authority');
 
+const importantCount = (css.match(/!important/g) || []).length;
+assert.ok(importantCount <= 50, `shell layer must not restart !important sprawl; found ${importantCount}`);
+assert.ok(Buffer.byteLength(css, 'utf8') < 20000, 'shell layer must remain a small isolated presentation layer');
+
 console.log('UI App Shell / HUD: PASS');
