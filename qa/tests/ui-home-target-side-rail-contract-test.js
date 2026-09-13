@@ -6,7 +6,7 @@ const app=readFileSync(new URL('../../app.js',import.meta.url),'utf8');
 const css=readFileSync(new URL('../../ui-home-target-v1.css',import.meta.url),'utf8');
 const rail=readFileSync(new URL('../../ui-home-target-v1.js',import.meta.url),'utf8');
 
-assert.match(index,/\/ui-home-target-v1\.js\?v=target-home-v1-rail2-20260913/,'canonical side-rail adapter must be loaded');
+assert.match(index,/\/ui-home-target-v1\.js\?v=target-home-v1-rail3-20260913/,'canonical side-rail adapter must be loaded');
 assert.ok(index.indexOf('/ui-home-target-v1.js')>index.indexOf('/standalone-entry.js'),'side-rail adapter must load after the production runtime entry');
 
 for(const route of ['overview','roots','path','build','automation']){
@@ -19,6 +19,8 @@ assert.match(rail,/MutationObserver/,'side rail must follow Home rerenders witho
 assert.match(rail,/data-home-target-side-rail/,'side rail must exclude itself from canonical target lookup');
 assert.match(rail,/identity\.style\.width='min\(66%, 250px\)'/,'Home realm title must retain the proven readable width');
 assert.match(rail,/title\.style\.fontSize='clamp\(27px, 7\.5vw, 34px\)'/,'Home realm title must retain the proven readable scale');
+assert.match(rail,/vitals\.style\.background='transparent'/,'Home vitals must not occlude the realm title');
+assert.match(rail,/vitals\.style\.backdropFilter='none'/,'Home vitals must remain a light HUD overlay');
 
 for(const forbidden of [/activeTab/,/navigateTo/,/fetch\(/,/\/api\//,/action\(/,/localStorage/,/sessionStorage/]){
   assert.doesNotMatch(rail,forbidden,`presentation rail must not own runtime/navigation authority: ${forbidden}`);

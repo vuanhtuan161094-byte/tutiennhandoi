@@ -39,18 +39,31 @@
     return nav;
   }
 
-  function fitHeroTitle(hero){
+  function fitHeroHud(hero){
     const identity=hero.querySelector('.ui-home-identity');
     const title=identity?.querySelector('strong');
+    const vitals=hero.querySelector('.ui-home-vitals');
     if(identity)identity.style.width='min(66%, 250px)';
     if(title)title.style.fontSize='clamp(27px, 7.5vw, 34px)';
+    if(vitals){
+      vitals.style.minWidth='0';
+      vitals.style.padding='0';
+      vitals.style.borderLeft='0';
+      vitals.style.background='transparent';
+      vitals.style.backdropFilter='none';
+      for(const row of vitals.children){
+        row.style.justifyContent='flex-end';
+        row.style.padding='0';
+        row.style.borderBottom='0';
+      }
+    }
   }
 
   function ensureRails(){
     if(document.body.dataset.gameScreen!=='cultivation')return;
     const hero=content.querySelector('.ui-home-hero');
     if(!hero)return;
-    fitHeroTitle(hero);
+    fitHeroHud(hero);
     if(hero.querySelector('[data-home-target-side-rail]'))return;
     hero.append(makeRail('left'),makeRail('right'));
   }
