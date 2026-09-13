@@ -24,7 +24,10 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - Backend Fast: **25/25 PASS**.
 - Frontend Fast: **7/7 PASS**, including `ui-frontend-home-vertical-slice-test.js`.
 - Frontend performance hard lock remains **193 modules / 4141.1 KiB**.
-- Closure QA: pending.
+- Closure commit: `4d5f937c3756250d6ef54d6338694a335c5c9e84`.
+- Closure QA run `34738690190` — **SUCCESS**.
+- Backend Canonical Closure: **119/119 PASS**.
+- Frontend Canonical Closure: **21/21 PASS**.
 - This UI slice changes presentation only. V160–V179 runtime/save/gameplay authorities remain CLOSED / LOCKED.
 
 ## Locked versions
