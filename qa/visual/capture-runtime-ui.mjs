@@ -147,8 +147,9 @@ async function setViewport(client, width, height) {
 async function waitForVisualReady(client, screen) {
   const selector = screen === 'cultivation' ? '.ui-home-hero' : '#content';
   await waitFor(client, `document.body.dataset.uxShell === 'p0' && document.body.dataset.gameScreen === ${JSON.stringify(screen)} && document.querySelector(${JSON.stringify(selector)})`, `${screen} runtime shell`);
+  await waitFor(client, `!document.querySelector('#notice') || document.querySelector('#notice').classList.contains('hidden')`, `${screen} transient notice cleared`, 6000);
   await client.evaluate(`(async()=>{ if(document.fonts?.ready) await document.fonts.ready; const images=[...document.images]; await Promise.all(images.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true});setTimeout(resolve,3000);}))); return true; })()`);
-  await sleep(700);
+  await sleep(350);
 }
 
 async function capture(client, name, width, height, screen) {
