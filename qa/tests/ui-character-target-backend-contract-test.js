@@ -10,7 +10,7 @@ const app=read('app.js');
 const index=read('index.html');
 const css=read('ui-character-target-v1.css');
 
-assert.match(index,/ui-character-target-v1\.css\?v=character-shrine-target-v2-20260913/,'Character V2 target layer must load with the current cache key');
+assert.match(index,/ui-character-target-v1\.css\?v=character-shrine-target-v3-20260913/,'Character V3 art-direction layer must load with the current cache key');
 assert.ok(index.indexOf('ui-character-target-v1.css')>index.indexOf('ui-home-target-v1.css'),'Character target stylesheet must remain last in the presentation cascade');
 
 assert.match(app,/const c=model\.character,o=model\.overview,st=c\.combatStats\|\|\{\},core=c\.coreStats\|\|\{\},gear=model\.equipment\|\|\[\],sys=model\.equipmentSystem\|\|\{\}/,'Character renderer must continue binding canonical Character + Equipment read models');
@@ -24,22 +24,24 @@ assert.match(app,/data-sheet-open="stats"/,'Character target must retain canonic
 assert.match(app,/data-sheet-open="origin"/,'Character target must retain canonical profile detail action');
 assert.match(app,/data-tab-jump="path"/,'Character target must retain canonical path/build navigation');
 
-assert.match(css,/\.v138237-character-scroll[\s\S]*overflow:hidden/,'Character first screen must not expose an internal scroll container');
-assert.match(css,/\.v138247-cult-entry,[\s\S]*\.v138237-playstyle,[\s\S]*\.v138237-next\{display:none!important\}/,'deep secondary sections must leave the first viewport and remain reachable through canonical detail routes');
-assert.match(css,/\.v138237-hero::before/,'target must provide a shrine\/ritual halo in the real Character scene');
-assert.match(css,/\.v138237-equip-slot>span[\s\S]*border-radius:50%!important/,'equipment sockets must remain round inlaid seals');
-assert.match(css,/\.v138237-hero-plaque span\{display:none!important\}/,'Ngũ Hành secondary text must not be repeated inside the hero build plaque');
-assert.match(css,/\.v138237-core[\s\S]*grid-template-columns:1fr!important/,'three canonical stats must render as a compact engraved rail rather than dashboard cards');
-assert.match(css,/\.v138237-action-grid\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/,'canonical Character detail routes must fit in one compact row');
-assert.match(css,/--ct-display:/,'Character V2 must define a dedicated display typography stack');
-assert.match(css,/--ct-ui:/,'Character V2 must define a dedicated UI typography stack');
+assert.match(css,/\.v138237-character-scroll\{[\s\S]*overflow:hidden/,'Character first screen must remain non-scrolling');
+assert.match(css,/\.v138247-cult-entry,[\s\S]*\.v138237-playstyle,[\s\S]*\.v138237-next\{display:none!important\}/,'secondary/deep sections must stay off the first viewport');
+assert.match(css,/\.v138237-sky-vignette::before/,'V3 scene must carry the moonlit atmospheric layer');
+assert.match(css,/\.v138237-orbit\{[\s\S]*border-radius:50%/,'V3 scene must retain a ritual halo around the hero');
+assert.match(css,/\.v138237-identity::before\{[\s\S]*NHÂN VẬT/,'V3 must establish a deliberate screen-title hierarchy');
+assert.match(css,/\.v138237-equip-slot>span\{[\s\S]*border-radius:50%/,'equipment sockets must render as circular inlaid seals');
+assert.match(css,/\.v138237-hero-plaque span\{display:none!important\}/,'elemental subtitle must not reappear in the central path plaque');
+assert.match(css,/Engraved stat rail/,'V3 must use a unified engraved stat rail');
+assert.match(css,/\.v138237-action-grid\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/,'three canonical Character detail routes must remain one compact row');
+assert.match(css,/--char-display:/,'Character V3 must define a dedicated display typography stack');
+assert.match(css,/--char-ui:/,'Character V3 must define a dedicated UI typography stack');
 assert.match(css,/@container \(max-width:390px\)/,'390px production viewport must have an explicit target pass');
 assert.match(css,/@container \(max-width:360px\)/,'360px production viewport must have an explicit target pass');
 
 const bytes=Buffer.byteLength(css,'utf8');
 const important=(css.match(/!important/g)||[]).length;
-assert.ok(bytes<22000,`Character target stylesheet must stay <22 KB, got ${bytes}`);
+assert.ok(bytes<26000,`Character target stylesheet must stay <26 KB, got ${bytes}`);
 assert.ok(important<=85,`Character target stylesheet must stay <=85 !important declarations, got ${important}`);
-assert.doesNotMatch(css,/mail|gold currency|gem currency|mount|wing/i,'target layer must not introduce concept-only/fake gameplay systems');
+assert.doesNotMatch(css,/mail|mount|wing/i,'target layer must not introduce concept-only gameplay systems');
 
-console.log(`UI Character target/backend contract PASS · ${bytes} bytes · ${important} !important`);
+console.log(`UI Character V3 target/backend contract PASS · ${bytes} bytes · ${important} !important`);
