@@ -1,5 +1,8 @@
 # UI/UX PRODUCTION DIRECTION V1 — REFERENCE-DRIVEN
 
+> **Execution rule:** all UI/UX work is now governed by `docs/ui/UI_UX_WORKFLOW_V2_20260913.md`.
+> Where this older direction document conflicts with Workflow V2, Workflow V2 wins. In particular: a reconstructed mock/placeholder preview is never valid visual proof, and no UI slice may be locked before the user sees and explicitly approves screenshots from the actual runtime candidate.
+
 ## 1. Problem being solved
 The project has deep backend/gameplay systems but the visual product identity is not yet sufficiently locked. A free-form screen-by-screen redesign is high risk because it tends to produce locally attractive but inconsistent screens.
 
@@ -34,6 +37,8 @@ Turn the selected reference into measurable rules:
 ### Stage C — Neutral code prototype
 Build layout with current code stack and placeholder art. Do not decorate prematurely.
 
+**Workflow V2 constraint:** neutral prototypes are internal implementation aids only. They cannot be presented as proof of the current game and cannot satisfy visual review.
+
 ### Stage D — Portrait shell gate
 The product is portrait-only on both mobile and web. Mobile fills the device; desktop/web centers the portrait client instead of creating a separate desktop game layout. Validate 360×800, 390×844, 412×915, compact-height browser windows and tall browser windows. 390×844 is a QA reference only, never a hard-coded canvas.
 
@@ -46,6 +51,8 @@ Only after UX/layout approval:
 - ornament;
 - VFX;
 - micro-animation.
+
+**Workflow V2 constraint:** visual lock requires screenshots from the real runtime candidate plus explicit user approval before `[closure]`.
 
 ## 3. Visual direction
 Primary identity:
@@ -142,3 +149,5 @@ Self-review each candidate against:
 - gameplay truthfulness.
 
 If the candidate is obviously weaker than the reference on hierarchy or polish, revise before presenting it.
+
+After self-review, follow Workflow V2: capture real runtime proof, show it to the user, and wait for explicit visual approval before closure.
