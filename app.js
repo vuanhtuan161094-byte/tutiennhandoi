@@ -1562,7 +1562,7 @@ function navigateTo(target){
   hydrateViewV129(activeTab).catch(()=>{});
 }
 let navSignatureV129='';
-renderNav = function(){const group=primaryTabGroup(activeTab);const visible=primaryTabs.filter(([id])=>tabUnlocked(id));const signature=`${group}|${visible.map(([id])=>id).join(',')}`;if(signature===navSignatureV129)return;navSignatureV129=signature;nav.style.setProperty('--v90-tab-count',String(Math.max(1,visible.length)));nav.innerHTML=visible.map(([id,label])=>`<button class="nav-button ${group===id?'active':''}" data-tab="${id}"><b>${navIcon(id)}</b><span>${label}</span></button>`).join('');quickNav.innerHTML='';};
+renderNav = function(){const group=primaryTabGroup(activeTab);const visible=primaryTabs.filter(([id])=>tabUnlocked(id));const signature=`${group}|${visible.map(([id])=>id).join(',')}`;if(signature===navSignatureV129)return;navSignatureV129=signature;nav.style.setProperty('--v90-tab-count',String(Math.max(1,visible.length)));nav.innerHTML=visible.map(([id,label])=>`<button class="nav-button ${group===id?'active':''}" data-tab="${id}" ${group===id?'aria-current="page"':''}><b>${navIcon(id)}</b><span>${label}</span></button>`).join('');quickNav.innerHTML='';};
 page = function(title,sub,body,right=''){return `<section class="v106-screen v106-secondary ux-viewport-screen"><header class="v106-screen-head"><div><h1>${esc(title)}</h1><p>${esc(sub)}</p></div><div class="v106-head-tools">${right}<button class="v106-icon-btn" data-sheet-open="more">•••</button></div></header><div class="v106-scroll-body ux-screen-scroll" data-scroll-key="${esc(activeTab)}-main">${body}</div>${v106MoreSheet()}</section>`;};
 
 /* v1.09 cleanup: removed superseded v1.06 character renderer */

@@ -14,6 +14,19 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - **V180 is NOT OPEN.** The attempted final cross-system audit did not justify another numbered patch because the existing player-journey gate plus Canonical closure already cover the selected non-UI objective.
 - **Next project phase: UI/UX / presentation layer. Stop and notify the user before starting UI work.**
 
+## UI/UX phase
+
+- UI/UX phase started on 2026-09-13 after explicit user confirmation.
+- First vertical slice: **Home / Tu Luyện + UI System V1 foundation**.
+- Audit and architecture: `docs/ui/UI_UX_PHASE_AUDIT_AND_ARCHITECTURE_20260913.md`.
+- Candidate commit: `89f5102ff5513061a5a30934e1ef336bf959940a`.
+- Candidate Fast QA run `34738447257` — **SUCCESS**.
+- Backend Fast: **25/25 PASS**.
+- Frontend Fast: **7/7 PASS**, including `ui-home-vertical-slice-test.js`.
+- Frontend performance hard lock remains **193 modules / 4141.1 KiB**.
+- Closure QA: pending.
+- This UI slice changes presentation only. V160–V179 runtime/save/gameplay authorities remain CLOSED / LOCKED.
+
 ## Locked versions
 
 - V160 — full-life audit: LOCKED.

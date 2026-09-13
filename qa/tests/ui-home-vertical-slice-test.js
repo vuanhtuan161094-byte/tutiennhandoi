@@ -18,6 +18,7 @@ assert.match(renderer, /data-retreat-hours/, 'retreat must use the existing acti
 assert.match(renderer, /data-use-cultivation-pill/, 'pill use must use the existing action');
 assert.match(renderer, /playerExperience\?\.sessionLoop\?\.tasks/, 'recommendations must come from the canonical session loop');
 assert.doesNotMatch(renderer, /fetch\(|\/api\//, 'renderer must not introduce a parallel transport');
+assert.match(app, /group===id\?'aria-current="page"'/, 'active primary destination must be announced');
 
 assert.match(css, /UI SYSTEM V1 · HOME \/ CULTIVATION VERTICAL SLICE/);
 for (const token of ['--ui1-gold', '--ui1-text', '--ui1-space-4', '--ui1-touch']) {
