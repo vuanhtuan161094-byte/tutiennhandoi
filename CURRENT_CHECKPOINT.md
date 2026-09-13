@@ -12,13 +12,17 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - Do not reopen locked systems without a proven regression.
 - **All selected non-UI runtime/authority work is CLOSED / LOCKED through V179.**
 - **V180 is NOT OPEN.** The attempted final cross-system audit did not justify another numbered patch because the existing player-journey gate plus Canonical closure already cover the selected non-UI objective.
-- **Next project phase: UI/UX / presentation layer. Stop and notify the user before starting UI work.**
+- **UI/UX presentation phase is OPEN. Locked UI slices: Home / Tu Luyện and App Shell / HUD. Next target: Character / Equipment.**
 
 ## UI/UX phase
 
 - UI/UX phase started on 2026-09-13 after explicit user confirmation.
-- First vertical slice: **Home / Tu Luyện + UI System V1 foundation**.
 - Audit and architecture: `docs/ui/UI_UX_PHASE_AUDIT_AND_ARCHITECTURE_20260913.md`.
+- Implementation order remains: **Home/Tu Luyện → App Shell/HUD → Character/Equipment → Combat readability → Dungeon/Hunt → Collection/Alchemy → Reincarnation/Automation → World/Faction/Social**.
+
+### Home / Tu Luyện closure
+
+- First vertical slice: **Home / Tu Luyện + UI System V1 foundation**.
 - Candidate commit: `89f5102ff5513061a5a30934e1ef336bf959940a`.
 - Candidate Fast QA run `34738447257` — **SUCCESS**.
 - Backend Fast: **25/25 PASS**.
@@ -29,6 +33,21 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - Backend Canonical Closure: **119/119 PASS**.
 - Frontend Canonical Closure: **21/21 PASS**.
 - This UI slice changes presentation only. V160–V179 runtime/save/gameplay authorities remain CLOSED / LOCKED.
+
+### App Shell / HUD closure
+
+- Presentation patch commit: `10c2f613963d0ccdbb9bae0716e2b4e547e67fe7`.
+- Closure commit: `9800dfbf329e7d616a420149802ab0fc5282dabc`.
+- Closure QA run `34743561414` — **SUCCESS**.
+- Backend Fast: **25/25 PASS**.
+- Frontend Fast: **8/8 PASS**, including `ui-frontend-app-shell-hud-test.js`.
+- Backend Canonical Closure: **119/119 PASS**.
+- Frontend Canonical Closure: **22/22 PASS**.
+- `app.js`, save schema, runtime authority and gameplay authority were not changed.
+- New `ui-system-v1.css` is an isolated presentation layer loaded last in the cascade; QA hard-locks it to **< 20 KB** and **≤ 50 `!important`** so it cannot become another legacy CSS pile.
+- HUD/navigation normalization locks: readable essential text, 44 px system-menu touch target, semantic active dock state via `aria-current`, focus-visible, reduced-motion, safe-area handling, and shared `StatePanel` grammar for loading/empty/blocked/error/success.
+- Existing frontend performance hard lock passed; thresholds were not raised.
+- **Next UI target: Character / Equipment.**
 
 ## Locked versions
 
@@ -76,6 +95,7 @@ At V179 closure:
 - never raise these thresholds to make a change pass.
 
 V177–V179 added no new eager frontend runtime module; Fast and Canonical frontend gates remained green.
+UI Home and App Shell/HUD closures also passed the same performance hard lock without raising thresholds.
 
 ## Locked runtime authorities
 
@@ -270,4 +290,5 @@ Evidence:
 3. Do not reopen V160–V179 unless a real regression is demonstrated.
 4. Do not create V180 merely to continue numbering.
 5. Non-UI runtime work is considered complete for the selected scope.
-6. **Before starting UI/UX work, explicitly notify the user that the project has reached the UI phase.**
+6. UI/UX phase is active; continue only from the latest locked UI slice and preserve runtime/save/gameplay authority.
+7. Current next target: **Character / Equipment**.
