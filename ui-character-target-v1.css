@@ -1,0 +1,375 @@
+/* Character / Equipment target V1 — B art direction + C build readability.
+   Presentation only. Runtime/save/equipment/combat authorities remain canonical. */
+
+body[data-game-screen="character"] .v138237-character-production{
+  --ct-ink:#020b12;
+  --ct-panel:#071b27;
+  --ct-panel-hi:#0b2b3a;
+  --ct-gold:#cda85a;
+  --ct-gold-hi:#f4d78b;
+  --ct-jade:#75b8ad;
+  --ct-text:#eee7d8;
+  --ct-muted:#9cabb0;
+  --ct-line:rgba(222,188,105,.28);
+  background:var(--ct-ink)!important;
+}
+body[data-game-screen="character"] .v138237-character-scroll{
+  background:
+    radial-gradient(circle at 50% 5%,rgba(181,139,55,.09),transparent 31%),
+    radial-gradient(circle at 50% 34%,rgba(63,142,158,.08),transparent 34%),
+    linear-gradient(180deg,#061722 0%,#031019 72%,#02080d 100%)!important;
+  padding-bottom:30px!important;
+}
+
+/* Shrine scene: character first, controls second. */
+body[data-game-screen="character"] .v138237-hero{
+  height:500px!important;
+  border-bottom:1px solid rgba(220,181,86,.27)!important;
+  background:#04111a!important;
+  isolation:isolate;
+}
+body[data-game-screen="character"] .v138237-hero .v138235-hero-bg{
+  filter:saturate(.72) brightness(.55) contrast(1.14)!important;
+  transform:scale(1.04)!important;
+}
+body[data-game-screen="character"] .v138237-hero::before{
+  content:"";
+  position:absolute;
+  z-index:4;
+  left:50%;
+  top:104px;
+  width:286px;
+  height:286px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  border:1px solid rgba(225,189,99,.38);
+  background:
+    radial-gradient(circle,transparent 0 53%,rgba(104,178,181,.05) 54% 58%,transparent 59%),
+    conic-gradient(from 18deg,transparent 0 10%,rgba(229,194,105,.17) 10.5% 11%,transparent 11.5% 24%,rgba(118,189,188,.14) 24.5% 25%,transparent 25.5% 39%,rgba(229,194,105,.17) 39.5% 40%,transparent 40.5% 54%,rgba(118,189,188,.14) 54.5% 55%,transparent 55.5% 69%,rgba(229,194,105,.17) 69.5% 70%,transparent 70.5% 84%,rgba(118,189,188,.14) 84.5% 85%,transparent 85.5%);
+  box-shadow:
+    0 0 0 14px rgba(215,177,86,.025),
+    0 0 0 34px rgba(71,139,151,.025),
+    0 0 56px rgba(83,173,186,.12),
+    inset 0 0 38px rgba(226,188,93,.055);
+  pointer-events:none;
+}
+body[data-game-screen="character"] .v138237-hero::after{
+  content:"";
+  position:absolute;
+  z-index:5;
+  left:50%;
+  bottom:13px;
+  width:292px;
+  height:54px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:
+    radial-gradient(ellipse,rgba(228,190,93,.21),rgba(86,169,177,.14) 35%,rgba(47,111,129,.04) 57%,transparent 72%);
+  border-bottom:1px solid rgba(226,190,99,.24);
+  filter:blur(.2px);
+  pointer-events:none;
+}
+body[data-game-screen="character"] .v138237-atmosphere{
+  z-index:2!important;
+  background:
+    linear-gradient(90deg,rgba(1,8,13,.54),transparent 21%,transparent 79%,rgba(1,8,13,.54)),
+    radial-gradient(circle at 50% 42%,rgba(91,178,187,.13),transparent 30%),
+    linear-gradient(180deg,rgba(1,8,14,.24),transparent 28%,rgba(1,7,11,.74) 100%)!important;
+}
+body[data-game-screen="character"] .v138237-orbit{
+  z-index:4!important;
+  width:250px!important;
+  height:250px!important;
+  top:129px!important;
+  border-color:rgba(226,190,95,.15)!important;
+  box-shadow:0 0 0 24px rgba(77,155,165,.025),0 0 54px rgba(73,164,181,.11)!important;
+}
+body[data-game-screen="character"] .v138237-character-art{
+  z-index:8!important;
+  width:326px!important;
+  height:392px!important;
+  bottom:4px!important;
+  filter:
+    drop-shadow(0 20px 27px rgba(0,0,0,.55))
+    drop-shadow(0 0 20px rgba(94,181,189,.13))
+    drop-shadow(0 0 6px rgba(239,207,128,.07))!important;
+}
+
+/* Identity becomes a ceremonial nameplate, not another dashboard card. */
+body[data-game-screen="character"] .v138237-identity{
+  top:11px!important;
+  left:12px!important;
+  right:12px!important;
+  z-index:20!important;
+}
+body[data-game-screen="character"] .v138237-identity>div{
+  max-width:268px;
+  padding:9px 15px 10px!important;
+  border-radius:3px 15px 15px 3px!important;
+  border:1px solid rgba(227,193,109,.26)!important;
+  border-left:3px solid rgba(238,205,119,.64)!important;
+  background:linear-gradient(90deg,rgba(3,15,24,.94),rgba(8,31,42,.75) 76%,rgba(8,31,42,.22))!important;
+  box-shadow:0 7px 20px rgba(0,0,0,.20),inset 0 1px rgba(255,255,255,.035)!important;
+}
+body[data-game-screen="character"] .v138237-identity strong{
+  color:var(--ct-gold-hi)!important;
+  font-size:25px!important;
+  text-shadow:0 2px 5px rgba(0,0,0,.62)!important;
+}
+body[data-game-screen="character"] .v138237-identity span{color:#b9c9cb!important}
+body[data-game-screen="character"] .v138237-identity small{color:#e8e4d9!important}
+body[data-game-screen="character"] .v138237-identity>button{
+  min-width:76px!important;
+  min-height:48px!important;
+  border-radius:13px!important;
+  border-color:rgba(224,190,101,.34)!important;
+  background:linear-gradient(180deg,rgba(9,34,44,.88),rgba(3,17,25,.94))!important;
+  color:var(--ct-gold-hi)!important;
+}
+
+/* Equipment sockets: round inlaid artifact seals, with gold for owned gear and jade for empty slots. */
+body[data-game-screen="character"] .v138237-equip-slot{
+  z-index:18!important;
+  width:64px!important;
+  gap:4px!important;
+}
+body[data-game-screen="character"] .v138237-equip-slot>span{
+  width:54px!important;
+  height:54px!important;
+  border-radius:50%!important;
+  background:
+    radial-gradient(circle at 48% 38%,rgba(50,103,111,.38),rgba(4,22,31,.97) 68%)!important;
+  border:1px solid rgba(119,188,181,.34)!important;
+  box-shadow:
+    inset 0 0 0 3px rgba(5,19,27,.8),
+    inset 0 0 0 4px rgba(128,191,180,.10),
+    0 7px 18px rgba(0,0,0,.32),
+    0 0 16px rgba(83,171,174,.07)!important;
+}
+body[data-game-screen="character"] .v138237-equip-slot>span::before{
+  inset:-4px!important;
+  border-radius:50%!important;
+  border:1px solid rgba(215,181,94,.18)!important;
+  box-shadow:inset 0 0 0 2px rgba(4,15,22,.72)!important;
+}
+body[data-game-screen="character"] .v138237-equip-slot.filled>span{
+  border-color:rgba(233,198,106,.68)!important;
+  background:radial-gradient(circle at 50% 35%,rgba(131,103,46,.23),rgba(5,24,32,.98) 70%)!important;
+  box-shadow:
+    inset 0 0 0 3px rgba(5,18,25,.82),
+    inset 0 0 0 4px rgba(241,207,120,.11),
+    0 8px 19px rgba(0,0,0,.34),
+    0 0 17px rgba(226,185,79,.13)!important;
+}
+body[data-game-screen="character"] .v138237-equip-slot img{width:45px!important;height:45px!important}
+body[data-game-screen="character"] .v138237-equip-slot>small{
+  max-width:64px!important;
+  color:#c9c7ba!important;
+  font-size:9.8px!important;
+  letter-spacing:.01em!important;
+}
+body[data-game-screen="character"] .v138237-equip-slot>span>b{
+  top:-5px!important;
+  right:-6px!important;
+  background:#76521e!important;
+  border-color:#e6c36e!important;
+  color:#fff0be!important;
+  box-shadow:0 2px 7px rgba(0,0,0,.42)!important;
+}
+body[data-game-screen="character"] .v138237-equip-slot>span>u{
+  background:#194f52!important;
+  border-color:#75bdb3!important;
+  color:#e0f5ef!important;
+}
+body[data-game-screen="character"] .v138237-equip-slot.p0,
+body[data-game-screen="character"] .v138237-equip-slot.p1,
+body[data-game-screen="character"] .v138237-equip-slot.p2,
+body[data-game-screen="character"] .v138237-equip-slot.p3,
+body[data-game-screen="character"] .v138237-equip-slot.p4{left:7px!important}
+body[data-game-screen="character"] .v138237-equip-slot.p5,
+body[data-game-screen="character"] .v138237-equip-slot.p6,
+body[data-game-screen="character"] .v138237-equip-slot.p7,
+body[data-game-screen="character"] .v138237-equip-slot.p8,
+body[data-game-screen="character"] .v138237-equip-slot.p9{right:7px!important}
+body[data-game-screen="character"] .v138237-equip-slot.p0,
+body[data-game-screen="character"] .v138237-equip-slot.p5{top:107px!important}
+body[data-game-screen="character"] .v138237-equip-slot.p1,
+body[data-game-screen="character"] .v138237-equip-slot.p6{top:180px!important}
+body[data-game-screen="character"] .v138237-equip-slot.p2,
+body[data-game-screen="character"] .v138237-equip-slot.p7{top:253px!important}
+body[data-game-screen="character"] .v138237-equip-slot.p3,
+body[data-game-screen="character"] .v138237-equip-slot.p8{top:326px!important}
+body[data-game-screen="character"] .v138237-equip-slot.p4,
+body[data-game-screen="character"] .v138237-equip-slot.p9{top:399px!important}
+
+/* Build identity plaque: the C-style gameplay anchor inside the B-style shrine. */
+body[data-game-screen="character"] .v138237-hero-plaque{
+  z-index:21!important;
+  bottom:12px!important;
+  min-width:216px!important;
+  max-width:278px!important;
+  padding:9px 17px 10px!important;
+  border-radius:8px 8px 18px 18px!important;
+  border:1px solid rgba(232,198,108,.58)!important;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(218,178,75,.12),transparent 56%),
+    linear-gradient(180deg,rgba(9,37,44,.97),rgba(3,19,27,.99))!important;
+  box-shadow:0 10px 25px rgba(0,0,0,.38),inset 0 1px rgba(255,255,255,.05),0 0 17px rgba(218,176,69,.07)!important;
+}
+body[data-game-screen="character"] .v138237-hero-plaque::before,
+body[data-game-screen="character"] .v138237-hero-plaque::after{
+  content:"◆";
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  color:rgba(229,197,112,.58);
+  font-size:8px;
+}
+body[data-game-screen="character"] .v138237-hero-plaque::before{left:7px}
+body[data-game-screen="character"] .v138237-hero-plaque::after{right:7px}
+body[data-game-screen="character"] .v138237-hero-plaque small{color:#86c5bd!important;letter-spacing:.12em!important}
+body[data-game-screen="character"] .v138237-hero-plaque strong{color:#f7db91!important;font-size:14px!important}
+body[data-game-screen="character"] .v138237-hero-plaque span{color:#c7d0ce!important}
+
+/* Character progression becomes an engraved rail rather than a full dashboard card. */
+body[data-game-screen="character"] .v138247-cultivation-entry{
+  margin:8px 11px 0!important;
+  min-height:56px!important;
+  border-radius:10px!important;
+  border:1px solid rgba(218,183,94,.19)!important;
+  background:linear-gradient(90deg,rgba(8,33,42,.92),rgba(5,24,32,.78))!important;
+  box-shadow:inset 3px 0 rgba(209,172,80,.38)!important;
+}
+
+/* Three canonical stats: compact engraved counters, not three oversized cards. */
+body[data-game-screen="character"] .v138237-core{
+  margin:7px 11px 0!important;
+  gap:6px!important;
+  padding:0!important;
+}
+body[data-game-screen="character"] .v138237-core button{
+  min-height:72px!important;
+  padding:9px 8px!important;
+  border-radius:11px!important;
+  border:1px solid rgba(217,182,92,.18)!important;
+  background:linear-gradient(180deg,rgba(10,38,49,.92),rgba(5,24,32,.96))!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.025),0 5px 12px rgba(0,0,0,.14)!important;
+}
+body[data-game-screen="character"] .v138237-core button>i{color:#d8b663!important}
+body[data-game-screen="character"] .v138237-core small{color:#9db0b1!important}
+body[data-game-screen="character"] .v138237-core strong{font-size:20px!important;color:#f2d68a!important}
+body[data-game-screen="character"] .v138237-core em{color:#87999d!important}
+
+/* Actions read like equipment/build controls. Primary stays singular; secondary controls are subdued. */
+body[data-game-screen="character"] .v138237-actions{padding:8px 11px 9px!important}
+body[data-game-screen="character"] .v138237-primary-action{
+  min-height:66px!important;
+  border-radius:11px!important;
+  border-color:rgba(229,192,96,.40)!important;
+  background:
+    radial-gradient(circle at 83% 50%,rgba(212,168,66,.12),transparent 35%),
+    linear-gradient(135deg,#0b3540,#061f2b)!important;
+}
+body[data-game-screen="character"] .v138237-primary-action>i{border-radius:50%!important;background:rgba(211,173,77,.10)!important;color:#e5c476!important}
+body[data-game-screen="character"] .v138237-action-grid{gap:6px!important;margin-top:6px!important}
+body[data-game-screen="character"] .v138237-action-grid button{
+  min-height:58px!important;
+  border-radius:10px!important;
+  border-color:rgba(190,161,90,.13)!important;
+  background:linear-gradient(180deg,rgba(9,35,46,.88),rgba(4,22,30,.94))!important;
+}
+body[data-game-screen="character"] .v138237-action-grid button>i{background:rgba(255,255,255,.025)!important;color:#cdb167!important}
+
+/* C-inspired build/set summary: compact, readable, and tied to existing backend summaries. */
+body[data-game-screen="character"] .v138237-playstyle{
+  margin:0 11px 10px!important;
+  padding:13px!important;
+  border-radius:12px!important;
+  border:1px solid rgba(222,185,94,.24)!important;
+  background:
+    radial-gradient(circle at 8% 0%,rgba(194,153,60,.07),transparent 32%),
+    linear-gradient(180deg,rgba(9,35,44,.96),rgba(4,20,28,.98))!important;
+  box-shadow:0 8px 19px rgba(0,0,0,.18),inset 0 1px rgba(255,255,255,.025)!important;
+}
+body[data-game-screen="character"] .v138237-playstyle>header small{color:#82bdb4!important}
+body[data-game-screen="character"] .v138237-playstyle>header strong{color:#efd083!important}
+body[data-game-screen="character"] .v138237-playstyle>header button{
+  border-color:rgba(223,188,99,.22)!important;
+  background:rgba(215,178,86,.05)!important;
+  color:#e0c06e!important;
+}
+body[data-game-screen="character"] .v138237-dao-grid>span{
+  border-radius:9px!important;
+  border-color:rgba(222,184,91,.11)!important;
+  background:rgba(255,255,255,.022)!important;
+}
+body[data-game-screen="character"] .v138237-build-strip{gap:5px!important}
+body[data-game-screen="character"] .v138237-build-strip button{
+  min-height:49px!important;
+  border-radius:9px!important;
+  border-color:rgba(213,177,88,.12)!important;
+  background:linear-gradient(90deg,rgba(4,21,28,.76),rgba(8,33,42,.72))!important;
+}
+body[data-game-screen="character"] .v138237-build-strip i{color:#d6b665!important}
+body[data-game-screen="character"] .v138237-build-strip small{color:#78aca7!important}
+body[data-game-screen="character"] .v138237-build-strip b{color:#e7dfc8!important}
+
+body[data-game-screen="character"] .v138237-next{
+  margin-left:11px!important;
+  margin-right:11px!important;
+  border-radius:11px!important;
+  border-color:rgba(117,181,175,.20)!important;
+  background:linear-gradient(135deg,#0a3038,#051b25)!important;
+}
+
+/* Sheets inherit shrine language without altering their actions or data. */
+body[data-game-screen="character"] .v138237-character-production .v106-sheet-head{
+  background:linear-gradient(180deg,#0b2c38,#061b26)!important;
+  border-bottom-color:rgba(222,185,93,.30)!important;
+}
+body[data-game-screen="character"] .v138237-character-production .v106-sheet-head h2{color:#f1d382!important}
+body[data-game-screen="character"] .v138237-character-production .v106-sheet-body{
+  background:radial-gradient(circle at 50% 0%,rgba(72,146,147,.06),transparent 32%),linear-gradient(180deg,#071e29,#031018)!important;
+}
+
+@container (max-width:390px){
+  body[data-game-screen="character"] .v138237-hero{height:482px!important}
+  body[data-game-screen="character"] .v138237-hero::before{top:108px;width:262px;height:262px}
+  body[data-game-screen="character"] .v138237-character-art{width:304px!important;height:370px!important}
+  body[data-game-screen="character"] .v138237-equip-slot{width:57px!important}
+  body[data-game-screen="character"] .v138237-equip-slot>span{width:48px!important;height:48px!important}
+  body[data-game-screen="character"] .v138237-equip-slot img{width:40px!important;height:40px!important}
+  body[data-game-screen="character"] .v138237-equip-slot>small{font-size:9.2px!important}
+  body[data-game-screen="character"] .v138237-equip-slot.p0,
+  body[data-game-screen="character"] .v138237-equip-slot.p5{top:104px!important}
+  body[data-game-screen="character"] .v138237-equip-slot.p1,
+  body[data-game-screen="character"] .v138237-equip-slot.p6{top:173px!important}
+  body[data-game-screen="character"] .v138237-equip-slot.p2,
+  body[data-game-screen="character"] .v138237-equip-slot.p7{top:242px!important}
+  body[data-game-screen="character"] .v138237-equip-slot.p3,
+  body[data-game-screen="character"] .v138237-equip-slot.p8{top:311px!important}
+  body[data-game-screen="character"] .v138237-equip-slot.p4,
+  body[data-game-screen="character"] .v138237-equip-slot.p9{top:380px!important}
+  body[data-game-screen="character"] .v138237-core strong{font-size:19px!important}
+  body[data-game-screen="character"] .v138237-core em{font-size:9.4px!important}
+  body[data-game-screen="character"] .v138237-action-grid small{font-size:9.4px!important}
+}
+
+@container (max-width:360px){
+  body[data-game-screen="character"] .v138237-identity strong{font-size:22px!important}
+  body[data-game-screen="character"] .v138237-identity>div{max-width:240px}
+  body[data-game-screen="character"] .v138237-equip-slot.p0,
+  body[data-game-screen="character"] .v138237-equip-slot.p1,
+  body[data-game-screen="character"] .v138237-equip-slot.p2,
+  body[data-game-screen="character"] .v138237-equip-slot.p3,
+  body[data-game-screen="character"] .v138237-equip-slot.p4{left:3px!important}
+  body[data-game-screen="character"] .v138237-equip-slot.p5,
+  body[data-game-screen="character"] .v138237-equip-slot.p6,
+  body[data-game-screen="character"] .v138237-equip-slot.p7,
+  body[data-game-screen="character"] .v138237-equip-slot.p8,
+  body[data-game-screen="character"] .v138237-equip-slot.p9{right:3px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  body[data-game-screen="character"] .v138237-hero::before{box-shadow:0 0 0 14px rgba(215,177,86,.025),0 0 0 34px rgba(71,139,151,.025)}
+}
