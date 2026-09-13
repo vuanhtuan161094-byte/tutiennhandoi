@@ -58,9 +58,9 @@ html body[data-game-screen="character"] .v138237-character-art{
 
 /* Identity: typography and hierarchy copied from Home hero. */
 html body[data-game-screen="character"] .v138237-identity{
-  z-index:20!important;top:17px!important;left:17px!important;right:11px!important;align-items:flex-start
+  z-index:20;top:17px!important;left:17px!important;right:11px!important;align-items:flex-start
 }
-body[data-game-screen="character"] .v138237-identity::before{content:"NHÂN VẬT";display:none!important}
+body[data-game-screen="character"] .v138237-identity::before{content:"NHÂN VẬT";display:none}
 html body[data-game-screen="character"] .v138237-identity>div{
   position:relative;margin:0;width:min(62%,240px);max-width:240px;padding:0;border:0;border-radius:0;background:none;box-shadow:none;backdrop-filter:none
 }
@@ -83,7 +83,7 @@ body[data-game-screen="character"] .v138237-identity>button svg{width:18px;heigh
 body[data-game-screen="character"] .v138237-identity>button b{display:none!important}
 
 /* Equipment rails: same circular HUD language as Home side rails. */
-html body[data-game-screen="character"] .v138237-equip-slot{z-index:18!important;width:58px!important;min-width:58px!important;gap:3px}
+html body[data-game-screen="character"] .v138237-equip-slot{z-index:18;width:58px!important;min-width:58px!important;gap:3px}
 html body[data-game-screen="character"] .v138237-equip-slot>span{
   position:relative;width:42px!important;height:42px!important;border-radius:50%!important;
   border:1px solid rgba(229,197,120,.36);background:radial-gradient(circle at 50% 37%,rgba(230,199,123,.18),rgba(4,21,30,.82) 64%);
@@ -133,7 +133,7 @@ body[data-game-screen="character"] .v138237-equip-slot.p9{top:396px!important}
 
 /* Current path: uses Home progression-card grammar. */
 html body[data-game-screen="character"] .v138237-hero-plaque{
-  z-index:19!important;bottom:7px!important;min-width:214px;max-width:238px;padding:7px 16px 8px;
+  z-index:19;bottom:7px!important;min-width:214px;max-width:238px;padding:7px 16px 8px;
   border:1px solid rgba(231,201,127,.36);border-radius:15px;
   background:linear-gradient(180deg,rgba(8,31,44,.91),rgba(4,18,29,.96));
   box-shadow:0 12px 30px rgba(0,0,0,.34),inset 0 1px rgba(255,246,217,.04);backdrop-filter:blur(10px)
