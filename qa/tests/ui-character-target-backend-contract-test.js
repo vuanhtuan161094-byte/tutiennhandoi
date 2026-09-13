@@ -13,7 +13,6 @@ const css=read('ui-character-target-v1.css');
 assert.match(index,/ui-character-target-v1\.css\?v=character-shrine-target-v2-20260913/,'Character V2 target layer must load with the current cache key');
 assert.ok(index.indexOf('ui-character-target-v1.css')>index.indexOf('ui-home-target-v1.css'),'Character target stylesheet must remain last in the presentation cascade');
 
-// Runtime truth remains authoritative. The target may compress presentation but cannot invent parallel state.
 assert.match(app,/const c=model\.character,o=model\.overview,st=c\.combatStats\|\|\{\},core=c\.coreStats\|\|\{\},gear=model\.equipment\|\|\[\],sys=model\.equipmentSystem\|\|\{\}/,'Character renderer must continue binding canonical Character + Equipment read models');
 assert.match(app,/canonicalSlots=Number\(sys\.canonicalSlotCount\?\?10\)/,'canonical equipment slot count must remain backend-owned with the existing 10-slot fallback');
 assert.match(app,/v13819SetCategorySummary\(sys,'attire'\)/,'attire set summary must remain backend-owned');
@@ -25,9 +24,8 @@ assert.match(app,/data-sheet-open="stats"/,'Character target must retain canonic
 assert.match(app,/data-sheet-open="origin"/,'Character target must retain canonical profile detail action');
 assert.match(app,/data-tab-jump="path"/,'Character target must retain canonical path/build navigation');
 
-// V2 visual contract: one-screen shrine, no duplicated elemental subtitle in the hero plaque.
 assert.match(css,/\.v138237-character-scroll[\s\S]*overflow:hidden/,'Character first screen must not expose an internal scroll container');
-assert.match(css,/\.v138247-cultivation-entry,[\s\S]*\.v138237-playstyle,[\s\S]*\.v138237-next\{display:none!important\}/,'deep secondary sections must leave the first viewport and remain reachable through canonical detail routes');
+assert.match(css,/\.v138247-cult-entry,[\s\S]*\.v138237-playstyle,[\s\S]*\.v138237-next\{display:none!important\}/,'deep secondary sections must leave the first viewport and remain reachable through canonical detail routes');
 assert.match(css,/\.v138237-hero::before/,'target must provide a shrine\/ritual halo in the real Character scene');
 assert.match(css,/\.v138237-equip-slot>span[\s\S]*border-radius:50%!important/,'equipment sockets must remain round inlaid seals');
 assert.match(css,/\.v138237-hero-plaque span\{display:none!important\}/,'Ngũ Hành secondary text must not be repeated inside the hero build plaque');
