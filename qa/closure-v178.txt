@@ -1,0 +1,35 @@
+V178 — Current-Life Identity Runtime Authority
+
+Status: CLOSURE CANDIDATE
+
+Runtime fix: ee4b7487ba6846dfd764d3c4fb8c54c9f0573dcb
+Targeted proof: 01b830f742a0bcd4538cd8357b9c0a6f4faff12b
+Runtime candidate: 69c112cb43f1047dbf1c0e15614ebc54f9db0422
+Shared Fast QA with V179: 34735361470 — SUCCESS
+
+Finding
+- Runtime authors current-life identity deterministically as life.<lifeNumber>.
+- Restore previously trusted currentLife.lifeId and currentLife.lifeNumber independently.
+- A stale/mismatched lifeId could leave valid Faction/Social/first-life state present while live consumers keyed by currentLife.lifeId could no longer find it.
+
+Fix
+- A valid lifeNumber projects the canonical lifeId life.<lifeNumber>.
+- If lifeNumber is invalid but the saved ID is canonical life.<n>, n may recover the missing number.
+- If neither side is valid, restore invents no identity.
+- Repair runs before V176 first-life history reconstruction and before all live current-life consumers.
+- No previousLifeId, faction rank, social value, reward, balance or pacing rule changes.
+
+Targeted proof
+- B1 valid lifeNumber repairs stale lifeId.
+- B2 canonical lifeId recovers invalid lifeNumber.
+- B3 valid matching identity is unchanged.
+- B4 no authority means no invented identity.
+- B5 full restore reconnects a real valid Faction membership before session.factionMembership().
+- B6 identity repair runs before V176 and prevents first-life reward replay.
+
+Fast QA 34735361470
+- Backend Fast: 25/25 PASS, including V178 and V179 guards.
+- Frontend Fast: 6/6 PASS, including locked frontend performance gate.
+
+Shared closure condition
+- One shared [closure] commit closes V178 + V179 only after Canonical QA passes.

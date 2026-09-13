@@ -1,0 +1,36 @@
+V179 — Guidance Worker Automation Policy Runtime Authority
+
+Status: CLOSURE CANDIDATE
+
+Effective runtime fix: 4edefc57dd1f9b958c3f63040f0710017cef6430
+Targeted proof: de3c2b84a90cda5d155622fcf01c934e16549b79
+Runtime candidate: fef322900b1cfc2bb126bb4ccb2f339820c663ba
+Fast QA: 34735361470 — SUCCESS
+
+Finding
+- runSessionGuidanceV141() performs clone-worker dungeon assignment before the main guidance decision loop.
+- The worker recommendation helper previously ignored automation.allowedActivityTypes, blockedDungeonIds and maxInjury.
+- Therefore Guidance could mutate a dungeon worker assignment even when the player disabled auto-dungeon, blocked that dungeon, or exceeded the global injury safety limit.
+
+Fix
+- recommendGuidanceWorkerAssignments() now normalizes and enforces the same automation policy authority used by planGuidance().
+- No worker auto-assignment when dungeon is not allowed.
+- blockedDungeonIds are excluded from worker candidates.
+- Injury above maxInjury stops worker auto-assignment before any mutation.
+- Valid allowed/unblocked worker assignment scoring and behavior are preserved.
+- No dungeon score, clone efficiency, reward, balance or pacing values changed.
+
+Targeted proof
+- B1 dungeon-disabled policy yields no worker recommendation.
+- B2 blocked dungeon yields no worker recommendation.
+- B3 injury safety stops pre-loop assignment.
+- B4 valid allowed/unblocked recommendation remains.
+- B5 live runGuidance() cannot mutate assignments while dungeon is disabled.
+- B6 live runGuidance() still assigns a real authorized clone when policy permits it.
+
+Fast QA 34735361470
+- Backend Fast: 25/25 PASS, including v178-current-life-identity-runtime-authority-test.js and v179-guidance-worker-policy-runtime-authority-test.js.
+- Frontend Fast: 6/6 PASS, including locked frontend performance gate.
+
+Shared closure condition
+- This file and V178 are committed together under one [closure] marker; Canonical QA must pass before either is recorded CLOSED / LOCKED.
