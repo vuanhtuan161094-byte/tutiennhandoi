@@ -33,6 +33,8 @@ for (const selector of ['.ui-home-hero','.ui-home-character','.ui-home-progress'
   assert.ok(css.includes(selector), `missing art-direction treatment for ${selector}`);
 }
 assert.match(css, /\.ui-home-primary[\s\S]*min-height:58px/, 'primary action must keep a production touch target');
+assert.match(css, /\.system-menu>summary\{[\s\S]*width:44px!important;[\s\S]*height:44px!important;/, 'Home HUD menu must preserve the 44px touch target');
+assert.match(css, /\.player-meta>strong\{\s*display:none;/, 'Home HUD must not duplicate the realm title already carried by the hero');
 assert.match(css, /@media\(prefers-reduced-motion:reduce\)/, 'Home V2 must honor reduced motion');
 assert.doesNotMatch(css, /fetch\(|\/api\//, 'presentation layer must not introduce transport/gameplay authority');
 assert.doesNotMatch(css, /url\(/, 'Home V2 should reuse canonical runtime art instead of adding hidden asset dependencies');
