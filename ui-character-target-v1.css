@@ -148,7 +148,7 @@ html body[data-game-screen="character"] .v138237-hero-plaque small{position:rela
 html body[data-game-screen="character"] .v138237-hero-plaque strong{position:relative;z-index:1;display:block;margin-top:2px;color:#fff0cf!important;font:700 16px/1.05 var(--char-display)!important;letter-spacing:0}
 body[data-game-screen="character"] .v138237-hero-plaque span{display:none!important}
 
-/* Stats use the same engraved panel family as Home journey/progression surfaces. */
+/* Engraved stat rail — same Home journey/progression panel family. */
 html body[data-game-screen="character"] .v138237-core{
   flex:0 0 72px;min-height:72px!important;margin:5px 12px 0;padding:0;gap:0;overflow:hidden;
   border:1px solid rgba(224,192,115,.30);border-radius:13px;
