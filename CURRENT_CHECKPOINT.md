@@ -13,7 +13,7 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - Do not reopen locked runtime systems without a proven regression.
 - **All selected non-UI runtime/authority work is CLOSED / LOCKED through V179.**
 - **V180 is NOT OPEN.** The attempted final cross-system audit did not justify another numbered patch because the existing player-journey gate plus Canonical closure already cover the selected non-UI objective.
-- **UI/UX presentation phase is OPEN. Home / Tu Luyện and App Shell / HUD have technical QA closure, but under Workflow V2 they are VISUAL-UNVERIFIED until the user reviews real runtime screenshots. Character / Equipment is paused until the visual-review gate is in place.**
+- **UI/UX presentation phase is OPEN. Home / Tu Luyện and App Shell / HUD are CLOSED / LOCKED under Workflow V2 after exact-runtime visual proof, explicit user approval, and Canonical QA. Character / Equipment is the next active UI slice.**
 
 ## UI/UX phase
 
@@ -24,37 +24,56 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - **No reconstructed mock, partial HTML/CSS recreation, concept image, or placeholder preview counts as visual proof.**
 - **No UI slice may move from candidate to LOCKED without screenshots from the actual runtime candidate and explicit user approval.**
 - Implementation order remains: **Home/Tu Luyện → App Shell/HUD → Character/Equipment → Combat readability → Dungeon/Hunt → Collection/Alchemy → Reincarnation/Automation → World/Faction/Social**.
-- Immediate UI action before further redesign: establish real runtime screenshot/visual-smoke capture, then perform retroactive visual review of Home/Tu Luyện and App Shell/HUD.
+- Immediate UI action: start **Character / Equipment** from the actual runtime baseline, preserve V165 Equipment and V168 Combat/Stat authority, make a narrow presentation slice, then repeat the Workflow V2 visual approval gate.
 
-### Home / Tu Luyện — technical closure, visual review required
+### Home / Tu Luyện — CLOSED / LOCKED (Workflow V2)
 
 - First vertical slice: **Home / Tu Luyện + UI System V1 foundation**.
-- Candidate commit: `89f5102ff5513061a5a30934e1ef336bf959940a`.
-- Candidate Fast QA run `34738447257` — **SUCCESS**.
+- Original candidate commit: `89f5102ff5513061a5a30934e1ef336bf959940a`.
+- Original candidate Fast QA run `34738447257` — **SUCCESS**.
 - Backend Fast: **25/25 PASS**.
 - Frontend Fast: **7/7 PASS**, including `ui-frontend-home-vertical-slice-test.js`.
 - Frontend performance hard lock remains **193 modules / 4141.1 KiB**.
-- Technical closure commit: `4d5f937c3756250d6ef54d6338694a335c5c9e84`.
-- Technical closure QA run `34738690190` — **SUCCESS**.
-- Backend Canonical Closure: **119/119 PASS**.
-- Frontend Canonical Closure: **21/21 PASS**.
-- This UI slice changes presentation only. V160–V179 runtime/save/gameplay authorities remain CLOSED / LOCKED.
-- Workflow V2 status: **VISUAL_REVIEW REQUIRED**. Technical QA closure does not equal visual approval.
+- Original technical closure commit: `4d5f937c3756250d6ef54d6338694a335c5c9e84`.
+- Original technical closure QA run `34738690190` — **SUCCESS**.
+- Original Backend Canonical Closure: **119/119 PASS**.
+- Original Frontend Canonical Closure: **21/21 PASS**.
+- App-shell and art-direction refinement continued under Workflow V2; approved exact-runtime candidate: `59006543e9f2b856b1e73dd61d7401abc633ba13`.
+- Exact candidate Fast QA run `34749539482` — **SUCCESS**.
+- Exact runtime Visual Proof run `34749539476` — **SUCCESS**.
+- Artifact: `ui-visual-59006543e9f2b856b1e73dd61d7401abc633ba13`.
+- Reviewed runtime viewports: **390×844** and **412×915**; no horizontal overflow.
+- Visual runner proof is from the production runtime after save-safe deterministic fixture bootstrap; `mockOrReconstruction: false`.
+- Runtime interaction smoke proves the Home side rail routes through canonical navigation: `cultivation → roots`, with real Linh Căn rendering, then returns to Home.
+- User explicitly approved the exact runtime visuals on 2026-09-13; secondary self-review also passed. Non-blocking future polish only: some rail secondary text can lose contrast over bright hair/effects and the 390 px `Chiến Đấu` subtitle may truncate.
+- Visual closure note: `docs/ui/UI_HOME_HUD_VISUAL_CLOSURE_20260913.md`.
+- `[closure]` QA marker commit: `e57a76a1b5ce57e6a2cc9fe90e38a47472d3c897`.
+- Canonical closure QA run `34749813355` — **SUCCESS**.
+- Backend Canonical Closure: **122/122 PASS**.
+- Frontend Canonical Closure: **26/26 PASS**.
+- This UI slice changes presentation / navigation adapter only. V160–V179 runtime/save/gameplay authorities remain CLOSED / LOCKED.
+- Workflow V2 status: **CLOSED / LOCKED**.
 
-### App Shell / HUD — technical closure, visual review required
+### App Shell / HUD — CLOSED / LOCKED (Workflow V2)
 
 - Presentation patch commit: `10c2f613963d0ccdbb9bae0716e2b4e547e67fe7`.
-- Technical closure commit: `9800dfbf329e7d616a420149802ab0fc5282dabc`.
-- Technical closure QA run `34743561414` — **SUCCESS**.
+- Original technical closure commit: `9800dfbf329e7d616a420149802ab0fc5282dabc`.
+- Original technical closure QA run `34743561414` — **SUCCESS**.
 - Backend Fast: **25/25 PASS**.
 - Frontend Fast: **8/8 PASS**, including `ui-frontend-app-shell-hud-test.js`.
-- Backend Canonical Closure: **119/119 PASS**.
-- Frontend Canonical Closure: **22/22 PASS**.
-- `app.js`, save schema, runtime authority and gameplay authority were not changed.
-- New `ui-system-v1.css` is an isolated presentation layer loaded last in the cascade; QA hard-locks it to **< 20 KB** and **≤ 50 `!important`** so it cannot become another legacy CSS pile.
-- HUD/navigation normalization technical locks: readable essential text, 44 px system-menu touch target, semantic active dock state via `aria-current`, focus-visible, reduced-motion, safe-area handling, and shared `StatePanel` grammar for loading/empty/blocked/error/success.
+- Original Backend Canonical Closure: **119/119 PASS**.
+- Original Frontend Canonical Closure: **22/22 PASS**.
+- `app.js`, save schema, runtime authority and gameplay authority were not changed by the original App Shell/HUD slice.
+- `ui-system-v1.css` remains an isolated presentation layer; QA hard-locks it to **< 20 KB** and **≤ 50 `!important`** so it cannot become another legacy CSS pile.
+- HUD/navigation normalization locks: readable essential text, 44 px system-menu touch target, semantic active dock state via `aria-current`, focus-visible, reduced-motion, safe-area handling, and shared `StatePanel` grammar for loading/empty/blocked/error/success.
+- Shared approved runtime candidate with Home: `59006543e9f2b856b1e73dd61d7401abc633ba13`.
+- Shared exact runtime Visual Proof run `34749539476` — **SUCCESS**; user visual approval recorded 2026-09-13.
+- Shared `[closure]` commit: `e57a76a1b5ce57e6a2cc9fe90e38a47472d3c897`.
+- Shared Canonical closure QA run `34749813355` — **SUCCESS**.
+- Backend Canonical Closure: **122/122 PASS**.
+- Frontend Canonical Closure: **26/26 PASS**.
 - Existing frontend performance hard lock passed; thresholds were not raised.
-- Workflow V2 status: **VISUAL_REVIEW REQUIRED**. Do not treat the visual design as permanently locked until the user sees and approves the real runtime candidate.
+- Workflow V2 status: **CLOSED / LOCKED**.
 
 ## Locked versions
 
@@ -93,6 +112,16 @@ At V179 closure:
   - Frontend closure: **20/20 PASS**
   - Includes `v158-player-journey-integration-test.js` and all authority guards through V179.
 
+For the latest approved Home / Tu Luyện + App Shell / HUD Workflow V2 closure:
+
+- Approved runtime candidate: `59006543e9f2b856b1e73dd61d7401abc633ba13`
+- Exact candidate Fast QA run `34749539482` — **SUCCESS**
+- Exact runtime Visual Proof run `34749539476` — **SUCCESS**
+- `[closure]` commit: `e57a76a1b5ce57e6a2cc9fe90e38a47472d3c897`
+- Canonical QA run `34749813355` — **SUCCESS**
+  - Backend closure: **122/122 PASS**
+  - Frontend closure: **26/26 PASS**
+
 ### Frontend performance lock
 
 `qa/tests/v129-frontend-performance-test.js` is a hard lock:
@@ -102,7 +131,7 @@ At V179 closure:
 - never raise these thresholds to make a change pass.
 
 V177–V179 added no new eager frontend runtime module; Fast and Canonical frontend gates remained green.
-UI Home and App Shell/HUD technical closures also passed the same performance hard lock without raising thresholds.
+UI Home and App Shell/HUD Workflow V2 closure also passed the same performance hard lock without raising thresholds.
 
 ## Locked runtime authorities
 
@@ -298,4 +327,4 @@ Evidence:
 4. Do not create V180 merely to continue numbering.
 5. Non-UI runtime work is considered complete for the selected scope.
 6. UI/UX phase follows `docs/ui/UI_UX_WORKFLOW_V2_20260913.md`; no UI closure before actual runtime visual proof and explicit user approval.
-7. Before Character / Equipment, implement/establish runtime screenshot visual proof and visually review Home / Tu Luyện + App Shell / HUD.
+7. Home / Tu Luyện + App Shell / HUD are CLOSED / LOCKED. Next UI slice is Character / Equipment, starting from the actual runtime baseline and preserving locked V165/V168 authorities.
