@@ -1687,14 +1687,36 @@ renderCultivation=function(){
   const life=o.life||{},lifeText=Number.isFinite(Number(life.lifespanYears))?`${num(Math.max(0,Number(life.lifespanYears)-Number(life.ageYears||0)),1)} năm còn lại`:'Vô hạn';
   const daoSuy=model.daoSuy||{};
   const condition=`<div class="card"><div class="eyebrow">TRẠNG THÁI</div><h2>Thương Thế ${num(injury,0)}%</h2>${progress(Math.min(100,injury),'red')}<p class="muted">Core Tu Luyện chỉ dùng một trạng thái tổn thương. Tự Tu vẫn tiếp tục; Thương Thế ảnh hưởng các challenge cần thể trạng.</p>${metric(daoSuy.active?'Đạo Suy':'Thọ Nguyên',daoSuy.active?`${num(daoSuy.value||0,1)} / ${num(daoSuy.max||100,0)}`:lifeText)}</div>`;
-  const hero=`<section class="v139-cult-hero card"><div><div class="eyebrow">TU LUYỆN V140 · ${esc(cult.realm||life.realm||'')}</div><h1>${num(tuVi,0)} / ${num(required,0)} Tu Vi</h1>${progress(pctValue,'gold')}<div class="grid cols-3" style="margin-top:12px">${metric('Tốc Tự Tu',`+${num(rate,0)} / 15s`)}${metric('Tu Vi nền',`+${num(base,0)} / 15s`)}${metric('ETA',cult.ready?'Đã viên mãn':durationText(eta))}</div></div></section>`;
+  const skin=v1074SelectedVisual('skin'),background=v1074SelectedVisual('background');
+  const backgroundAsset=visualVariantAsset(background,'character','/assets/v1074/bg-blue-valley.webp');
+  const bodyArt=v138232CharacterBodyArt(skin);
+  const realmName=String(cult.realm||life.realm||'Phàm Nhân');
+  const stageName=v1078RealmStage(realmName)||'Đang tu luyện';
+  const heroAction=cult.ready
+    ?(transition==='tribulation'
+      ?`<button class="ui-home-primary danger" data-tribulation-v140><span><small>CỬA ẢI TIẾP THEO</small><strong>Dẫn Thiên Kiếp</strong><em>${esc(realmName)} → ${esc(cult.nextRealm||'Cảnh tiếp')}</em></span><b>›</b></button>`
+      :`<button class="ui-home-primary ready" data-ascend-realm-v140><span><small>ĐÃ VIÊN MÃN</small><strong>Thăng Cảnh</strong><em>${esc(realmName)} → ${esc(cult.nextRealm||'Cảnh tiếp')}</em></span><b>›</b></button>`)
+    :`<button class="ui-home-primary" data-sheet-open="cultivate"><span><small>ĐANG TỰ TU</small><strong>Tăng tốc Tu Luyện</strong><em>${esc(cult.nextRealm?`Hướng tới ${cult.nextRealm}`:'Bế quan · Đan dược · Nguồn Tu Vi')}</em></span><b>›</b></button>`;
+  const hero=`<section class="ui-home-hero" aria-label="Tiến trình Tu Luyện">
+    <img class="ui-home-bg" src="${esc(backgroundAsset)}" style="${esc(visualLayoutStyle(background,'background'))}" alt="">
+    <div class="ui-home-mist" aria-hidden="true"></div><div class="ui-home-runes" aria-hidden="true"></div>
+    <img class="ui-home-character" src="${esc(bodyArt)}" alt="Nhân vật đang tu luyện">
+    <header class="ui-home-identity"><span>ĐỜI ${num(life.lifeNumber||1)} · ${esc(stageName)}</span><strong>${esc(realmName)}</strong><small>${esc(model.character?.name||life.name||'Tu Sĩ')} · ${esc(model.spiritualRoot?.grade?.name||model.character?.root||'Phàm Căn')}</small></header>
+    <div class="ui-home-vitals"><span><small>Thương Thế</small><b class="${injury>=60?'warn':''}">${num(injury,0)}%</b></span><span><small>Thọ Nguyên</small><b>${esc(lifeText)}</b></span></div>
+    <div class="ui-home-progress"><header><span>Tu Vi</span><strong><b data-live-energy>${num(tuVi,0)}</b> / ${num(required,0)}</strong></header><div class="ui-home-progress-track"><i style="width:${pct(pctValue)}%"></i></div><footer><span><b data-live-rate-compact>+${num(rate,0)}</b> / 15s</span><span>${cult.ready?'Đã viên mãn':`Còn ${durationText(eta)}`}</span></footer></div>
+    ${heroAction}
+  </section>`;
   const sourceCard=`<div class="card"><div class="eyebrow">NGUỒN TU VI</div><h2>+${num(rate,0)} Tu Vi / 15s</h2><div class="list">${sources}</div><div class="footer-note">Nguồn cố định hiển thị bằng số cụ thể; bonus % chỉ dành cho milestone đặc biệt. Tất cả dùng cùng resolver V140.</div></div>`;
   const tuViPills=(model.alchemy?.pills||[]).filter(x=>x.family==='cultivation').reduce((n,x)=>n+Number(x.count||0),0)+resourceQuantity('resource.pill.cultivation');
   const pillCard=`<div class="card"><div class="eyebrow">TU VI ĐAN</div><h2>${num(tuViPills,0)} viên</h2><p class="muted">Tu Vi Đan cộng Tu Vi trực tiếp theo balance hiện tại.</p><button class="button" data-use-cultivation-pill ${tuViPills<=0?'disabled':''}>Dùng 1 viên</button></div>`;
   const eventBody=(flow.actions||[]).filter(a=>a.command?.type==='contentEvent').map(actionRow).join('');
   const events=eventBody?`<div class="card"><h2>Cơ Duyên</h2><div class="action-list">${eventBody}</div></div>`:'';
   const journeyCard=v90JourneyCard(),journeySheet=model?.flow?.journey?v106Sheet('journey','Tiên Lộ · Đời Đầu',v90JourneySheet(model.flow.journey)):'';
-  return `<section class="v107-screen v139-cultivation"><div class="v107-body"><div class="v139-cult-scroll">${journeyCard}${hero}<div class="grid cols-2">${sourceCard}${condition}</div><div class="grid cols-2">${retreatCard}${pillCard}</div>${transitionPanel}${events}</div></div>${journeySheet}${v106MoreSheet()}</section>`;
+  const tasks=(model.playerExperience?.sessionLoop?.tasks||[]).slice(0,2);
+  const taskRail=tasks.length?`<section class="ui-home-next"><header><span>TIẾP THEO</span><button data-sheet-open="journey">Xem Tiên Lộ</button></header>${tasks.map((x,i)=>`<button data-tab-jump="${esc(x.route)}" class="${x.priority==='primary'?'primary':''}"><i>${i+1}</i><span><b>${esc(x.title)}</b><small>${esc(x.reason)}</small></span><strong>›</strong></button>`).join('')}</section>`:'';
+  const quickRail=`<nav class="ui-home-quick" aria-label="Lối tắt Tu Luyện"><button data-sheet-open="cultivate"><i>◉</i><span><b>Bế Quan</b><small>${num(bank,1)}h tích lũy</small></span></button><button data-use-cultivation-pill ${tuViPills<=0?'disabled':''}><i>◆</i><span><b>Tu Vi Đan</b><small>${num(tuViPills)} viên</small></span></button><button data-tab-jump="roots"><i>◇</i><span><b>Linh Căn</b><small>${esc(model.spiritualRoot?.grade?.name||'Phàm Căn')}</small></span></button><button data-tab-jump="dungeons"><i>⚔</i><span><b>Chiến Đấu</b><small>Farm tài nguyên</small></span></button></nav>`;
+  const cultivateSheet=v106Sheet('cultivate','Tu Luyện · Tăng Tốc',`${transitionPanel}<div class="ui-home-sheet-grid">${retreatCard}${pillCard}${sourceCard}${condition}</div>${events}`);
+  return `<section class="v107-screen v139-cultivation ui-home"><div class="ui-home-scroll" data-scroll-key="cultivation-main">${hero}${taskRail}${quickRail}${journeyCard}</div>${cultivateSheet}${journeySheet}${v106MoreSheet()}</section>`;
 };
 
 /* v1.25 — Định Đạo + preview kỹ năng + Thục Luyện sâu. Không có nút thử skill. */

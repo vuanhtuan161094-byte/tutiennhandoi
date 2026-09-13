@@ -6,7 +6,7 @@ const here=path.dirname(fileURLToPath(import.meta.url));
 const testsDir=path.resolve(here,'../tests');
 const repoRoot=path.resolve(here,'../..');
 const mode=String(process.argv[2]??'fast').trim().toLowerCase();
-const FAST=['v140-cultivation-transport-test.js','v129-frontend-browser-module-syntax-test.js','v129-performance-architecture-test.js','v129-performance-stress-test.js','v129-frontend-performance-test.js','v129-web-launcher-test.js'];
+const FAST=['v140-cultivation-transport-test.js','ui-home-vertical-slice-test.js','v129-frontend-browser-module-syntax-test.js','v129-performance-architecture-test.js','v129-performance-stress-test.js','v129-frontend-performance-test.js','v129-web-launcher-test.js'];
 const isFront=n=>n.includes('transport-test.js')||n.includes('frontend')||n.includes('web-launcher')||n.includes('performance');
 const closure=()=>[...new Set([...FAST,...fs.readdirSync(testsDir).filter(n=>n.endsWith('test.js')&&isFront(n))])].sort();
 const tests=mode==='fast'?FAST:mode==='closure'?closure():null;if(!tests)throw new Error('Use fast | closure');

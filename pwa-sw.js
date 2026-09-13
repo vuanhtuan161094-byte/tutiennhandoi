@@ -1,4 +1,4 @@
-const CACHE='tu-tien-v140-1.40.0-alpha.24.0-cultivation-clean-20260906-shell-v1';
+const CACHE='tu-tien-ui-home-v1-20260913';
 const CORE=['/','/index.html','/app.js','/standalone-runtime.js','/standalone-entry.js','/styles.css','/combat-v2.css','/visual-catalog.json','/manifest.webmanifest','/assets/app-icon-192.png','/assets/app-icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

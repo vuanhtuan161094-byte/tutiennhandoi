@@ -1,4 +1,4 @@
-const WIP_CACHE_TOKEN='v159-endgame-closure-20260910';
+const WIP_CACHE_TOKEN='ui-home-v1-20260913';
 
 function isLocalWipHost(hostname){
   const host=String(hostname||'').toLowerCase();
