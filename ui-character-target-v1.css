@@ -73,17 +73,32 @@ body[data-game-screen="character"] .v138237-character-art{
   filter:drop-shadow(0 20px 27px rgba(0,0,0,.55)) drop-shadow(0 0 20px rgba(94,181,189,.13)) drop-shadow(0 0 6px rgba(239,207,128,.07))!important;
 }
 
-/* Ceremonial identity plate. */
+/* Identity floats over the scene instead of reading as a dashboard card. */
 body[data-game-screen="character"] .v138237-identity>div{
-  max-width:268px;
-  border-radius:3px 15px 15px 3px!important;
-  border-left:3px solid rgba(238,205,119,.64)!important;
-  background:linear-gradient(90deg,rgba(3,15,24,.94),rgba(8,31,42,.75) 76%,rgba(8,31,42,.22))!important;
+  max-width:272px;
+  padding:8px 14px 10px!important;
+  border:0!important;
+  border-left:2px solid rgba(238,205,119,.68)!important;
+  border-radius:0!important;
+  background:linear-gradient(90deg,rgba(2,12,19,.83),rgba(4,18,27,.43) 72%,transparent)!important;
+  box-shadow:none!important;
 }
-body[data-game-screen="character"] .v138237-identity strong{color:var(--ct-gold-hi)!important;text-shadow:0 2px 5px rgba(0,0,0,.62)}
+body[data-game-screen="character"] .v138237-identity>div::after{
+  content:"";
+  position:absolute;
+  left:0;
+  bottom:0;
+  width:178px;
+  height:1px;
+  background:linear-gradient(90deg,rgba(237,203,119,.52),transparent);
+  pointer-events:none;
+}
+body[data-game-screen="character"] .v138237-identity strong{color:var(--ct-gold-hi)!important;text-shadow:0 2px 5px rgba(0,0,0,.72)}
 body[data-game-screen="character"] .v138237-identity>button{
-  border-radius:13px!important;
-  background:linear-gradient(180deg,rgba(9,34,44,.88),rgba(3,17,25,.94))!important;
+  min-width:68px!important;
+  min-height:46px!important;
+  border-radius:12px!important;
+  background:linear-gradient(180deg,rgba(9,34,44,.76),rgba(3,17,25,.88))!important;
 }
 
 /* Equipment becomes round inlaid artifact seals. */
@@ -149,11 +164,26 @@ body[data-game-screen="character"] .v138247-cultivation-entry{
   border-radius:10px!important;
   background:linear-gradient(90deg,rgba(8,33,42,.92),rgba(5,24,32,.78))!important;
 }
-body[data-game-screen="character"] .v138237-core button{
-  min-height:72px!important;
-  border-radius:11px!important;
-  background:linear-gradient(180deg,rgba(10,38,49,.92),rgba(5,24,32,.96))!important;
+
+/* One engraved stat rail: three canonical values, one visual object. */
+body[data-game-screen="character"] .v138237-core{
+  margin:8px 11px 0!important;
+  gap:0!important;
+  padding:0!important;
+  overflow:hidden;
+  border:1px solid rgba(217,182,92,.25);
+  border-radius:11px;
+  background:linear-gradient(180deg,rgba(10,38,49,.92),rgba(5,24,32,.96));
+  box-shadow:inset 0 1px rgba(255,255,255,.025),0 6px 15px rgba(0,0,0,.15);
 }
+body[data-game-screen="character"] .v138237-core button{
+  min-height:70px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+body[data-game-screen="character"] .v138237-core button+button{border-left:1px solid rgba(218,183,96,.16)!important}
 body[data-game-screen="character"] .v138237-core strong{color:#f2d68a!important}
 body[data-game-screen="character"] .v138237-primary-action{
   border-radius:11px!important;
