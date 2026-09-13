@@ -32,16 +32,17 @@ html body[data-game-screen="character"] .v138237-identity>div::after{
   box-shadow:none!important;
 }
 
-/* P0 — Character screen uses the full-body white-mist production render instead
-   of the compact combat-idle render. Combat itself keeps its locked asset. */
+/* P0 — Character and Home share the same canonical chibi/manhua hero family.
+   Do not replace the runtime img src here: the production renderer already binds
+   the locked Bạch Lam Kiếm Tu idle artwork used by Home. */
 html body[data-game-screen="character"] .v138237-character-art{
-  content:url('/assets/v1074/skin-white-mist.png')!important;
-  width:350px!important;
-  height:430px!important;
-  bottom:2px!important;
+  content:normal!important;
+  width:370px!important;
+  height:438px!important;
+  bottom:5px!important;
   object-fit:contain!important;
   object-position:center bottom!important;
-  filter:drop-shadow(0 24px 30px rgba(0,0,0,.42)) drop-shadow(0 0 16px rgba(197,219,215,.10))!important;
+  filter:drop-shadow(0 24px 30px rgba(0,0,0,.42)) drop-shadow(0 0 16px rgba(93,166,199,.13))!important;
 }
 
 /* P2 — less cyan wash, more ink/ivory separation like Home. */
