@@ -422,6 +422,23 @@ export function normalizeCanonicalFirstLifeStoryAfterRestore(state, history, cur
     return state;
 }
 
+// V178: current-life IDs are a deterministic projection of the live life sequence. Runtime creates
+// `life.<lifeNumber>` on every reincarnation, so restore must not let a stale ID detach the current
+// life from Faction/Social/relationship consumers keyed by that identity.
+export function normalizeCanonicalCurrentLifeIdentityAfterRestore(currentLife) {
+    if (!currentLife) return currentLife;
+    const rawNumber = Number(currentLife.lifeNumber);
+    const idMatch = /^life\.(\d+)$/.exec(String(currentLife.lifeId ?? ''));
+    const idNumber = idMatch ? Number(idMatch[1]) : undefined;
+    const numberValid = Number.isSafeInteger(rawNumber) && rawNumber >= 1;
+    const idNumberValid = Number.isSafeInteger(idNumber) && idNumber >= 1;
+    if (!numberValid && !idNumberValid) return currentLife;
+    const lifeNumber = numberValid ? rawNumber : idNumber;
+    currentLife.lifeNumber = lifeNumber;
+    currentLife.lifeId = `life.${lifeNumber}`;
+    return currentLife;
+}
+
 function validatedRetreatActionIndexV177(event) {
     if (event?.type !== 'cultivation' || !Array.isArray(event?.tags) || !event.tags.includes('Retreat') || !event.tags.includes('CultivationV140')) return undefined;
     const match = /^retreat\.v140\.(.+)\.(\d+)$/.exec(String(event?.id ?? ''));
@@ -458,6 +475,7 @@ export function restoreSimulationSession(SessionClass, saveVersion, registry, wo
     const state = cloneAdventureState(save.state);
     const meta = cloneMetaProgressState(save.meta);
     const currentLife = cloneCurrentLifeMeta(save.currentLife);
+    normalizeCanonicalCurrentLifeIdentityAfterRestore(currentLife);
     state.timeModel = 'live-v1';
     normalizeEquipmentStateV98(state.equipment, registry.equipmentTemplates);
     normalizeCanonicalEquipmentAfterRestore(state);
