@@ -6,6 +6,7 @@ if errorlevel 1 goto :badpath
 
 set "REPO=vuanhtuan161094-byte/tutiennhandoi"
 set "BRANCH=main"
+set "SELF_NAME=%~nx0"
 
 cls
 echo ================================================
@@ -29,9 +30,19 @@ echo Branch : %BRANCH%
 echo Origin : !ORIGIN_URL!
 echo.
 
-REM Bao ve file local: khong tu dong xoa/stash thay doi cua nguoi dung.
-for /f "delims=" %%S in ('git status --porcelain') do set "DIRTY=1"
-if defined DIRTY goto :dirty
+REM Bao ve file local. Truong hop duy nhat duoc phep tu xu ly la
+REM launcher nay dang untracked vi vua duoc chep vao repo cu de bootstrap.
+set "DIRTY_OTHER="
+set "SELF_UNTRACKED="
+for /f "delims=" %%S in ('git status --porcelain --untracked-files^=all') do (
+  if "%%S"=="?? %SELF_NAME%" (
+    set "SELF_UNTRACKED=1"
+  ) else (
+    set "DIRTY_OTHER=1"
+  )
+)
+if defined DIRTY_OTHER goto :dirty
+if defined SELF_UNTRACKED goto :bootstrap_self
 
 echo [1/4] Dang lay thong tin moi nhat tu GitHub...
 git fetch origin %BRANCH%
@@ -44,7 +55,34 @@ if errorlevel 1 goto :syncfail
 echo [3/4] Dang dong bo source code...
 git pull --ff-only origin %BRANCH%
 if errorlevel 1 goto :syncfail
+goto :sync_done
 
+:bootstrap_self
+echo [BOOTSTRAP] Chi phat hien launcher moi chua duoc Git theo doi.
+echo             Tu dong dong bo an toan lan dau...
+echo.
+
+for /f "delims=" %%B in ('git branch --show-current') do set "CURRENT_BRANCH=%%B"
+if /I not "!CURRENT_BRANCH!"=="%BRANCH%" goto :bootstrapwrongbranch
+
+echo [1/4] Dang lay thong tin moi nhat tu GitHub...
+git fetch origin %BRANCH%
+if errorlevel 1 goto :syncfail
+
+REM Chi fast-forward neu local HEAD la to tien cua origin/main.
+git merge-base --is-ancestor HEAD origin/%BRANCH% >nul 2>&1
+if errorlevel 1 goto :bootstrapdiverged
+
+for /f "delims=" %%H in ('git rev-parse HEAD') do set "OLD_HEAD=%%H"
+echo [2/4] Dang fast-forward local %BRANCH%...
+git update-ref refs/heads/%BRANCH% origin/%BRANCH% !OLD_HEAD!
+if errorlevel 1 goto :syncfail
+
+echo [3/4] Dang cap nhat working tree...
+git reset --hard HEAD
+if errorlevel 1 goto :syncfail
+
+:sync_done
 for /f "delims=" %%H in ('git rev-parse --short HEAD') do set "HEAD_SHA=%%H"
 echo.
 echo Dong bo thanh cong. HEAD = !HEAD_SHA!
@@ -65,10 +103,22 @@ echo Hay commit/stash/cat thay doi local, sau do chay lai file nay.
 pause
 exit /b 2
 
+:bootstrapwrongbranch
+echo [DUNG] Bootstrap lan dau chi duoc chay khi local dang o branch %BRANCH%.
+echo Branch hien tai: !CURRENT_BRANCH!
+pause
+exit /b 2
+
+:bootstrapdiverged
+echo [DUNG] Local HEAD khong the fast-forward an toan toi origin/%BRANCH%.
+echo Khong co file nao bi ghi de. Can xu ly lich su Git thu cong.
+pause
+exit /b 2
+
 :syncfail
 echo.
 echo [LOI] Khong dong bo duoc main tu GitHub.
-echo Khong co file local nao bi tu dong xoa.
+echo Khong co thay doi local cua nguoi dung bi tu dong xoa.
 echo.
 pause
 exit /b 1
