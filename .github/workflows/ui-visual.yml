@@ -1,0 +1,95 @@
+name: UI Visual Proof
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'index.html'
+      - 'app.js'
+      - 'standalone-entry.js'
+      - 'standalone-runtime.js'
+      - 'styles.css'
+      - 'ui-*.css'
+      - 'combat-v2.css'
+      - 'assets/**'
+      - 'modules/**'
+      - 'dist/**'
+      - 'web/server.mjs'
+      - 'qa/visual/**'
+      - 'qa/tests/ui-visual-workflow-contract-test.js'
+      - 'qa/runners/v140-frontend-gates.js'
+      - '.github/workflows/ui-visual.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ui-visual-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  runtime-visual-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Chrome
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: stable
+          install-dependencies: true
+
+      - name: Verify visual workflow contract
+        run: node qa/tests/ui-visual-workflow-contract-test.js
+
+      - name: Start canonical game server
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/ui-visual
+          node web/server.mjs 4173 127.0.0.1 > artifacts/ui-visual/server.log 2>&1 &
+          echo $! > artifacts/ui-visual/server.pid
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/__tutien_launcher_health > artifacts/ui-visual/health.json; then
+              exit 0
+            fi
+            sleep 0.5
+          done
+          cat artifacts/ui-visual/server.log
+          exit 1
+
+      - name: Capture real runtime visual proof
+        env:
+          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+          TUTIEN_VISUAL_SEED: '20260913'
+          TUTIEN_VISUAL_REALM: '10'
+        run: node qa/visual/capture-runtime-ui.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual
+
+      - name: Validate proof files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s artifacts/ui-visual/home-hud-390x844.png
+          test -s artifacts/ui-visual/home-hud-412x915.png
+          test -s artifacts/ui-visual/character-baseline-390x844.png
+          test -s artifacts/ui-visual/manifest.json
+          node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('artifacts/ui-visual/manifest.json','utf8'));if(m.mockOrReconstruction!==false||m.screens?.length!==3)process.exit(1);console.log('VISUAL MANIFEST PASS ·',m.screens.map(x=>x.file).join(', '));"
+
+      - name: Upload exact-SHA runtime screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-visual-${{ github.sha }}
+          path: artifacts/ui-visual/
+          if-no-files-found: error
+          retention-days: 14
