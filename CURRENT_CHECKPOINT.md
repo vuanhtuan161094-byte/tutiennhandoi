@@ -22,7 +22,7 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - Candidate commit: `89f5102ff5513061a5a30934e1ef336bf959940a`.
 - Candidate Fast QA run `34738447257` — **SUCCESS**.
 - Backend Fast: **25/25 PASS**.
-- Frontend Fast: **7/7 PASS**, including `ui-home-vertical-slice-test.js`.
+- Frontend Fast: **7/7 PASS**, including `ui-frontend-home-vertical-slice-test.js`.
 - Frontend performance hard lock remains **193 modules / 4141.1 KiB**.
 - Closure QA: pending.
 - This UI slice changes presentation only. V160–V179 runtime/save/gameplay authorities remain CLOSED / LOCKED.
