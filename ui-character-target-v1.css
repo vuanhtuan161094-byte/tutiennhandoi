@@ -60,7 +60,7 @@ html body[data-game-screen="character"] .v138237-character-art{
 html body[data-game-screen="character"] .v138237-identity{
   z-index:20!important;top:17px!important;left:17px!important;right:11px!important;align-items:flex-start
 }
-body[data-game-screen="character"] .v138237-identity::before{content:none!important}
+body[data-game-screen="character"] .v138237-identity::before{content:"NHÂN VẬT";display:none!important}
 html body[data-game-screen="character"] .v138237-identity>div{
   position:relative;margin:0;width:min(62%,240px);max-width:240px;padding:0;border:0;border-radius:0;background:none;box-shadow:none;backdrop-filter:none
 }
