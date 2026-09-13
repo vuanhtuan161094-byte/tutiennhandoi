@@ -1,0 +1,35 @@
+V177 — Session Action Identity Runtime Authority
+
+Runtime fix: d1c9b43bb015c5fd2fbc4b5e35ff25cca5f65595
+Targeted proof: fe22e5e0e38a4bd3394fefaa2076f413d804a2f0
+Runtime candidate: e7124505c1eb66f63b82d76a4cf601423e06dccf
+Fast QA: 34734822116 — SUCCESS
+
+Finding
+- snapshot() persists actionIndex independently from EventHistory.
+- instantRetreatV140() uses actionIndex in deterministic retreat RNG and in the durable history ID retreat.v140.<lifeId>.<actionIndex>, then increments actionIndex.
+- Restore previously trusted save.actionIndex directly.
+- If the actionIndex mirror lagged behind while the validated retreat history remained, the next live retreat could reuse an already-consumed event serial and replay the prior action-index RNG lane.
+
+Fix
+- Validated canonical V140 Retreat history supplies a lower-bound authority for the next session actionIndex.
+- A retreat event is accepted only when type/tags, authored ID shape, serial, hoursUsed and gain are valid.
+- Restore raises only stale/lowered actionIndex to usedSerial + 1.
+- A legitimate higher saved actionIndex is preserved exactly.
+- Malformed or unrelated history IDs cannot raise the actionIndex.
+- The repair remains inside existing eager session-restore.js; no new eager runtime module and no reward/rate/RNG formula/balance value changed.
+
+Targeted proof
+- B1 validated retreat history repairs stale actionIndex.
+- B2 legitimate higher saved actionIndex remains unchanged.
+- B3 malformed/unrelated history cannot forge authority.
+- B4 invalid raw actionIndex normalizes conservatively.
+- B5 full SimulationSession.restore() repairs before the real instantRetreatV140 consumer, prevents duplicate event ID, and matches a valid control save's RNG continuity.
+- B6 full restore preserves a legitimate higher index without matching history.
+
+Fast QA 34734822116
+- Backend Fast: 23/23 PASS, including v177-session-action-identity-runtime-authority-test.js.
+- Frontend Fast: 6/6 PASS, including the locked frontend performance gate.
+
+Closure condition
+- Canonical QA must PASS before V177 is recorded CLOSED / LOCKED.
