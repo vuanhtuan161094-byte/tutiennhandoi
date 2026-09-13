@@ -1,129 +1,100 @@
-/* Character / Equipment target V1 — B art direction + C build readability.
+/* Character / Equipment target V2 — single-screen shrine pass.
    Presentation only. Runtime/save/equipment/combat authorities remain canonical. */
 
 body[data-game-screen="character"] .v138237-character-production{
-  --ct-gold:#cda85a;
-  --ct-gold-hi:#f4d78b;
-  --ct-jade:#75b8ad;
-}
-body[data-game-screen="character"] .v138237-character-scroll{
-  background:
-    radial-gradient(circle at 50% 5%,rgba(181,139,55,.09),transparent 31%),
-    radial-gradient(circle at 50% 34%,rgba(63,142,158,.08),transparent 34%),
-    linear-gradient(180deg,#061722 0%,#031019 72%,#02080d 100%)!important;
+  --ct-display:"Palatino Linotype","Book Antiqua","Noto Serif",Georgia,serif;
+  --ct-ui:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --ct-gold:#c9aa63;
+  --ct-gold-hi:#f1d996;
+  --ct-jade:#78b8ae;
 }
 
-/* B-direction shrine scene: character first, interface second. */
+body[data-game-screen="character"] .v138237-character-scroll{
+  height:100%!important;
+  overflow:hidden!important;
+  padding-bottom:0!important;
+  background:
+    radial-gradient(circle at 50% 4%,rgba(187,145,58,.08),transparent 30%),
+    radial-gradient(circle at 50% 35%,rgba(66,146,158,.07),transparent 35%),
+    linear-gradient(180deg,#061722 0%,#031019 75%,#02080d 100%)!important;
+}
+
+/* First screen only: deep detail remains available through canonical sheets/routes. */
+body[data-game-screen="character"] .v138247-cultivation-entry,
+body[data-game-screen="character"] .v138237-playstyle,
+body[data-game-screen="character"] .v138237-next{display:none!important}
+
+/* Shrine scene — character, equipment and realm are the visual hierarchy. */
 body[data-game-screen="character"] .v138237-hero{
-  height:500px!important;
-  border-bottom-color:rgba(220,181,86,.27)!important;
+  height:424px!important;
+  border-bottom-color:rgba(220,181,86,.22)!important;
   isolation:isolate;
 }
 body[data-game-screen="character"] .v138237-hero .v138235-hero-bg{
-  filter:saturate(.72) brightness(.55) contrast(1.14)!important;
-  transform:scale(1.04)!important;
+  filter:saturate(.70) brightness(.54) contrast(1.12)!important;
+  transform:scale(1.035)!important;
 }
 body[data-game-screen="character"] .v138237-hero::before{
-  content:"";
-  position:absolute;
-  z-index:4;
-  left:50%;
-  top:104px;
-  width:286px;
-  height:286px;
-  transform:translateX(-50%);
-  border-radius:50%;
-  border:1px solid rgba(225,189,99,.38);
-  background:
-    radial-gradient(circle,transparent 0 53%,rgba(104,178,181,.05) 54% 58%,transparent 59%),
-    conic-gradient(from 18deg,transparent 0 10%,rgba(229,194,105,.17) 10.5% 11%,transparent 11.5% 24%,rgba(118,189,188,.14) 24.5% 25%,transparent 25.5% 39%,rgba(229,194,105,.17) 39.5% 40%,transparent 40.5% 54%,rgba(118,189,188,.14) 54.5% 55%,transparent 55.5% 69%,rgba(229,194,105,.17) 69.5% 70%,transparent 70.5% 84%,rgba(118,189,188,.14) 84.5% 85%,transparent 85.5%);
-  box-shadow:0 0 0 14px rgba(215,177,86,.025),0 0 0 34px rgba(71,139,151,.025),0 0 56px rgba(83,173,186,.12),inset 0 0 38px rgba(226,188,93,.055);
-  pointer-events:none;
+  content:"";position:absolute;z-index:4;left:50%;top:82px;width:246px;height:246px;transform:translateX(-50%);border-radius:50%;
+  border:1px solid rgba(225,189,99,.34);
+  background:radial-gradient(circle,transparent 0 54%,rgba(104,178,181,.045) 55% 59%,transparent 60%),conic-gradient(from 18deg,transparent 0 11%,rgba(229,194,105,.15) 11.5% 12%,transparent 12.5% 27%,rgba(118,189,188,.12) 27.5% 28%,transparent 28.5% 44%,rgba(229,194,105,.15) 44.5% 45%,transparent 45.5% 61%,rgba(118,189,188,.12) 61.5% 62%,transparent 62.5% 78%,rgba(229,194,105,.15) 78.5% 79%,transparent 79.5%);
+  box-shadow:0 0 0 12px rgba(215,177,86,.022),0 0 0 29px rgba(71,139,151,.022),0 0 48px rgba(83,173,186,.10),inset 0 0 32px rgba(226,188,93,.045);pointer-events:none;
 }
 body[data-game-screen="character"] .v138237-hero::after{
-  content:"";
-  position:absolute;
-  z-index:5;
-  left:50%;
-  bottom:13px;
-  width:292px;
-  height:54px;
-  transform:translateX(-50%);
-  border-radius:50%;
-  background:radial-gradient(ellipse,rgba(228,190,93,.21),rgba(86,169,177,.14) 35%,rgba(47,111,129,.04) 57%,transparent 72%);
-  border-bottom:1px solid rgba(226,190,99,.24);
-  pointer-events:none;
+  content:"";position:absolute;z-index:5;left:50%;bottom:8px;width:258px;height:43px;transform:translateX(-50%);border-radius:50%;
+  background:radial-gradient(ellipse,rgba(228,190,93,.18),rgba(86,169,177,.12) 37%,rgba(47,111,129,.03) 58%,transparent 72%);pointer-events:none;
 }
 body[data-game-screen="character"] .v138237-atmosphere{
-  background:
-    linear-gradient(90deg,rgba(1,8,13,.54),transparent 21%,transparent 79%,rgba(1,8,13,.54)),
-    radial-gradient(circle at 50% 42%,rgba(91,178,187,.13),transparent 30%),
-    linear-gradient(180deg,rgba(1,8,14,.24),transparent 28%,rgba(1,7,11,.74) 100%)!important;
+  background:linear-gradient(90deg,rgba(1,8,13,.56),transparent 20%,transparent 80%,rgba(1,8,13,.56)),radial-gradient(circle at 50% 41%,rgba(91,178,187,.11),transparent 30%),linear-gradient(180deg,rgba(1,8,14,.20),transparent 27%,rgba(1,7,11,.72) 100%)!important;
 }
 body[data-game-screen="character"] .v138237-orbit{
-  width:250px!important;
-  height:250px!important;
-  top:129px!important;
-  border-color:rgba(226,190,95,.15)!important;
-  box-shadow:0 0 0 24px rgba(77,155,165,.025),0 0 54px rgba(73,164,181,.11)!important;
+  width:224px!important;height:224px!important;top:94px!important;border-color:rgba(226,190,95,.13)!important;box-shadow:0 0 0 20px rgba(77,155,165,.022),0 0 44px rgba(73,164,181,.09)!important;
 }
 body[data-game-screen="character"] .v138237-character-art{
-  width:326px!important;
-  height:392px!important;
-  filter:drop-shadow(0 20px 27px rgba(0,0,0,.55)) drop-shadow(0 0 20px rgba(94,181,189,.13)) drop-shadow(0 0 6px rgba(239,207,128,.07))!important;
+  width:286px!important;height:334px!important;bottom:2px!important;
+  filter:drop-shadow(0 18px 24px rgba(0,0,0,.56)) drop-shadow(0 0 16px rgba(94,181,189,.11)) drop-shadow(0 0 5px rgba(239,207,128,.06))!important;
 }
 
-/* Identity floats over the scene instead of reading as a dashboard card. */
+/* Typography — fewer uppercase labels, lighter weight, sharper hierarchy. */
+body[data-game-screen="character"] .v138237-identity span,
+body[data-game-screen="character"] .v138237-identity small,
+body[data-game-screen="character"] .v138237-equip-slot>small,
+body[data-game-screen="character"] .v138237-core small,
+body[data-game-screen="character"] .v138237-core em,
+body[data-game-screen="character"] .v138237-actions small{font-family:var(--ct-ui)!important;letter-spacing:.015em!important;text-transform:none!important}
+body[data-game-screen="character"] .v138237-identity strong,
+body[data-game-screen="character"] .v138237-hero-plaque strong,
+body[data-game-screen="character"] .v138237-core strong,
+body[data-game-screen="character"] .v138237-actions b{font-family:var(--ct-display)!important;font-weight:650!important}
+
+/* Identity floats directly over scene. */
+body[data-game-screen="character"] .v138237-identity{top:8px!important;left:11px!important;right:11px!important}
 body[data-game-screen="character"] .v138237-identity>div{
-  max-width:272px;
-  padding:8px 14px 10px!important;
-  border:0!important;
-  border-left:2px solid rgba(238,205,119,.68)!important;
-  border-radius:0!important;
-  background:linear-gradient(90deg,rgba(2,12,19,.83),rgba(4,18,27,.43) 72%,transparent)!important;
-  box-shadow:none!important;
+  max-width:260px;padding:6px 12px 8px!important;border:0!important;border-left:1px solid rgba(238,205,119,.62)!important;border-radius:0!important;
+  background:linear-gradient(90deg,rgba(2,12,19,.80),rgba(4,18,27,.34) 72%,transparent)!important;box-shadow:none!important;
 }
-body[data-game-screen="character"] .v138237-identity>div::after{
-  content:"";
-  position:absolute;
-  left:0;
-  bottom:0;
-  width:178px;
-  height:1px;
-  background:linear-gradient(90deg,rgba(237,203,119,.52),transparent);
-  pointer-events:none;
-}
-body[data-game-screen="character"] .v138237-identity strong{color:var(--ct-gold-hi)!important;text-shadow:0 2px 5px rgba(0,0,0,.72)}
-body[data-game-screen="character"] .v138237-identity>button{
-  min-width:68px!important;
-  min-height:46px!important;
-  border-radius:12px!important;
-  background:linear-gradient(180deg,rgba(9,34,44,.76),rgba(3,17,25,.88))!important;
-}
+body[data-game-screen="character"] .v138237-identity>div::after{content:"";position:absolute;left:0;bottom:0;width:150px;height:1px;background:linear-gradient(90deg,rgba(237,203,119,.44),transparent);pointer-events:none}
+body[data-game-screen="character"] .v138237-identity span{font-size:9px!important;color:#9eb2b4!important}
+body[data-game-screen="character"] .v138237-identity strong{font-size:23px!important;line-height:1.02!important;color:var(--ct-gold-hi)!important;text-shadow:0 2px 5px rgba(0,0,0,.70)}
+body[data-game-screen="character"] .v138237-identity small{font-size:10.5px!important;color:#e2dfd5!important}
+body[data-game-screen="character"] .v138237-identity>button{min-width:64px!important;min-height:42px!important;border-radius:11px!important;background:linear-gradient(180deg,rgba(9,34,44,.70),rgba(3,17,25,.84))!important}
 
-/* Equipment becomes round inlaid artifact seals. */
-body[data-game-screen="character"] .v138237-equip-slot{width:64px!important}
+/* 10 canonical equipment sockets, compressed to fit the single-screen shrine. */
+body[data-game-screen="character"] .v138237-equip-slot{width:58px!important;gap:2px!important}
 body[data-game-screen="character"] .v138237-equip-slot>span{
-  width:54px!important;
-  height:54px!important;
-  border-radius:50%!important;
-  background:radial-gradient(circle at 48% 38%,rgba(50,103,111,.38),rgba(4,22,31,.97) 68%)!important;
-  border-color:rgba(119,188,181,.34)!important;
-  box-shadow:inset 0 0 0 3px rgba(5,19,27,.8),inset 0 0 0 4px rgba(128,191,180,.10),0 7px 18px rgba(0,0,0,.32),0 0 16px rgba(83,171,174,.07)!important;
+  width:48px!important;height:48px!important;border-radius:50%!important;
+  background:radial-gradient(circle at 48% 38%,rgba(50,103,111,.34),rgba(4,22,31,.97) 68%)!important;border-color:rgba(119,188,181,.30)!important;
+  box-shadow:inset 0 0 0 3px rgba(5,19,27,.82),inset 0 0 0 4px rgba(128,191,180,.08),0 5px 14px rgba(0,0,0,.30),0 0 13px rgba(83,171,174,.055)!important;
 }
-body[data-game-screen="character"] .v138237-equip-slot>span::before{
-  inset:-4px!important;
-  border-radius:50%!important;
-  border-color:rgba(215,181,94,.18)!important;
-}
+body[data-game-screen="character"] .v138237-equip-slot>span::before{inset:-3px!important;border-radius:50%!important;border-color:rgba(215,181,94,.16)!important}
 body[data-game-screen="character"] .v138237-equip-slot.filled>span{
-  border-color:rgba(233,198,106,.68)!important;
-  background:radial-gradient(circle at 50% 35%,rgba(131,103,46,.23),rgba(5,24,32,.98) 70%)!important;
-  box-shadow:inset 0 0 0 3px rgba(5,18,25,.82),inset 0 0 0 4px rgba(241,207,120,.11),0 8px 19px rgba(0,0,0,.34),0 0 17px rgba(226,185,79,.13)!important;
+  border-color:rgba(233,198,106,.62)!important;background:radial-gradient(circle at 50% 35%,rgba(131,103,46,.20),rgba(5,24,32,.98) 70%)!important;
+  box-shadow:inset 0 0 0 3px rgba(5,18,25,.82),inset 0 0 0 4px rgba(241,207,120,.09),0 6px 16px rgba(0,0,0,.32),0 0 14px rgba(226,185,79,.11)!important;
 }
-body[data-game-screen="character"] .v138237-equip-slot img{width:45px!important;height:45px!important}
-body[data-game-screen="character"] .v138237-equip-slot>span>b{background:#76521e!important;border-color:#e6c36e!important}
-body[data-game-screen="character"] .v138237-equip-slot>span>u{background:#194f52!important;border-color:#75bdb3!important}
+body[data-game-screen="character"] .v138237-equip-slot img{width:40px!important;height:40px!important}
+body[data-game-screen="character"] .v138237-equip-slot>small{font-size:8.7px!important;font-weight:600!important;color:#b9c0b8!important;text-shadow:0 1px 4px #000!important}
+body[data-game-screen="character"] .v138237-equip-slot>span>b{background:#76521e!important;border-color:#d9b75f!important;font-family:var(--ct-ui)!important}
+body[data-game-screen="character"] .v138237-equip-slot>span>u{background:#194b4e!important;border-color:#6aaea5!important}
 body[data-game-screen="character"] .v138237-equip-slot.p0,
 body[data-game-screen="character"] .v138237-equip-slot.p1,
 body[data-game-screen="character"] .v138237-equip-slot.p2,
@@ -135,86 +106,67 @@ body[data-game-screen="character"] .v138237-equip-slot.p7,
 body[data-game-screen="character"] .v138237-equip-slot.p8,
 body[data-game-screen="character"] .v138237-equip-slot.p9{right:7px!important}
 body[data-game-screen="character"] .v138237-equip-slot.p0,
-body[data-game-screen="character"] .v138237-equip-slot.p5{top:107px!important}
+body[data-game-screen="character"] .v138237-equip-slot.p5{top:75px!important}
 body[data-game-screen="character"] .v138237-equip-slot.p1,
-body[data-game-screen="character"] .v138237-equip-slot.p6{top:180px!important}
+body[data-game-screen="character"] .v138237-equip-slot.p6{top:137px!important}
 body[data-game-screen="character"] .v138237-equip-slot.p2,
-body[data-game-screen="character"] .v138237-equip-slot.p7{top:253px!important}
+body[data-game-screen="character"] .v138237-equip-slot.p7{top:199px!important}
 body[data-game-screen="character"] .v138237-equip-slot.p3,
-body[data-game-screen="character"] .v138237-equip-slot.p8{top:326px!important}
+body[data-game-screen="character"] .v138237-equip-slot.p8{top:261px!important}
 body[data-game-screen="character"] .v138237-equip-slot.p4,
-body[data-game-screen="character"] .v138237-equip-slot.p9{top:399px!important}
+body[data-game-screen="character"] .v138237-equip-slot.p9{top:323px!important}
 
-/* C-direction build plaque + canonical stat/build hierarchy. */
-body[data-game-screen="character"] .v138237-hero-plaque{
-  bottom:12px!important;
-  border-radius:8px 8px 18px 18px!important;
-  border-color:rgba(232,198,108,.58)!important;
-  background:radial-gradient(circle at 50% 0%,rgba(218,178,75,.12),transparent 56%),linear-gradient(180deg,rgba(9,37,44,.97),rgba(3,19,27,.99))!important;
-}
+/* Hero plaque keeps only the backend-backed path identity. Ngũ Hành detail is intentionally not repeated here. */
+body[data-game-screen="character"] .v138237-hero-plaque{bottom:8px!important;min-width:188px!important;max-width:244px!important;padding:6px 14px 7px!important;border-radius:7px 7px 15px 15px!important;border-color:rgba(232,198,108,.48)!important;background:linear-gradient(180deg,rgba(8,34,41,.95),rgba(3,18,26,.98))!important}
 body[data-game-screen="character"] .v138237-hero-plaque::before,
-body[data-game-screen="character"] .v138237-hero-plaque::after{
-  content:"◆";position:absolute;top:50%;transform:translateY(-50%);color:rgba(229,197,112,.58);font-size:8px
-}
+body[data-game-screen="character"] .v138237-hero-plaque::after{content:"◆";position:absolute;top:50%;transform:translateY(-50%);color:rgba(229,197,112,.48);font-size:7px}
 body[data-game-screen="character"] .v138237-hero-plaque::before{left:7px}
 body[data-game-screen="character"] .v138237-hero-plaque::after{right:7px}
-body[data-game-screen="character"] .v138237-hero-plaque strong{color:#f7db91!important}
+body[data-game-screen="character"] .v138237-hero-plaque small{font-family:var(--ct-ui)!important;font-size:8px!important;letter-spacing:.06em!important;color:#83b7b0!important}
+body[data-game-screen="character"] .v138237-hero-plaque strong{font-size:13px!important;color:#f2d68a!important}
+body[data-game-screen="character"] .v138237-hero-plaque span{display:none!important}
 
-body[data-game-screen="character"] .v138247-cultivation-entry{
-  border-radius:10px!important;
-  background:linear-gradient(90deg,rgba(8,33,42,.92),rgba(5,24,32,.78))!important;
-}
-
-/* One engraved stat rail: three canonical values, one visual object. */
+/* Three canonical stats become one engraved rail. */
 body[data-game-screen="character"] .v138237-core{
-  margin:8px 11px 0!important;
-  gap:0!important;
-  padding:0!important;
-  overflow:hidden;
-  border:1px solid rgba(217,182,92,.25);
-  border-radius:11px;
-  background:linear-gradient(180deg,rgba(10,38,49,.92),rgba(5,24,32,.96));
-  box-shadow:inset 0 1px rgba(255,255,255,.025),0 6px 15px rgba(0,0,0,.15);
+  margin:6px 10px 0!important;gap:0!important;padding:0!important;overflow:hidden;border:1px solid rgba(217,182,92,.20);border-radius:8px;
+  background:linear-gradient(180deg,rgba(8,33,42,.88),rgba(4,22,30,.94));box-shadow:inset 0 1px rgba(255,255,255,.02);
 }
-body[data-game-screen="character"] .v138237-core button{
-  min-height:70px!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-}
-body[data-game-screen="character"] .v138237-core button+button{border-left:1px solid rgba(218,183,96,.16)!important}
-body[data-game-screen="character"] .v138237-core strong{color:#f2d68a!important}
-body[data-game-screen="character"] .v138237-primary-action{
-  border-radius:11px!important;
-  background:radial-gradient(circle at 83% 50%,rgba(212,168,66,.12),transparent 35%),linear-gradient(135deg,#0b3540,#061f2b)!important;
-}
+body[data-game-screen="character"] .v138237-core button{min-height:56px!important;padding:6px 4px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;grid-template-columns:1fr!important;text-align:center!important;justify-items:center!important;gap:1px!important}
+body[data-game-screen="character"] .v138237-core button+button{border-left:1px solid rgba(218,183,96,.13)!important}
+body[data-game-screen="character"] .v138237-core button>i{display:none!important}
+body[data-game-screen="character"] .v138237-core small{font-size:8.5px!important;font-weight:600!important;color:#91a4a6!important}
+body[data-game-screen="character"] .v138237-core strong{margin-top:2px!important;font-size:17px!important;line-height:1!important;color:#f0d58a!important}
+body[data-game-screen="character"] .v138237-core em{margin-top:2px!important;font-size:8.4px!important;font-weight:500!important;color:#73898e!important}
 
-/* Existing backend-backed build/set summary receives C-style readability. */
-body[data-game-screen="character"] .v138237-playstyle{
-  border-radius:12px!important;
-  border-color:rgba(222,185,94,.24)!important;
-  background:radial-gradient(circle at 8% 0%,rgba(194,153,60,.07),transparent 32%),linear-gradient(180deg,rgba(9,35,44,.96),rgba(4,20,28,.98))!important;
-}
-body[data-game-screen="character"] .v138237-playstyle>header strong{color:#efd083!important}
-body[data-game-screen="character"] .v138237-build-strip button{
-  border-radius:9px!important;
-  background:linear-gradient(90deg,rgba(4,21,28,.76),rgba(8,33,42,.72))!important;
-}
-body[data-game-screen="character"] .v138237-build-strip i{color:#d6b665!important}
+/* One primary action + three compact canonical detail routes; still fits without scrolling. */
+body[data-game-screen="character"] .v138237-actions{padding:6px 10px 5px!important}
+body[data-game-screen="character"] .v138237-primary-action{min-height:54px!important;padding:7px 10px!important;border-radius:9px!important;background:radial-gradient(circle at 83% 50%,rgba(212,168,66,.10),transparent 35%),linear-gradient(135deg,#0a303a,#061c28)!important;grid-template-columns:36px minmax(0,1fr) auto!important;gap:8px!important}
+body[data-game-screen="character"] .v138237-primary-action>i{width:36px!important;height:36px!important;border-radius:10px!important}
+body[data-game-screen="character"] .v138237-primary-action small{font-size:8px!important;font-weight:600!important;letter-spacing:.04em!important;color:#79aaa8!important}
+body[data-game-screen="character"] .v138237-primary-action strong{margin-top:2px!important;font-size:16px!important;color:#efd489!important}
+body[data-game-screen="character"] .v138237-primary-action em{margin-top:2px!important;font-family:var(--ct-ui)!important;font-size:9.5px!important;color:#9dacad!important}
+body[data-game-screen="character"] .v138237-action-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important;margin-top:5px!important}
+body[data-game-screen="character"] .v138237-action-grid button,
+body[data-game-screen="character"] .v138237-action-grid button:last-child{grid-column:auto!important;min-height:48px!important;padding:5px 4px!important;border-radius:8px!important;grid-template-columns:1fr!important;justify-items:center!important;text-align:center!important;gap:1px!important;background:linear-gradient(180deg,rgba(8,31,40,.90),rgba(4,21,29,.94))!important}
+body[data-game-screen="character"] .v138237-action-grid button>i{display:none!important}
+body[data-game-screen="character"] .v138237-action-grid b{font-size:11px!important;line-height:1.05!important;color:#e7d9b2!important}
+body[data-game-screen="character"] .v138237-action-grid small{margin-top:2px!important;font-size:7.7px!important;line-height:1.1!important;font-weight:500!important;color:#7f9295!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 
-body[data-game-screen="character"] .v138237-character-production .v106-sheet-head{
-  background:linear-gradient(180deg,#0b2c38,#061b26)!important;
-  border-bottom-color:rgba(222,185,93,.30)!important;
-}
-body[data-game-screen="character"] .v138237-character-production .v106-sheet-head h2{color:#f1d382!important}
+body[data-game-screen="character"] .v138237-character-production .v106-sheet-head{background:linear-gradient(180deg,#0b2c38,#061b26)!important;border-bottom-color:rgba(222,185,93,.26)!important}
+body[data-game-screen="character"] .v138237-character-production .v106-sheet-head h2{font-family:var(--ct-display)!important;font-weight:650!important;color:#efd58f!important}
 
 @container (max-width:390px){
-  body[data-game-screen="character"] .v138237-hero{height:482px!important}
-  body[data-game-screen="character"] .v138237-hero::before{top:108px;width:262px;height:262px}
-  body[data-game-screen="character"] .v138237-character-art{width:304px!important;height:370px!important}
+  body[data-game-screen="character"] .v138237-hero{height:418px!important}
+  body[data-game-screen="character"] .v138237-hero::before{top:84px;width:236px;height:236px}
+  body[data-game-screen="character"] .v138237-character-art{width:278px!important;height:326px!important}
+  body[data-game-screen="character"] .v138237-equip-slot{width:55px!important}
+  body[data-game-screen="character"] .v138237-equip-slot>span{width:46px!important;height:46px!important}
+  body[data-game-screen="character"] .v138237-equip-slot img{width:38px!important;height:38px!important}
 }
 @container (max-width:360px){
-  body[data-game-screen="character"] .v138237-identity strong{font-size:22px!important}
-  body[data-game-screen="character"] .v138237-identity>div{max-width:240px}
+  body[data-game-screen="character"] .v138237-hero{height:404px!important}
+  body[data-game-screen="character"] .v138237-character-art{width:264px!important;height:310px!important}
+  body[data-game-screen="character"] .v138237-identity strong{font-size:21px!important}
+  body[data-game-screen="character"] .v138237-equip-slot>small{font-size:8px!important}
+  body[data-game-screen="character"] .v138237-core strong{font-size:16px!important}
 }
