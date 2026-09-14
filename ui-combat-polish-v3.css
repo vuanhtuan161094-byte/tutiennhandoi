@@ -21,7 +21,7 @@ body[data-game-screen="hunt"] .huntv2-action-deck strong{
 
 /* Keep each vital cluster visually attached to its actor instead of forming an app-like top dashboard. */
 body[data-game-screen="hunt"] .huntv2-player-hud{
-  top:266px!important;
+  top:322px!important;
   left:8px!important;
   width:146px!important;
   height:54px!important;
@@ -41,13 +41,16 @@ body[data-game-screen="hunt"] .huntv2-vital{
 body[data-game-screen="hunt"] .huntv2-enemy-hud{
   top:92px!important;
   right:8px!important;
-  width:194px!important;
+  width:226px!important;
   height:66px!important;
   background:linear-gradient(270deg,rgba(8,18,17,.76),rgba(8,18,17,.38) 74%,transparent)!important;
   box-shadow:none!important;
 }
 body[data-game-screen="hunt"] .huntv2-hud-main{
   grid-template-rows:18px 13px 12px 18px!important;
+}
+body[data-game-screen="hunt"] .huntv2-hud-main strong{
+  font-size:11px!important;
 }
 body[data-game-screen="hunt"] .huntv2-hp{height:11px!important}
 body[data-game-screen="hunt"] .huntv2-poise-row{grid-template-columns:49px minmax(0,1fr)!important}
@@ -131,8 +134,8 @@ body[data-game-screen="hunt"] .huntv2-artifact-hud::after{
 }
 
 @media(max-width:360px){
-  body[data-game-screen="hunt"] .huntv2-player-hud{top:270px!important;width:138px!important}
-  body[data-game-screen="hunt"] .huntv2-enemy-hud{width:182px!important}
+  body[data-game-screen="hunt"] .huntv2-player-hud{top:318px!important;width:138px!important}
+  body[data-game-screen="hunt"] .huntv2-enemy-hud{width:210px!important}
   body[data-game-screen="hunt"] .huntv2-enemy-intent,
   body[data-game-screen="hunt"] .huntv2-enemy-intent.tier-heavy,
   body[data-game-screen="hunt"] .huntv2-enemy-intent.tier-ultimate{
