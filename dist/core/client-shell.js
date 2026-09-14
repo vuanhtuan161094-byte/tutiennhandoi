@@ -57,6 +57,85 @@ function projectCatalogV129(catalog, itemCategories = [], { manualStage = null }
             : catalog.categories,
     };
 }
+function projectHuntSupportItemV140(item = {}, category = '') {
+    const progress = item?.progress && typeof item.progress === 'object' ? item.progress : {};
+    const projected = {
+        id: item.id,
+        category: item.category ?? category,
+        name: item.name,
+        grade: item.grade,
+        gradeLabel: item.gradeLabel,
+        active: Boolean(item.active),
+        progress: { owned: Boolean(progress.owned) },
+    };
+    if (item.asset !== undefined) projected.asset = item.asset;
+    if (item.icon !== undefined) projected.icon = item.icon;
+    if (category === 'pet' && item.spiritBeast) {
+        const beast = item.spiritBeast;
+        projected.spiritBeast = {
+            id: beast.id, speciesId: beast.speciesId, name: beast.name, asset: beast.asset,
+            roleLabel: beast.roleLabel, bloodline: beast.bloodline, maxBloodline: beast.maxBloodline,
+        };
+    }
+    if (category === 'companion' && item.confidant) {
+        const confidant = item.confidant;
+        projected.confidant = {
+            id: confidant.id, name: confidant.name, asset: confidant.asset,
+            intimacy: confidant.intimacy, maxIntimacy: confidant.maxIntimacy,
+            stars: confidant.stars, heartPower: confidant.heartPower,
+        };
+    }
+    if (category === 'artifact' && item.artifact) projected.artifact = { asset: item.artifact.asset };
+    if (category === 'relic') {
+        if (item.relic) projected.relic = { asset: item.relic.asset, v151: item.relic.v151 };
+        if (item.relicV151) projected.relicV151 = item.relicV151;
+        if (item.combatIdentity !== undefined) projected.combatIdentity = item.combatIdentity;
+        if (item.combatPattern !== undefined) projected.combatPattern = item.combatPattern;
+    }
+    return projected;
+}
+function projectHuntCollectionEconomyV140(catalog = {}) {
+    if (!catalog || typeof catalog !== 'object') return catalog;
+    const supportIds = ['artifact', 'relic', 'pet', 'companion'];
+    const sourceCategories = Array.isArray(catalog.categories) ? catalog.categories : [];
+    const categories = supportIds.map(id => {
+        const source = sourceCategories.find(category => String(category?.category || '') === id) ?? { category: id, items: [] };
+        const projected = {
+            category: id,
+            label: source.label,
+            items: (Array.isArray(source.items) ? source.items : [])
+                .filter(item => Boolean(item?.active && item?.progress?.owned))
+                .map(item => projectHuntSupportItemV140(item, id)),
+        };
+        if (id === 'artifact') projected.artifactSlotCapacity = source.artifactSlotCapacity;
+        return projected;
+    });
+    const itemsFor = id => categories.find(category => category.category === id)?.items ?? [];
+    const activeArtifactIds = Array.isArray(catalog?.artifactV88?.activeArtifactIds)
+        ? [...catalog.artifactV88.activeArtifactIds]
+        : itemsFor('artifact').map(item => item.id).filter(Boolean);
+    const activeRelicId = catalog?.artifactV88?.activeRelicId ?? catalog?.active?.relicId ?? itemsFor('relic')[0]?.id ?? '';
+    const activePetId = itemsFor('pet')[0]?.id ?? '';
+    const activeCompanionId = catalog?.active?.companionId ?? itemsFor('companion')[0]?.id ?? '';
+    return {
+        schema: catalog.schema,
+        transportProfile: 'hunt-combat-support.v140',
+        activeArtifactIds,
+        activeRelicId,
+        activePetId,
+        activeCompanionId,
+        active: { artifactIds: activeArtifactIds, relicId: activeRelicId, petId: activePetId, companionId: activeCompanionId },
+        artifactV88: {
+            slotCapacity: catalog?.artifactV88?.slotCapacity,
+            activeArtifactIds,
+            activeRelicId,
+        },
+        artifactV149: catalog.artifactV149,
+        artifactV150: catalog.artifactV150,
+        relicV151: catalog.relicV151,
+        categories,
+    };
+}
 function parseSubviewV129(subview = '') {
     const [sectionRaw,stageRaw] = String(subview || '').split(':');
     const stage=Number(stageRaw);
@@ -128,8 +207,9 @@ const WEB_VIEW_BUILDERS_V140 = Object.freeze({
         collectionEconomy: projectCatalogV129(api.getCollectionEconomyV12326(now), []),
         economyActivity: api.getEconomyActivityV89(now),
     }),
-    hunt: (api) => ({
+    hunt: (api, now) => ({
         character: api.getCharacterHuntV129(), endlessHunt: api.getEndlessHunt(), specialization: api.getSpecializationV125(), reincarnation: api.getReincarnation(),
+        collectionEconomy: projectHuntCollectionEconomyV140(api.getCollectionEconomyV12326(now)),
     }),
     pvp: (api, now) => ({
         pvp: api.getPvpV91(now), collection: projectCatalogV129(api.getCollectionV12316(now), []),
