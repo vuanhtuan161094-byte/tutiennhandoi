@@ -2,6 +2,29 @@
 
 This file is the repo-level operating contract for AI coding agents.
 
+## 0. NON-NEGOTIABLE WORKFLOW LOCK
+
+This section is a hard operating rule for every AI coding agent working in this repository.
+
+For any production/runtime/UI/asset change covered by the repository workflows:
+
+1. read the current checkpoint and development protocol before editing;
+2. patch and push the smallest coherent change to current `main`;
+3. verify the **exact candidate SHA** through every applicable gate:
+   - Fast QA;
+   - AI Browser Playtest;
+   - Runtime Visual Proof for UI-visible changes;
+4. inspect the resulting runtime evidence, not only workflow status;
+5. if a required gate fails, classify the failure, patch the responsible layer, push again, and repeat automatically;
+6. do **not** stop and wait for the user to say `continue` during normal implementation/fix iterations;
+7. do **not** report `done`, `complete`, `healthy`, `candidate ready`, or equivalent until all applicable exact-SHA gates are green;
+8. if progress is impossible because of a real external blocker, report `BLOCKED` with the exact blocker instead of claiming completion;
+9. explicit user visual approval is required for UI/UX **closure**, but is not required for the agent to continue fixing an unapproved candidate.
+
+**No exact-SHA evidence = no completion claim.**
+
+This workflow lock must not be weakened or removed as part of feature work. `qa/playtest/validate-contracts.mjs` enforces the presence of this contract.
+
 ## 1. Source of truth
 
 Use this authority order:
