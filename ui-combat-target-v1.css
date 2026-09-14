@@ -107,9 +107,11 @@ body[data-game-screen="hunt"] .huntv2-boss-mechanic-chip{top:181px!important;rig
 body[data-game-screen="hunt"] .huntv2-boss-mechanic-chip span,
 body[data-game-screen="hunt"] .huntv2-boss-mechanic-chip b{font-size:10px!important}
 
-body[data-game-screen="hunt"] .huntv2-enemy-intent{top:205px!important;right:10px!important;max-width:46%!important}
+/* Transient combat information gets separate lanes so nothing stretches or overlaps. */
+body[data-game-screen="hunt"] .huntv2-enemy-intent{top:205px!important;left:50%!important;right:auto!important;width:min(64%,250px)!important;max-width:none!important;transform:translateX(-50%)!important}
 body[data-game-screen="hunt"] .huntv2-break-window{top:205px!important;left:50%!important;transform:translateX(-50%)!important}
-body[data-game-screen="hunt"] .huntv2-skill-callout{top:215px!important;bottom:auto!important;height:auto!important;min-height:0!important}
+body[data-game-screen="hunt"] .huntv2-skill-callout{top:286px!important;bottom:auto!important;height:auto!important;min-height:0!important;max-width:54%!important}
+body[data-game-screen="hunt"] .huntv2-skill-callout.enemy{right:10px!important;left:auto!important}
 body[data-game-screen="hunt"] .huntv2-float-layer{top:205px!important;bottom:65px!important}
 
 body[data-game-screen="hunt"] .huntv2-console{flex:0 0 137px!important;min-height:137px!important;padding:5px 7px 4px!important;background:linear-gradient(180deg,rgba(5,20,29,.96),#030b12)!important;border-top-color:rgba(226,191,112,.18)!important}
