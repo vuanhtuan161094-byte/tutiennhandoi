@@ -19,8 +19,14 @@ body[data-game-screen="hunt"] .huntv2-action-deck strong{
   font-size:10px!important;
 }
 
+/* Keep each vital cluster visually attached to its actor instead of forming an app-like top dashboard. */
 body[data-game-screen="hunt"] .huntv2-player-hud{
+  top:266px!important;
+  left:8px!important;
+  width:146px!important;
   height:54px!important;
+  background:linear-gradient(90deg,rgba(4,17,15,.74),rgba(4,17,15,.38) 70%,transparent)!important;
+  box-shadow:none!important;
 }
 body[data-game-screen="hunt"] .huntv2-player-hud-core{
   grid-template-rows:14px 15px 15px!important;
@@ -33,7 +39,12 @@ body[data-game-screen="hunt"] .huntv2-vital{
 }
 
 body[data-game-screen="hunt"] .huntv2-enemy-hud{
+  top:92px!important;
+  right:8px!important;
+  width:194px!important;
   height:66px!important;
+  background:linear-gradient(270deg,rgba(8,18,17,.76),rgba(8,18,17,.38) 74%,transparent)!important;
+  box-shadow:none!important;
 }
 body[data-game-screen="hunt"] .huntv2-hud-main{
   grid-template-rows:18px 13px 12px 18px!important;
@@ -43,14 +54,29 @@ body[data-game-screen="hunt"] .huntv2-poise-row{grid-template-columns:49px minma
 body[data-game-screen="hunt"] .huntv2-poise{height:10px!important}
 body[data-game-screen="hunt"] .huntv2-element-icons i{width:17px!important;height:17px!important}
 body[data-game-screen="hunt"] .huntv2-boss-trait{height:18px!important;max-width:104px!important}
+body[data-game-screen="hunt"] .ui-combat-enemy-context{
+  right:2px!important;
+  bottom:-21px!important;
+}
 
-/* The CTA headline is enough in combat; remove the tiny explanatory line from the persistent dock. */
+/* The CTA is a secondary combat utility, not a full-width app action. */
+body[data-game-screen="hunt"] .huntv2-action-deck{
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+}
 body[data-game-screen="hunt"] .huntv2-action-deck span{display:none!important}
-body[data-game-screen="hunt"] .huntv2-action-deck button{padding-inline:10px!important}
+body[data-game-screen="hunt"] .huntv2-action-deck button{
+  width:auto!important;
+  min-width:158px!important;
+  max-width:188px!important;
+  padding-inline:16px!important;
+  flex:0 0 auto!important;
+}
 
-/* Boss telegraph sits between the boss HUD and utility rail without covering either. */
+/* Boss telegraph owns a protected lane below the boss vitals and left of the utility rail. */
 body[data-game-screen="hunt"] .huntv2-enemy-intent{
-  top:153px!important;
+  top:174px!important;
   right:48px!important;
   width:198px!important;
   min-height:40px!important;
@@ -80,7 +106,7 @@ body[data-game-screen="hunt"] .huntv2-enemy-intent.tier-heavy,
 body[data-game-screen="hunt"] .huntv2-enemy-intent.tier-ultimate{width:205px!important}
 
 body[data-game-screen="hunt"] .huntv2-break-window{
-  top:153px!important;
+  top:174px!important;
   right:48px!important;
   min-width:166px!important;
 }
@@ -96,7 +122,17 @@ body[data-game-screen="hunt"] .huntv2-stage:has(.huntv2-break-window.show) .hunt
   visibility:hidden!important;
 }
 
+/* Labels on the three artwork-first supports remain readable on a phone. */
+body[data-game-screen="hunt"] .huntv2-beast-companion-hud::after,
+body[data-game-screen="hunt"] .huntv2-confidant-hud::after,
+body[data-game-screen="hunt"] .huntv2-artifact-hud::after{
+  font-size:9px!important;
+  padding:2px 5px!important;
+}
+
 @media(max-width:360px){
+  body[data-game-screen="hunt"] .huntv2-player-hud{top:270px!important;width:138px!important}
+  body[data-game-screen="hunt"] .huntv2-enemy-hud{width:182px!important}
   body[data-game-screen="hunt"] .huntv2-enemy-intent,
   body[data-game-screen="hunt"] .huntv2-enemy-intent.tier-heavy,
   body[data-game-screen="hunt"] .huntv2-enemy-intent.tier-ultimate{
