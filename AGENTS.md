@@ -59,24 +59,54 @@ Follow the non-UI workflow from the checkpoint and preserve locked authorities.
 Follow the canonical runtime-first UI workflow. Static mocks or generated concept art never count as implementation proof.
 
 ### Browser playtesting
-Use `qa/playtest/` to run deterministic real-runtime journeys. Treat its report/screenshots as diagnostic evidence, not visual approval.
+Use `qa/playtest/` to run deterministic real-runtime journeys. For production/runtime/UI/asset changes covered by `.github/workflows/ai-playtest.yml`, a green **AI Browser Playtest** on the exact candidate SHA is required before closure. Treat its report/screenshots as diagnostic evidence, not visual approval.
 
 ### Assets
-Use `assets/_pipeline/` for briefs and lifecycle metadata. Generated art stays `draft/candidate` until user approval; only approved assets may be integrated into production paths.
+Use `assets/_pipeline/` for all generated/edited visual assets that may enter production. Every tracked asset must have a V2 brief under `assets/_pipeline/briefs/` and a registry index entry.
+
+Asset lifecycle:
+`draft -> candidate -> approved -> integrated -> locked`
+
+Rules:
+- generated art stays `draft/candidate` until user approval;
+- `approved` requires a recorded selected candidate and approval note;
+- only approved assets may be copied to production paths;
+- `integrated` requires a real production file;
+- `locked` requires exact-SHA runtime proof metadata plus owning-slice approval/closure;
+- generated concept art is never presented as implemented runtime UI.
 
 ## 6. AI game-development loop
 
-Preferred loop:
+Preferred production loop:
 
-`checkpoint -> audit -> narrow brief -> minimal code/asset candidate -> targeted/Fast QA -> browser playtest -> real runtime screenshots -> user visual approval when required -> closure QA -> checkpoint`
+`checkpoint -> audit -> narrow brief -> minimal code/asset candidate -> targeted/Fast QA -> AI Browser Playtest -> real runtime visual proof when UI-visible -> user visual approval when required -> closure QA -> checkpoint`
 
-If browser playtest finds a regression, patch the smallest responsible layer and rerun the affected scenario before broader QA.
+If Browser Playtest fails, classify the failure before patching:
+- launcher/server;
+- runtime/JS;
+- interaction/selector;
+- network;
+- layout/missing asset;
+- visual-only review issue.
 
-## 7. Closure rules
+Patch the smallest responsible layer. Do not reopen gameplay authority to fix presentation automation.
+
+## 7. Evidence policy
+
+For runtime/UI candidates, retain exact-SHA evidence:
+- Fast QA run;
+- AI Browser Playtest artifact (`playtest-report.json`, `health-summary.json`, screenshots);
+- UI Visual Proof artifact when the change is visible;
+- explicit user visual approval for UI/UX closure.
+
+A green automated gate proves structural/runtime health only. It cannot replace human visual approval.
+
+## 8. Closure rules
 
 Never mark a UI slice `LOCKED` without:
 - real runtime screenshots from the exact candidate;
-- green automated QA;
+- green Fast QA;
+- green AI Browser Playtest for covered production paths;
 - explicit user visual approval;
 - closure QA;
 - checkpoint update by the slice owner.

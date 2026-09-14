@@ -1,17 +1,11 @@
 {
-  "schema": "tutien-asset-pipeline.registry.v1",
+  "schema": "tutien-asset-pipeline.registry.v2",
+  "pipelineVersion": 2,
   "styleLock": {
     "family": "chibi-manhua",
     "source": "CURRENT_CHECKPOINT.md + UI_UX_PRODUCTION_DIRECTION_V1.md",
     "note": "Preserve the approved Home/Character visual family unless the user explicitly changes art direction."
   },
-  "statuses": [
-    "draft",
-    "candidate",
-    "approved",
-    "integrated",
-    "locked",
-    "retired"
-  ],
+  "statuses": ["draft", "candidate", "approved", "integrated", "locked", "retired"],
   "assets": []
 }

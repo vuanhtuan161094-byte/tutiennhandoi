@@ -1,8 +1,6 @@
-# Asset Pipeline V1
+# Asset Pipeline V2
 
-This directory stores **metadata and approval state**, not production asset binaries.
-
-Production assets stay in semantic folders such as `assets/huntv2/`, `assets/runtime/`, etc.
+This directory is the control plane for generated/edited visual assets. Production binaries stay in semantic runtime folders such as `assets/huntv2/`, `assets/runtime/`, `assets/dongphu/`, etc.
 
 ## Lifecycle
 
@@ -10,28 +8,42 @@ Production assets stay in semantic folders such as `assets/huntv2/`, `assets/run
 
 Optional terminal state: `retired`.
 
-- `draft`: brief exists; not ready for review.
-- `candidate`: generated/edited options exist for review.
-- `approved`: user explicitly selected/approved the visual.
-- `integrated`: approved asset has been wired into the real runtime.
-- `locked`: runtime result was approved/closed; replacement requires an explicit new slice.
+- `draft`: a machine-readable brief exists under `assets/_pipeline/briefs/`.
+- `candidate`: generated/edited options exist and are referenced by the brief.
+- `approved`: the user explicitly selected one candidate.
+- `integrated`: the approved winner exists at its real production path and is wired into runtime code/CSS.
+- `locked`: exact-SHA Browser Playtest + runtime visual proof are green and the owning UI slice has been approved/closed.
 - `retired`: intentionally no longer used.
 
 ## Required workflow
 
-1. Create a brief conforming to `brief.schema.json`.
-2. Generate multiple candidates when the direction is not already locked.
-3. Record candidate references in `registry.json`.
-4. User selects/approves.
-5. Move the winner into the correct production asset folder.
-6. Integrate it in code/CSS.
-7. Run Browser Playtester + real runtime visual proof.
-8. Only after approved closure may the registry state become `locked`.
+1. Copy `brief.template.json` to `assets/_pipeline/briefs/<asset-id>.json` and complete it.
+2. Add an index entry to `registry.json` with `id`, `briefPath`, and matching `status`.
+3. Generate multiple candidates when art direction is not already mechanically determined. Prefer 3–4 materially different options in one generation round.
+4. Record candidate references in the brief and move status to `candidate`.
+5. User explicitly selects/approves one option. Record `selectedCandidateRef`, `approvedByUser: true`, and `approvalNote`; move to `approved`.
+6. Put the selected binary in a semantic production asset folder, wire it into the actual runtime, record `productionPath`, and move to `integrated`.
+7. The production-path change automatically triggers `.github/workflows/ai-playtest.yml`; UI paths also trigger `UI Visual Proof`.
+8. After the exact integration SHA is green and the user approves the real runtime visual result, record `runtimeProofSha` + `runtimeProofRunId` and move to `locked`.
 
-Generated concept art must never be described as already implemented.
+Generated concept art is never implementation proof. A file is not production-ready merely because it looks good outside the game.
 
-## Registry rule
+## CI enforcement
 
-`approved`, `integrated`, and `locked` entries require `approvedByUser: true`.
+`qa/playtest/validate-contracts.mjs` rejects invalid lifecycle transitions, missing briefs, missing production files, duplicate production paths, and `locked` entries without exact runtime proof metadata.
 
-Do not put secrets, external API keys, or huge binary payloads in registry metadata.
+`qa/playtest/summarize-report.mjs` is the strict runtime-health gate for production candidates: no horizontal overflow, missing runtime images, browser/runtime console errors, or non-cancelled network failures are allowed in the deterministic journeys.
+
+## Registry shape
+
+The registry is intentionally small. Each entry should be an index, not a duplicate copy of the brief:
+
+```json
+{
+  "id": "combat-boss-portrait-01",
+  "briefPath": "assets/_pipeline/briefs/combat-boss-portrait-01.json",
+  "status": "candidate"
+}
+```
+
+Do not store binary blobs, secrets, external API keys, or base64 payloads in pipeline metadata.

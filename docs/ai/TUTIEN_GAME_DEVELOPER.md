@@ -1,87 +1,105 @@
-# TUTIEN GAME DEVELOPER — AI WORKING SKILL V1
+# TUTIEN GAME DEVELOPER — AI WORKING SKILL V2
 
-Status: infrastructure contract. It does not reopen any gameplay authority.
+Status: production tooling contract. It does not reopen any gameplay authority.
 
 ## Purpose
 
-Turn ChatGPT/Codex from a code-only editor into a repo-aware game-development agent that can:
+Turn ChatGPT/Codex into a repo-aware game-development loop that can:
 - respect canonical/locked systems;
-- run deterministic browser journeys against the real game;
-- inspect runtime screenshots and diagnostics;
-- manage generated visual assets through an approval lifecycle;
-- hand back only evidence-backed candidates.
+- edit safely while multiple chats use `main`;
+- automatically exercise important runtime/UI candidates in a real browser;
+- inspect exact-SHA screenshots and diagnostics;
+- manage generated visual assets through enforceable approval/integration states;
+- hand back evidence-backed candidates only.
 
 ## Mandatory entry sequence
 
 1. Read `/CURRENT_CHECKPOINT.md`.
 2. Confirm current `main` HEAD.
-3. Determine whether the task is gameplay/runtime, UI/UX, browser QA, or asset work.
-4. Read only the active workflow/spec and narrow source regions for that task.
-5. Record which locked authorities are read-only.
+3. Read `/AGENTS.md` and `/docs/DEVELOPMENT_PROTOCOL.md`.
+4. Classify the task: gameplay/runtime, UI/UX, browser QA, or asset work.
+5. Read only the active workflow/spec and narrow source regions.
+6. Record locked authorities that are read-only.
 
-## Browser Playtester V1
+## Browser Playtester V2
 
-Runner:
-`node qa/playtest/run-scenarios.mjs --base http://127.0.0.1:4173 --out artifacts/ai-playtest`
+Local runner:
 
-Canonical inputs:
-- `qa/playtest/scenarios.json`
-- real runtime served by `web/server.mjs`
-- DEV fixture API only for deterministic bootstrap
+```bash
+node qa/playtest/validate-contracts.mjs
+node qa/playtest/run-scenarios.mjs --base http://127.0.0.1:4173 --out artifacts/ai-playtest
+node qa/playtest/summarize-report.mjs artifacts/ai-playtest/playtest-report.json
+```
 
-Canonical outputs:
-- `artifacts/ai-playtest/playtest-report.json`
-- per-scenario screenshots
-- console/runtime errors
-- failed network requests / HTTP >= 400 responses
-- runtime metrics and visible interactive-control inventory
+CI authority:
+`.github/workflows/ai-playtest.yml`
 
-A passing playtest means the scripted journey and structural checks passed. It does **not** mean the visual design is approved.
+It now automatically runs on important production surfaces including canonical JS/CSS, `assets/**`, `modules/**`, `dist/**`, and `web/server.mjs`.
 
-## Asset Pipeline V1
+Canonical evidence:
+- `playtest-report.json` — raw per-scenario diagnostics;
+- `health-summary.json` — strict health result;
+- per-scenario actual-runtime screenshots;
+- CI Step Summary;
+- exact-SHA GitHub Actions artifact.
 
-Metadata root:
+Strict gate conditions:
+- all deterministic journeys PASS;
+- no horizontal overflow;
+- no missing runtime images;
+- no browser/runtime console errors;
+- no non-cancelled network/HTTP failures.
+
+A passing playtest proves deterministic runtime health. It does **not** mean the visual design is approved.
+
+## Asset Pipeline V2
+
+Control plane:
 `assets/_pipeline/`
+
+Briefs:
+`assets/_pipeline/briefs/<asset-id>.json`
 
 Lifecycle:
 `draft -> candidate -> approved -> integrated -> locked`
 
 Rules:
-- generation output is never presented as already implemented;
-- generate multiple candidates when art direction is not yet locked;
+- create the machine-readable brief before generation;
+- generate multiple materially different candidates when direction is not mechanically fixed;
 - user approval is required before `approved`;
-- production integration happens only after approval;
-- after integration, rerun real-runtime browser proof;
-- `locked` means the asset is part of an approved/closed slice and must not be casually replaced.
+- record the selected candidate and approval note;
+- integrate only the approved winner into a semantic production asset path;
+- production-path changes automatically trigger Browser Playtester and relevant visual proof;
+- `locked` requires exact runtime proof SHA/run metadata plus owning-slice approval/closure.
 
-The registry tracks metadata only. Production binaries remain in their semantic production asset folders.
+Image generation can be initiated from ChatGPT/image tooling; binary generation itself is not performed by GitHub Actions. Everything before and after that generation step is now governed and validated by the repo pipeline.
+
+## Normal AI game-development loop
+
+`checkpoint -> source audit -> narrow brief -> code/asset candidate -> targeted test -> Fast QA -> AI Browser Playtest -> Runtime Visual Proof if visible -> user visual approval -> [closure] -> Canonical QA -> checkpoint`
+
+For an asset-bearing slice:
+
+`brief -> candidate generation -> user selection -> production integration -> AI Browser Playtest -> Runtime Visual Proof -> user runtime approval -> locked metadata`
 
 ## Failure triage
 
-When playtest fails, classify first:
-
+When Playtester fails, classify first:
 - `launcher`: server/health/bootstrap failed;
 - `runtime`: JS exception or canonical screen failed to load;
-- `network`: failed request or HTTP error;
-- `interaction`: expected control/action unavailable;
-- `layout`: overflow/missing image/invalid shell;
-- `visual`: structurally valid but needs human visual review.
+- `network`: request/HTTP error;
+- `interaction`: expected semantic control/action unavailable;
+- `layout`: overflow or missing asset;
+- `visual`: structurally valid but needs human review.
 
-Do not patch gameplay authority to solve a presentation-only failure.
+Do not patch gameplay authority to solve a presentation-only automation failure.
 
 ## Concurrent work
 
-When another chat owns an active slice:
-- do not edit that slice's production files;
-- infrastructure may be built in isolated paths;
-- refresh HEAD immediately before committing;
-- do not touch `CURRENT_CHECKPOINT.md`;
-- after the slice closes, run Playtester against the new exact HEAD and only then widen automation if desired.
-
-## V1 automation policy
-
-While Combat Readability is actively being edited by another chat, the dedicated AI Playtest workflow is intentionally limited to:
-- manual dispatch; and
-- changes to `qa/playtest/**`, `assets/_pipeline/**`, `AGENTS.md`, `docs/ai/**`, or the playtest workflow itself.
-
-After the active Combat slice is locked, expand the workflow path trigger to the production runtime/UI paths so browser playtesting becomes a normal candidate gate.
+When another chat owns a slice:
+- refresh HEAD immediately before writes;
+- split file ownership when possible;
+- never force-update `main`;
+- do not overwrite the owning chat's work;
+- Browser Playtester may inspect the other chat's exact candidate without changing it;
+- closure/checkpoint remains owned by the active slice unless the user explicitly reassigns it.

@@ -1,0 +1,24 @@
+{
+  "schema": "tutien-asset-brief.v2",
+  "id": "replace-me",
+  "targetScreen": "replace-me",
+  "role": "other",
+  "status": "draft",
+  "styleFamily": "chibi-manhua",
+  "dimensions": { "width": 1024, "height": 1024 },
+  "transparentBackground": false,
+  "safeArea": "Describe crop/safe-area requirements.",
+  "promptIntent": "Describe what the generated asset must communicate in runtime.",
+  "acceptance": [
+    "Reads clearly at the target mobile viewport.",
+    "Matches the canonical chibi-manhua visual family.",
+    "Does not contain UI text unless explicitly required."
+  ],
+  "candidateRefs": [],
+  "selectedCandidateRef": null,
+  "productionPath": null,
+  "approvedByUser": false,
+  "approvalNote": null,
+  "runtimeProofSha": null,
+  "runtimeProofRunId": null
+}

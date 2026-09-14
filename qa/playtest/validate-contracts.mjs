@@ -1,7 +1,8 @@
-import { readFile } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 
 const readJson = async path => JSON.parse(await readFile(path, 'utf8'));
 const fail = message => { throw new Error(message); };
+const exists = async path => { try { await access(path); return true; } catch { return false; } };
 
 const scenarios = await readJson('qa/playtest/scenarios.json');
 if (scenarios.schema !== 'tutien-ai-playtest.scenarios.v1') fail('Unexpected playtest scenario schema');
@@ -14,17 +15,64 @@ for (const scenario of scenarios.scenarios) {
   if (!Array.isArray(scenario.requiredSelectors) || !scenario.requiredSelectors.length) fail(`${scenario.id}: requiredSelectors required`);
 }
 
+const workflow = await readFile('.github/workflows/ai-playtest.yml', 'utf8');
+const requiredProductionTriggers = [
+  "'index.html'",
+  "'app.js'",
+  "'styles.css'",
+  "'combat-v2.css'",
+  "'assets/**'",
+  "'modules/**'",
+  "'web/server.mjs'",
+];
+for (const trigger of requiredProductionTriggers) {
+  if (!workflow.includes(trigger)) fail(`AI playtest workflow missing production trigger ${trigger}`);
+}
+if (!workflow.includes('summarize-report.mjs')) fail('AI playtest workflow must publish strict report summary');
+
 const registry = await readJson('assets/_pipeline/registry.json');
-if (registry.schema !== 'tutien-asset-pipeline.registry.v1') fail('Unexpected asset registry schema');
+if (registry.schema !== 'tutien-asset-pipeline.registry.v2') fail('Unexpected asset registry schema');
 if (!Array.isArray(registry.assets)) fail('Asset registry assets[] required');
 const allowed = new Set(['draft','candidate','approved','integrated','locked','retired']);
+const assetIds = new Set();
+const productionPaths = new Set();
 for (const asset of registry.assets) {
-  if (!asset.id || !allowed.has(asset.status)) fail(`Invalid asset registry entry: ${asset.id || '<missing id>'}`);
-  if (['approved','integrated','locked'].includes(asset.status) && !asset.approvedByUser) {
-    fail(`${asset.id}: ${asset.status} requires approvedByUser=true`);
+  if (!asset.id || assetIds.has(asset.id)) fail(`Invalid/duplicate asset id: ${asset.id || '<missing id>'}`);
+  assetIds.add(asset.id);
+  if (!allowed.has(asset.status)) fail(`${asset.id}: invalid status ${asset.status}`);
+  if (!asset.briefPath || !String(asset.briefPath).startsWith('assets/_pipeline/briefs/') || !String(asset.briefPath).endsWith('.json')) {
+    fail(`${asset.id}: briefPath under assets/_pipeline/briefs/*.json required`);
+  }
+  if (!(await exists(asset.briefPath))) fail(`${asset.id}: brief not found at ${asset.briefPath}`);
+  const brief = await readJson(asset.briefPath);
+  if (brief.schema !== 'tutien-asset-brief.v2') fail(`${asset.id}: unexpected brief schema`);
+  if (brief.id !== asset.id) fail(`${asset.id}: registry/brief id mismatch`);
+  if (brief.status !== asset.status) fail(`${asset.id}: registry/brief status mismatch`);
+  if (!Array.isArray(brief.acceptance) || !brief.acceptance.length) fail(`${asset.id}: acceptance criteria required`);
+
+  const candidates = Array.isArray(brief.candidateRefs) ? brief.candidateRefs : [];
+  if (['candidate','approved','integrated','locked'].includes(asset.status) && candidates.length < 1) {
+    fail(`${asset.id}: ${asset.status} requires candidateRefs`);
+  }
+  if (['approved','integrated','locked'].includes(asset.status)) {
+    if (!brief.approvedByUser) fail(`${asset.id}: ${asset.status} requires approvedByUser=true`);
+    if (!brief.selectedCandidateRef || !candidates.includes(brief.selectedCandidateRef)) {
+      fail(`${asset.id}: selectedCandidateRef must reference one of candidateRefs`);
+    }
+    if (!brief.approvalNote) fail(`${asset.id}: approvalNote required after user approval`);
+  }
+  if (['integrated','locked'].includes(asset.status)) {
+    if (!brief.productionPath) fail(`${asset.id}: ${asset.status} requires productionPath`);
+    if (!(await exists(brief.productionPath))) fail(`${asset.id}: productionPath not found: ${brief.productionPath}`);
+    if (productionPaths.has(brief.productionPath)) fail(`${asset.id}: duplicate productionPath ${brief.productionPath}`);
+    productionPaths.add(brief.productionPath);
+  }
+  if (asset.status === 'locked') {
+    if (!/^[0-9a-f]{40}$/i.test(String(brief.runtimeProofSha || ''))) fail(`${asset.id}: locked requires runtimeProofSha`);
+    if (!String(brief.runtimeProofRunId || '').trim()) fail(`${asset.id}: locked requires runtimeProofRunId`);
   }
 }
 
 const schema = await readJson('assets/_pipeline/brief.schema.json');
-if (schema.$id !== 'tutien-asset-brief.v1') fail('Unexpected asset brief schema');
-console.log(`AI PIPELINE CONTRACT PASS · scenarios=${scenarios.scenarios.length} · assets=${registry.assets.length}`);
+if (schema.$id !== 'tutien-asset-brief.v2') fail('Unexpected asset brief schema id');
+console.log(`AI PIPELINE CONTRACT PASS · scenarios=${scenarios.scenarios.length} · assets=${registry.assets.length} · productionTriggers=${requiredProductionTriggers.length}`);

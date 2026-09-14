@@ -6,10 +6,24 @@ on:
     branches:
       - main
     paths:
+      - 'index.html'
+      - 'app.js'
+      - 'standalone-entry.js'
+      - 'standalone-runtime.js'
+      - 'styles.css'
+      - 'ui-*.css'
+      - 'combat-v2.css'
+      - 'assets/**'
+      - 'modules/**'
+      - 'dist/**'
+      - 'web/server.mjs'
+      - 'qa/playtest/**'
+      - 'qa/visual/**'
+      - 'qa/tests/ui-visual-workflow-contract-test.js'
+      - 'qa/runners/v140-frontend-gates.js'
       - 'AGENTS.md'
       - 'docs/ai/**'
-      - 'qa/playtest/**'
-      - 'assets/_pipeline/**'
+      - 'docs/DEVELOPMENT_PROTOCOL.md'
       - '.github/workflows/ai-playtest.yml'
 
 permissions:
@@ -22,7 +36,7 @@ concurrency:
 jobs:
   browser-playtest:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@v4
@@ -63,13 +77,13 @@ jobs:
           CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
         run: node qa/playtest/run-scenarios.mjs --base http://127.0.0.1:4173 --out artifacts/ai-playtest
 
-      - name: Validate report exists
+      - name: Publish strict playtest summary
         if: always()
-        shell: bash
-        run: |
-          test -s artifacts/ai-playtest/playtest-report.json
+        env:
+          TUTIEN_PLAYTEST_SHA: ${{ github.sha }}
+        run: node qa/playtest/summarize-report.mjs artifacts/ai-playtest/playtest-report.json
 
-      - name: Upload AI playtest evidence
+      - name: Upload exact-SHA AI playtest evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:

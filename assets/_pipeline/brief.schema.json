@@ -1,115 +1,65 @@
 {
-  "$id": "tutien-asset-brief.v1",
+  "$id": "tutien-asset-brief.v2",
   "type": "object",
-  "required": [
-    "id",
-    "targetScreen",
-    "role",
-    "status",
-    "styleFamily",
-    "acceptance",
-    "approvedByUser"
-  ],
+  "required": ["schema", "id", "targetScreen", "role", "status", "styleFamily", "acceptance", "approvedByUser"],
   "properties": {
-    "id": {
-      "type": "string",
-      "minLength": 1
-    },
-    "targetScreen": {
-      "type": "string",
-      "minLength": 1
-    },
-    "role": {
-      "type": "string",
-      "enum": [
-        "hero",
-        "character",
-        "enemy",
-        "background",
-        "ornament",
-        "icon",
-        "vfx-source",
-        "ui-decoration",
-        "other"
-      ]
-    },
-    "status": {
-      "type": "string",
-      "enum": [
-        "draft",
-        "candidate",
-        "approved",
-        "integrated",
-        "locked",
-        "retired"
-      ]
-    },
-    "styleFamily": {
-      "type": "string",
-      "minLength": 1
-    },
+    "schema": { "const": "tutien-asset-brief.v2" },
+    "id": { "type": "string", "minLength": 1 },
+    "targetScreen": { "type": "string", "minLength": 1 },
+    "role": { "type": "string", "enum": ["hero", "character", "enemy", "background", "ornament", "icon", "vfx-source", "ui-decoration", "other"] },
+    "status": { "type": "string", "enum": ["draft", "candidate", "approved", "integrated", "locked", "retired"] },
+    "styleFamily": { "type": "string", "minLength": 1 },
     "dimensions": {
       "type": "object",
+      "required": ["width", "height"],
       "properties": {
-        "width": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "height": {
-          "type": "integer",
-          "minimum": 1
-        }
-      }
-    },
-    "transparentBackground": {
-      "type": "boolean"
-    },
-    "safeArea": {
-      "type": "string"
-    },
-    "promptIntent": {
-      "type": "string"
-    },
-    "acceptance": {
-      "type": "array",
-      "items": {
-        "type": "string"
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
       },
-      "minItems": 1
+      "additionalProperties": false
     },
-    "candidateRefs": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "productionPath": {
-      "type": ["string", "null"]
-    },
-    "approvedByUser": {
-      "type": "boolean"
-    },
-    "approvalNote": {
-      "type": ["string", "null"]
-    }
+    "transparentBackground": { "type": "boolean" },
+    "safeArea": { "type": "string" },
+    "promptIntent": { "type": "string" },
+    "acceptance": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1 },
+    "candidateRefs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "selectedCandidateRef": { "type": ["string", "null"] },
+    "productionPath": { "type": ["string", "null"] },
+    "approvedByUser": { "type": "boolean" },
+    "approvalNote": { "type": ["string", "null"] },
+    "runtimeProofSha": { "type": ["string", "null"], "pattern": "^[0-9a-fA-F]{40}$" },
+    "runtimeProofRunId": { "type": ["string", "null"] }
   },
   "allOf": [
     {
-      "if": {
-        "properties": {
-          "status": {
-            "enum": ["approved", "integrated", "locked"]
-          }
-        }
-      },
+      "if": { "properties": { "status": { "enum": ["candidate", "approved", "integrated", "locked"] } } },
+      "then": { "required": ["candidateRefs"], "properties": { "candidateRefs": { "minItems": 1 } } }
+    },
+    {
+      "if": { "properties": { "status": { "enum": ["approved", "integrated", "locked"] } } },
       "then": {
+        "required": ["selectedCandidateRef", "approvalNote"],
         "properties": {
-          "approvedByUser": {
-            "const": true
-          }
+          "approvedByUser": { "const": true },
+          "selectedCandidateRef": { "type": "string", "minLength": 1 },
+          "approvalNote": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "enum": ["integrated", "locked"] } } },
+      "then": { "required": ["productionPath"], "properties": { "productionPath": { "type": "string", "minLength": 1 } } }
+    },
+    {
+      "if": { "properties": { "status": { "const": "locked" } } },
+      "then": {
+        "required": ["runtimeProofSha", "runtimeProofRunId"],
+        "properties": {
+          "runtimeProofSha": { "type": "string", "pattern": "^[0-9a-fA-F]{40}$" },
+          "runtimeProofRunId": { "type": "string", "minLength": 1 }
         }
       }
     }
   ],
-  "additionalProperties": true
+  "additionalProperties": false
 }
