@@ -63,6 +63,8 @@ body[data-game-screen="hunt"] .huntv2-player-hud{left:7px!important;width:calc(5
 body[data-game-screen="hunt"] .huntv2-enemy-hud{right:7px!important;width:calc(50% - 10px)!important;border-radius:5px 12px 12px 5px!important;padding:7px 49px 6px 7px!important}
 body[data-game-screen="hunt"] .huntv2-player-heading strong,
 body[data-game-screen="hunt"] .huntv2-hud-main strong{font:800 12px/1.05 Georgia,serif!important}
+body[data-game-screen="hunt"] .huntv2-enemy-hud .huntv2-hud-main>div:first-child{min-height:25px!important;overflow:hidden!important}
+body[data-game-screen="hunt"] .huntv2-enemy-hud .huntv2-hud-main>div:first-child>strong{display:-webkit-box!important;white-space:normal!important;overflow:hidden!important;text-overflow:ellipsis!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;max-height:25px!important}
 body[data-game-screen="hunt"] .huntv2-player-heading span,
 body[data-game-screen="hunt"] .huntv2-hud-main>div:first-child span{font-size:10px!important;color:#bac6c5!important}
 body[data-game-screen="hunt"] .huntv2-player-hud-core{grid-template-rows:18px 17px 17px 18px!important;gap:1px!important}
@@ -107,7 +109,7 @@ body[data-game-screen="hunt"] .huntv2-boss-mechanic-chip b{font-size:10px!import
 
 body[data-game-screen="hunt"] .huntv2-enemy-intent{top:205px!important;right:10px!important;max-width:46%!important}
 body[data-game-screen="hunt"] .huntv2-break-window{top:205px!important;left:50%!important;transform:translateX(-50%)!important}
-body[data-game-screen="hunt"] .huntv2-skill-callout{top:215px!important}
+body[data-game-screen="hunt"] .huntv2-skill-callout{top:215px!important;bottom:auto!important;height:auto!important;min-height:0!important}
 body[data-game-screen="hunt"] .huntv2-float-layer{top:205px!important;bottom:65px!important}
 
 body[data-game-screen="hunt"] .huntv2-console{flex:0 0 137px!important;min-height:137px!important;padding:5px 7px 4px!important;background:linear-gradient(180deg,rgba(5,20,29,.96),#030b12)!important;border-top-color:rgba(226,191,112,.18)!important}
