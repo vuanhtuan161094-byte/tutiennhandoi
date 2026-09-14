@@ -110,13 +110,13 @@ function projectHuntCollectionEconomyV140(catalog = {}) {
         if (id === 'artifact') projected.artifactSlotCapacity = source.artifactSlotCapacity;
         return projected;
     });
-    const itemsFor = id => categories.find(category => category.category === id)?.items ?? [];
-    const activeArtifactIds = Array.isArray(catalog?.artifactV88?.activeArtifactIds)
-        ? [...catalog.artifactV88.activeArtifactIds]
-        : itemsFor('artifact').map(item => item.id).filter(Boolean);
-    const activeRelicId = catalog?.artifactV88?.activeRelicId ?? catalog?.active?.relicId ?? itemsFor('relic')[0]?.id ?? '';
-    const activePetId = itemsFor('pet')[0]?.id ?? '';
-    const activeCompanionId = catalog?.active?.companionId ?? itemsFor('companion')[0]?.id ?? '';
+    const canonicalActive = catalog?.active && typeof catalog.active === 'object' ? catalog.active : {};
+    const activeArtifactIds = Array.isArray(canonicalActive.artifactIds)
+        ? canonicalActive.artifactIds.map(id => String(id || '').trim()).filter(Boolean)
+        : [];
+    const activeRelicId = String(canonicalActive.relicId || '').trim();
+    const activePetId = String(canonicalActive.petId || '').trim();
+    const activeCompanionId = String(canonicalActive.companionId || '').trim();
     return {
         schema: catalog.schema,
         transportProfile: 'hunt-combat-support.v140',
