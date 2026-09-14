@@ -1,159 +1,291 @@
-/* Combat Readability Target V1 — presentation-only overlay.
-   Home / Character visual grammar is the source of truth.
-   Backend / V168 Combat-Stat authority remains untouched. */
+/* Combat Target V2 — target-reference composition on canonical backend/runtime.
+   Presentation only. Home/Character chibi-manhua assets remain canonical. */
 
 body[data-game-screen="hunt"] .huntv2-screen{
-  --combat-ivory:#f1e6cf;
-  --combat-gold:#e2bf70;
-  --combat-jade:#71d4c5;
-  --combat-blue:#5cc8ea;
-  --combat-red:#ee665f;
-  --combat-ink:rgba(3,14,22,.88);
-  --combat-line:rgba(226,191,112,.26);
+  --combat-ivory:#f4ead7;--combat-gold:#e8c978;--combat-jade:#74dcc8;
+  --combat-red:#ee6a62;--combat-ink:rgba(5,15,18,.78);--combat-line:rgba(232,201,120,.30);
   font-family:Inter,"Segoe UI",Arial,sans-serif;
 }
+body[data-game-screen="hunt"] .huntv2-stage{border-bottom:0;background:#132b26}
 
+/* One illustrated identity ribbon instead of a dashboard header. */
 body[data-game-screen="hunt"] .huntv2-top-identity{
-  top:6px!important;left:8px!important;width:230px!important;height:50px!important;padding:3px 7px 3px 46px!important;
-  border:0!important;border-radius:24px 12px 12px 24px!important;
-  background:linear-gradient(90deg,rgba(3,15,23,.88),rgba(3,15,23,.60) 80%,transparent)!important;
-  box-shadow:none!important;backdrop-filter:blur(4px)!important;
+  top:7px!important;left:9px!important;width:218px!important;height:49px!important;
+  padding:3px 9px 3px 48px;border:0;border-radius:25px 10px 10px 25px;
+  background:linear-gradient(90deg,rgba(8,20,18,.86),rgba(8,20,18,.54) 76%,transparent);
+  box-shadow:none;backdrop-filter:blur(3px);
+}
+body[data-game-screen="hunt"] .huntv2-top-identity::after{
+  content:"";position:absolute;left:43px;right:7px;bottom:2px;height:1px;
+  background:linear-gradient(90deg,rgba(236,206,130,.52),transparent);pointer-events:none;
 }
 body[data-game-screen="hunt"] .huntv2-top-identity .huntv2-combat-exit{
-  left:-1px!important;top:6px!important;width:34px!important;height:34px!important;border-radius:50%!important;
-  background:rgba(4,17,24,.84)!important;border-color:rgba(226,191,112,.26)!important;font-size:16px!important;color:var(--combat-gold)!important;
+  left:-1px!important;top:7px!important;width:33px!important;height:33px!important;border-radius:50%;
+  background:rgba(9,22,20,.78);border-color:rgba(232,201,120,.30);color:var(--combat-gold);
 }
+body[data-game-screen="hunt"] .huntv2-top-identity .huntv2-combat-exit span{display:none!important}
 body[data-game-screen="hunt"] .huntv2-top-identity .huntv2-expression-avatar,
 body[data-game-screen="hunt"] .huntv2-top-identity .v138-expression-portrait{
-  width:38px!important;height:38px!important;left:34px!important;top:6px!important;
-  border-color:rgba(226,191,112,.55)!important;box-shadow:0 0 0 2px rgba(3,14,22,.78)!important;
+  width:42px!important;height:42px!important;left:31px!important;top:4px!important;
+  border-color:rgba(235,206,132,.62);box-shadow:0 0 0 2px rgba(5,15,16,.72),0 5px 12px rgba(0,0,0,.22);
 }
-body[data-game-screen="hunt"] .huntv2-identity-copy{padding-left:27px!important;gap:0!important;min-width:0!important}
-body[data-game-screen="hunt"] .huntv2-identity-copy strong{font:800 13px/1.05 Georgia,serif!important;color:var(--combat-ivory)!important}
-body[data-game-screen="hunt"] .huntv2-identity-copy span{font-size:10px!important;line-height:1.15!important;color:#c2ccca!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
-body[data-game-screen="hunt"] .huntv2-identity-copy small{font-size:10px!important;line-height:1.1!important;color:#d9c27f!important}
+body[data-game-screen="hunt"] .huntv2-identity-copy{padding-left:29px;gap:0;min-width:0}
+body[data-game-screen="hunt"] .huntv2-identity-copy strong{font:800 13px/1.05 Georgia,serif;color:var(--combat-ivory)}
+body[data-game-screen="hunt"] .huntv2-identity-copy span{font-size:10px;color:#cbd2c7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body[data-game-screen="hunt"] .huntv2-identity-copy small{font-size:10px;color:#e0c77e}
 
-body[data-game-screen="hunt"] .huntv2-resource-row{top:8px!important;right:8px!important;height:38px!important;gap:4px!important}
+body[data-game-screen="hunt"] .huntv2-resource-row{top:9px!important;right:8px!important;height:35px!important;gap:4px}
 body[data-game-screen="hunt"] .huntv2-resource-row>span{
-  min-width:42px!important;height:36px!important;padding:3px 6px!important;border-radius:18px!important;
-  background:rgba(3,15,23,.78)!important;border-color:rgba(226,191,112,.20)!important;
+  min-width:38px!important;height:34px!important;padding:2px 6px;border-radius:18px;
+  background:rgba(7,20,19,.64);border-color:rgba(232,201,120,.18);box-shadow:none;
 }
-body[data-game-screen="hunt"] .huntv2-resource-row img{width:19px!important;height:19px!important}
-body[data-game-screen="hunt"] .huntv2-resource-row b{font-size:11px!important}
+body[data-game-screen="hunt"] .huntv2-resource-row img{width:18px!important;height:18px!important}
+body[data-game-screen="hunt"] .huntv2-resource-row b{font-size:10px}
 
+/* Centered location plaque follows the reference composition. */
 body[data-game-screen="hunt"] .huntv2-meta-strip{
-  top:58px!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important;
-  width:max-content!important;max-width:72%!important;height:28px!important;padding:0 12px!important;border-radius:14px!important;
-  background:rgba(3,15,23,.78)!important;border-color:rgba(226,191,112,.24)!important;box-shadow:0 5px 14px rgba(0,0,0,.20)!important;
+  top:64px!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important;
+  width:max-content!important;max-width:68%!important;height:28px!important;padding:0 15px;border-radius:14px;
+  background:linear-gradient(90deg,rgba(20,25,18,.20),rgba(240,226,190,.88) 18%,rgba(240,226,190,.88) 82%,rgba(20,25,18,.20));
+  border-color:rgba(95,75,39,.30);color:#2f2c24;box-shadow:0 4px 14px rgba(0,0,0,.15);
 }
-body[data-game-screen="hunt"] .huntv2-meta-strip strong{font:800 11px/1 Georgia,serif!important;color:#efd18b!important}
+body[data-game-screen="hunt"] .huntv2-meta-strip strong{font:800 11px/1 Georgia,serif;color:#302c23}
 body[data-game-screen="hunt"] .huntv2-meta-strip span,
 body[data-game-screen="hunt"] .huntv2-meta-strip em,
-body[data-game-screen="hunt"] .huntv2-meta-strip i{font-size:10px!important}
-body[data-game-screen="hunt"] .huntv2-help-compact{top:59px!important;right:35px!important;width:26px!important;height:26px!important;border-radius:50%!important}
-body[data-game-screen="hunt"] .huntv2-map-compact{top:59px!important;right:7px!important;width:26px!important;height:26px!important}
+body[data-game-screen="hunt"] .huntv2-meta-strip i{font-size:10px;color:#4a4436}
+body[data-game-screen="hunt"] .huntv2-help-compact{top:65px!important;right:38px!important;width:27px!important;height:27px!important;border-radius:50%;background:rgba(7,20,19,.66)}
+body[data-game-screen="hunt"] .huntv2-map-compact{top:65px!important;right:8px!important;width:27px!important;height:27px!important;border-radius:50%;background:rgba(7,20,19,.66)}
 
+/* Environment and actors are the visual focus. */
+body[data-game-screen="hunt"] .huntv2-bg{
+  top:-15px!important;left:-4px!important;width:calc(100% + 8px)!important;height:calc(100% + 20px)!important;
+  object-position:center 54%;filter:saturate(.90) brightness(.78) contrast(1.02);
+}
+body[data-game-screen="hunt"] .huntv2-env-overlay{background:linear-gradient(180deg,rgba(4,15,14,.16),transparent 30%,rgba(4,13,12,.02) 66%,rgba(3,10,10,.34))}
+body[data-game-screen="hunt"] .huntv2-vignette{box-shadow:inset 0 0 38px rgba(0,0,0,.28)}
+body[data-game-screen="hunt"] .huntv2-mist{opacity:.25}
+
+/* In-world floating combat HUDs: player lower-left, enemy upper-right. */
 body[data-game-screen="hunt"] .huntv2-player-hud,
 body[data-game-screen="hunt"] .huntv2-enemy-hud{
-  top:92px!important;height:86px!important;z-index:46!important;border:1px solid rgba(226,191,112,.20)!important;
-  background:linear-gradient(180deg,rgba(3,15,24,.92),rgba(3,12,19,.80))!important;
-  box-shadow:0 8px 20px rgba(0,0,0,.25)!important;backdrop-filter:blur(4px)!important;
+  z-index:47!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;
 }
-body[data-game-screen="hunt"] .huntv2-player-hud{left:7px!important;width:calc(50% - 10px)!important;border-radius:12px 5px 5px 12px!important;padding:7px 7px 6px!important}
-body[data-game-screen="hunt"] .huntv2-enemy-hud{right:7px!important;width:calc(50% - 10px)!important;border-radius:5px 12px 12px 5px!important;padding:7px 49px 6px 7px!important}
-body[data-game-screen="hunt"] .huntv2-player-heading strong,
-body[data-game-screen="hunt"] .huntv2-hud-main strong{font:800 12px/1.05 Georgia,serif!important}
-body[data-game-screen="hunt"] .huntv2-enemy-hud .huntv2-hud-main>div:first-child{min-height:25px!important;overflow:hidden!important}
-body[data-game-screen="hunt"] .huntv2-enemy-hud .huntv2-hud-main>div:first-child>strong{display:-webkit-box!important;white-space:normal!important;overflow:hidden!important;text-overflow:ellipsis!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;max-height:25px!important}
-body[data-game-screen="hunt"] .huntv2-player-heading span,
-body[data-game-screen="hunt"] .huntv2-hud-main>div:first-child span{font-size:10px!important;color:#bac6c5!important}
-body[data-game-screen="hunt"] .huntv2-player-hud-core{grid-template-rows:18px 17px 17px 18px!important;gap:1px!important}
-body[data-game-screen="hunt"] .huntv2-vital-row{grid-template-columns:19px minmax(0,1fr) 35px!important;gap:3px!important}
-body[data-game-screen="hunt"] .huntv2-vital-row>b,
-body[data-game-screen="hunt"] .huntv2-vital-row>small{font-size:10px!important}
-body[data-game-screen="hunt"] .huntv2-vital,
-body[data-game-screen="hunt"] .huntv2-hp{height:13px!important;border-radius:7px!important}
-body[data-game-screen="hunt"] .huntv2-vital>em,
-body[data-game-screen="hunt"] .huntv2-hp>b{font-size:10px!important}
-body[data-game-screen="hunt"] .huntv2-player-meta span{font-size:10px!important}
-body[data-game-screen="hunt"] .huntv2-enemy-hud .huntv2-portrait{right:4px!important;top:7px!important;width:42px!important;height:42px!important;border-color:rgba(229,111,111,.45)!important}
-body[data-game-screen="hunt"] .huntv2-hud-main{grid-template-rows:25px 15px 12px 18px!important;gap:2px!important}
-body[data-game-screen="hunt"] .huntv2-poise-row{grid-template-columns:43px minmax(0,1fr)!important;gap:3px!important}
-body[data-game-screen="hunt"] .huntv2-poise-row>b{font-size:10px!important;letter-spacing:0!important}
-body[data-game-screen="hunt"] .huntv2-poise{height:11px!important}
-body[data-game-screen="hunt"] .huntv2-poise>em{font-size:10px!important}
-body[data-game-screen="hunt"] .huntv2-element-icons i{width:18px!important;height:18px!important;font-size:10px!important}
-body[data-game-screen="hunt"] .ui-combat-enemy-context{position:absolute;right:5px;bottom:5px;display:flex;gap:3px;align-items:center;z-index:3;pointer-events:none}
-body[data-game-screen="hunt"] .ui-combat-enemy-context span{min-width:0;padding:2px 5px;border-radius:8px;border:1px solid rgba(226,191,112,.20);background:rgba(3,15,23,.78);font-size:10px;line-height:1;color:#d6d9d1;white-space:nowrap}
-body[data-game-screen="hunt"] .ui-combat-enemy-context .boss{color:#f0c76e;border-color:rgba(238,182,81,.34)}
+body[data-game-screen="hunt"] .huntv2-player-hud{
+  top:auto!important;left:13px!important;bottom:164px!important;width:156px!important;height:62px!important;
+  padding:8px 8px 7px 11px;border-radius:5px;
+  background:linear-gradient(90deg,rgba(8,21,19,.74),rgba(8,21,19,.40) 77%,transparent)!important;
+}
+body[data-game-screen="hunt"] .huntv2-player-hud::before{
+  content:"";position:absolute;left:0;right:28px;top:0;height:1px;background:linear-gradient(90deg,var(--combat-gold),transparent);
+}
+body[data-game-screen="hunt"] .huntv2-player-heading strong{font:800 12px/1.05 Georgia,serif;color:#f7ead0}
+body[data-game-screen="hunt"] .huntv2-player-hud-core{grid-template-rows:16px 17px 17px!important;gap:2px}
+body[data-game-screen="hunt"] .huntv2-vital-row{grid-template-columns:18px minmax(0,1fr)!important;gap:4px}
+body[data-game-screen="hunt"] .huntv2-vital-row>b{font-size:10px;color:#e9dec9}
+body[data-game-screen="hunt"] .huntv2-vital-row>small{display:none!important}
+body[data-game-screen="hunt"] .huntv2-vital{height:12px!important;border-radius:2px;background:rgba(8,13,13,.72)}
+body[data-game-screen="hunt"] .huntv2-vital>em{font-size:10px}
+body[data-game-screen="hunt"] .huntv2-player-meta{display:none!important}
 
-body[data-game-screen="hunt"] .huntv2-status-tray.player{left:9px!important;top:181px!important;z-index:47!important}
-body[data-game-screen="hunt"] .huntv2-status-tray.enemy{position:absolute!important;right:9px!important;top:181px!important;z-index:47!important}
-body[data-game-screen="hunt"] .huntv2-status-tray .huntv2-status-chip{width:20px!important;height:20px!important;font-size:10px!important}
+body[data-game-screen="hunt"] .huntv2-enemy-hud{
+  top:119px!important;right:13px!important;left:auto!important;width:178px!important;height:82px!important;
+  padding:7px 8px!important;border-radius:4px;
+  background:linear-gradient(270deg,rgba(8,18,18,.75),rgba(8,18,18,.38) 79%,transparent)!important;
+}
+body[data-game-screen="hunt"] .huntv2-enemy-hud::before{
+  content:"";position:absolute;right:0;left:36px;top:0;height:1px;background:linear-gradient(270deg,#d7b45e,transparent);
+}
+body[data-game-screen="hunt"] .huntv2-enemy-hud .huntv2-portrait{display:none!important}
+body[data-game-screen="hunt"] .huntv2-hud-main{grid-template-rows:27px 14px 14px 19px!important;gap:2px;height:100%}
+body[data-game-screen="hunt"] .huntv2-hud-main>div:first-child{min-height:26px;overflow:visible}
+body[data-game-screen="hunt"] .huntv2-hud-main strong{
+  display:-webkit-box;max-height:26px;font:800 12px/1.05 Georgia,serif;color:#f2e3c7;
+  overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+}
+body[data-game-screen="hunt"] .huntv2-hp{height:12px!important;border-radius:2px;background:rgba(12,12,12,.72);border-color:rgba(255,255,255,.10)}
+body[data-game-screen="hunt"] .huntv2-hp>b{font-size:10px}
+body[data-game-screen="hunt"] .huntv2-poise-row{grid-template-columns:46px minmax(0,1fr)!important;gap:4px}
+body[data-game-screen="hunt"] .huntv2-poise-row>b{font-size:10px;color:#b8e2e3;letter-spacing:0}
+body[data-game-screen="hunt"] .huntv2-poise{height:10px!important}
+body[data-game-screen="hunt"] .huntv2-poise>em{font-size:10px}
+body[data-game-screen="hunt"] .huntv2-element-icons i{width:18px!important;height:18px!important;border-radius:50%;font-size:10px}
+body[data-game-screen="hunt"] .huntv2-boss-trait{height:18px!important;max-width:104px!important}
+body[data-game-screen="hunt"] .huntv2-boss-trait span{font-size:10px}
+body[data-game-screen="hunt"] .huntv2-enemy-info{display:none!important}
+body[data-game-screen="hunt"] .ui-combat-enemy-context{
+  position:absolute;right:4px;bottom:-25px;display:flex;gap:3px;align-items:center;z-index:3;pointer-events:none;
+}
+body[data-game-screen="hunt"] .ui-combat-enemy-context span{
+  padding:3px 6px;border-radius:9px;border:1px solid rgba(232,201,120,.24);background:rgba(7,20,19,.68);
+  font-size:10px;line-height:1;color:#e4e2d7;white-space:nowrap;
+}
+body[data-game-screen="hunt"] .ui-combat-enemy-context .boss{color:#f1cc6f;border-color:rgba(240,196,91,.38)}
 
-body[data-game-screen="hunt"] .huntv2-arena{top:176px!important;bottom:36px!important}
-body[data-game-screen="hunt"] .huntv2-actor.player{left:0!important;width:min(49%,214px)!important;height:min(69%,288px)!important;bottom:0!important}
-body[data-game-screen="hunt"] .huntv2-actor.enemy{right:0!important;width:min(48%,212px)!important;height:min(67%,280px)!important;bottom:1%!important}
-body[data-game-screen="hunt"] .huntv2-actor.enemy.boss{right:-2%!important;width:min(53%,232px)!important;height:min(72%,302px)!important}
-/* Legacy elemental-matchup lettering is baked into the very top edge of the environment plates.
-   Crop the source edge instead of adding another HUD mask over live combat. */
-body[data-game-screen="hunt"] .huntv2-bg{top:-14px;left:-4px;width:calc(100% + 8px);height:calc(100% + 18px);object-position:center 52%;filter:saturate(.84) brightness(.67) contrast(1.05)!important}
-body[data-game-screen="hunt"] .huntv2-env-overlay{background:linear-gradient(180deg,rgba(2,10,17,.20),rgba(2,10,17,.01) 36%,rgba(2,10,17,.06) 66%,rgba(2,9,14,.48))!important}
+/* Diagonal duel staging. */
+body[data-game-screen="hunt"] .huntv2-arena{top:88px!important;bottom:14px!important}
+body[data-game-screen="hunt"] .huntv2-actor.player{
+  left:-5%!important;width:min(58%,238px)!important;height:min(59%,300px)!important;bottom:-1%!important;
+}
+body[data-game-screen="hunt"] .huntv2-actor.enemy{
+  right:-3%!important;width:min(52%,226px)!important;height:min(53%,278px)!important;bottom:25%!important;
+}
+body[data-game-screen="hunt"] .huntv2-actor.enemy.boss{
+  right:-5%!important;width:min(56%,244px)!important;height:min(57%,294px)!important;bottom:23%!important;
+}
+body[data-game-screen="hunt"] .huntv2-back-seal{width:220px!important;height:220px!important;top:48%!important;opacity:.55}
+body[data-game-screen="hunt"] .huntv2-ground-seal{opacity:.72}
 
-body[data-game-screen="hunt"] .huntv2-quick-controls{top:auto!important;right:8px!important;bottom:8px!important;width:auto!important;display:flex!important;gap:4px!important;opacity:.72!important;transform:none!important}
-body[data-game-screen="hunt"] .huntv2-rail-btn{position:relative!important;width:36px!important;height:32px!important;padding:1px!important;border-radius:12px!important;background:rgba(3,15,23,.78)!important}
-body[data-game-screen="hunt"] .huntv2-rail-btn i{font-size:11px!important}
+/* Status follows its actor. */
+body[data-game-screen="hunt"] .huntv2-status-tray.player{left:15px!important;top:auto!important;bottom:143px!important;z-index:50!important}
+body[data-game-screen="hunt"] .huntv2-status-tray.enemy{position:absolute!important;right:14px!important;top:205px!important;z-index:50!important}
+body[data-game-screen="hunt"] .huntv2-status-tray .huntv2-status-chip,
+body[data-game-screen="hunt"] .huntv2-status-tray .status{
+  width:21px!important;height:21px!important;font-size:10px;border-radius:50%;
+}
+
+/* Circular utility rail, like the target reference. */
+body[data-game-screen="hunt"] .huntv2-quick-controls{
+  top:205px!important;right:8px!important;bottom:auto!important;width:42px!important;
+  display:grid!important;gap:7px;opacity:.88!important;transform:none!important;
+}
+body[data-game-screen="hunt"] .huntv2-rail-btn{
+  position:relative;width:39px!important;height:39px!important;padding:0;border-radius:50%;
+  border-color:rgba(234,203,126,.30);background:radial-gradient(circle at 50% 35%,rgba(38,48,38,.88),rgba(8,18,17,.88));
+  box-shadow:0 5px 12px rgba(0,0,0,.24);
+}
+body[data-game-screen="hunt"] .huntv2-rail-btn i{font-size:13px;color:#e8cf8e}
 body[data-game-screen="hunt"] .huntv2-rail-btn span{display:none!important}
-body[data-game-screen="hunt"] .huntv2-auto-card{display:none!important}
-body[data-game-screen="hunt"] .huntv2-boss-mechanic-chip{top:181px!important;right:8px!important;height:20px!important;max-width:44%!important}
-body[data-game-screen="hunt"] .huntv2-boss-mechanic-chip span,
-body[data-game-screen="hunt"] .huntv2-boss-mechanic-chip b{font-size:10px!important}
+body[data-game-screen="hunt"] .huntv2-auto-card,
+body[data-game-screen="hunt"] .huntv2-boss-mechanic-chip{display:none!important}
 
-/* Transient combat information gets separate lanes so nothing stretches or overlaps. */
-body[data-game-screen="hunt"] .huntv2-enemy-intent{top:205px!important;left:50%!important;right:auto!important;width:min(64%,250px)!important;max-width:none!important;transform:translateX(-50%)!important}
-body[data-game-screen="hunt"] .huntv2-break-window{top:205px!important;left:50%!important;transform:translateX(-50%)!important}
-body[data-game-screen="hunt"] .huntv2-skill-callout{top:286px!important;bottom:auto!important;height:auto!important;min-height:0!important;max-width:54%!important}
+/* Canonical Linh Thú / Tri Kỷ / Pháp Bảo become combat crests, not stacked cards. */
+body[data-game-screen="hunt"] .huntv2-hud-extension-slots{
+  position:absolute!important;z-index:56!important;left:174px!important;right:55px!important;bottom:12px!important;
+  display:flex!important;justify-content:center;align-items:flex-end;gap:6px;max-width:none!important;pointer-events:none;
+}
+body[data-game-screen="hunt"] .huntv2-hud-extension-slots>[data-combat-hud-slot]{
+  display:flex!important;gap:5px;align-items:flex-end;pointer-events:auto;
+}
+body[data-game-screen="hunt"] .huntv2-beast-companion-hud,
+body[data-game-screen="hunt"] .huntv2-confidant-hud,
+body[data-game-screen="hunt"] .huntv2-artifact-hud{
+  position:relative;width:48px!important;height:52px!important;padding:0!important;border:0!important;border-radius:50%;
+  background:transparent!important;box-shadow:none!important;overflow:visible!important;
+}
+body[data-game-screen="hunt"] .huntv2-beast-companion-hud>img,
+body[data-game-screen="hunt"] .huntv2-confidant-hud>img,
+body[data-game-screen="hunt"] .huntv2-support-crest{
+  display:block!important;width:43px!important;height:43px!important;border-radius:50%;overflow:hidden;
+  border:1px solid rgba(235,204,125,.56);background:rgba(8,20,19,.84);
+  box-shadow:0 0 0 2px rgba(4,13,13,.52),0 5px 13px rgba(0,0,0,.30);
+}
+body[data-game-screen="hunt"] .huntv2-support-crest img{width:100%;height:100%;object-fit:cover}
+body[data-game-screen="hunt"] .huntv2-beast-companion-hud>div,
+body[data-game-screen="hunt"] .huntv2-confidant-hud>div,
+body[data-game-screen="hunt"] .huntv2-artifact-hud>div{
+  position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);width:74px;text-align:center;pointer-events:none;
+}
+body[data-game-screen="hunt"] .huntv2-beast-companion-hud span,
+body[data-game-screen="hunt"] .huntv2-confidant-hud span,
+body[data-game-screen="hunt"] .huntv2-artifact-hud span,
+body[data-game-screen="hunt"] .huntv2-beast-companion-hud small,
+body[data-game-screen="hunt"] .huntv2-confidant-hud small,
+body[data-game-screen="hunt"] .huntv2-artifact-hud small{display:none!important}
+body[data-game-screen="hunt"] .huntv2-beast-companion-hud b,
+body[data-game-screen="hunt"] .huntv2-confidant-hud b,
+body[data-game-screen="hunt"] .huntv2-artifact-hud b{
+  display:block;font:800 10px/1 Georgia,serif;color:#f1dfb1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px #000;
+}
+
+/* Transient combat information has protected lanes. */
+body[data-game-screen="hunt"] .huntv2-enemy-intent{
+  top:214px!important;left:50%!important;right:auto!important;width:min(62%,242px)!important;max-width:none!important;transform:translateX(-50%)!important;
+}
+body[data-game-screen="hunt"] .huntv2-break-window{top:214px!important;left:50%!important;transform:translateX(-50%)!important}
+body[data-game-screen="hunt"] .huntv2-skill-callout{top:auto!important;bottom:92px!important;height:auto!important;max-width:55%!important}
 body[data-game-screen="hunt"] .huntv2-skill-callout.enemy{right:10px!important;left:auto!important}
-body[data-game-screen="hunt"] .huntv2-float-layer{top:205px!important;bottom:65px!important}
+body[data-game-screen="hunt"] .huntv2-combat-caption{bottom:82px!important}
+body[data-game-screen="hunt"] .huntv2-float-layer{top:170px!important;bottom:72px!important}
 
-body[data-game-screen="hunt"] .huntv2-console{flex:0 0 137px!important;min-height:137px!important;padding:5px 7px 4px!important;background:linear-gradient(180deg,rgba(5,20,29,.96),#030b12)!important;border-top-color:rgba(226,191,112,.18)!important}
-body[data-game-screen="hunt"] .huntv2-intel-lane{min-height:26px!important;height:26px!important;margin:0 0 4px!important;gap:4px!important}
-body[data-game-screen="hunt"] [data-intel-resource]{min-height:24px!important;height:24px!important}
+/* Skill rail: illustrated circular skills over a light dock. */
+body[data-game-screen="hunt"] .huntv2-console{
+  flex:0 0 123px!important;min-height:123px!important;padding:4px 8px!important;
+  background:linear-gradient(180deg,rgba(6,18,17,.18),rgba(5,14,14,.88) 38%,rgba(3,10,10,.97));
+  border-top-color:rgba(232,201,120,.13);box-shadow:0 -9px 22px rgba(0,0,0,.20);
+}
+body[data-game-screen="hunt"] .huntv2-intel-lane{min-height:25px!important;height:25px!important;margin:0 0 3px!important;gap:5px}
+body[data-game-screen="hunt"] [data-intel-resource]{
+  min-height:23px!important;height:23px!important;border-radius:11px;background:rgba(7,19,18,.62);border-color:rgba(123,201,197,.18);
+}
 body[data-game-screen="hunt"] [data-intel-resource] span,
-body[data-game-screen="hunt"] [data-intel-resource] b{font-size:10px!important}
-body[data-game-screen="hunt"] .huntv2-skills{height:72px!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:4px!important;align-items:start!important}
-body[data-game-screen="hunt"] .huntv2-skill{height:70px!important;min-height:70px!important;position:relative!important}
-body[data-game-screen="hunt"] .huntv2-skill-art{width:46px!important;height:46px!important;border-width:1.5px!important;box-shadow:0 5px 11px rgba(0,0,0,.30),inset 0 0 0 1px rgba(255,255,255,.04)!important}
-body[data-game-screen="hunt"] .huntv2-skill.ready .huntv2-skill-art{border-color:rgba(107,215,198,.68)!important;box-shadow:0 0 0 2px rgba(81,191,179,.11),0 0 14px rgba(81,191,179,.24),0 5px 11px rgba(0,0,0,.30)!important}
-body[data-game-screen="hunt"] .huntv2-skill.ready .huntv2-skill-art::after{content:"";position:absolute;right:3px;top:3px;width:7px;height:7px;border-radius:50%;background:#72dec5;box-shadow:0 0 7px rgba(114,222,197,.9);z-index:6}
+body[data-game-screen="hunt"] [data-intel-resource] b{font-size:10px}
+body[data-game-screen="hunt"] .huntv2-skills{
+  display:grid!important;height:68px!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:3px;align-items:center;
+}
+body[data-game-screen="hunt"] .huntv2-skill{height:66px!important;min-height:66px!important;position:relative}
+body[data-game-screen="hunt"] .huntv2-skill-art{
+  width:48px!important;height:48px!important;border-radius:50%;border-width:1.5px;
+  border-color:rgba(205,194,156,.48);box-shadow:0 0 0 2px rgba(5,15,15,.66),0 6px 12px rgba(0,0,0,.30);
+}
+body[data-game-screen="hunt"] .huntv2-skill.ready .huntv2-skill-art{
+  border-color:rgba(111,223,202,.82);box-shadow:0 0 0 2px rgba(71,188,169,.13),0 0 15px rgba(89,213,191,.26),0 6px 12px rgba(0,0,0,.30);
+}
+body[data-game-screen="hunt"] .huntv2-skill.ready .huntv2-skill-art::after{
+  content:"";position:absolute;right:2px;top:2px;width:7px;height:7px;border-radius:50%;background:#78e4cc;box-shadow:0 0 7px #78e4cc;z-index:6;
+}
+body[data-game-screen="hunt"] .huntv2-skill.ultimate .huntv2-skill-art{width:53px!important;height:53px!important;border-radius:50%}
 body[data-game-screen="hunt"] .huntv2-skill.ultimate.ready .huntv2-skill-art,
-body[data-game-screen="hunt"] .huntv2-skill.ultimate.gauge-ready .huntv2-skill-art{border-color:rgba(237,195,99,.84)!important;box-shadow:0 0 0 2px rgba(237,195,99,.13),0 0 17px rgba(237,195,99,.32),0 5px 11px rgba(0,0,0,.32)!important}
-body[data-game-screen="hunt"] .huntv2-skill.ultimate.ready .huntv2-skill-art::after,
-body[data-game-screen="hunt"] .huntv2-skill.ultimate.gauge-ready .huntv2-skill-art::after{background:#f2cf74;box-shadow:0 0 8px rgba(242,207,116,.95)}
+body[data-game-screen="hunt"] .huntv2-skill.ultimate.gauge-ready .huntv2-skill-art{
+  border-color:rgba(242,205,109,.92);box-shadow:0 0 0 2px rgba(242,205,109,.14),0 0 18px rgba(242,205,109,.35),0 6px 12px rgba(0,0,0,.32);
+}
 body[data-game-screen="hunt"] .huntv2-skill>small,
 body[data-game-screen="hunt"] .huntv2-skill-meta,
 body[data-game-screen="hunt"] .huntv2-skill-role{display:none!important}
-body[data-game-screen="hunt"] .huntv2-ult-ready{left:50%!important;right:auto!important;bottom:2px!important;transform:translateX(-50%)!important;padding:2px 4px!important;border-radius:7px!important;font-size:10px!important;line-height:1!important;background:rgba(31,22,5,.88)!important;color:#f5d477!important}
-body[data-game-screen="hunt"] .huntv2-cooldown b{position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;font:900 15px/1 Georgia,serif!important;color:#fff1d2!important;text-shadow:0 2px 4px #000!important}
-body[data-game-screen="hunt"] .huntv2-skill.cooldown .huntv2-skill-art{filter:saturate(.55) brightness(.72)!important}
-body[data-game-screen="hunt"] .huntv2-skill.low-cn .huntv2-skill-art{border-color:rgba(235,105,95,.58)!important;filter:saturate(.65) brightness(.74)!important}
-
-body[data-game-screen="hunt"] .huntv2-action-deck{min-height:28px!important;height:28px!important;margin-top:2px!important}
-body[data-game-screen="hunt"] .huntv2-action-deck button{min-height:28px!important;height:28px!important;padding:2px 8px!important}
+body[data-game-screen="hunt"] .huntv2-ult-ready{
+  left:50%!important;right:auto!important;bottom:0!important;transform:translateX(-50%)!important;
+  padding:2px 4px;border-radius:7px;font-size:10px;background:rgba(46,33,7,.90);color:#f7d77d;
+}
+body[data-game-screen="hunt"] .huntv2-cooldown b{
+  position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;
+  font:900 15px/1 Georgia,serif;color:#fff1d2;text-shadow:0 2px 4px #000;
+}
+body[data-game-screen="hunt"] .huntv2-skill.cooldown .huntv2-skill-art{filter:saturate(.48) brightness(.68)}
+body[data-game-screen="hunt"] .huntv2-skill.low-cn .huntv2-skill-art{border-color:rgba(235,105,95,.65);filter:saturate(.62) brightness(.72)}
+body[data-game-screen="hunt"] .huntv2-action-deck{min-height:25px!important;height:25px!important;margin-top:1px!important}
+body[data-game-screen="hunt"] .huntv2-action-deck button{min-height:25px!important;height:25px!important;padding:1px 9px;border-radius:13px}
 body[data-game-screen="hunt"] .huntv2-action-deck strong,
-body[data-game-screen="hunt"] .huntv2-action-deck span{font-size:10px!important;line-height:1.05!important}
-body[data-game-screen="hunt"] .huntv2-log-preview{min-height:31px!important;height:31px!important}
+body[data-game-screen="hunt"] .huntv2-action-deck span{font-size:10px;line-height:1}
+body[data-game-screen="hunt"] .huntv2-log-preview{min-height:28px!important;height:28px!important;background:rgba(5,14,14,.54)}
 body[data-game-screen="hunt"] .huntv2-log-preview strong,
 body[data-game-screen="hunt"] .huntv2-log-preview span,
-body[data-game-screen="hunt"] .huntv2-log-preview button{font-size:10px!important}
+body[data-game-screen="hunt"] .huntv2-log-preview button{font-size:10px}
+
+body[data-game-screen="hunt"] .huntv2-confidant-callout,
+body[data-game-screen="hunt"] .huntv2-artifact-callout{
+  border-radius:0;background:linear-gradient(90deg,rgba(7,18,17,.90),rgba(35,31,20,.66),transparent);
+  border:0;border-left:2px solid var(--combat-gold);box-shadow:none;
+}
+body[data-game-screen="hunt"] .huntv2-confidant-callout span,
+body[data-game-screen="hunt"] .huntv2-confidant-callout b,
+body[data-game-screen="hunt"] .huntv2-confidant-callout small,
+body[data-game-screen="hunt"] .huntv2-artifact-callout span,
+body[data-game-screen="hunt"] .huntv2-artifact-callout b,
+body[data-game-screen="hunt"] .huntv2-artifact-callout small{font-size:10px}
 
 @media(max-width:360px){
-  body[data-game-screen="hunt"] .huntv2-top-identity{width:208px!important}
-  body[data-game-screen="hunt"] .huntv2-player-hud,
-  body[data-game-screen="hunt"] .huntv2-enemy-hud{height:82px!important}
-  body[data-game-screen="hunt"] .huntv2-player-hud{width:calc(50% - 8px)!important}
-  body[data-game-screen="hunt"] .huntv2-enemy-hud{width:calc(50% - 8px)!important;padding-right:45px!important}
-  body[data-game-screen="hunt"] .huntv2-enemy-hud .huntv2-portrait{width:39px!important;height:39px!important}
-  body[data-game-screen="hunt"] .huntv2-skill-art{width:42px!important;height:42px!important}
-  body[data-game-screen="hunt"] .huntv2-skills{gap:2px!important}
+  body[data-game-screen="hunt"] .huntv2-top-identity{width:202px!important}
+  body[data-game-screen="hunt"] .huntv2-player-hud{left:9px!important;width:148px!important;bottom:158px!important}
+  body[data-game-screen="hunt"] .huntv2-enemy-hud{right:9px!important;width:168px!important}
+  body[data-game-screen="hunt"] .huntv2-actor.player{width:min(60%,220px)!important}
+  body[data-game-screen="hunt"] .huntv2-actor.enemy{width:min(54%,208px)!important}
+  body[data-game-screen="hunt"] .huntv2-hud-extension-slots{left:156px!important;right:51px!important;gap:4px}
+  body[data-game-screen="hunt"] .huntv2-beast-companion-hud,
+  body[data-game-screen="hunt"] .huntv2-confidant-hud,
+  body[data-game-screen="hunt"] .huntv2-artifact-hud{width:43px!important}
+  body[data-game-screen="hunt"] .huntv2-beast-companion-hud>img,
+  body[data-game-screen="hunt"] .huntv2-confidant-hud>img,
+  body[data-game-screen="hunt"] .huntv2-support-crest{width:39px!important;height:39px!important}
+  body[data-game-screen="hunt"] .huntv2-skill-art{width:43px!important;height:43px!important}
+  body[data-game-screen="hunt"] .huntv2-skill.ultimate .huntv2-skill-art{width:48px!important;height:48px!important}
+  body[data-game-screen="hunt"] .huntv2-skills{gap:2px}
 }
