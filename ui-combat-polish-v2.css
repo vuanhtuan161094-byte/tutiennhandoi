@@ -1,0 +1,89 @@
+/* Combat Target V2 polish — presentation only.
+   Keeps V163/V164/V168 runtime authority untouched. */
+
+/* Support summons read as artwork-first combat crests, not truncated mini cards. */
+body[data-game-screen="hunt"] .huntv2-hud-extension-slots{
+  left:160px!important;
+  right:48px!important;
+  bottom:17px!important;
+  gap:10px!important;
+  justify-content:flex-end!important;
+  overflow:visible!important;
+}
+body[data-game-screen="hunt"] .huntv2-hud-extension-slots>[data-combat-hud-slot]{
+  flex:0 0 auto!important;
+  gap:8px!important;
+  justify-content:center!important;
+  overflow:visible!important;
+}
+body[data-game-screen="hunt"] .huntv2-beast-companion-hud,
+body[data-game-screen="hunt"] .huntv2-confidant-hud,
+body[data-game-screen="hunt"] .huntv2-artifact-hud{
+  width:46px!important;
+  height:52px!important;
+  overflow:visible!important;
+}
+body[data-game-screen="hunt"] .huntv2-beast-companion-hud b,
+body[data-game-screen="hunt"] .huntv2-confidant-hud b,
+body[data-game-screen="hunt"] .huntv2-artifact-hud b{
+  display:none!important;
+}
+body[data-game-screen="hunt"] .huntv2-beast-companion-hud::after,
+body[data-game-screen="hunt"] .huntv2-confidant-hud::after,
+body[data-game-screen="hunt"] .huntv2-artifact-hud::after{
+  position:absolute;
+  left:50%;
+  bottom:-7px;
+  transform:translateX(-50%);
+  z-index:4;
+  padding:2px 4px 1px;
+  border:1px solid rgba(232,201,120,.20);
+  border-radius:7px;
+  background:rgba(5,15,14,.76);
+  box-shadow:0 2px 6px rgba(0,0,0,.24);
+  color:#ead9ad;
+  font:800 7px/1 Inter,"Segoe UI",Arial,sans-serif;
+  letter-spacing:.025em;
+  white-space:nowrap;
+  text-shadow:0 1px 2px #000;
+  pointer-events:none;
+}
+body[data-game-screen="hunt"] .huntv2-beast-companion-hud::after{content:"LINH THÚ"}
+body[data-game-screen="hunt"] .huntv2-confidant-hud::after{content:"TRI KỶ"}
+body[data-game-screen="hunt"] .huntv2-artifact-hud::after{content:"BẢO KHÍ"}
+body[data-game-screen="hunt"] .huntv2-beast-companion-hud{transform:translateY(3px)}
+body[data-game-screen="hunt"] .huntv2-confidant-hud{transform:translateY(-3px)}
+body[data-game-screen="hunt"] .huntv2-artifact-hud{transform:translateY(1px)}
+
+/* One high-salience combat message at a time: boss telegraph/break beats routine caption. */
+body[data-game-screen="hunt"] .huntv2-stage:has(.huntv2-enemy-intent.show) .huntv2-combat-caption.show,
+body[data-game-screen="hunt"] .huntv2-stage:has(.huntv2-break-window.show) .huntv2-combat-caption.show{
+  animation:none!important;
+  opacity:0!important;
+  visibility:hidden!important;
+}
+body[data-game-screen="hunt"] .huntv2-combat-caption{
+  width:min(54%,210px)!important;
+  padding:3px 7px 4px!important;
+  bottom:88px!important;
+  border-color:rgba(232,201,120,.12)!important;
+  background:rgba(3,12,18,.50)!important;
+  box-shadow:none!important;
+  backdrop-filter:blur(2px);
+}
+body[data-game-screen="hunt"] .huntv2-combat-caption strong{font-size:9px!important}
+body[data-game-screen="hunt"] .huntv2-combat-caption span{font-size:7px!important}
+
+@media(max-width:360px){
+  body[data-game-screen="hunt"] .huntv2-hud-extension-slots{
+    left:150px!important;
+    right:43px!important;
+    gap:7px!important;
+  }
+  body[data-game-screen="hunt"] .huntv2-beast-companion-hud,
+  body[data-game-screen="hunt"] .huntv2-confidant-hud,
+  body[data-game-screen="hunt"] .huntv2-artifact-hud{width:41px!important}
+  body[data-game-screen="hunt"] .huntv2-beast-companion-hud::after,
+  body[data-game-screen="hunt"] .huntv2-confidant-hud::after,
+  body[data-game-screen="hunt"] .huntv2-artifact-hud::after{font-size:6.5px;padding-inline:3px}
+}
