@@ -4,6 +4,19 @@ const readJson = async path => JSON.parse(await readFile(path, 'utf8'));
 const fail = message => { throw new Error(message); };
 const exists = async path => { try { await access(path); return true; } catch { return false; } };
 
+const agentContract = await readFile('AGENTS.md', 'utf8');
+const requiredWorkflowLockClauses = [
+  '## 0. NON-NEGOTIABLE WORKFLOW LOCK',
+  'No exact-SHA evidence = no completion claim.',
+  'AI Browser Playtest',
+  'Runtime Visual Proof for UI-visible changes',
+  'do **not** stop and wait for the user to say `continue`',
+  'report `BLOCKED` with the exact blocker',
+];
+for (const clause of requiredWorkflowLockClauses) {
+  if (!agentContract.includes(clause)) fail(`AGENTS workflow lock missing required clause: ${clause}`);
+}
+
 const scenarios = await readJson('qa/playtest/scenarios.json');
 if (scenarios.schema !== 'tutien-ai-playtest.scenarios.v1') fail('Unexpected playtest scenario schema');
 if (!Array.isArray(scenarios.scenarios) || scenarios.scenarios.length < 4) fail('Expected at least four playtest scenarios');
@@ -75,4 +88,4 @@ for (const asset of registry.assets) {
 
 const schema = await readJson('assets/_pipeline/brief.schema.json');
 if (schema.$id !== 'tutien-asset-brief.v2') fail('Unexpected asset brief schema id');
-console.log(`AI PIPELINE CONTRACT PASS · scenarios=${scenarios.scenarios.length} · assets=${registry.assets.length} · productionTriggers=${requiredProductionTriggers.length}`);
+console.log(`AI PIPELINE CONTRACT PASS · workflowLock=${requiredWorkflowLockClauses.length} · scenarios=${scenarios.scenarios.length} · assets=${registry.assets.length} · productionTriggers=${requiredProductionTriggers.length}`);
