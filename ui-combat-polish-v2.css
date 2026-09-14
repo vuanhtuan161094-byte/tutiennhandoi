@@ -55,9 +55,11 @@ body[data-game-screen="hunt"] .huntv2-beast-companion-hud{transform:translateY(3
 body[data-game-screen="hunt"] .huntv2-confidant-hud{transform:translateY(-3px)}
 body[data-game-screen="hunt"] .huntv2-artifact-hud{transform:translateY(1px)}
 
-/* One high-salience combat message at a time: boss telegraph/break beats routine caption. */
+/* One high-salience combat message at a time: boss telegraph/break beats routine feedback. */
 body[data-game-screen="hunt"] .huntv2-stage:has(.huntv2-enemy-intent.show) .huntv2-combat-caption.show,
-body[data-game-screen="hunt"] .huntv2-stage:has(.huntv2-break-window.show) .huntv2-combat-caption.show{
+body[data-game-screen="hunt"] .huntv2-stage:has(.huntv2-enemy-intent.show) .huntv2-skill-callout.enemy.show,
+body[data-game-screen="hunt"] .huntv2-stage:has(.huntv2-break-window.show) .huntv2-combat-caption.show,
+body[data-game-screen="hunt"] .huntv2-stage:has(.huntv2-break-window.show) .huntv2-skill-callout.enemy.show{
   animation:none!important;
   opacity:0!important;
   visibility:hidden!important;
