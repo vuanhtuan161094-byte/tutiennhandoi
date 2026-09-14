@@ -29,10 +29,16 @@ assert.match(moduleSource, /if\(String\(event\.statusId\|\|'\'\)\!==\'hunt\.boss
 assert.match(moduleSource, /chip\.dataset\.priority='2';/,
   'mark stacks must outrank generic statuses in the four-chip tray');
 
-assert.match(composition, /\.huntv2-confidant-hud\{\s*left:164px!important;\s*bottom:42px!important;/,
-  'Tri Kỷ must sit in the lower support constellation');
-assert.match(composition, /\.huntv2-artifact-hud\{\s*left:118px!important;\s*bottom:102px!important;/,
-  'Bảo Khí must sit below the player vitals');
+assert.match(composition, /\.huntv2-hud-extension-slots\{\s*left:10px!important;\s*right:auto!important;\s*bottom:24px!important;[\s\S]*display:flex!important;/,
+  'support extensions must share one horizontal row');
+assert.match(composition, /\.huntv2-hud-extension-slots>\[data-combat-hud-slot\]\{\s*display:contents!important;/,
+  'support slot wrappers must flatten into one row');
+assert.match(composition, /\.huntv2-artifact-hud\{\s*position:relative!important;[\s\S]*flex:0 0 58px!important;/,
+  'each support must occupy a stable horizontal row cell');
+assert.match(composition, /\.huntv2-player-hud\{\s*top:278px!important;\s*bottom:auto!important;/,
+  'player HP/CN must be lifted above the support row');
+assert.match(composition, /\.huntv2-player-hud\{top:266px!important\}/,
+  'compact player HP/CN must remain lifted');
 assert.match(composition, /\.huntv2-status-tray \.status\[data-timed="1"\]::after/,
   'timed status chips need a visible countdown treatment');
 assert.match(composition, /\.huntv2-status-tray \.status-more/,
