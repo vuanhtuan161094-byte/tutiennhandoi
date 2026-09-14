@@ -81,6 +81,11 @@ jobs:
           CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
         run: node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual --cdp-port 9223
 
+      - name: Capture compact Combat runtime proof
+        env:
+          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+        run: node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual/compact --cdp-port 9224 --width 360 --height 800
+
       - name: Validate proof files
         shell: bash
         run: |
@@ -91,6 +96,8 @@ jobs:
           test -s artifacts/ui-visual/character-baseline-390x844.png
           test -s artifacts/ui-visual/combat-runtime-390x844.png
           test -s artifacts/ui-visual/combat-runtime-action-390x844.png
+          test -s artifacts/ui-visual/compact/combat-runtime-360x800.png
+          test -s artifacts/ui-visual/compact/combat-runtime-action-360x800.png
           test -s artifacts/ui-visual/combat-runtime-metrics.json
           test -s artifacts/ui-visual/combat-target-reference.png
           test -s artifacts/ui-visual/manifest.json

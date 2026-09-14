@@ -21,7 +21,7 @@ export async function syncSpiritBeastPresentationV86(model={}){
   if(!b){unregisterCombatPresentationActor('spirit-beast.v86.active');return false;}
   return registerCombatPresentationActor({
     id:'spirit-beast.v86.active',slot:'player.companion',side:'player',role:'companion',asset:String(b.asset||''),scale:.78,
-    logicalAnchor:{x:.31,y:.80,width:.18,height:.20},
+    logicalAnchor:{x:.44,y:.82,width:.18,height:.20},
     metadata:{feature:'SpiritBeastV86',speciesId:b.speciesId,name:b.name,bloodline:b.bloodline}
   });
 }

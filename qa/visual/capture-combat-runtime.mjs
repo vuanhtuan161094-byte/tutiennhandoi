@@ -7,6 +7,8 @@ const baseUrl=String(args.get('--base')||process.env.TUTIEN_VISUAL_BASE_URL||'ht
 const outDir=resolve(args.get('--out')||process.env.TUTIEN_VISUAL_OUT_DIR||'artifacts/ui-visual');
 const chromePath=args.get('--chrome')||process.env.CHROME_PATH||process.env.GOOGLE_CHROME_BIN||'google-chrome';
 const cdpPort=Number(args.get('--cdp-port')||9223);
+const width=Number(args.get('--width')||390),height=Number(args.get('--height')||844);
+const viewport=width+'x'+height;
 const profileDir=resolve('.tmp/ui-combat-visual-chrome-profile');
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 await mkdir(outDir,{recursive:true});await rm(profileDir,{recursive:true,force:true});await mkdir(profileDir,{recursive:true});
@@ -24,18 +26,21 @@ let c;try{
   let target=null;try{const r=await fetch(`http://127.0.0.1:${cdpPort}/json/new?about:blank`,{method:'PUT'});if(r.ok)target=await r.json()}catch{}
   if(!target){const list=await poll(`http://127.0.0.1:${cdpPort}/json/list`);target=list.find(x=>x.type==='page')}
   if(!target?.webSocketDebuggerUrl)throw new Error('No page target');
-  c=new CDP(target.webSocketDebuggerUrl);await c.connect();await c.send('Page.enable');await c.send('Runtime.enable');await c.send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true,screenWidth:390,screenHeight:844,screenOrientation:{type:'portraitPrimary',angle:0}});
+  c=new CDP(target.webSocketDebuggerUrl);await c.connect();await c.send('Page.enable');await c.send('Runtime.enable');await c.send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:true,screenWidth:width,screenHeight:height,screenOrientation:{type:'portraitPrimary',angle:0}});
   await navigate(c,`${baseUrl}/?dev=1&tab=cultivation&visualqa=1`);await waitFor(c,`document.body.dataset.uxShell==='p0' && document.querySelector('#content')?.children.length>0`,'canonical DEV runtime bootstrap');
   await c.eval(`(async()=>{const headers={'content-type':'application/json'};const post=async(path,body)=>{const response=await fetch(path,{method:'POST',headers,body:JSON.stringify(body)});const data=await response.json();if(!response.ok||data.ok===false)throw new Error(data.error||('HTTP '+response.status));return data;};const locateSummary=(value,seen=new Set())=>{if(!value||typeof value!=='object'||seen.has(value))return null;seen.add(value);if(Array.isArray(value.categories))return value;for(const child of Object.values(value)){const found=locateSummary(child,seen);if(found)return found;}return null;};await post('/api/dev/new',{seed:20260913});await post('/api/dev/action',{action:'devSandboxPreset',realmOrder:62,dao:'sword',forceBoss:true});const grant=await post('/api/dev/action',{action:'devCollectionGrantV12326'});const summary=locateSummary(grant);if(!summary)throw new Error('DEV collection summary unavailable');const cat=id=>summary.categories.find(x=>x.category===id);const owned=id=>(cat(id)?.items||[]).filter(x=>x?.progress?.owned);const artifacts=owned('artifact').slice(0,2),pet=owned('pet')[0],companion=owned('companion')[0],relic=owned('relic')[0];if(!artifacts.length||!pet||!companion||!relic)throw new Error('DEV support collection fixtures unavailable');for(let i=0;i<artifacts.length;i++)await post('/api/dev/action',{action:'collectionEquipV12325',itemId:artifacts[i].id,slotIndex:i});await post('/api/dev/action',{action:'collectionEquipV12325',itemId:pet.id});await post('/api/dev/action',{action:'collectionEquipV12325',itemId:companion.id});await post('/api/dev/action',{action:'collectionEquipV12325',itemId:relic.id});const response=await fetch('/api/dev/save',{cache:'no-store'});const data=await response.json();if(!response.ok||data.ok===false||!data.save)throw new Error(data.error||'DEV save unavailable');localStorage.setItem('tutien.web.save.v1',JSON.stringify(data.save));return {artifactIds:artifacts.map(x=>x.id),petId:pet.id,companionId:companion.id,relicId:relic.id}})()`);
   await navigate(c,`${baseUrl}/?dev=1&tab=hunt&visualqa=1`);await waitFor(c,`document.body.dataset.uxShell==='p0' && document.querySelector('.huntv2-screen')`,'Combat runtime');await waitFor(c,`document.querySelector('[data-endless-fight]:not([disabled])')`,'backend-authored Boss fight action');await waitFor(c,`document.querySelector('.ui-combat-enemy-context')`,'Combat backend context bridge');await waitFor(c,`document.querySelector('.huntv2-beast-companion-hud') && document.querySelector('.huntv2-confidant-hud') && document.querySelector('.huntv2-artifact-hud')`,'backend-authored Combat support HUDs');await waitFor(c,`!document.querySelector('#notice') || document.querySelector('#notice').classList.contains('hidden')`,'Combat transient notice cleared',6000);await visualReady(c);
 
   const cleanMetrics=await metrics(c);if(cleanMetrics.hasHorizontalOverflow)throw new Error(`Combat horizontal overflow ${cleanMetrics.scrollWidth}px`);if(!cleanMetrics.hasSpiritBeastHud||!cleanMetrics.hasConfidantHud||!cleanMetrics.hasArtifactHud)throw new Error('Combat support HUD proof incomplete');
-  await screenshot(c,'combat-runtime-390x844.png');await writeFile(resolve(outDir,'combat-runtime-metrics.json'),JSON.stringify(cleanMetrics,null,2));
+  if(!cleanMetrics.hasPlayerHud||!cleanMetrics.hasEnemyHud||cleanMetrics.skillCount!==7||cleanMetrics.visibleText.length)throw new Error('Combat vitals / seven skills / legibility proof incomplete');
+  await screenshot(c,'combat-runtime-'+viewport+'.png');await writeFile(resolve(outDir,'combat-runtime-metrics.json'),JSON.stringify(cleanMetrics,null,2));
 
   await c.eval(`(()=>{const b=document.querySelector('[data-endless-fight]:not([disabled])');if(!b)throw new Error('Boss fight action unavailable');b.click();return true})()`);
   await waitFor(c,`document.querySelector('.huntv2-stage.presentation-active,.huntv2-actor.player.state-cast,.huntv2-actor.player.state-attack,.huntv2-actor.player.state-ultimate,.huntv2-actor.enemy.state-hit,.huntv2-float.show,.huntv2-skill-callout.show')`,'real backend Combat presentation',10000);
-  await sleep(120);
-  await screenshot(c,'combat-runtime-action-390x844.png');
+  await visualReady(c);
+  await waitFor(c,`document.querySelector('.huntv2-enemy-intent.show')`,'backend-authored enemy telegraph',10000);
+  await sleep(180);
+  await screenshot(c,'combat-runtime-action-'+viewport+'.png');
   const actionMetrics=await metrics(c);await writeFile(resolve(outDir,'combat-runtime-action-metrics.json'),JSON.stringify(actionMetrics,null,2));
   if(actionMetrics.hasHorizontalOverflow)throw new Error(`Combat action horizontal overflow ${actionMetrics.scrollWidth}px`);
   console.log(`COMBAT VISUAL PASS · clean + real backend action · skills=${cleanMetrics.skillCount} · support=${cleanMetrics.supportHudCount} · tinyText=${cleanMetrics.visibleText.length} · actionLayers=${actionMetrics.largeLayers.length}`);

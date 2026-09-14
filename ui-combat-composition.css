@@ -4,16 +4,18 @@
 /* Pull the duel inward and slightly upward so neither silhouette hugs the edge.
    Keep enough center space for skill FX / telegraphs instead of filling it with UI. */
 body[data-game-screen="hunt"] .huntv2-actor.player{
-  left:6%!important;
-  bottom:10%!important;
+  left:8%!important;
+  bottom:13%!important;
+  width:min(44%,180px)!important;
+  height:min(46%,238px)!important;
 }
 body[data-game-screen="hunt"] .huntv2-actor.enemy{
-  right:4%!important;
-  bottom:47%!important;
+  right:8%!important;
+  bottom:43%!important;
 }
 body[data-game-screen="hunt"] .huntv2-actor.enemy.boss{
-  right:3%!important;
-  bottom:46%!important;
+  right:8%!important;
+  bottom:43%!important;
 }
 
 /* Brighter painted battlefield and two faint faction light pools. The scenery
@@ -66,7 +68,7 @@ body[data-game-screen="hunt"] .huntv2-hud-extension-slots{
 /* Linh Thú itself is the Pixi actor at the player's feet. Remove the duplicate
    portrait while retaining a readable identity tag attached to that actor. */
 body[data-game-screen="hunt"] .huntv2-beast-companion-hud{
-  left:108px!important;
+  left:142px!important;
   bottom:-9px!important;
   width:96px!important;
   height:22px!important;
@@ -115,7 +117,7 @@ body[data-game-screen="hunt"] .huntv2-artifact-hud::after{
 /* HUDs remain clearly owned by their actor but no longer sit on the outer bezel. */
 body[data-game-screen="hunt"] .huntv2-player-hud{
   left:12px!important;
-  top:348px!important;
+  top:326px!important;
   width:154px!important;
 }
 body[data-game-screen="hunt"] .huntv2-enemy-hud{
@@ -156,15 +158,50 @@ body[data-game-screen="hunt"] .huntv2-combat-caption{
   max-width:46%!important;
 }
 
+/* Numeric glyphs must fit inside the bars, independent of inherited body
+   line-height. Keep compact vitals without cropping HP/CN or Poise. */
+body[data-game-screen="hunt"] .huntv2-vital,
+body[data-game-screen="hunt"] .huntv2-hp,
+body[data-game-screen="hunt"] .huntv2-poise{
+  height:14px!important;
+}
+body[data-game-screen="hunt"] .huntv2-vital>em,
+body[data-game-screen="hunt"] .huntv2-hp>b,
+body[data-game-screen="hunt"] .huntv2-poise>em{
+  line-height:1!important;
+  display:grid!important;
+  place-items:center!important;
+}
+body[data-game-screen="hunt"] .huntv2-hud-main{
+  grid-template-rows:18px 15px 16px 18px!important;
+}
+body[data-game-screen="hunt"] .huntv2-enemy-hud{height:76px!important}
+body[data-game-screen="hunt"] .huntv2-enemy-intent,
+body[data-game-screen="hunt"] .huntv2-break-window{
+  top:184px!important;
+  left:12px!important;
+  right:auto!important;
+  max-width:198px!important;
+  border-radius:2px!important;
+  box-shadow:0 2px 10px rgba(0,0,0,.18)!important;
+  background:linear-gradient(90deg,rgba(55,20,13,.90),rgba(29,18,12,.72),rgba(29,18,12,.25))!important;
+}
+body[data-game-screen="hunt"] .huntv2-enemy-intent strong{
+  white-space:normal!important;
+  overflow:visible!important;
+  max-height:none!important;
+  line-height:1.15!important;
+}
+
 @media(max-width:360px){
   body[data-game-screen="hunt"] .huntv2-actor.player{
-    left:4%!important;
-    bottom:9%!important;
+    left:7%!important;
+    bottom:12%!important;
   }
   body[data-game-screen="hunt"] .huntv2-actor.enemy,
   body[data-game-screen="hunt"] .huntv2-actor.enemy.boss{
-    right:2%!important;
-    bottom:45%!important;
+    right:7%!important;
+    bottom:42%!important;
   }
   body[data-game-screen="hunt"] .huntv2-back-seal{
     width:232px!important;
@@ -172,7 +209,7 @@ body[data-game-screen="hunt"] .huntv2-combat-caption{
   }
   body[data-game-screen="hunt"] .huntv2-player-hud{
     left:9px!important;
-    top:340px!important;
+    top:310px!important;
     width:145px!important;
   }
   body[data-game-screen="hunt"] .huntv2-enemy-hud{
@@ -185,7 +222,7 @@ body[data-game-screen="hunt"] .huntv2-combat-caption{
     bottom:62px!important;
   }
   body[data-game-screen="hunt"] .huntv2-beast-companion-hud{
-    left:96px!important;
+    left:130px!important;
     bottom:-8px!important;
     width:92px!important;
   }
