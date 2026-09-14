@@ -168,5 +168,11 @@ export function collectionEconomySummaryV12325(state, foundation, now = Date.now
       relicV151,
     };
   }
+  out.active = {
+    ...(out.active ?? {}),
+    artifactIds: [...(state?.activeArtifactIds ?? [])],
+    petId: state?.activePetId ?? null,
+    companionId: state?.activeCompanionId ?? out.active?.companionId ?? null,
+  };
   return out;
 }
