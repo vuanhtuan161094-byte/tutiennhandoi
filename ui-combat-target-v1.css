@@ -95,7 +95,9 @@ body[data-game-screen="hunt"] .huntv2-arena{top:176px!important;bottom:36px!impo
 body[data-game-screen="hunt"] .huntv2-actor.player{left:0!important;width:min(49%,214px)!important;height:min(69%,288px)!important;bottom:0!important}
 body[data-game-screen="hunt"] .huntv2-actor.enemy{right:0!important;width:min(48%,212px)!important;height:min(67%,280px)!important;bottom:1%!important}
 body[data-game-screen="hunt"] .huntv2-actor.enemy.boss{right:-2%!important;width:min(53%,232px)!important;height:min(72%,302px)!important}
-body[data-game-screen="hunt"] .huntv2-bg{filter:saturate(.84) brightness(.67) contrast(1.05)!important}
+/* Legacy elemental-matchup lettering is baked into the very top edge of the environment plates.
+   Crop the source edge instead of adding another HUD mask over live combat. */
+body[data-game-screen="hunt"] .huntv2-bg{top:-14px!important;left:-4px!important;width:calc(100% + 8px)!important;height:calc(100% + 18px)!important;object-position:center 52%!important;filter:saturate(.84) brightness(.67) contrast(1.05)!important}
 body[data-game-screen="hunt"] .huntv2-env-overlay{background:linear-gradient(180deg,rgba(2,10,17,.20),rgba(2,10,17,.01) 36%,rgba(2,10,17,.06) 66%,rgba(2,9,14,.48))!important}
 
 body[data-game-screen="hunt"] .huntv2-quick-controls{top:auto!important;right:8px!important;bottom:8px!important;width:auto!important;display:flex!important;gap:4px!important;opacity:.72!important;transform:none!important}
