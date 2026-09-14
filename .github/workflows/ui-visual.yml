@@ -85,12 +85,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          cp docs/ui/reference/REFERENCE_COMBAT_TARGET_20260905.png artifacts/ui-visual/combat-target-reference.png
           test -s artifacts/ui-visual/home-hud-390x844.png
           test -s artifacts/ui-visual/home-hud-412x915.png
           test -s artifacts/ui-visual/character-baseline-390x844.png
           test -s artifacts/ui-visual/combat-runtime-390x844.png
           test -s artifacts/ui-visual/combat-runtime-action-390x844.png
           test -s artifacts/ui-visual/combat-runtime-metrics.json
+          test -s artifacts/ui-visual/combat-target-reference.png
           test -s artifacts/ui-visual/manifest.json
           node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('artifacts/ui-visual/manifest.json','utf8'));if(m.mockOrReconstruction!==false||m.screens?.length!==3)process.exit(1);console.log('VISUAL MANIFEST PASS ·',m.screens.map(x=>x.file).join(', '));"
           node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('artifacts/ui-visual/combat-runtime-metrics.json','utf8'));if(!m.hasCombat||!m.hasPlayerHud||!m.hasEnemyHud||!m.hasEnemyContext||m.hasHorizontalOverflow||m.skillCount!==7||m.visibleText.length>0)process.exit(1);console.log('COMBAT VISUAL METRICS PASS · skills='+m.skillCount+' · tinyText='+m.visibleText.length);"
