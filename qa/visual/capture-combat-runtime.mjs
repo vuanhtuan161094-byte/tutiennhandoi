@@ -9,7 +9,7 @@ const chromePath=args.get('--chrome')||process.env.CHROME_PATH||process.env.GOOG
 const cdpPort=Number(args.get('--cdp-port')||9223);
 const width=Number(args.get('--width')||390),height=Number(args.get('--height')||844);
 const viewport=width+'x'+height;
-const profileDir=resolve('.tmp/ui-combat-visual-chrome-profile');
+const profileDir=resolve(`.tmp/ui-combat-visual-chrome-profile-${cdpPort}`);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 await mkdir(outDir,{recursive:true});await rm(profileDir,{recursive:true,force:true});await mkdir(profileDir,{recursive:true});
 const chrome=spawn(chromePath,['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--hide-scrollbars','--mute-audio',`--remote-debugging-port=${cdpPort}`,`--user-data-dir=${profileDir}`,'about:blank'],{stdio:['ignore','pipe','pipe']});
@@ -34,6 +34,16 @@ let c;try{
   const cleanMetrics=await metrics(c);if(cleanMetrics.hasHorizontalOverflow)throw new Error(`Combat horizontal overflow ${cleanMetrics.scrollWidth}px`);if(!cleanMetrics.hasSpiritBeastHud||!cleanMetrics.hasConfidantHud||!cleanMetrics.hasArtifactHud)throw new Error('Combat support HUD proof incomplete');
   if(!cleanMetrics.hasPlayerHud||!cleanMetrics.hasEnemyHud||cleanMetrics.skillCount!==7||cleanMetrics.visibleText.length)throw new Error('Combat vitals / seven skills / legibility proof incomplete');
   await screenshot(c,'combat-runtime-'+viewport+'.png');await writeFile(resolve(outDir,'combat-runtime-metrics.json'),JSON.stringify(cleanMetrics,null,2));
+
+  await c.eval(`(()=>{const b=document.querySelector('[data-dev-hud="stress"]');if(!b)throw new Error('Combat stress fixture unavailable');b.click();return true})()`);
+  await waitFor(c,`document.querySelectorAll('.huntv2-status-tray.player .status').length>=4 && document.querySelectorAll('.huntv2-status-tray.enemy .status').length>=4`,'status stress fixture',10000);
+  await visualReady(c);await sleep(220);
+  const stressMetrics=await metrics(c);
+  const stressStatus=await c.eval(`(()=>{const read=side=>{const tray=document.querySelector(\`.huntv2-status-tray.\${side}\`);const r=tray?.getBoundingClientRect();return{all:tray?[...tray.querySelectorAll('.status')].length:0,visible:tray?[...tray.querySelectorAll('.status:not(.status-hidden)')].length:0,more:tray?.querySelector('.status-more')?.textContent||'',timed:tray?[...tray.querySelectorAll('.status[data-timed="1"]')].length:0,visuals:tray?[...tray.querySelectorAll('.status')].map(x=>x.dataset.statusVisual||''):[],rect:r?{x:Math.round(r.x),y:Math.round(r.y),w:Math.round(r.width),h:Math.round(r.height)}:null}};return{player:read('player'),enemy:read('enemy'),mark:document.querySelector('.huntv2-status-tray.enemy .status.mark')?.textContent||''}})()`);
+  stressMetrics.statusStress=stressStatus;
+  if(stressMetrics.hasHorizontalOverflow||stressStatus.player.visible<4||stressStatus.enemy.visible<4||!stressStatus.player.more||!stressStatus.enemy.more||!stressStatus.mark.includes('6/6'))throw new Error('Combat status stress proof incomplete');
+  await screenshot(c,'combat-runtime-stress-'+viewport+'.png');await writeFile(resolve(outDir,'combat-runtime-stress-metrics.json'),JSON.stringify(stressMetrics,null,2));
+  await c.eval(`(()=>{const b=document.querySelector('[data-dev-hud="clear"]');if(!b)throw new Error('Combat stress reset unavailable');b.click();return true})()`);await sleep(220);
 
   await c.eval(`(()=>{const b=document.querySelector('[data-endless-fight]:not([disabled])');if(!b)throw new Error('Boss fight action unavailable');b.click();return true})()`);
   await waitFor(c,`document.querySelector('.huntv2-stage.presentation-active,.huntv2-actor.player.state-cast,.huntv2-actor.player.state-attack,.huntv2-actor.player.state-ultimate,.huntv2-actor.enemy.state-hit,.huntv2-float.show,.huntv2-skill-callout.show')`,'real backend Combat presentation',10000);

@@ -643,14 +643,24 @@ function clearStatuses(root){
     layer.replaceChildren();
   });
 }
-function statusVisualKind(name='',kind='buff'){
+function statusVisualKind(name='',kind='buff',statusId=''){
+  const id=String(statusId||'').toLowerCase();
+  if(id==='combat.shield'||(kind==='buff'&&(id.includes('shield')||id.includes('guard')||id.includes('bones')||id.includes('fortress')||id.includes('mirror'))))return 'shield';
+  if(id.includes('poison')||id.includes('erosion'))return 'poison';
+  if(id.includes('burn')||(kind==='debuff'&&id.includes('fire')))return 'burn';
+  if(id.includes('frost')||id.includes('ice'))return 'frost';
+  if(id.includes('stun')||id.includes('silence')||(kind==='debuff'&&(id.includes('thunder')||id.includes('lightning'))))return 'stun';
+  if(id.includes('injury'))return 'injury';
+  if(kind==='buff'&&(id.includes('heal')||id.includes('regen')))return 'heal';
+  if(id && id.startsWith('status.')&&kind==='buff')return 'empower';
+  if(id && id.startsWith('status.')&&kind==='debuff')return 'curse';
   const raw=String(name||'').toLowerCase();
   if(/độc|poison/.test(raw))return 'poison';
   if(/hỏa|burn|thiêu/.test(raw))return 'burn';
   if(/băng|ice|đóng băng|frost/.test(raw))return 'frost';
   if(/lôi|shock|choáng|stun/.test(raw))return 'stun';
-  if(/giáp|shield|hộ thể|khiên/.test(raw))return 'shield';
-  if(/hồi|heal|regen/.test(raw))return 'heal';
+  if(kind==='buff'&&/giáp|shield|hộ thể|khiên/.test(raw))return 'shield';
+  if(kind==='buff'&&/hồi|heal|regen/.test(raw))return 'heal';
   if(/tốc|speed|nhanh|công|attack/.test(raw)&&kind==='buff')return 'empower';
   if(/chậm|slow|giảm|weaken/.test(raw)||kind==='debuff')return 'curse';
   return kind==='buff'?'empower':'curse';
@@ -661,12 +671,12 @@ function refreshStatusOverflow(tray){
   chips.forEach((chip,i)=>chip.classList.toggle('status-hidden',i>=4));
   if(chips.length>4){const more=document.createElement('b');more.className='status-more';more.textContent=`+${chips.length-4}`;tray.append(more);}
 }
-function applyStatusFx(root,target,name,kind,life,key){
+function applyStatusFx(root,target,name,kind,life,key,statusId=''){
   const layer=q(root,`[data-status-fx-layer="${target}"]`); if(!layer)return;
   let fx=[...layer.children].find(x=>x.dataset.statusFxKey===String(key));
   if(!fx){fx=document.createElement('i');fx.dataset.statusFxKey=String(key);layer.append(fx);}
-  const visual=statusVisualKind(name,kind); fx.className=`huntv2-actor-status-fx fx-${visual}`;fx.title=String(name||'');
-  clearTimeout(fx._statusFxTimer);fx._statusFxTimer=setTimeout(()=>fx.remove(),life);
+  const visual=statusVisualKind(name,kind,statusId); fx.className=`huntv2-actor-status-fx ${kind} fx-${visual}`;fx.dataset.statusVisual=visual;fx.dataset.statusKind=kind;fx.title=String(name||'');
+  clearTimeout(fx._statusFxTimer);if(life>0)fx._statusFxTimer=setTimeout(()=>fx.remove(),life);else fx._statusFxTimer=null;
 }
 function shortStatusName(name=''){
   const raw=String(name||'Trạng thái').trim();
@@ -685,15 +695,17 @@ function addStatus(root,target,event={}){
   const name=event.statusName||event.message||'Trạng thái';
   const kind=event.statusKind||(target==='enemy'?'debuff':'buff');
   const key=event.statusId||name;
-  const life=Math.max(900,Math.min(5200,Number(event.durationSeconds||2.1)*1000));
+  const duration=Number(event.durationSeconds);const hasDuration=Number.isFinite(duration)&&duration>0;
+  const life=hasDuration?Math.max(900,Math.min(5200,duration*1000)):0;
+  const stackValue=Number(event.stacks),stackMax=Number(event.maxStacks);const hasStacks=Number.isFinite(stackValue)&&stackValue>0;
   for(const tray of trays){
     let chip=[...tray.children].find(x=>x.dataset.statusKey===key);
     if(!chip){chip=document.createElement('i');chip.dataset.statusKey=key;const major=isMajorStatus(event)||String(key)==='hunt.break';chip.dataset.priority=major?'2':'1';if(major)tray.prepend(chip);else tray.append(chip);}
-    chip.className=`status ${kind}`;chip.innerHTML=`<b>${esc(statusGlyph(name))}</b><em>${esc(shortStatusName(name))}</em><small data-status-time></small>`;chip.title=name;chip.tabIndex=0;chip.setAttribute('role','button');const explain=()=>setCaption(root,name,event.message||`${kind==='debuff'?'Bất lợi':'Có lợi'} · còn thời gian hiệu lực`,1400);chip.onclick=explain;chip.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();explain();}};chip.dataset.label=shortStatusName(name);chip.dataset.short=shortStatusName(name).slice(0,2).toUpperCase();chip.style.setProperty('--status-life',`${life}ms`);chip.classList.remove('pulse');void chip.offsetWidth;chip.classList.add('pulse');
-    clearTimeout(chip._statusTimer);clearInterval(chip._statusTicker);const statusStarted=performance.now(),timeEl=chip.querySelector('[data-status-time]');const syncTime=()=>{if(!chip.isConnected)return;const remain=Math.max(0,(life-(performance.now()-statusStarted))/1000);if(timeEl)timeEl.textContent=remain>0?String(Math.max(1,Math.ceil(remain))):'';};syncTime();chip._statusTicker=setInterval(syncTime,500);chip._statusTimer=setTimeout(()=>{clearInterval(chip._statusTicker);chip.remove();refreshStatusOverflow(tray);},life);
+    const visual=statusVisualKind(name,kind,event.statusId);chip.className=`status ${kind} fx-${visual}`;chip.dataset.statusVisual=visual;chip.dataset.timed=hasDuration?'1':'0';chip.innerHTML=`<b>${esc(statusGlyph(name))}</b><em>${esc(shortStatusName(name))}</em>${hasStacks?`<strong>${Number.isFinite(stackMax)&&stackMax>0?`${Math.round(stackValue)}/${Math.round(stackMax)}`:Math.round(stackValue)}</strong>`:''}<small data-status-time></small>`;chip.title=name;chip.tabIndex=0;chip.setAttribute('role','button');const explain=()=>setCaption(root,name,event.message||`${kind==='debuff'?'Bất lợi':'Có lợi'}${hasDuration?' · còn thời gian hiệu lực':''}`,1400);chip.onclick=explain;chip.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();explain();}};chip.dataset.label=shortStatusName(name);chip.dataset.short=shortStatusName(name).slice(0,2).toUpperCase();if(hasDuration)chip.style.setProperty('--status-life',`${life}ms`);else chip.style.removeProperty('--status-life');chip.classList.remove('pulse');void chip.offsetWidth;chip.classList.add('pulse');
+    clearTimeout(chip._statusTimer);clearInterval(chip._statusTicker);const timeEl=chip.querySelector('[data-status-time]');if(hasDuration){const statusStarted=performance.now();const syncTime=()=>{if(!chip.isConnected)return;const remain=Math.max(0,(life-(performance.now()-statusStarted))/1000);if(timeEl)timeEl.textContent=remain>0?String(Math.max(1,Math.ceil(remain))):'';};syncTime();chip._statusTicker=setInterval(syncTime,500);chip._statusTimer=setTimeout(()=>{clearInterval(chip._statusTicker);chip.remove();refreshStatusOverflow(tray);},life);}else if(timeEl)timeEl.textContent='';
     refreshStatusOverflow(tray);
   }
-  applyStatusFx(root,target,name,kind,life,key);
+  applyStatusFx(root,target,name,kind,life,key,event.statusId);
   statusCallout(root,target,name,kind);
 }
 function updateIntelMeter(root,id,value,maxOverride){
@@ -749,6 +761,7 @@ function updateMark(root,target,event){
     let chip=[...tray.children].find(x=>x.dataset.statusKey===key);
     if(stacks<=0){chip?.remove();refreshStatusOverflow(tray);continue;}
     if(!chip){chip=document.createElement('i');chip.dataset.statusKey=key;tray.append(chip);}
+    chip.dataset.priority='2';
     chip.className='status debuff mark'; chip.innerHTML=`<b>${esc(statusGlyph(name))}</b><em>${esc(shortStatusName(name))}</em><strong>${stacks}/${max||stacks}</strong>`; chip.title=`${name} ${stacks}/${max||stacks}`;chip.tabIndex=0;chip.setAttribute('role','button');const explain=()=>setCaption(root,`${name} · ${stacks}/${max||stacks}`,Number(event.consumedStacks)>0?`Vừa tiêu ${event.consumedStacks} tầng để kích hoạt hiệu ứng.`:'Kỹ năng Tích Ấn tăng tầng; kỹ năng Phệ/Bạo Ấn có thể tiêu tầng.',1550);chip.onclick=explain;chip.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();explain();}}; clearTimeout(chip._statusTimer); refreshStatusOverflow(tray);
   }
   const dao=String(q(root,'#huntV2Stage')?.dataset?.playerDao||'');if(target==='enemy'&&dao==='poison'&&/độc|poison/i.test(String(event.markId||event.statusName||'')))updateIntelMeter(root,'poisonMark',stacks,max||10);if(target==='enemy'&&dao==='mind'&&/thần|mind|niệm/i.test(String(event.markId||event.statusName||'')))updateIntelMeter(root,'mindMark',stacks,max||5);
@@ -796,7 +809,7 @@ function setPoise(root,poisePct=100,state='ready',defenseReductionPct=0){
   label.textContent=state==='broken'?'THẤT THẾ':state==='recovering'?'ỔN THẾ':`${Math.round(breakPct)}/100`;
   row.title=state==='broken'?`Thất Thế · Phòng Ngự -${Math.round(Number(defenseReductionPct)||0)}%`:state==='recovering'?'Ổn Thế · tạm miễn Phá Thế mới':'Phá Thế: tích đủ 100 để khiến mục tiêu Thất Thế';
 }
-function removeStatus(root,target,key){for(const tray of qa(root,`[data-status-tray="${target}"]`)){const chip=[...tray.children].find(x=>x.dataset.statusKey===key);chip?.remove();refreshStatusOverflow(tray);}}
+function removeStatus(root,target,key){for(const tray of qa(root,`[data-status-tray="${target}"]`)){const chip=[...tray.children].find(x=>x.dataset.statusKey===key);chip?.remove();refreshStatusOverflow(tray);}for(const layer of qa(root,`[data-status-fx-layer="${target}"]`)){const fx=[...layer.children].find(x=>x.dataset.statusFxKey===String(key));fx?.remove();}}
 function pushLog(root,text,tone=''){
   const log=q(root,'#huntv2Log'); if(!log)return;
   const body=q(log,'.huntv2-log-body')||log;
@@ -1170,7 +1183,7 @@ function playBackendCombatEvents(root,events=[],skills=[]){
         huntTransientTimeoutV129(root,()=>stage?.classList.remove('boss-phase-transition'),fxDelay(950));
       }else if(event.type==='counterWindow'){
         if(event.counterState==='open'){setCaption(root,'CỬA PHẢN CÔNG',event.message,Math.max(1200,Number(event.durationSeconds||5)*450));pushLog(root,event.message,'break');}
-        else if(event.counterState==='success'){setCaption(root,'PHÁ CƠ CHẾ THÀNH CÔNG',event.message,1500);floatNumber(root,'enemy','LỘ SƠ HỞ','break');addStatus(root,'enemy',{statusId:'boss.v81.exposed',statusName:'Đạo Cơ Dao Động',statusKind:'debuff',durationSeconds:4.5});pushLog(root,event.message,'break');}
+        else if(event.counterState==='success'){setCaption(root,'PHÁ CƠ CHẾ THÀNH CÔNG',event.message,1500);floatNumber(root,'enemy','LỘ SƠ HỞ','break');pushLog(root,event.message,'break');}
         else if(event.counterState==='failure'){setCaption(root,'CƠ CHẾ BOSS HOÀN TẤT',event.message,1600);presentationFocus(root,'player',760);impact(root,'player',true);pushLog(root,event.message,'enemy');}
       }else if(event.type==='castStart'){
         const ultimate=isUltimateSkill(skill);const actorSide=event.actor||'enemy';
@@ -1230,10 +1243,10 @@ function playBackendCombatEvents(root,events=[],skills=[]){
         }else if(breakState==='recovering'){removeStatus(root,'enemy','hunt.break');stopBreakWindow(root);}else if(breakState==='ready')stopBreakWindow(root);
       }else if(event.type==='heal'){
         presentationFocus(root,event.actor,480);pulseActor(root,event.actor,'heal',560);floatNumber(root,event.actor,event.amount?`+${event.amount}`:'+HP','heal');
-        if(Number.isFinite(Number(event.hpPct)))setHp(root,event.target||event.actor,event.hpPct,event.hpCurrent,event.hpMax);addStatus(root,event.target||event.actor,{statusName:'Hồi Phục',statusKind:'buff',durationSeconds:1.5});ambientPulse(root,'heal',event.actor);
+        if(Number.isFinite(Number(event.hpPct)))setHp(root,event.target||event.actor,event.hpPct,event.hpCurrent,event.hpMax);ambientPulse(root,'heal',event.actor);
       }else if(event.type==='shield'){
         const shieldLabel=event.amount&&event.amount!=='0'?`Hộ Thể ${event.amount}`:(event.statusName||'Hộ Thể');
-        addStatus(root,event.target||event.actor,{statusId:'combat.shield',statusName:shieldLabel,statusKind:'buff',durationSeconds:Number(event.durationSeconds)||2.4,message:event.message});ambientPulse(root,'heal',event.target||event.actor);
+        addStatus(root,event.target||event.actor,{statusId:'combat.shield',statusName:shieldLabel,statusKind:'buff',durationSeconds:event.durationSeconds,message:event.message});ambientPulse(root,'heal',event.target||event.actor);
       }else if(event.type==='shieldBreak'){
         qa(root,`[data-status-tray="${event.target||event.actor}"]`).forEach(tray=>{tray.querySelectorAll('.status.buff').forEach(x=>x.remove());refreshStatusOverflow(tray);});qa(root,`[data-status-fx-layer="${event.target||event.actor}"] .fx-shield`).forEach(x=>x.remove());floatNumber(root,event.target||event.actor,'PHÁ HỘ THỂ','break');impact(root,event.target||event.actor,true);presentationFocus(root,'impact',620);
       }else if(event.type==='status'){

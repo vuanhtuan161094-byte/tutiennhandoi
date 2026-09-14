@@ -280,7 +280,8 @@ export function buildEndlessHuntCombatStream(input) {
                 else if (effect.type === 'applyStatus') {
                     const def = registry.statuses.get(effect.statusId);
                     const target = effect.target === 'self' ? 'player' : 'enemy';
-                    push(base + offset, 'status', 'player', `${def?.name ?? effect.statusId} được áp dụng.`, { target, skillId: skill.id, skillName: name, statusId: effect.statusId, statusName: def?.name ?? effect.statusId, statusKind: target === 'enemy' ? 'debuff' : 'buff', durationSeconds: effect.duration });
+                    const statusKind = def?.group === 'Buff' ? 'buff' : def?.group === 'Debuff' || def?.group === 'BodyControl' || def?.group === 'SpiritControl' ? 'debuff' : target === 'enemy' ? 'debuff' : 'buff';
+                    push(base + offset, 'status', 'player', `${def?.name ?? effect.statusId} được áp dụng.`, { target, skillId: skill.id, skillName: name, statusId: effect.statusId, statusName: def?.name ?? effect.statusId, statusKind, statusGroup: def?.group, stacks: typeof effect.stacks === 'number' ? Number(effect.stacks) : undefined, maxStacks: typeof effect.maxStacks === 'number' ? Number(effect.maxStacks) : undefined, durationSeconds: typeof effect.duration === 'number' ? Number(effect.duration) : undefined });
                     offset += .02;
                 }
             }
@@ -456,7 +457,8 @@ export function buildEndlessHuntCombatStreamFromKernelV2(input) {
         if (log.type === 'status') {
             const statusId = String(log.data?.statusId ?? '');
             const def = statusId && registry.statuses.has(statusId) ? registry.status(statusId) : undefined;
-            push(log.time, 'status', actor, log.message, { target, skillId: log.skillId, skillName: skill?.name, statusId: statusId || undefined, statusName: def?.name, statusKind: target === actor ? 'buff' : 'debuff', durationSeconds: typeof log.data?.duration === 'number' ? Number(log.data.duration) : undefined });
+            const statusKind = def?.group === 'Buff' ? 'buff' : def?.group === 'Debuff' || def?.group === 'BodyControl' || def?.group === 'SpiritControl' ? 'debuff' : target === actor ? 'buff' : 'debuff';
+            push(log.time, 'status', actor, log.message, { target, skillId: log.skillId, skillName: skill?.name, statusId: statusId || undefined, statusName: def?.name, statusKind, statusGroup: def?.group, stacks: typeof log.data?.stacks === 'number' ? Number(log.data.stacks) : undefined, maxStacks: typeof log.data?.maxStacks === 'number' ? Number(log.data.maxStacks) : undefined, durationSeconds: typeof log.data?.duration === 'number' ? Number(log.data.duration) : undefined });
             continue;
         }
         if (log.type === 'mark') {
