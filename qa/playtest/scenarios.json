@@ -1,0 +1,75 @@
+{
+  "schema": "tutien-ai-playtest.scenarios.v1",
+  "fixture": {
+    "seed": 20260914,
+    "dao": "sword"
+  },
+  "defaults": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "timeoutMs": 20000
+  },
+  "scenarios": [
+    {
+      "id": "home-navigation",
+      "tab": "cultivation",
+      "expectedScreen": "cultivation",
+      "realmOrder": 10,
+      "forceBoss": false,
+      "requiredSelectors": ["#content", ".ui-home-hero"],
+      "interaction": {
+        "type": "click-route",
+        "selector": "[data-home-target-side-rail=\"left\"] [data-home-target-route=\"roots\"]",
+        "waitForScreen": "roots",
+        "waitForSelector": ".v2314-roots"
+      }
+    },
+    {
+      "id": "character-equipment",
+      "tab": "character",
+      "expectedScreen": "character",
+      "realmOrder": 10,
+      "forceBoss": false,
+      "requiredSelectors": ["#content"]
+    },
+    {
+      "id": "combat-action",
+      "tab": "hunt",
+      "expectedScreen": "hunt",
+      "realmOrder": 62,
+      "forceBoss": true,
+      "requiredSelectors": [
+        ".huntv2-screen",
+        ".huntv2-player-hud",
+        ".huntv2-enemy-hud",
+        "[data-endless-fight]:not([disabled])"
+      ],
+      "interaction": {
+        "type": "click-action",
+        "selector": "[data-endless-fight]:not([disabled])",
+        "waitForAnySelectors": [
+          ".huntv2-stage.presentation-active",
+          ".huntv2-actor.player.state-cast",
+          ".huntv2-actor.player.state-attack",
+          ".huntv2-actor.player.state-ultimate",
+          ".huntv2-actor.enemy.state-hit",
+          ".huntv2-float.show",
+          ".huntv2-skill-callout.show"
+        ]
+      }
+    },
+    {
+      "id": "save-restore-smoke",
+      "tab": "cultivation",
+      "expectedScreen": "cultivation",
+      "realmOrder": 10,
+      "forceBoss": false,
+      "requiredSelectors": ["#content", ".ui-home-hero"],
+      "interaction": {
+        "type": "reload"
+      }
+    }
+  ]
+}
