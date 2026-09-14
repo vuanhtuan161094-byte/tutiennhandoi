@@ -1,0 +1,115 @@
+{
+  "$id": "tutien-asset-brief.v1",
+  "type": "object",
+  "required": [
+    "id",
+    "targetScreen",
+    "role",
+    "status",
+    "styleFamily",
+    "acceptance",
+    "approvedByUser"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "targetScreen": {
+      "type": "string",
+      "minLength": 1
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "hero",
+        "character",
+        "enemy",
+        "background",
+        "ornament",
+        "icon",
+        "vfx-source",
+        "ui-decoration",
+        "other"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "candidate",
+        "approved",
+        "integrated",
+        "locked",
+        "retired"
+      ]
+    },
+    "styleFamily": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dimensions": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "transparentBackground": {
+      "type": "boolean"
+    },
+    "safeArea": {
+      "type": "string"
+    },
+    "promptIntent": {
+      "type": "string"
+    },
+    "acceptance": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "candidateRefs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "productionPath": {
+      "type": ["string", "null"]
+    },
+    "approvedByUser": {
+      "type": "boolean"
+    },
+    "approvalNote": {
+      "type": ["string", "null"]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": ["approved", "integrated", "locked"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "approvedByUser": {
+            "const": true
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": true
+}
