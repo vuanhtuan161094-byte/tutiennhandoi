@@ -128,13 +128,13 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
     -webkit-line-clamp:1!important;
   }
   body[data-game-screen="hunt"] .huntv2-enemy-hud .huntv2-hp{height:12px!important}
-  body[data-game-screen="hunt"] .huntv2-enemy-hud .huntv2-hp>b{font-size:8.5px!important}
+  body[data-game-screen="hunt"] .huntv2-enemy-hud .huntv2-hp>b{font-size:10px!important}
   body[data-game-screen="hunt"] .huntv2-poise-row{
     grid-template-columns:40px minmax(0,1fr)!important;
     gap:3px!important;
   }
   body[data-game-screen="hunt"] .huntv2-poise-row>b,
-  body[data-game-screen="hunt"] .huntv2-poise>em{font-size:8.5px!important}
+  body[data-game-screen="hunt"] .huntv2-poise>em{font-size:10px!important}
   body[data-game-screen="hunt"] .huntv2-poise{height:10px!important}
   body[data-game-screen="hunt"] .ui-combat-enemy-context{
     right:1px!important;
@@ -142,7 +142,7 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
   }
   body[data-game-screen="hunt"] .ui-combat-enemy-context span{
     padding:2px 5px!important;
-    font-size:8px!important;
+    font-size:10px!important;
   }
 
   body[data-game-screen="hunt"] .huntv2-actor.enemy,
