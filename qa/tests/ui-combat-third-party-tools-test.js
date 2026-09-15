@@ -44,7 +44,7 @@ assert.match(devTools,/damagePunch/,'damage motion tuning missing');
 assert.match(devTools,/skillPunch/,'skill-name motion tuning missing');
 assert.doesNotMatch(devTools,/fetch\s*\(|localStorage\.setItem|sessionStorage\.setItem|\/api\//,'DEV tuning must remain presentation-only');
 
-assert.match(index,/ui-combat-target-v1\.js\?v=combat-third-party-tools-v2-20260915/,'combat bridge cache token must expose the integration');
+assert.match(index,/ui-combat-target-v1\.js\?v=combat-third-party-tools-v3-20260915/,'combat bridge cache token must expose the integration');
 assert.doesNotMatch(index,/animejs@|stats\.js@|lil-gui@/,'third-party libraries must not be eagerly loaded from index.html');
 assert.match(devLauncher,/\?dev=1&tools=1&anime=1&tab=hunt/,'UI DEV launcher must explicitly enable integrated tuning tools');
 
