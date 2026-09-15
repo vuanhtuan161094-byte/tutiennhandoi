@@ -37,5 +37,6 @@ for(const phase of ['before','impact','peak','settled'])assert.match(combatCaptu
 assert.match(combatCapture,/manifest\.skills\.length/,'combat capture must report the complete skill list');
 assert.match(combatCapture,/manifest\.shake = shakeFrames/,'combat capture must report all shake variants');
 assert.match(workflow,/name: ui-visual-\$\{\{ github\.sha \}\}/,'combat showcase proof must be uploaded under the exact candidate SHA artifact');
+assert.match(workflow,/s\.enemy\?\.mark/,'status stress validation must read the canonical enemy mark projection');
 
 console.log('UI visual workflow contract PASS');
