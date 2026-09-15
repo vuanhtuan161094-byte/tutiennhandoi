@@ -6,7 +6,7 @@ const css=fs.readFileSync('ui-combat-target-v1.css','utf8');
 const bridge=fs.readFileSync('ui-combat-target-v1.js','utf8');
 
 assert.match(html,/ui-combat-target-v1\.css\?v=combat-readability-target-v1-20260914/,'Combat target CSS must be loaded after locked UI layers');
-assert.match(html,/ui-combat-target-v1\.js\?v=combat-third-party-tools-v2-20260915/,'Combat context bridge must be loaded');
+assert.match(html,/ui-combat-target-v1\.js\?v=combat-third-party-tools-v3-20260915/,'Combat context bridge must be loaded');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-player-hud/,'Combat target must stay isolated to Hunt');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-enemy-hud/,'Enemy HUD readability target missing');
 assert.match(css,/grid-template-columns:repeat\(7,minmax\(0,1fr\)\)/,'All seven backend-authored skill slots must remain visible');
