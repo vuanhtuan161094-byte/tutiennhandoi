@@ -16,6 +16,8 @@ let observer=null;
 let animeApi=null;
 const visibleState=new WeakMap();
 
+const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)||0));
+
 function tuning(){
   const shared=globalThis.__TUTIEN_COMBAT_TUNING__||{};
   return {...DEFAULT_TUNING,...shared};
@@ -40,20 +42,48 @@ function playPunch(target,{scale=1.08,lift=0,duration=220}={}){
   }catch{}
 }
 
+function damageMotion(node,cfg){
+  const target=node.querySelector('strong')||node;
+  const base=Number(cfg.damagePunch)||DEFAULT_TUNING.damagePunch;
+  const lift=Math.max(0,Number(cfg.liftPx)||0);
+  if(node.classList.contains('crit')){
+    playPunch(target,{scale:clamp(base+.15,1.12,1.52),lift:lift+5,duration:340});
+    return;
+  }
+  if(node.classList.contains('kind-dot')){
+    playPunch(target,{scale:clamp(base-.08,1.02,1.24),lift:Math.max(1,lift*.45),duration:210});
+    return;
+  }
+  if(node.classList.contains('heal')||node.classList.contains('shield')||node.classList.contains('guard')){
+    playPunch(target,{scale:clamp(base-.05,1.04,1.26),lift:Math.max(1,lift*.7),duration:245});
+    return;
+  }
+  if(node.classList.contains('kind-markBurst')||node.classList.contains('break')){
+    playPunch(target,{scale:clamp(base+.07,1.09,1.38),lift:lift+2,duration:300});
+    return;
+  }
+  playPunch(target,{scale:clamp(base,1.04,1.42),lift,duration:270});
+}
+
 function animateNode(node){
   if(!(node instanceof Element))return;
   const cfg=tuning();
   if(node.matches('.huntv2-float.show')){
-    const target=node.querySelector('strong')||node;
-    playPunch(target,{scale:Number(cfg.damagePunch)||DEFAULT_TUNING.damagePunch,lift:Number(cfg.liftPx)||0,duration:280});
+    damageMotion(node,cfg);
   }else if(node.matches('.huntv2-skill-callout.show')){
     const target=node.querySelector('strong')||node;
-    playPunch(target,{scale:Number(cfg.skillPunch)||DEFAULT_TUNING.skillPunch,lift:Math.max(1,(Number(cfg.liftPx)||0)*.5),duration:300});
+    const base=Number(cfg.skillPunch)||DEFAULT_TUNING.skillPunch;
+    const ultimate=node.classList.contains('ultimate')||node.classList.contains('tier-ultimate');
+    playPunch(target,{
+      scale:clamp(base+(ultimate?.08:0),1.02,ultimate?1.38:1.28),
+      lift:Math.max(1,(Number(cfg.liftPx)||0)*(ultimate?.7:.45)),
+      duration:ultimate?380:295,
+    });
   }else if(node.matches('.huntv2-result-pop.show')){
     const target=node.querySelector('b')||node;
     playPunch(target,{scale:Number(cfg.resultPunch)||DEFAULT_TUNING.resultPunch,lift:Number(cfg.liftPx)||0,duration:320});
   }else if(node.matches('.huntv2-status-tray .status:not(.status-hidden), .huntv2-status-tray .huntv2-status-chip')){
-    playPunch(node,{scale:Number(cfg.statusPunch)||DEFAULT_TUNING.statusPunch,lift:0,duration:190});
+    playPunch(node,{scale:Number(cfg.statusPunch)||DEFAULT_TUNING.statusPunch,lift:0,duration:175});
   }
 }
 
