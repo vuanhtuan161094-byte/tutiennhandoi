@@ -10,7 +10,7 @@ const bridge=fs.readFileSync('ui-combat-target-v1.js','utf8');
 
 assert.match(html,/ui-combat-target-v1\.css\?v=combat-readability-target-v1-20260914/,'Combat target CSS must be loaded after locked UI layers');
 assert.match(html,/ui-combat-visual-polish\.css\?v=combat-visual-polish-v1-20260915/,'Combat visual polish layer must be loaded');
-assert.match(html,/ui-combat-camera-polish\.css\?v=combat-camera-polish-v4-20260915/,'Combat camera/compact polish must be loaded after visual polish');
+assert.match(html,/ui-combat-camera-polish\.css\?v=combat-camera-polish-v5-20260915/,'Combat camera/compact polish must be loaded after visual polish');
 assert.match(html,/ui-combat-target-v1\.js\?v=combat-third-party-tools-v3-20260915/,'Combat context bridge must be loaded');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-player-hud/,'Combat target must stay isolated to Hunt');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-enemy-hud/,'Enemy HUD readability target missing');
@@ -36,11 +36,12 @@ assert.match(camera,/\.huntv2-stage\.shake-strong \.huntv2-arena\{[\s\S]*?animat
 assert.match(camera,/@keyframes huntCvpArenaShakeStrong\{[\s\S]*?100%\{transform:translate3d\(0,0,0\)\}/,'Arena shake must settle to neutral transform');
 assert.match(camera,/@media\(max-width:360px\)[\s\S]*?\.huntv2-status-tray\.player\{[\s\S]*?top:calc\(48% \+ 70px\)!important/,'Compact player statuses must clear the player face lane');
 assert.match(camera,/@media\(max-width:360px\)[\s\S]*?\.huntv2-skill-callout\.tier-ultimate[\s\S]*?max-width:82%!important[\s\S]*?min-height:48px!important/,'Compact ultimate callout must keep a readable two-line footprint');
-assert.match(camera,/@media\(max-width:360px\)[\s\S]*?\.huntv2-skill:last-child\{transform:translateX\(-2px\)!important\}/,'Compact seventh skill must stay clear of the viewport edge');
+assert.doesNotMatch(camera,/\.huntv2-skill:last-child\{transform:translateX\(/,'Final skill slot must not require edge-specific nudging');
 assert.match(camera,/@media\(max-width:430px\) and \(max-height:860px\)[\s\S]*?\.huntv2-enemy-hud\{[\s\S]*?top:86px!important[\s\S]*?width:168px!important[\s\S]*?height:68px!important/,'Portrait boss vitals must use the user-approved compact upper-right footprint');
 assert.match(camera,/@media\(max-width:430px\) and \(max-height:860px\)[\s\S]*?\.huntv2-actor\.enemy\.boss\{[\s\S]*?bottom:48%!important/,'Portrait boss actor must be lifted above the previous composition');
 assert.match(camera,/@media\(max-width:430px\) and \(max-height:860px\)[\s\S]*?\.huntv2-skill-callout\.ultimate\{[\s\S]*?bottom:30px!important/,'Portrait ultimate plaque must move into the lower battlefield lane');
-assert.match(camera,/@media\(max-width:430px\) and \(max-height:860px\)[\s\S]*?\.huntv2-skills\{[\s\S]*?transform:translateY\(34px\)!important/,'Portrait skill rail must use the lower console breathing room');
+assert.match(camera,/@media\(max-width:430px\) and \(max-height:860px\)[\s\S]*?\.huntv2-skills\{[\s\S]*?grid-template-columns:repeat\(7,minmax\(0,1fr\)\)!important[\s\S]*?justify-items:center!important[\s\S]*?transform:translateY\(34px\)!important/,'Portrait skill rail must distribute all seven slots evenly across the lower dock');
+assert.match(camera,/@media\(max-width:430px\) and \(max-height:860px\)[\s\S]*?\.huntv2-skill,[\s\S]*?\.huntv2-skill\.ultimate\{[\s\S]*?width:100%!important[\s\S]*?justify-self:stretch!important/,'Portrait skill cells must fill their equal-width grid tracks');
 assert.doesNotMatch(camera,/\/api\/|localStorage|sessionStorage/,'Combat camera polish must remain presentation-only');
 assert.match(runtime,/function rendererEventForVisualReadability\(event=\{\}\)/,'Pixi façade must keep the visual-readability guard');
 assert.match(runtime,/swordImpact=type==='impact'.*skillId\.startsWith\('skill\.dao\.sword\.'\)/,'Sword impact readability guard must remain scoped to Sword presentation');

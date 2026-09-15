@@ -93,7 +93,7 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
   body[data-game-screen="hunt"] .huntv2-float.enemy{right:5%!important;top:40%!important}
   body[data-game-screen="hunt"] .huntv2-skill-art{width:38px!important;height:38px!important}
   body[data-game-screen="hunt"] .huntv2-skill.ultimate .huntv2-skill-art{width:42px!important;height:42px!important}
-  body[data-game-screen="hunt"] .huntv2-skill:last-child{transform:translateX(-2px)!important}
+  body[data-game-screen="hunt"] .huntv2-skill:last-child{transform:none!important}
 }
 
 /* User-directed portrait composition pass — 2026-09-15.
@@ -162,11 +162,30 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
     bottom:30px!important;
   }
 
+  /* Final layout lock: distribute all seven canonical skills across the full
+     combat dock instead of retaining the legacy fixed-width/flex cluster. */
   body[data-game-screen="hunt"] .huntv2-skills{
     position:relative!important;
     z-index:82!important;
+    width:100%!important;
+    grid-template-columns:repeat(7,minmax(0,1fr))!important;
+    gap:0!important;
+    padding-inline:2px!important;
+    justify-items:center!important;
+    align-items:center!important;
     transform:translateY(34px)!important;
     overflow:visible!important;
+  }
+  body[data-game-screen="hunt"] .huntv2-skill,
+  body[data-game-screen="hunt"] .huntv2-skill.ultimate{
+    width:100%!important;
+    max-width:none!important;
+    flex:0 1 auto!important;
+    justify-self:stretch!important;
+    align-items:center!important;
+  }
+  body[data-game-screen="hunt"] .huntv2-skill:last-child{
+    transform:none!important;
   }
 }
 
