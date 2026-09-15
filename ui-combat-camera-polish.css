@@ -1,0 +1,45 @@
+/* Combat Camera Polish V1 — presentation-only camera layer.
+   Runtime shake classes remain authority; only the battlefield arena moves so HUD,
+   vitals, status lanes, supports and controls stay visually stable. */
+
+body[data-game-screen="hunt"] .huntv2-stage.shake,
+body[data-game-screen="hunt"] .huntv2-stage.shake-strong{
+  animation:none!important;
+  transform:none!important;
+}
+
+body[data-game-screen="hunt"] .huntv2-stage.shake .huntv2-arena{
+  animation:huntCvpArenaShake var(--cvp-shake-light-ms,150ms) cubic-bezier(.2,.72,.3,1)!important;
+  will-change:transform;
+}
+
+body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
+  animation:huntCvpArenaShakeStrong var(--cvp-shake-heavy-ms,235ms) cubic-bezier(.16,.74,.28,1)!important;
+  will-change:transform;
+}
+
+@keyframes huntCvpArenaShake{
+  0%,100%{transform:translate3d(0,0,0)}
+  24%{transform:translate3d(calc(var(--cvp-shake-light,2px)*-.72),.4px,0)}
+  50%{transform:translate3d(var(--cvp-shake-light,2px),-.35px,0)}
+  74%{transform:translate3d(calc(var(--cvp-shake-light,2px)*-.38),.25px,0)}
+}
+
+@keyframes huntCvpArenaShakeStrong{
+  0%,100%{transform:translate3d(0,0,0)}
+  16%{transform:translate3d(calc(var(--cvp-shake-heavy,3.25px)*-.74),.8px,0)}
+  34%{transform:translate3d(var(--cvp-shake-heavy,3.25px),-.8px,0)}
+  53%{transform:translate3d(calc(var(--cvp-shake-heavy,3.25px)*-.56),-.45px,0)}
+  72%{transform:translate3d(calc(var(--cvp-shake-heavy,3.25px)*.58),.55px,0)}
+  88%{transform:translate3d(calc(var(--cvp-shake-heavy,3.25px)*-.22),0,0)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  body[data-game-screen="hunt"] .huntv2-stage.shake,
+  body[data-game-screen="hunt"] .huntv2-stage.shake-strong,
+  body[data-game-screen="hunt"] .huntv2-stage.shake .huntv2-arena,
+  body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
+    animation:none!important;
+    transform:none!important;
+  }
+}
