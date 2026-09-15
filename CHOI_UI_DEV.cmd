@@ -32,12 +32,13 @@ echo.
 echo Node.js:
 node --version
 echo.
-echo Dang khoi dong UI DEV tai http://%GAME_HOST%:!GAME_PORT!/?dev=1&tab=hunt
+echo Dang khoi dong UI DEV tai http://%GAME_HOST%:!GAME_PORT!/?dev=1^&tools=1^&anime=1^&tab=hunt
 echo.
 
 REM Server bind 0.0.0.0 de cho phep dien thoai cung Wi-Fi truy cap.
 REM Trinh duyet/health check tren may chu van dung 127.0.0.1; save theo browser origin nhu cu.
 REM Port + bind host duoc truyen bang tham so CLI de tranh trailing-space cua Windows CMD.
+REM tools=1 bat stats.js + lil-gui; anime=1 bat Anime.js motion enhancer. Tat ca DEV/presentation-only.
 start "Tu Tien Game Server - %GAME_LABEL%" cmd /k "node web\server.mjs !GAME_PORT! !GAME_BIND!"
 
 set /a WAIT_COUNT=0
@@ -50,8 +51,9 @@ timeout /t 1 /nobreak >nul
 goto :wait_server
 
 :server_ready
-start "" "http://127.0.0.1:!GAME_PORT!/?dev=1&tab=hunt&v129ui=20260905-combat-v8-fullfix"
+start "" "http://127.0.0.1:!GAME_PORT!/?dev=1&tools=1&anime=1&tab=hunt&v129ui=20260915-combat-tools-v1"
 echo Da mo trinh duyet sau khi server HEALTH CHECK PASS.
+echo Anime.js + stats.js + lil-gui chi duoc tai trong UI DEV nay.
 echo Hay GIU CUA SO "Tu Tien Game Server" mo trong luc choi.
 echo.
 timeout /t 2 /nobreak >nul
