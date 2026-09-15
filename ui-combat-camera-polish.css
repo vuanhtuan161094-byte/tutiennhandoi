@@ -162,27 +162,28 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
     bottom:30px!important;
   }
 
-  /* Final layout lock: the old Combat V8 rail carries fixed/flex sizing. Force
-     the rail itself to stretch across its full console row and let the seven
-     canonical skill cells occupy equal tracks. */
+  /* Final layout lock: pin the seven-slot rail to the full lower dock. Absolute
+     left/right anchors bypass the legacy V8 fixed-width flex rail while keeping
+     the canonical skills and console/action rows untouched. */
   body[data-game-screen="hunt"] .huntv2-skills{
-    position:relative!important;
+    position:absolute!important;
     z-index:82!important;
     display:grid!important;
-    width:100%!important;
-    min-width:100%!important;
+    left:8px!important;
+    right:8px!important;
+    bottom:39px!important;
+    width:auto!important;
+    min-width:0!important;
     max-width:none!important;
     margin:0!important;
     box-sizing:border-box!important;
     grid-template-columns:repeat(7,minmax(0,1fr))!important;
     gap:0!important;
-    padding-inline:2px!important;
-    justify-self:stretch!important;
-    align-self:center!important;
+    padding:0!important;
     justify-content:stretch!important;
     justify-items:center!important;
     align-items:center!important;
-    transform:translateY(34px)!important;
+    transform:none!important;
     overflow:visible!important;
   }
   body[data-game-screen="hunt"] .huntv2-skill,
