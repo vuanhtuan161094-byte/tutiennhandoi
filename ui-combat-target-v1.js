@@ -1,4 +1,4 @@
-/* Combat Readability Target V1 — DOM presentation bridge only.
+/* Combat Readability Target V1 — DOM presentation bridge + optional motion/dev tools.
    Reads already-rendered/backend-authored combat context; never mutates gameplay state. */
 (() => {
   const elementLabel = value => ({water:'Thủy',fire:'Hỏa',wood:'Mộc',metal:'Kim',earth:'Thổ'})[String(value || '').toLowerCase()] || '';
