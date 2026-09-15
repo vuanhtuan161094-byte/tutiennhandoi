@@ -2,6 +2,22 @@
    Reads already-rendered/backend-authored combat context; never mutates gameplay state. */
 (() => {
   const elementLabel = value => ({water:'Thủy',fire:'Hỏa',wood:'Mộc',metal:'Kim',earth:'Thổ'})[String(value || '').toLowerCase()] || '';
+  const params = (() => { try { return new URLSearchParams(location.search); } catch { return new URLSearchParams(); } })();
+  const devMode = params.get('dev') === '1' || globalThis.__TUTIEN_DEV_FORCE__ === true;
+  const animeOptIn = devMode || params.get('anime') === '1';
+
+  function bootPresentationTools() {
+    if (animeOptIn) {
+      import('./modules/combat-motion-anime-v1.js')
+        .then(mod => mod.initCombatAnimeMotionV1?.())
+        .catch(() => { try { document.body.dataset.combatMotionEngine = 'css-fallback'; } catch {} });
+    }
+    if (devMode) {
+      import('./modules/dev-third-party-tools-v1.js')
+        .then(mod => mod.initDevThirdPartyToolsV1?.())
+        .catch(() => { try { document.body.dataset.devThirdPartyTools = 'fallback'; } catch {} });
+    }
+  }
 
   function syncCombatContext() {
     const screen = document.querySelector('.huntv2-screen');
@@ -59,6 +75,7 @@
   const observer = new MutationObserver(scheduleSync);
   const start = () => {
     observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'data-monster-level', 'data-monster-name', 'data-env'] });
+    bootPresentationTools();
     scheduleSync();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
