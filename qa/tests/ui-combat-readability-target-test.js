@@ -4,10 +4,12 @@ import assert from 'node:assert/strict';
 const html=fs.readFileSync('index.html','utf8');
 const css=fs.readFileSync('ui-combat-target-v1.css','utf8');
 const polish=fs.readFileSync('ui-combat-visual-polish.css','utf8');
+const camera=fs.readFileSync('ui-combat-camera-polish.css','utf8');
 const bridge=fs.readFileSync('ui-combat-target-v1.js','utf8');
 
 assert.match(html,/ui-combat-target-v1\.css\?v=combat-readability-target-v1-20260914/,'Combat target CSS must be loaded after locked UI layers');
-assert.match(html,/ui-combat-visual-polish\.css\?v=combat-visual-polish-v1-20260915/,'Combat visual polish layer must be loaded last');
+assert.match(html,/ui-combat-visual-polish\.css\?v=combat-visual-polish-v1-20260915/,'Combat visual polish layer must be loaded');
+assert.match(html,/ui-combat-camera-polish\.css\?v=combat-camera-polish-v1-20260915/,'Combat camera polish must be loaded after visual polish');
 assert.match(html,/ui-combat-target-v1\.js\?v=combat-third-party-tools-v3-20260915/,'Combat context bridge must be loaded');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-player-hud/,'Combat target must stay isolated to Hunt');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-enemy-hud/,'Enemy HUD readability target missing');
@@ -26,14 +28,19 @@ assert.match(polish,/\.huntv2-float\.damage-main\.crit strong/,'Critical damage 
 assert.match(polish,/\.huntv2-float\.damage-main\.kind-dot strong/,'DOT damage hierarchy missing');
 assert.match(polish,/\.huntv2-status-tray \.status\.fx-shield>b::before/,'Status rune treatment must include shield semantics');
 assert.match(polish,/\.huntv2-artifact-hud \.huntv2-support-crest/,'Combat support art treatment missing');
-assert.match(polish,/@keyframes huntCvpShakeStrong/,'Combat shake polish must retain deterministic neutral-settle animation');
 assert.doesNotMatch(polish,/\/api\/|localStorage|sessionStorage/,'Combat visual polish must remain presentation-only');
+assert.match(camera,/\.huntv2-stage\.shake,\s*\nbody\[data-game-screen="hunt"\] \.huntv2-stage\.shake-strong\{[\s\S]*?animation:none!important;[\s\S]*?transform:none!important/,'Stage/HUD shell must stay neutral during shake');
+assert.match(camera,/\.huntv2-stage\.shake \.huntv2-arena\{[\s\S]*?animation:huntCvpArenaShake/,'Light shake must move battlefield arena only');
+assert.match(camera,/\.huntv2-stage\.shake-strong \.huntv2-arena\{[\s\S]*?animation:huntCvpArenaShakeStrong/,'Heavy shake must move battlefield arena only');
+assert.match(camera,/@keyframes huntCvpArenaShakeStrong\{[\s\S]*?100%\{transform:translate3d\(0,0,0\)\}/,'Arena shake must settle to neutral transform');
+assert.doesNotMatch(camera,/\/api\/|localStorage|sessionStorage/,'Combat camera polish must remain presentation-only');
 assert.match(bridge,/stage\.dataset\.monsterLevel/,'Enemy level must come from runtime-authored stage data');
 assert.match(bridge,/stage\.dataset\.env/,'Enemy element context must come from runtime-authored stage data');
 assert.doesNotMatch(bridge,/\/api\//,'Presentation bridge must not call backend actions');
 assert.doesNotMatch(bridge,/localStorage|sessionStorage/,'Presentation bridge must not author persistent state');
 assert.ok(Buffer.byteLength(css,'utf8')<30000,'Combat target CSS must stay under 30 KB');
 assert.ok(Buffer.byteLength(polish,'utf8')<36000,'Combat visual polish CSS must stay under 36 KB');
+assert.ok(Buffer.byteLength(camera,'utf8')<8000,'Combat camera polish CSS must stay under 8 KB');
 /* Combat V8 has a dense legacy cascade. This isolated final layer intentionally
    uses explicit overrides; cap it to a reviewed finite budget instead of forcing
    selectors to lose against the locked legacy !important rules. */
