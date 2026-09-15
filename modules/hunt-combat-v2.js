@@ -353,7 +353,7 @@ function devSandboxMarkup(ctx={}){
   return `<aside class="huntv2-dev-sandbox" data-dev-sandbox>
     <button class="huntv2-dev-tab" type="button" data-dev-toggle>DEV</button>
     <div class="huntv2-dev-panel">
-      <div class="huntv2-dev-head"><div><b>Combat QA</b><small>RAM only · cùng backend production · không ghi save</small></div><span>v8</span></div>
+      <div class="huntv2-dev-head"><div><b>Combat QA</b><small>RAM only · cùng backend production · không ghi save</small></div><span>v9</span></div>
       <div class="huntv2-dev-autotour">
         <strong>QUAY 1 VIDEO · AUTO QA TOÀN BỘ</strong>
         <p>Tự chạy 8 Đạo + HUD/resource/Ultimate + Phá Thế/Thất Thế + status/Ấn + phase/telegraph + pose + FX + trận backend thật/replay. Khoảng 65–80 giây.</p>
@@ -370,6 +370,26 @@ function devSandboxMarkup(ctx={}){
         <span class="huntv2-dev-matrix-label">BOSS</span><div class="huntv2-dev-grid two"><button data-dev-hud="boss-normal">Normal</button><button data-dev-hud="break70">Phá Thế 70</button><button data-dev-hud="broken">Thất Thế</button><button data-dev-hud="stable">Ổn Thế</button><button data-dev-hud="boss-p2">Phase II</button><button data-dev-hud="boss-p3">Phase III</button><button data-dev-hud="telegraph">Cast thường</button><button data-dev-hud="telegraph-lethal">Đại sát</button><button data-dev-hud="boss-5debuff">5 Debuff</button><button data-dev-hud="boss-mark6">Ấn 6 stack</button><button data-dev-hud="counter">Cửa phản công</button></div>
         <span class="huntv2-dev-matrix-label">STRESS</span><div class="huntv2-dev-grid two"><button data-dev-hud="stress">Full HUD stress</button><button data-dev-hud="clear">Reset HUD</button></div>
         <p>Các nút trên chỉ ép presentation để soi layout. “Đánh 1 trận” bên dưới vẫn dùng combat events thật từ backend.</p></div>
+      <div class="huntv2-dev-section huntv2-dev-showcase" data-dev-showcase-panel>
+        <strong>Visual Showcase · 6 scene + shake</strong>
+        <div class="huntv2-dev-grid two">
+          <button data-dev-showcase="scene-01-clean">01 · Clean</button>
+          <button data-dev-showcase="scene-02-status-stress">02 · Status stress</button>
+          <button data-dev-showcase="scene-03-skill-cast">03 · 7 skill cast</button>
+          <button data-dev-showcase="scene-04-damage-stress">04 · Damage</button>
+          <button data-dev-showcase="scene-05-boss-break">05 · Boss break</button>
+          <button data-dev-showcase="scene-06-full-chaos">06 · Full chaos</button>
+        </div>
+        <div class="huntv2-dev-grid two">
+          <button data-dev-showcase-shake="light">Shake light</button>
+          <button data-dev-showcase-shake="heavy">Shake heavy</button>
+          <button data-dev-showcase-shake="critical">Shake crit</button>
+          <button data-dev-showcase-shake="ultimate">Shake ultimate</button>
+          <button data-dev-showcase-shake="boss">Shake boss</button>
+          <button data-dev-showcase="scene-05-boss-break-recovery">Break recovery</button>
+        </div>
+        <p>Chỉ ép lớp trình bày trong DEV showcase; skill list và asset lấy từ runtime hiện tại.</p>
+      </div>
       <div class="huntv2-dev-section"><strong>Pose player</strong><div class="huntv2-dev-grid"><button data-dev-pose="idle">Idle</button><button data-dev-pose="cast">Cast</button><button data-dev-pose="attack">Attack</button><button data-dev-pose="hit">Hit</button><button data-dev-pose="ultimate">Ultimate</button><button data-dev-pose="defeat">Defeat</button></div><button data-dev-sequence type="button">▶ Chạy 6 pose</button></div>
       <div class="huntv2-dev-section"><strong>State boss · 1 ảnh gốc</strong><div class="huntv2-dev-grid"><button data-dev-boss-state="idle">Idle</button><button data-dev-boss-state="attack">Attack</button><button data-dev-boss-state="cast">Cast</button><button data-dev-boss-state="hit">Hit</button><button data-dev-boss-state="phase2">P2</button><button data-dev-boss-state="phase3">P3</button><button data-dev-boss-state="defeat">Defeat</button></div><button data-dev-boss-sequence type="button">▶ Chạy 7 state boss</button></div>
       <div class="huntv2-dev-section"><strong>FX production · 5 primitive</strong><div class="huntv2-dev-grid"><button data-dev-fx="cast">Cast</button><button data-dev-fx="travel">Travel</button><button data-dev-fx="impact">Impact</button><button data-dev-fx="field">Field</button><button data-dev-fx="ultimate">Ultimate</button></div><button data-dev-fx-sequence type="button">▶ Chạy 5 FX</button></div>
@@ -1460,6 +1480,119 @@ export function mountHuntCombatV2(root,ctx){
       const el=actor(targetRoot,'player');if(!el)return;el.classList.remove('state-cast','state-dash','state-sword','state-ultimate','state-hit','state-dodge','state-heal','state-dead','state-attack');
       if(pose==='cast')el.classList.add('state-cast');else if(pose==='attack')el.classList.add('state-attack');else if(pose==='hit')el.classList.add('state-hit');else if(pose==='ultimate')el.classList.add('state-ultimate');else if(pose==='defeat')el.classList.add('state-dead');
     };
+    /* V9 DEV Combat Visual Showcase.  Every method below changes presentation
+       state in the RAM-only DEV route; it never dispatches a gameplay action or
+       writes a save.  Skill objects are the exact seven objects already in the
+       combat dock, while the event labels make the fixture boundary explicit. */
+    const showcaseBegin=(sceneName)=>{
+      const target=currentCombatRoot();if(!target)return {target:null,stage:null,token:0};
+      const token=clearPresentationTimers(target);clearHuntTransientTimersV129(target);resetCombatStagingState(target);setCaption(target,'','');
+      target.classList.add('is-dev-showcase','is-active-combat');target.dataset.devShowcaseScene=String(sceneName||'');delete target.dataset.devShowcaseSkill;delete target.dataset.devShowcasePhase;delete target.dataset.devShowcaseShake;delete target.dataset.devShowcaseShakePhase;
+      const stageNode=q(target,'#huntV2Stage');if(stageNode){stageNode.classList.add('presentation-active');stageNode.classList.remove('shake','shake-strong','hit-stop');stageNode.dataset.devShowcaseScene=String(sceneName||'');}
+      return {target,stage:stageNode,token};
+    };
+    const showcaseResources=(target,{resource=.72,ultimate=0}={})=>{
+      qa(target,'[data-intel-resource]').forEach(m=>{const max=Math.max(1,Number(m.dataset.max||100));updateIntelMeter(target,m.dataset.intelResource,max*clamp(Number(resource)||0,0,1),max);});
+      updateIntelMeter(target,'ultimateGauge',ultimate,100);
+    };
+    const showcaseSkill=(index=0)=>{
+      const i=Math.max(0,Math.min(skills.length-1,Math.round(Number(index)||0)));const skill=skills[i];
+      if(!skill)return {ok:false,index:i,reason:'skill-unavailable'};
+      const {target,stage,token}=showcaseBegin('03-skill-cast');if(!target)return {ok:false,index:i,reason:'combat-unavailable'};
+      const ultimate=isUltimateSkill(skill),profile=applyPresentationTheme(target,skill,String(stage?.dataset?.playerDao||''));
+      const cost=Math.max(0,Number(skill.spiritCost)||0);target.dataset.devShowcaseSkill=String(i+1);target.dataset.devShowcaseSkillId=String(skill.id||'');target.dataset.devShowcasePhase='cast';
+      setHp(target,'player',86);setHp(target,'enemy',92);setSpirit(target,Math.max(18,82-Math.min(64,cost)));showcaseResources(target,{resource:.62,ultimate:ultimate?100:58});
+      presentationFocus(target,'player',ultimate?1050:Math.max(520,profile.focus));pulseActor(target,'player',actorMotionState(profile,'cast',ultimate),ultimate?900:Math.max(480,profile.focus));showSkillCallout(target,skill,'player',ultimate);spawnSkillFx(target,skill,'player','cast');setCooldown(target,i,Math.max(1.1,Number(skill.cooldown)||1.8));
+      schedulePresentation(target,token,300,()=>{if(!target.isConnected)return;target.dataset.devShowcasePhase='travel';pulseActor(target,'player',actorMotionState(profile,'travel',ultimate),Math.max(420,profile.focus));spawnSkillFx(target,skill,'player','travel');});
+      schedulePresentation(target,token,610,()=>{if(!target.isConnected)return;target.dataset.devShowcasePhase='impact';pulseActor(target,'enemy','hit',ultimate?560:420);spawnSkillFx(target,skill,'player','impact');impact(target,'enemy',ultimate||profile.tier==='heavy',{camera:ultimate?'heavy':profile.tier==='heavy'?'medium':'light',hitStopMs:ultimate?72:42},skill);});
+      return {ok:true,index:i,id:String(skill.id||''),name:String(skill.name||''),icon:productionSkillIconPath(skill.id),ultimate,cost,cooldown:Number(skill.cooldown)||0};
+    };
+    const showcaseStatusStress=()=>{
+      const {target,stage}=showcaseBegin('02-status-stress');if(!target)return {ok:false};
+      target.dataset.devShowcaseEvents='buff,debuff,enemy-debuff,shield,heal,poison-dot,mark,persistent-injury,overflow';
+      setHp(target,'player',38);setSpirit(target,46);setHp(target,'enemy',68);setPoise(target,18,'pressure');setBossPhaseBadge(target,3,'Phase III');showcaseResources(target,{resource:.78,ultimate:100});
+      addDevStatuses('player','buff',3,'SHOWCASE player buff');addDevStatuses('player','debuff',3,'SHOWCASE player debuff');
+      addStatus(target,'player',{statusId:'dev.showcase.shield',statusName:'Hộ Thể · 96K',statusKind:'buff',durationSeconds:8,message:'DEV showcase · shield gain'});
+      addStatus(target,'player',{statusId:'dev.showcase.poison',statusName:'Trúng Độc · DoT',statusKind:'debuff',durationSeconds:7,stacks:3,maxStacks:5,message:'DEV showcase · poison tick'});
+      addStatus(target,'player',{statusId:'dev.showcase.injury',statusName:'Thương Tích Vĩnh Viễn',statusKind:'debuff',stacks:2,maxStacks:5,message:'DEV showcase · persistent injury'});
+      addDevStatuses('enemy','debuff',5,'SHOWCASE enemy debuff');updateMark(target,'enemy',{markId:'dev.showcase.mark',statusName:'Đạo Ấn',stacks:6,maxStacks:6});
+      showEnemyIntent(target,{name:'Đại Sát · Hắc Phong Diệt',tags:['Ultimate','Boss']},4200);showSkillCallout(target,{id:'skill.rhino_overcharge',name:'Lôi Giác Bạo Tẩu',tags:['Boss','Buff'],slot:'ultimate'},'enemy',true);
+      floatNumber(target,'player','+42.6K','heal');damageNumber(target,'enemy',5200,false,'dot');impact(target,'enemy',false,{camera:'light'},skills[0]||{});setCaption(target,'DEV SHOWCASE · STATUS STRESS','Buff/debuff · Hộ Thể · Hồi Phục · DoT · Ấn 6/6 · overflow +N.',2600);
+      return {ok:true,scene:'02-status-stress',stage:stage?.dataset?.monsterId||'',events:target.dataset.devShowcaseEvents};
+    };
+    const showcaseDamageStress=()=>{
+      const {target,stage,token}=showcaseBegin('04-damage-stress');if(!target)return {ok:false};
+      const skill=skills.find(x=>x&&!isUltimateSkill(x))||skills[0]||{};target.dataset.devShowcaseEvents='normal,critical,multi-hit,dot,heal,shield-gain,shield-break,resource-gain-loss';
+      setHp(target,'player',74);setSpirit(target,64);setHp(target,'enemy',82);setPoise(target,52,'ready');showcaseResources(target,{resource:.44,ultimate:72});
+      addStatus(target,'player',{statusId:'dev.showcase.damage.shield',statusName:'Hộ Thể · 64K',statusKind:'buff',durationSeconds:7,message:'DEV showcase · shield gain'});
+      const hit=(amount,crit=false,kind='direct',camera='light')=>{pulseActor(target,'enemy','hit',crit?520:300);spawnSkillFx(target,skill,'player','impact');impact(target,'enemy',crit,{camera,hitStopMs:crit?66:28},skill);damageNumber(target,'enemy',amount,crit,kind);};
+      hit(18400,false,'direct','light');
+      schedulePresentation(target,token,100,()=>hit(17200,false,'direct','none'));
+      schedulePresentation(target,token,230,()=>hit(238000,true,'direct','heavy'));
+      schedulePresentation(target,token,390,()=>{damageNumber(target,'enemy',5200,false,'dot');floatNumber(target,'enemy','DoT','damage');});
+      schedulePresentation(target,token,500,()=>{pulseActor(target,'player','heal',560);floatNumber(target,'player','+42.6K','heal');setHp(target,'player',81);addStatus(target,'player',{statusId:'dev.showcase.damage.heal',statusName:'Hồi Phục · 42.6K',statusKind:'buff',durationSeconds:4,message:'DEV showcase · heal event'});});
+      schedulePresentation(target,token,610,()=>{updateCombatResource(target,{resourceId:'ultimateGauge',resourceValue:94,resourceMax:100,message:'DEV showcase · resource gain'});floatNumber(target,'player','+22 CN','resource');});
+      schedulePresentation(target,token,740,()=>{removeStatus(target,'player','dev.showcase.damage.shield');floatNumber(target,'player','PHÁ HỘ THỂ','break');impact(target,'player',true,{camera:'medium',hitStopMs:52},skill);});
+      schedulePresentation(target,token,850,()=>{damageNumber(target,'enemy',7300,false,'markBurst');floatNumber(target,'enemy','NỔ ẤN ×2','break');});
+      setCaption(target,'DEV SHOWCASE · DAMAGE PRESENTATION','Direct ×2 · Bạo Kích · DoT · Hồi Phục · Hộ Thể · resource · Nổ Ấn.',2500);
+      return {ok:true,scene:'04-damage-stress',skillId:String(skill.id||''),events:target.dataset.devShowcaseEvents};
+    };
+    const showcaseBossBreak=(stateName='near-break')=>{
+      const normalized=String(stateName||'near-break').replace(/^scene-05-boss-break-?/,'')||'near-break';const {target,stage}=showcaseBegin(`05-boss-break-${normalized}`);if(!target)return {ok:false};
+      target.dataset.devShowcaseBossBreak=normalized;setHp(target,'enemy',58);setBossPhaseBadge(target,3,'Phase III');
+      const bossSkill={id:'skill.rhino_charge',name:'Lôi Giác Xung Thiên',tags:['Beast','Lightning','Heavy','Break'],delivery:'melee'};
+      if(normalized==='broken'){setPoise(target,0,'broken',15);addStatus(target,'enemy',{statusId:'hunt.break',statusName:'Thất Thế · Phòng -15%',statusKind:'debuff',durationSeconds:5,message:'DEV showcase · break window'});startBreakWindow(target,5,5000,15);showSkillCallout(target,bossSkill,'enemy',false);floatNumber(target,'enemy','PHÁ THẾ','break');impact(target,'enemy',true,{camera:'heavy',hitStopMs:68},bossSkill);setBossState(target,'hit',{entityId:String(stage?.dataset?.monsterId||''),sticky:true});setCaption(target,'DEV SHOWCASE · THẤT THẾ','Boss Poise broken · break status · cửa sổ burst 5s.',2200);
+      }else if(normalized==='recovery'||normalized==='recovering'){setPoise(target,100,'recovering');removeStatus(target,'enemy','hunt.break');stopBreakWindow(target);clearEnemyIntent(target);setBossState(target,'phase3',{entityId:String(stage?.dataset?.monsterId||''),sticky:true});setCaption(target,'DEV SHOWCASE · ỔN THẾ','Boss đã hồi phục · tạm miễn Phá Thế mới.',2200);
+      }else{setPoise(target,18,'pressure');setBossState(target,'cast',{entityId:String(stage?.dataset?.monsterId||''),sticky:true});showEnemyIntent(target,{name:'Đại Sát · Hắc Phong Diệt',tags:['Ultimate','Boss']},3200);showSkillCallout(target,{id:'skill.rhino_overcharge',name:'Lôi Giác Bạo Tẩu',tags:['Boss','Lightning','Ultimate'],slot:'ultimate'},'enemy',true);setCaption(target,'DEV SHOWCASE · BOSS BREAK','Telegraph · HP · Poise 82/100 · gần Thất Thế.',2200);}
+      return {ok:true,scene:'05-boss-break',state:normalized};
+    };
+    const showcaseFullChaos=()=>{
+      const {target,stage,token}=showcaseBegin('06-full-chaos');if(!target)return {ok:false};
+      const skill=skills.find(x=>x&&!isUltimateSkill(x))||skills[0]||{};const ultimate=skills.find(isUltimateSkill)||skill;target.dataset.devShowcaseEvents='skill,boss-telegraph,damage,status,support,hp-cn,poise,vfx';
+      setHp(target,'player',29);setSpirit(target,37);setHp(target,'enemy',47);setPoise(target,16,'pressure');setBossPhaseBadge(target,3,'Phase III');showcaseResources(target,{resource:.86,ultimate:100});
+      addDevStatuses('player','buff',3,'CHAOS player buff');addDevStatuses('player','debuff',3,'CHAOS player debuff');addDevStatuses('enemy','debuff',5,'CHAOS boss debuff');
+      addStatus(target,'player',{statusId:'dev.chaos.shield',statusName:'Hộ Thể · 120K',statusKind:'buff',durationSeconds:8,message:'DEV showcase · shield'});addStatus(target,'player',{statusId:'dev.chaos.poison',statusName:'Trúng Độc · DoT',statusKind:'debuff',durationSeconds:6,stacks:4,maxStacks:5,message:'DEV showcase · poison'});updateMark(target,'enemy',{markId:'dev.chaos.mark',statusName:'Đạo Ấn',stacks:6,maxStacks:6});
+      showEnemyIntent(target,{name:'Đại Sát · Hắc Phong Diệt',tags:['Ultimate','Boss']},3800);showSkillCallout(target,skill,'player',false);pulseActor(target,'player',actorMotionState(presentationProfile(skill,String(stage?.dataset?.playerDao||'')),'cast',false),900);spawnSkillFx(target,skill,'player','cast');setCooldown(target,skills.indexOf(skill),Math.max(1.4,Number(skill.cooldown)||2));
+      schedulePresentation(target,token,320,()=>{target.dataset.devShowcasePhase='travel';spawnSkillFx(target,skill,'player','travel');});
+      schedulePresentation(target,token,510,()=>{target.dataset.devShowcasePhase='impact';pulseActor(target,'enemy','hit',560);spawnSkillFx(target,skill,'player','impact');impact(target,'enemy',true,{camera:'heavy',hitStopMs:72},skill);damageNumber(target,'enemy',238000,true,'direct');damageNumber(target,'enemy',5200,false,'dot');});
+      schedulePresentation(target,token,650,()=>{pulseActor(target,'player','heal',520);floatNumber(target,'player','+42.6K','heal');updateCombatResource(target,{resourceId:'ultimateGauge',resourceValue:88,resourceMax:100,message:'DEV showcase · resource'});});
+      schedulePresentation(target,token,780,()=>{showSkillCallout(target,ultimate,'player',true);pulseActor(target,'player','ultimate',1050);spawnSkillFx(target,ultimate,'player','cast');});
+      setCaption(target,'DEV SHOWCASE · FULL CHAOS','Skill + telegraph + damage + status + support + HP/CN + Poise + VFX.',2800);return {ok:true,scene:'06-full-chaos',skillId:String(skill.id||''),ultimateId:String(ultimate.id||''),events:target.dataset.devShowcaseEvents};
+    };
+    const showcaseShake=(kind='light')=>{
+      const key=String(kind||'light').toLowerCase();const table={light:{camera:'light',strong:false,durationMs:125,target:'enemy',label:'LIGHT HIT'},heavy:{camera:'medium',strong:true,durationMs:180,target:'enemy',label:'HEAVY HIT'},critical:{camera:'heavy',strong:true,durationMs:230,target:'enemy',label:'CRITICAL'},ultimate:{camera:'heavy',strong:true,durationMs:280,target:'enemy',label:'ULTIMATE'},boss:{camera:'medium',strong:true,durationMs:190,target:'player',label:'BOSS IMPACT'}};const cfg=table[key]||table.light;const {target,stage,token}=showcaseBegin(`shake-${key}`);if(!target)return {ok:false};
+      const realSkill=skills.find(isUltimateSkill)||skills[0]||{id:'dev.showcase.shake',name:'DEV Showcase',tags:['DEV']};
+      // The real Golden Sword ultimate has a dedicated choreography that can defer
+      // its camera impulse. Use a DEV-only neutral ultimate event for shake proof so
+      // the harness measures the generic impulse path without changing production.
+      const skill=key==='ultimate'
+        ? {id:'dev.showcase.ultimate',name:'Tuyệt Kỹ Showcase',slot:'ultimate',tags:['ultimate','DEV']}
+        : realSkill;
+      target.dataset.devShowcaseShake=key;target.dataset.devShowcaseShakePhase='impact';if(key==='boss')showEnemyIntent(target,{name:'Đại Sát · Hắc Phong Diệt',tags:['Ultimate','Boss']},1200);pulseActor(target,key==='boss'?'player':'enemy',key==='boss'?'hit':key==='ultimate'?'ultimate':'hit',cfg.durationMs+80);
+      // Keep the DEV sampling hit-stop below the first telemetry frame; camera
+      // strength, easing, duration, and layer remain the real Pixi implementation.
+      const sampleStop=key==='light'?22:key==='heavy'?28:key==='critical'?34:key==='ultimate'?38:28;
+      impact(target,cfg.target,cfg.strong,{camera:cfg.camera,hitStopMs:sampleStop},skill);
+      if(document.body.dataset.combatPixiState!=='pixi'&&stage)stage.classList.add(cfg.strong?'shake-strong':'shake');
+      schedulePresentation(target,token,Math.max(24,Math.round(cfg.durationMs*.35)),()=>{target.dataset.devShowcaseShakePhase='peak';});
+      schedulePresentation(target,token,cfg.durationMs+130,()=>{target.dataset.devShowcaseShakePhase='settled';stage?.classList.remove('shake','shake-strong','hit-stop');});
+      setCaption(target,`DEV SHOWCASE · ${cfg.label}`,'Camera impulse · HUD ổn định · chờ settled.',900);return {ok:true,kind:key,durationMs:cfg.durationMs,target:cfg.target,camera:cfg.camera};
+    };
+    const showcaseScene=(name='scene-01-clean',options={})=>{
+      const key=String(name||'').toLowerCase();
+      if(key==='scene-01-clean'||key==='01-clean'||key==='clean'){const {target,stage}=showcaseBegin('01-clean');stage?.classList.remove('presentation-active');target?.classList.remove('is-active-combat');setCaption(target,'','');return {ok:Boolean(target),scene:'01-clean'};}
+      if(key==='scene-02-status-stress'||key==='02-status-stress'||key==='status-stress')return showcaseStatusStress();
+      if(key==='scene-03-skill-cast'||key==='03-skill-cast'||key==='skill-cast')return showcaseSkill(options.index||0);
+      if(key==='scene-04-damage-stress'||key==='04-damage-stress'||key==='damage-stress')return showcaseDamageStress();
+      if(key.startsWith('scene-05-boss-break')||key.startsWith('05-boss-break')||key==='boss-break')return showcaseBossBreak(options.state||key.replace(/^.*boss-break-?/,'')||'near-break');
+      if(key==='scene-06-full-chaos'||key==='06-full-chaos'||key==='full-chaos')return showcaseFullChaos();
+      if(key.startsWith('shake-'))return showcaseShake(key.slice(6));
+      return {ok:false,reason:'unknown-scene',scene:key};
+    };
+    const showcaseApi={version:'combat-visual-showcase.v1',root,scene:showcaseScene,skill:showcaseSkill,bossBreak:showcaseBossBreak,shake:showcaseShake,listSkills:()=>skills.filter(Boolean).map((skill,index)=>({index,id:String(skill.id||''),name:String(skill.name||''),icon:productionSkillIconPath(skill.id),cooldown:Number(skill.cooldown)||0,cost:Number(skill.spiritCost)||0})),state:()=>{const stateRoot=currentCombatRoot()||root,stateStage=q(stateRoot,'#huntV2Stage')||stateRoot;return{scene:stateRoot.dataset.devShowcaseScene||'',skill:Number(stateRoot.dataset.devShowcaseSkill||0),phase:stateRoot.dataset.devShowcasePhase||'',shake:stateRoot.dataset.devShowcaseShake||'',shakePhase:stateRoot.dataset.devShowcaseShakePhase||'',cameraX:Number(document.body.dataset.combatPixiCameraX||0),cameraY:Number(document.body.dataset.combatPixiCameraY||0),cameraActive:document.body.dataset.combatPixiCameraActive==='1',rootTransform:getComputedStyle(stateRoot).transform,stageTransform:getComputedStyle(stateStage).transform}}};
+    globalThis.__TUTIEN_COMBAT_SHOWCASE__=showcaseApi;
+    qa(devBox,'[data-dev-showcase]').forEach(btn=>btn.addEventListener('click',()=>showcaseScene(btn.dataset.devShowcase||'scene-01-clean')));
+    qa(devBox,'[data-dev-showcase-shake]').forEach(btn=>btn.addEventListener('click',()=>showcaseShake(btn.dataset.devShowcaseShake||'light')));
     const runDevAutoTour=async()=>{
       const existing=devTourState();if(existing&&!existing.cancelled)return;
       const token=`tour-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;globalThis.__TUTIEN_COMBAT_QA_TOUR__={token,cancelled:false,startedAt:Date.now()};document.body.classList.add('combat-dev-tour-running');hideTourPanel();
@@ -1572,6 +1705,7 @@ export function mountHuntCombatV2(root,ctx){
 
 function cleanupHuntRootV129(root){
   if(!root)return;
+  if(globalThis.__TUTIEN_COMBAT_SHOWCASE__?.root===root)delete globalThis.__TUTIEN_COMBAT_SHOWCASE__;
   clearPresentationTimers(root);
   clearHuntTransientTimersV129(root);
   stopBreakWindow(root);

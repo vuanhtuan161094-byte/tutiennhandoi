@@ -107,6 +107,42 @@ jobs:
           node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('artifacts/ui-visual/manifest.json','utf8'));if(m.mockOrReconstruction!==false||m.screens?.length!==3)process.exit(1);console.log('VISUAL MANIFEST PASS ·',m.screens.map(x=>x.file).join(', '));"
           node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('artifacts/ui-visual/combat-runtime-metrics.json','utf8'));const l=m.combatLayout||{};if(!m.hasCombat||!m.hasPlayerHud||!m.hasEnemyHud||!m.hasEnemyContext||m.hasHorizontalOverflow||m.skillCount!==7||m.visibleText.length>0||l.supportCount!==3||l.supportYSpread>14||l.playerHudTop>=310)process.exit(1);console.log('COMBAT VISUAL METRICS PASS · skills='+m.skillCount+' · supportYSpread='+l.supportYSpread+' · playerHudTop='+l.playerHudTop);"
           node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('artifacts/ui-visual/combat-runtime-stress-metrics.json','utf8'));const s=m.statusStress||{};if(m.hasHorizontalOverflow||s.player?.visible<4||s.enemy?.visible<4||!s.player?.more||!s.enemy?.more||!String(s.mark||'').includes('6/6'))process.exit(1);console.log('COMBAT STATUS STRESS PASS · player='+s.player.visible+' enemy='+s.enemy.visible+' mark='+s.mark);"
+          for scene in 01-clean 02-status-stress 04-damage-stress 06-full-chaos; do
+            test -s "artifacts/ui-visual/${scene}-390x844.png"
+            test -s "artifacts/ui-visual/compact/${scene}-360x800.png"
+          done
+          for skill in 01 02 03 04 05 06 07; do
+            test -s "artifacts/ui-visual/03-skill-cast-${skill}-cast-390x844.png"
+            test -s "artifacts/ui-visual/03-skill-cast-${skill}-impact-390x844.png"
+            test -s "artifacts/ui-visual/compact/03-skill-cast-${skill}-cast-360x800.png"
+            test -s "artifacts/ui-visual/compact/03-skill-cast-${skill}-impact-360x800.png"
+          done
+          for state in near-break broken recovery; do
+            test -s "artifacts/ui-visual/05-boss-break-${state}-390x844.png"
+            test -s "artifacts/ui-visual/compact/05-boss-break-${state}-360x800.png"
+          done
+          for kind in light heavy critical ultimate boss; do
+            for phase in before impact peak settled; do
+              test -s "artifacts/ui-visual/screen-shake-${kind}-${phase}-390x844.png"
+              test -s "artifacts/ui-visual/compact/screen-shake-${kind}-${phase}-360x800.png"
+            done
+          done
+          test -s artifacts/ui-visual/combat-shake-metrics.json
+          test -s artifacts/ui-visual/compact/combat-shake-metrics.json
+          test -s artifacts/ui-visual/combat-showcase-390x844-metrics.json
+          test -s artifacts/ui-visual/compact/combat-showcase-360x800-metrics.json
+          node <<'NODE'
+          const fs=require('fs');
+          const check=(file,label)=>{
+            const m=JSON.parse(fs.readFileSync(file,'utf8'));
+            if(m.mockOrReconstruction!==false||m.scenes?.length!==6||m.skills?.length!==7||m.shake?.length!==5)throw new Error(`${label} showcase manifest incomplete`);
+            if(!m.shake.every(frame=>frame.neutral&&['before','impact','peak','settled'].every(phase=>frame[phase]?.file)))throw new Error(`${label} shake frame manifest incomplete`);
+            if(!m.shake.every(frame=>Math.max(Math.abs(frame.impact?.state?.cameraX||0),Math.abs(frame.impact?.state?.cameraY||0),Math.abs(frame.peak?.state?.cameraX||0),Math.abs(frame.peak?.state?.cameraY||0))>0.05))throw new Error(`${label} shake camera impulse missing`);
+            console.log(`${label} COMBAT SHOWCASE MANIFEST PASS · scenes=${m.scenes.length} · skills=${m.skills.length} · shake=${m.shake.length}`);
+          };
+          check('artifacts/ui-visual/combat-showcase-390x844-metrics.json','390x844');
+          check('artifacts/ui-visual/compact/combat-showcase-360x800-metrics.json','360x800');
+          NODE
 
       - name: Upload exact-SHA runtime screenshots
         if: always()

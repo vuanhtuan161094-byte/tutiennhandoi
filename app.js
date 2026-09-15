@@ -2792,6 +2792,10 @@ function livePollDelay(){if(document.hidden)return 30000;if(activeTab==='hunt')r
 function scheduleLivePoll(delay=livePollDelay()){clearTimeout(livePollTimer);livePollTimer=setTimeout(pollLive,Math.max(250,delay));}
 async function pollLive(){
   if(document.hidden){scheduleLivePoll(30000);return;}
+  // The DEV-only visual showcase owns its presentation state for the duration
+  // of a capture.  Do not let the background fight poll replace those staged
+  // DOM overlays; production routes never set is-dev-showcase.
+  if(DEV_MODE&&document.querySelector('.huntv2-screen.is-dev-showcase')){scheduleLivePoll(5000);return;}
   if(livePollBusy||!model){scheduleLivePoll();return;}
   livePollBusy=true;
   try{

@@ -152,6 +152,9 @@ function setFxTelemetry(stats={}){
     document.body.dataset.combatPixiProjectiles=String(stats.projectiles||0);
     document.body.dataset.combatPixiImpacts=String(stats.impacts||0);
     document.body.dataset.combatPixiCamera=String(stats.camera||0);
+    document.body.dataset.combatPixiCameraX=String(Number(stats.cameraX||0).toFixed(2));
+    document.body.dataset.combatPixiCameraY=String(Number(stats.cameraY||0).toFixed(2));
+    document.body.dataset.combatPixiCameraActive=stats.cameraActive?'1':'0';
     document.body.dataset.combatPixiFields=String(stats.fields||0);
     document.body.dataset.combatPixiParticles=String(stats.particles||0);
     document.body.dataset.combatPixiVolleys=String(stats.volleys||0);
@@ -174,6 +177,9 @@ function clearFxTelemetry(){
     delete document.body.dataset.combatPixiProjectiles;
     delete document.body.dataset.combatPixiImpacts;
     delete document.body.dataset.combatPixiCamera;
+    delete document.body.dataset.combatPixiCameraX;
+    delete document.body.dataset.combatPixiCameraY;
+    delete document.body.dataset.combatPixiCameraActive;
     delete document.body.dataset.combatPixiFields;
     delete document.body.dataset.combatPixiParticles;
     delete document.body.dataset.combatPixiVolleys;
@@ -782,7 +788,7 @@ export async function mountCombatPixiScene({host,playerDom,enemyDom,playerVisual
         renderDaoIdentity();renderSwordQi();renderExtensionActors();
       };
       const renderFx=(dt)=>{
-        if(fxPaused){camera.position.set(0,0);flashSprite.alpha=0;return;}
+        if(fxPaused){camera.position.set(0,0);flashSprite.alpha=0;stats.cameraX=0;stats.cameraY=0;stats.cameraActive=false;setFxTelemetry(stats);return;}
         for(let i=effects.length-1;i>=0;i--){
           const item=effects[i];item.age+=dt*Math.max(.5,fxSpeed);const t=clamp01(item.age/item.life);
           try{item.update?.(item,t);}catch{}
@@ -790,10 +796,14 @@ export async function mountCombatPixiScene({host,playerDom,enemyDom,playerVisual
         }
         stats.active=effects.length;
         const camAge=elapsed-cameraImpulse.started;
+        let cameraActive=false;
         if(cameraImpulse.duration>0&&camAge>=0&&camAge<cameraImpulse.duration){
           const t=camAge/cameraImpulse.duration,fade=1-t;const phase=(elapsed*93+cameraImpulse.seed*7.17);
           camera.position.set(Math.sin(phase)*cameraImpulse.strength*fade,Math.cos(phase*1.37)*cameraImpulse.strength*.62*fade);
         }else camera.position.set(0,0);
+        cameraActive=Math.abs(camera.position.x)>0.01||Math.abs(camera.position.y)>0.01;
+        stats.cameraX=camera.position.x;stats.cameraY=camera.position.y;stats.cameraActive=cameraActive;
+        setFxTelemetry(stats);
         const flashAge=elapsed-screenFlash.started;
         if(screenFlash.duration>0&&flashAge>=0&&flashAge<screenFlash.duration)flashSprite.alpha=screenFlash.strength*(1-flashAge/screenFlash.duration);else flashSprite.alpha=0;
       };
