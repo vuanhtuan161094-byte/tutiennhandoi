@@ -75,8 +75,8 @@ function animateNode(node){
     const base=Number(cfg.skillPunch)||DEFAULT_TUNING.skillPunch;
     const ultimate=node.classList.contains('ultimate')||node.classList.contains('tier-ultimate');
     playPunch(target,{
-      scale:clamp(base+(ultimate?.08:0),1.02,ultimate?1.38:1.28),
-      lift:Math.max(1,(Number(cfg.liftPx)||0)*(ultimate?.7:.45)),
+      scale:clamp(base+(ultimate ? .08 : 0),1.02,ultimate?1.38:1.28),
+      lift:Math.max(1,(Number(cfg.liftPx)||0)*(ultimate ? .7 : .45)),
       duration:ultimate?380:295,
     });
   }else if(node.matches('.huntv2-result-pop.show')){
