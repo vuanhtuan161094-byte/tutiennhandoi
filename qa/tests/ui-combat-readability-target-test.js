@@ -3,9 +3,11 @@ import assert from 'node:assert/strict';
 
 const html=fs.readFileSync('index.html','utf8');
 const css=fs.readFileSync('ui-combat-target-v1.css','utf8');
+const polish=fs.readFileSync('ui-combat-visual-polish.css','utf8');
 const bridge=fs.readFileSync('ui-combat-target-v1.js','utf8');
 
 assert.match(html,/ui-combat-target-v1\.css\?v=combat-readability-target-v1-20260914/,'Combat target CSS must be loaded after locked UI layers');
+assert.match(html,/ui-combat-visual-polish\.css\?v=combat-visual-polish-v1-20260915/,'Combat visual polish layer must be loaded last');
 assert.match(html,/ui-combat-target-v1\.js\?v=combat-third-party-tools-v3-20260915/,'Combat context bridge must be loaded');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-player-hud/,'Combat target must stay isolated to Hunt');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-enemy-hud/,'Enemy HUD readability target missing');
@@ -18,11 +20,20 @@ assert.match(css,/\.huntv2-status-tray\.enemy/,'Enemy status tray must have a pr
 assert.match(css,/\.huntv2-enemy-intent/,'Enemy intent must have a protected battlefield zone');
 assert.match(css,/\.huntv2-break-window/,'Break window must have a protected battlefield zone');
 assert.match(css,/\.huntv2-quick-controls/,'Secondary controls must be compacted');
+assert.match(polish,/\.huntv2-skill-callout\.tier-ultimate[\s\S]*?white-space:normal!important/,'Ultimate skill names must remain fully readable and wrap instead of ellipsizing');
+assert.match(polish,/@media\(max-width:360px\)[\s\S]*?grid-template-columns:repeat\(7,minmax\(0,1fr\)\)!important/,'Compact combat must protect all seven skill slots');
+assert.match(polish,/\.huntv2-float\.damage-main\.crit strong/,'Critical damage hierarchy missing');
+assert.match(polish,/\.huntv2-float\.damage-main\.kind-dot strong/,'DOT damage hierarchy missing');
+assert.match(polish,/\.huntv2-status-tray \.status\.fx-shield>b::before/,'Status rune treatment must include shield semantics');
+assert.match(polish,/\.huntv2-artifact-hud \.huntv2-support-crest/,'Combat support art treatment missing');
+assert.match(polish,/@keyframes huntCvpShakeStrong/,'Combat shake polish must retain deterministic neutral-settle animation');
+assert.doesNotMatch(polish,/\/api\/|localStorage|sessionStorage/,'Combat visual polish must remain presentation-only');
 assert.match(bridge,/stage\.dataset\.monsterLevel/,'Enemy level must come from runtime-authored stage data');
 assert.match(bridge,/stage\.dataset\.env/,'Enemy element context must come from runtime-authored stage data');
 assert.doesNotMatch(bridge,/\/api\//,'Presentation bridge must not call backend actions');
 assert.doesNotMatch(bridge,/localStorage|sessionStorage/,'Presentation bridge must not author persistent state');
 assert.ok(Buffer.byteLength(css,'utf8')<30000,'Combat target CSS must stay under 30 KB');
+assert.ok(Buffer.byteLength(polish,'utf8')<36000,'Combat visual polish CSS must stay under 36 KB');
 /* Combat V8 has a dense legacy cascade. This isolated final layer intentionally
    uses explicit overrides; cap it to a reviewed finite budget instead of forcing
    selectors to lose against the locked legacy !important rules. */
