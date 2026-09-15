@@ -96,6 +96,80 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
   body[data-game-screen="hunt"] .huntv2-skill:last-child{transform:translateX(-2px)!important}
 }
 
+/* User-directed portrait composition pass — 2026-09-15.
+   Compact the boss vitals into the annotated upper-right footprint, lift the
+   boss actor, drop the transient ultimate plaque, and use the lower console
+   breathing room for the seven real skill icons. Presentation only. */
+@media(max-width:430px) and (max-height:860px){
+  body[data-game-screen="hunt"] .huntv2-enemy-hud{
+    top:86px!important;
+    right:6px!important;
+    left:auto!important;
+    width:168px!important;
+    height:68px!important;
+    padding:5px 6px!important;
+  }
+  body[data-game-screen="hunt"] .huntv2-hud-main{
+    grid-template-rows:16px 13px 13px 15px!important;
+    gap:1px!important;
+  }
+  body[data-game-screen="hunt"] .huntv2-hud-main>div:first-child{
+    min-height:15px!important;
+    overflow:hidden!important;
+  }
+  body[data-game-screen="hunt"] .huntv2-hud-main strong{
+    display:block!important;
+    max-height:15px!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+    text-overflow:ellipsis!important;
+    font-size:10.5px!important;
+    line-height:1.05!important;
+    -webkit-line-clamp:1!important;
+  }
+  body[data-game-screen="hunt"] .huntv2-enemy-hud .huntv2-hp{height:12px!important}
+  body[data-game-screen="hunt"] .huntv2-enemy-hud .huntv2-hp>b{font-size:8.5px!important}
+  body[data-game-screen="hunt"] .huntv2-poise-row{
+    grid-template-columns:40px minmax(0,1fr)!important;
+    gap:3px!important;
+  }
+  body[data-game-screen="hunt"] .huntv2-poise-row>b,
+  body[data-game-screen="hunt"] .huntv2-poise>em{font-size:8.5px!important}
+  body[data-game-screen="hunt"] .huntv2-poise{height:10px!important}
+  body[data-game-screen="hunt"] .ui-combat-enemy-context{
+    right:1px!important;
+    bottom:-21px!important;
+  }
+  body[data-game-screen="hunt"] .ui-combat-enemy-context span{
+    padding:2px 5px!important;
+    font-size:8px!important;
+  }
+
+  body[data-game-screen="hunt"] .huntv2-actor.enemy,
+  body[data-game-screen="hunt"] .huntv2-actor.enemy.boss{
+    bottom:48%!important;
+  }
+  body[data-game-screen="hunt"] .huntv2-status-tray.enemy{
+    top:162px!important;
+    right:8px!important;
+  }
+
+  body[data-game-screen="hunt"] .huntv2-skill-callout{
+    bottom:34px!important;
+  }
+  body[data-game-screen="hunt"] .huntv2-skill-callout.tier-ultimate,
+  body[data-game-screen="hunt"] .huntv2-skill-callout.ultimate{
+    bottom:30px!important;
+  }
+
+  body[data-game-screen="hunt"] .huntv2-skills{
+    position:relative!important;
+    z-index:82!important;
+    transform:translateY(34px)!important;
+    overflow:visible!important;
+  }
+}
+
 @media(prefers-reduced-motion:reduce){
   body[data-game-screen="hunt"] .huntv2-stage.shake,
   body[data-game-screen="hunt"] .huntv2-stage.shake-strong,
