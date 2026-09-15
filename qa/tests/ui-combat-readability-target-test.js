@@ -5,13 +5,16 @@ const html=fs.readFileSync('index.html','utf8');
 const css=fs.readFileSync('ui-combat-target-v1.css','utf8');
 const polish=fs.readFileSync('ui-combat-visual-polish.css','utf8');
 const camera=fs.readFileSync('ui-combat-camera-polish.css','utf8');
+const info=fs.readFileSync('ui-combat-information-v1.css','utf8');
 const runtime=fs.readFileSync('modules/combat-presentation-runtime-v140.js','utf8');
 const bridge=fs.readFileSync('ui-combat-target-v1.js','utf8');
+const hunt=fs.readFileSync('modules/hunt-combat-v2.js','utf8');
 
 assert.match(html,/ui-combat-target-v1\.css\?v=combat-readability-target-v1-20260914/,'Combat target CSS must be loaded after locked UI layers');
 assert.match(html,/ui-combat-visual-polish\.css\?v=combat-visual-polish-v1-20260915/,'Combat visual polish layer must be loaded');
 assert.match(html,/ui-combat-camera-polish\.css\?v=combat-camera-polish-v8-20260916/,'Combat camera/compact polish must be loaded after visual polish');
-assert.match(html,/ui-combat-target-v1\.js\?v=combat-third-party-tools-v3-20260915/,'Combat context bridge must be loaded');
+assert.match(html,/ui-combat-information-v1\.css\?v=combat-information-v1-20260916/,'Combat information architecture layer must load last');
+assert.match(html,/ui-combat-target-v1\.js\?v=combat-information-v4-20260916/,'Combat context bridge cache key must include information architecture update');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-player-hud/,'Combat target must stay isolated to Hunt');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-enemy-hud/,'Enemy HUD readability target missing');
 assert.match(css,/grid-template-columns:repeat\(7,minmax\(0,1fr\)\)/,'All seven backend-authored skill slots must remain visible');
@@ -47,16 +50,39 @@ assert.match(camera,/\.huntv2-intel-meter\[data-intel-resource="swordIntentV2"\]
 assert.match(camera,/\.huntv2-intel-meter\[data-intel-resource="swordIntentV2"\]>i>em\{[\s\S]*?background:linear-gradient\(90deg,#3e82c7,#86d9ff 66%,#f1fbff\)!important/,'Kiếm Ý fill must remain visually distinct from the meter background');
 assert.match(camera,/\.huntv2-enemy-info\{[\s\S]*?display:grid!important[\s\S]*?width:20px!important[\s\S]*?height:20px!important/,'Compact Boss HUD must keep the canonical monster-detail affordance visible');
 assert.doesNotMatch(camera,/\/api\/|localStorage|sessionStorage/,'Combat camera polish must remain presentation-only');
+
+assert.match(info,/is-prefight:not\(\.is-active-combat\) \.v5-boss-briefing\{display:grid\}/,'Boss briefing must exist only before active combat');
+assert.match(info,/is-active-combat \.v5-boss-mechanic-compact:not\(\[hidden\]\)\{display:grid\}/,'Active combat must expose only the compact Boss mechanic affordance');
+assert.match(info,/\.v5-critical-signal-active \.v5-boss-mechanic-compact\{display:none!important\}/,'Lethal/telegraph/counter signals must outrank the mechanic chip');
+assert.match(info,/\.huntv2-context-button\.v5-farm-summary\{display:flex!important/,'Unlocked farm summary must be restored from backend-authored context');
+assert.match(info,/\.huntv2-result-pop\.show\.victory/,'Victory result cue must remain visually explicit');
+assert.match(info,/\.huntv2-result-pop\.show\.defeat/,'Defeat result cue must remain visually explicit');
+assert.match(info,/@media\(max-width:430px\) and \(max-height:860px\)/,'Boss briefing must have a compact portrait policy');
+assert.doesNotMatch(info,/\/api\/|localStorage|sessionStorage/,'Combat information layer must remain presentation-only');
+
 assert.match(runtime,/function rendererEventForVisualReadability\(event=\{\}\)/,'Pixi façade must keep the visual-readability guard');
 assert.match(runtime,/swordImpact=type==='impact'.*skillId\.startsWith\('skill\.dao\.sword\.'\)/,'Sword impact readability guard must remain scoped to Sword presentation');
 assert.match(runtime,/strong:false,[\s\S]*?tags:\['Sword'\]/,'Sword contact flash must normalize only the renderer impact primitive');
 assert.match(bridge,/stage\.dataset\.monsterLevel/,'Enemy level must come from runtime-authored stage data');
 assert.match(bridge,/stage\.dataset\.env/,'Enemy element context must come from runtime-authored stage data');
+assert.match(bridge,/\[data-sheet-panel="monster"\]/,'Boss briefing must read the canonical monster sheet instead of inventing Boss stats');
+assert.match(bridge,/\.v110-readiness strong/,'Boss readiness must come from the backend-authored readiness block');
+assert.match(bridge,/\.v110-boss-plan header strong/,'Boss mechanic must come from the canonical Boss plan');
+assert.match(bridge,/findBossRewardPanel\(lootSheet\)/,'Expected reward preview must read the existing Boss reward panel');
+assert.match(bridge,/THƯỞNG DỰ KIẾN/,'Expected reward must be explicitly labelled as preview, never actual loot');
+assert.match(bridge,/fight\?\.disabled/,'Fight blocker presentation must follow the canonical disabled challenge action');
+assert.match(bridge,/v5-farm-summary/,'Farm summary must reuse the existing backend-authored loot context button');
+assert.match(bridge,/v5-critical-signal-active/,'Critical combat signals must suppress lower-priority mechanic chrome');
+assert.doesNotMatch(bridge,/spiritStonesHint|equipmentChancePct/,'Presentation bridge must not recalculate or directly author reward truth');
 assert.doesNotMatch(bridge,/\/api\//,'Presentation bridge must not call backend actions');
 assert.doesNotMatch(bridge,/localStorage|sessionStorage/,'Presentation bridge must not author persistent state');
+assert.match(hunt,/event\.type==='battleEnd'[\s\S]*?showResult\(root,won\?'TRẤN SÁT':'THẤT BẠI'/,'Canonical battleEnd must remain the authority for victory/defeat result');
+assert.doesNotMatch(bridge,/battleEnd/,'Presentation bridge must not reinterpret battle outcome or expected reward as actual drops');
+
 assert.ok(Buffer.byteLength(css,'utf8')<30000,'Combat target CSS must stay under 30 KB');
 assert.ok(Buffer.byteLength(polish,'utf8')<36000,'Combat visual polish CSS must stay under 36 KB');
 assert.ok(Buffer.byteLength(camera,'utf8')<14000,'Combat camera/compact polish CSS must stay under 14 KB');
+assert.ok(Buffer.byteLength(info,'utf8')<12000,'Combat information architecture CSS must stay under 12 KB');
 /* Combat V8 has a dense legacy cascade. This isolated final layer intentionally
    uses explicit overrides; cap it to a reviewed finite budget instead of forcing
    selectors to lose against the locked legacy !important rules. */
