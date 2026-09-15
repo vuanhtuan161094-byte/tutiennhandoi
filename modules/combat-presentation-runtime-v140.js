@@ -87,7 +87,25 @@ export function destroyCombatPresentationRuntime(){
 export function combatPresentationActive(){
   try{return Boolean(rendererApi&&document.body.dataset.combatRenderer==='pixi');}catch{return false;}
 }
-export function playCombatPresentationFx(event={}){try{return Boolean(combatPresentationActive()&&rendererApi.playCombatPixiFx?.(event));}catch{return false;}}
+
+/* Sword skills already carry their identity in anticipation/cast/travel choreography.
+   The final contact flash is deliberately normalized to a compact, normal-weight
+   punctuation mark so the target silhouette stays readable. Camera and hit-stop
+   values are preserved from the canonical presentation event. */
+function rendererEventForVisualReadability(event={}){
+  const type=String(event?.type||event?.phase||'').toLowerCase();
+  const fallbackDao=String(event?.fallbackDao||'').toLowerCase();
+  const skillId=String(event?.skill?.id||'').toLowerCase();
+  const swordImpact=type==='impact'&&(fallbackDao==='sword'||skillId.startsWith('skill.dao.sword.'));
+  if(!swordImpact)return event;
+  return {
+    ...event,
+    strong:false,
+    skill:{id:'',name:'',description:'',delivery:'sword',tags:['Sword']},
+  };
+}
+
+export function playCombatPresentationFx(event={}){try{return Boolean(combatPresentationActive()&&rendererApi.playCombatPixiFx?.(rendererEventForVisualReadability(event)));}catch{return false;}}
 export function setCombatPresentationFxState(state={}){try{return Boolean(combatPresentationActive()&&rendererApi.setCombatPixiFxState?.(state));}catch{return false;}}
 export function setCombatPresentationSwordQi(state={}){try{return Boolean(combatPresentationActive()&&rendererApi.setCombatPixiSwordQi?.(state));}catch{return false;}}
 export function setCombatPresentationDaoIdentity(daoId=''){try{return Boolean(combatPresentationActive()&&rendererApi.setCombatPixiDaoIdentity?.(String(daoId||'')));}catch{return false;}}
