@@ -88,7 +88,7 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
   body[data-game-screen="hunt"] .huntv2-artifact-hud .huntv2-support-crest{width:36px!important;height:38px!important}
   body[data-game-screen="hunt"] .huntv2-beast-companion-hud::after,
   body[data-game-screen="hunt"] .huntv2-confidant-hud::after,
-  body[data-game-screen="hunt"] .huntv2-artifact-hud::after{width:46px!important;font-size:7px!important}
+  body[data-game-screen="hunt"] .huntv2-artifact-hud::after{width:46px!important;font-size:10px!important}
 
   body[data-game-screen="hunt"] .huntv2-float.enemy{right:5%!important;top:40%!important}
   body[data-game-screen="hunt"] .huntv2-skill-art{width:38px!important;height:38px!important}
@@ -236,7 +236,7 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
   body[data-game-screen="hunt"] .huntv2-intel-meter b{
     position:relative!important;
     z-index:2!important;
-    font-size:9.5px!important;
+    font-size:10px!important;
     line-height:1!important;
     font-weight:850!important;
     color:#e8f4ec!important;
@@ -297,7 +297,7 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
   body[data-game-screen="hunt"] .huntv2-skill.ultimate .huntv2-skill-art{width:42px!important;height:42px!important}
   body[data-game-screen="hunt"] .huntv2-intel-meter{padding-inline:4px!important}
   body[data-game-screen="hunt"] .huntv2-intel-meter span,
-  body[data-game-screen="hunt"] .huntv2-intel-meter b{font-size:9px!important}
+  body[data-game-screen="hunt"] .huntv2-intel-meter b{font-size:10px!important}
 }
 
 @media(prefers-reduced-motion:reduce){
