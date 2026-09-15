@@ -4,7 +4,8 @@
   const elementLabel = value => ({water:'Thủy',fire:'Hỏa',wood:'Mộc',metal:'Kim',earth:'Thổ'})[String(value || '').toLowerCase()] || '';
   const params = (() => { try { return new URLSearchParams(location.search); } catch { return new URLSearchParams(); } })();
   const devMode = params.get('dev') === '1' || globalThis.__TUTIEN_DEV_FORCE__ === true;
-  const animeOptIn = devMode || params.get('anime') === '1';
+  const toolsOptIn = params.get('tools') === '1' || params.get('devtools') === '1';
+  const animeOptIn = params.get('anime') === '1' || (devMode && toolsOptIn);
 
   function bootPresentationTools() {
     if (animeOptIn) {
@@ -12,7 +13,7 @@
         .then(mod => mod.initCombatAnimeMotionV1?.())
         .catch(() => { try { document.body.dataset.combatMotionEngine = 'css-fallback'; } catch {} });
     }
-    if (devMode) {
+    if (devMode && toolsOptIn) {
       import('./modules/dev-third-party-tools-v1.js')
         .then(mod => mod.initDevThirdPartyToolsV1?.())
         .catch(() => { try { document.body.dataset.devThirdPartyTools = 'fallback'; } catch {} });
