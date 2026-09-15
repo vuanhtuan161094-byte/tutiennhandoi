@@ -1487,6 +1487,8 @@ export function mountHuntCombatV2(root,ctx){
     const showcaseBegin=(sceneName)=>{
       const target=currentCombatRoot();if(!target)return {target:null,stage:null,token:0};
       const token=clearPresentationTimers(target);clearHuntTransientTimersV129(target);resetCombatStagingState(target);setCaption(target,'','');
+      q(target,'#huntv2SkillCallout')?.classList.remove('show');
+      qa(target,'.huntv2-float,.huntv2-status-callout').forEach(node=>node.remove());
       target.classList.add('is-dev-showcase','is-active-combat');target.dataset.devShowcaseScene=String(sceneName||'');delete target.dataset.devShowcaseSkill;delete target.dataset.devShowcasePhase;delete target.dataset.devShowcaseShake;delete target.dataset.devShowcaseShakePhase;
       const stageNode=q(target,'#huntV2Stage');if(stageNode){stageNode.classList.add('presentation-active');stageNode.classList.remove('shake','shake-strong','hit-stop');stageNode.dataset.devShowcaseScene=String(sceneName||'');}
       return {target,stage:stageNode,token};
@@ -1527,13 +1529,13 @@ export function mountHuntCombatV2(root,ctx){
       addStatus(target,'player',{statusId:'dev.showcase.damage.shield',statusName:'Hộ Thể · 64K',statusKind:'buff',durationSeconds:7,message:'DEV showcase · shield gain'});
       const hit=(amount,crit=false,kind='direct',camera='light')=>{pulseActor(target,'enemy','hit',crit?520:300);spawnSkillFx(target,skill,'player','impact');impact(target,'enemy',crit,{camera,hitStopMs:crit?66:28},skill);damageNumber(target,'enemy',amount,crit,kind);};
       hit(18400,false,'direct','light');
-      schedulePresentation(target,token,100,()=>hit(17200,false,'direct','none'));
-      schedulePresentation(target,token,230,()=>hit(238000,true,'direct','heavy'));
-      schedulePresentation(target,token,390,()=>{damageNumber(target,'enemy',5200,false,'dot');floatNumber(target,'enemy','DoT','damage');});
-      schedulePresentation(target,token,500,()=>{pulseActor(target,'player','heal',560);floatNumber(target,'player','+42.6K','heal');setHp(target,'player',81);addStatus(target,'player',{statusId:'dev.showcase.damage.heal',statusName:'Hồi Phục · 42.6K',statusKind:'buff',durationSeconds:4,message:'DEV showcase · heal event'});});
-      schedulePresentation(target,token,610,()=>{updateCombatResource(target,{resourceId:'ultimateGauge',resourceValue:94,resourceMax:100,message:'DEV showcase · resource gain'});floatNumber(target,'player','+22 CN','resource');});
-      schedulePresentation(target,token,740,()=>{removeStatus(target,'player','dev.showcase.damage.shield');floatNumber(target,'player','PHÁ HỘ THỂ','break');impact(target,'player',true,{camera:'medium',hitStopMs:52},skill);});
-      schedulePresentation(target,token,850,()=>{damageNumber(target,'enemy',7300,false,'markBurst');floatNumber(target,'enemy','NỔ ẤN ×2','break');});
+      schedulePresentation(target,token,90,()=>hit(17200,false,'direct','none'));
+      schedulePresentation(target,token,360,()=>hit(238000,true,'direct','heavy'));
+      schedulePresentation(target,token,470,()=>{damageNumber(target,'enemy',5200,false,'dot');floatNumber(target,'enemy','DoT','damage');});
+      schedulePresentation(target,token,580,()=>{pulseActor(target,'player','heal',560);floatNumber(target,'player','+42.6K','heal');setHp(target,'player',81);addStatus(target,'player',{statusId:'dev.showcase.damage.heal',statusName:'Hồi Phục · 42.6K',statusKind:'buff',durationSeconds:4,message:'DEV showcase · heal event'});});
+      schedulePresentation(target,token,690,()=>{updateCombatResource(target,{resourceId:'ultimateGauge',resourceValue:94,resourceMax:100,message:'DEV showcase · resource gain'});floatNumber(target,'player','+22 CN','resource');});
+      schedulePresentation(target,token,800,()=>{removeStatus(target,'player','dev.showcase.damage.shield');floatNumber(target,'player','PHÁ HỘ THỂ','break');impact(target,'player',true,{camera:'medium',hitStopMs:52},skill);});
+      schedulePresentation(target,token,910,()=>{damageNumber(target,'enemy',7300,false,'markBurst');floatNumber(target,'enemy','NỔ ẤN ×2','break');});
       setCaption(target,'DEV SHOWCASE · DAMAGE PRESENTATION','Direct ×2 · Bạo Kích · DoT · Hồi Phục · Hộ Thể · resource · Nổ Ấn.',2500);
       return {ok:true,scene:'04-damage-stress',skillId:String(skill.id||''),events:target.dataset.devShowcaseEvents};
     };

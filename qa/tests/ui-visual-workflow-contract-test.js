@@ -36,6 +36,7 @@ for(const scene of ['01-clean','02-status-stress','03-skill-cast','04-damage-str
 for(const phase of ['before','impact','peak','settled'])assert.match(combatCapture,new RegExp(`screen-shake-.*-${phase}`),`combat capture must retain ${phase} shake frames`);
 assert.match(combatCapture,/manifest\.skills\.length/,'combat capture must report the complete skill list');
 assert.match(combatCapture,/manifest\.shake = shakeFrames/,'combat capture must report all shake variants');
+assert.match(combatCapture,/04-damage-stress-normal-/,'damage showcase must retain an early normal/multi-hit frame');
 assert.match(workflow,/name: ui-visual-\$\{\{ github\.sha \}\}/,'combat showcase proof must be uploaded under the exact candidate SHA artifact');
 assert.match(workflow,/s\.enemy\?\.mark/,'status stress validation must read the canonical enemy mark projection');
 

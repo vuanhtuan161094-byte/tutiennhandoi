@@ -111,6 +111,8 @@ jobs:
             test -s "artifacts/ui-visual/${scene}-390x844.png"
             test -s "artifacts/ui-visual/compact/${scene}-360x800.png"
           done
+          test -s artifacts/ui-visual/04-damage-stress-normal-390x844.png
+          test -s artifacts/ui-visual/compact/04-damage-stress-normal-360x800.png
           for skill in 01 02 03 04 05 06 07; do
             test -s "artifacts/ui-visual/03-skill-cast-${skill}-cast-390x844.png"
             test -s "artifacts/ui-visual/03-skill-cast-${skill}-impact-390x844.png"
