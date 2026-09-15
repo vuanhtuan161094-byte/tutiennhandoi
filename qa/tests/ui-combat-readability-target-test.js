@@ -12,7 +12,7 @@ const hunt=fs.readFileSync('modules/hunt-combat-v2.js','utf8');
 
 assert.match(html,/ui-combat-target-v1\.css\?v=combat-readability-target-v1-20260914/,'Combat target CSS must be loaded after locked UI layers');
 assert.match(html,/ui-combat-visual-polish\.css\?v=combat-visual-polish-v1-20260915/,'Combat visual polish layer must be loaded');
-assert.match(html,/ui-combat-camera-polish\.css\?v=combat-camera-polish-v8-20260916/,'Combat camera/compact polish must be loaded after visual polish');
+assert.match(html,/ui-combat-camera-polish\.css\?v=combat-camera-polish-v9-20260916/,'Combat camera/compact polish must be loaded after visual polish');
 assert.match(html,/ui-combat-information-v1\.css\?v=combat-information-v1-20260916/,'Combat information architecture layer must load last');
 assert.match(html,/ui-combat-target-v1\.js\?v=combat-information-v4-20260916/,'Combat context bridge cache key must include information architecture update');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-player-hud/,'Combat target must stay isolated to Hunt');
@@ -46,6 +46,8 @@ assert.match(camera,/@media\(max-width:430px\) and \(max-height:860px\)[\s\S]*?\
 assert.match(camera,/@media\(max-width:430px\) and \(max-height:860px\)[\s\S]*?\.huntv2-skills\{[\s\S]*?position:absolute!important[\s\S]*?left:8px!important[\s\S]*?right:8px!important[\s\S]*?bottom:39px!important[\s\S]*?height:58px!important[\s\S]*?grid-template-columns:repeat\(7,minmax\(0,1fr\)\)!important[\s\S]*?transform:none!important/,'Portrait skill rail must be pinned across the full lower dock with seven equal tracks and a 58px footprint that clears the resource lane');
 assert.match(camera,/@media\(max-width:430px\) and \(max-height:860px\)[\s\S]*?\.huntv2-skill,[\s\S]*?\.huntv2-skill\.ultimate\{[\s\S]*?width:100%!important[\s\S]*?height:58px!important[\s\S]*?min-width:0!important[\s\S]*?justify-self:stretch!important/,'Portrait skill cells must fill their equal-width grid tracks without overlapping the resource lane');
 assert.match(camera,/\.huntv2-intel-lane\{[\s\S]*?z-index:85!important[\s\S]*?height:25px!important/,'Portrait Bản Đạo resource lane must remain above the skill rail');
+assert.match(camera,/\.huntv2-intel-meter span,[\s\S]*?\.huntv2-intel-meter b\{[\s\S]*?font-size:10px!important/,'Portrait Bản Đạo resource text must respect the 10px legibility floor');
+assert.doesNotMatch(camera,/\.huntv2-intel-meter b\{font-size:9(?:\.5)?px!important/,'Compact Bản Đạo text must never shrink below the visual-proof legibility floor');
 assert.match(camera,/\.huntv2-intel-meter\[data-intel-resource="swordIntentV2"\]\{[\s\S]*?border-color:rgba\(134,217,255,\.72\)!important/,'Kiếm Ý meter must have a dedicated readable visual state');
 assert.match(camera,/\.huntv2-intel-meter\[data-intel-resource="swordIntentV2"\]>i>em\{[\s\S]*?background:linear-gradient\(90deg,#3e82c7,#86d9ff 66%,#f1fbff\)!important/,'Kiếm Ý fill must remain visually distinct from the meter background');
 assert.match(camera,/\.huntv2-enemy-info\{[\s\S]*?display:grid!important[\s\S]*?width:20px!important[\s\S]*?height:20px!important/,'Compact Boss HUD must keep the canonical monster-detail affordance visible');
