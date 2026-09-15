@@ -1,4 +1,4 @@
-/* Combat Camera Polish V1 — presentation-only camera layer.
+/* Combat Camera Polish V1 — presentation-only camera and compact-clearance layer.
    Runtime shake classes remain authority; only the battlefield arena moves so HUD,
    vitals, status lanes, supports and controls stay visually stable. */
 
@@ -32,6 +32,68 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
   53%{transform:translate3d(calc(var(--cvp-shake-heavy,3.25px)*-.56),-.45px,0)}
   72%{transform:translate3d(calc(var(--cvp-shake-heavy,3.25px)*.58),.55px,0)}
   88%{transform:translate3d(calc(var(--cvp-shake-heavy,3.25px)*-.22),0,0)}
+}
+
+/* 360 × 800 is its own composition constraint. Preserve the accepted actor and
+   support positions, but trim presentation chrome so full-chaos states retain
+   distinct HUD, status, callout, support and skill lanes. */
+@media(max-width:360px){
+  body[data-game-screen="hunt"] .huntv2-status-tray.player{
+    top:calc(48% + 70px)!important;
+    left:9px!important;
+    max-width:108px!important;
+  }
+  body[data-game-screen="hunt"] .huntv2-status-tray.enemy{max-width:108px!important}
+  body[data-game-screen="hunt"] .huntv2-status-tray .status,
+  body[data-game-screen="hunt"] .huntv2-status-tray .status-more{
+    flex-basis:25px!important;
+    min-width:25px!important;
+    width:25px!important;
+    max-width:25px!important;
+    height:25px!important;
+  }
+  body[data-game-screen="hunt"] .huntv2-status-tray .status>b{width:14px!important;height:14px!important}
+
+  body[data-game-screen="hunt"] .huntv2-skill-callout{
+    max-width:72%!important;
+    min-height:0!important;
+    padding:5px 8px 6px!important;
+    grid-template-columns:30px minmax(0,1fr)!important;
+    column-gap:6px!important;
+  }
+  body[data-game-screen="hunt"] .huntv2-skill-callout img{width:28px!important;height:28px!important}
+  body[data-game-screen="hunt"] .huntv2-skill-callout strong{font-size:13.5px!important;line-height:1.06!important}
+  body[data-game-screen="hunt"] .huntv2-skill-callout.tier-ultimate,
+  body[data-game-screen="hunt"] .huntv2-skill-callout.ultimate{
+    max-width:82%!important;
+    min-height:48px!important;
+    padding:6px 9px 7px!important;
+    grid-template-columns:35px minmax(0,1fr)!important;
+  }
+  body[data-game-screen="hunt"] .huntv2-skill-callout.tier-ultimate img,
+  body[data-game-screen="hunt"] .huntv2-skill-callout.ultimate img{width:33px!important;height:33px!important}
+  body[data-game-screen="hunt"] .huntv2-skill-callout.tier-ultimate strong,
+  body[data-game-screen="hunt"] .huntv2-skill-callout.ultimate strong{font-size:15px!important;line-height:1.05!important}
+
+  body[data-game-screen="hunt"] .huntv2-hud-extension-slots{width:154px!important;gap:2px!important}
+  body[data-game-screen="hunt"] .huntv2-beast-companion-hud,
+  body[data-game-screen="hunt"] .huntv2-confidant-hud,
+  body[data-game-screen="hunt"] .huntv2-artifact-hud{
+    flex:0 0 48px!important;
+    width:48px!important;
+    height:46px!important;
+  }
+  body[data-game-screen="hunt"] .huntv2-beast-companion-hud>img,
+  body[data-game-screen="hunt"] .huntv2-confidant-hud>img,
+  body[data-game-screen="hunt"] .huntv2-artifact-hud .huntv2-support-crest{width:36px!important;height:38px!important}
+  body[data-game-screen="hunt"] .huntv2-beast-companion-hud::after,
+  body[data-game-screen="hunt"] .huntv2-confidant-hud::after,
+  body[data-game-screen="hunt"] .huntv2-artifact-hud::after{width:46px!important;font-size:7px!important}
+
+  body[data-game-screen="hunt"] .huntv2-float.enemy{right:5%!important;top:40%!important}
+  body[data-game-screen="hunt"] .huntv2-skill-art{width:38px!important;height:38px!important}
+  body[data-game-screen="hunt"] .huntv2-skill.ultimate .huntv2-skill-art{width:42px!important;height:42px!important}
+  body[data-game-screen="hunt"] .huntv2-skill:last-child{transform:translateX(-2px)!important}
 }
 
 @media(prefers-reduced-motion:reduce){
