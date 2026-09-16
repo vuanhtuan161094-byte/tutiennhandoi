@@ -1,0 +1,38 @@
+name: V181 Repair Combat HP Helper Boundary
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'qa/tools/repair-v181-combat-hp-helper-boundary.mjs'
+      - '.github/workflows/v181-repair-combat-hp-helper-boundary.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Repair helper boundary
+        run: node qa/tools/repair-v181-combat-hp-helper-boundary.mjs
+      - name: Targeted verification
+        run: |
+          node --check modules/hunt-combat-v2.js
+          node qa/tests/ui-combat-hp-display-contract-test.js
+          node qa/tests/ui-combat-readability-target-test.js
+          node qa/tests/ui-combat-status-authority-test.js
+          node qa/tests/ui-combat-showcase-contract-test.js
+          node qa/tests/ui-combat-third-party-tools-test.js
+      - name: Commit repair and remove one-shot plumbing
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f qa/tools/repair-v181-combat-hp-helper-boundary.mjs .github/workflows/v181-repair-combat-hp-helper-boundary.yml
+          git add modules/hunt-combat-v2.js qa/tests/ui-combat-hp-display-contract-test.js
+          git commit -m "fix(combat): restore HP-adjacent presentation helpers [v181-hp-repair]"
+          git push origin HEAD:main
