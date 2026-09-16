@@ -156,12 +156,17 @@
     farmButton?.classList.toggle('v5-farm-summary', farmReady);
     screen.classList.toggle('v5-farm-ready', farmReady);
 
-    const criticalSignal = Boolean(screen.querySelector('.huntv2-stage-boss-telegraph.visible, .huntv2-enemy-intent.visible, .huntv2-break-window.visible, .huntv2-stage-skill-callout.visible, .huntv2-skill-callout.show'));
-    screen.classList.toggle('v5-critical-signal-active', criticalSignal);
-
     const phase = screen.querySelector('.huntv2-phase-badge, .huntv2-boss-phase, [data-boss-phase]');
     const phaseText = clean(phase?.textContent);
     if (phase && phaseText) phase.setAttribute('aria-label', `Giai đoạn Boss ${phaseText}`);
+  }
+
+  function syncEngagedPresentation(screen, stage) {
+    const criticalSignal = Boolean(screen.querySelector('.huntv2-stage-boss-telegraph.visible, .huntv2-stage-boss-telegraph.show, .huntv2-enemy-intent.visible, .huntv2-enemy-intent.show, .huntv2-break-window.visible, .huntv2-break-window.show, .huntv2-stage-skill-callout.visible, .huntv2-skill-callout.show'));
+    const transientSignal = Boolean(screen.querySelector('.huntv2-float.show, .huntv2-status-callout.show, .huntv2-result-pop.show'));
+    const engaged = screen.classList.contains('is-active-combat') || stage.classList.contains('presentation-active') || criticalSignal || transientSignal;
+    screen.classList.toggle('v5-critical-signal-active', criticalSignal);
+    screen.classList.toggle('v5-combat-engaged', engaged);
   }
 
   function syncCombatContext() {
@@ -169,6 +174,8 @@
     const stage = screen?.querySelector('#huntV2Stage, .huntv2-stage');
     const enemyHud = screen?.querySelector('.huntv2-enemy-hud');
     if (!screen || !stage || !enemyHud) return;
+
+    syncEngagedPresentation(screen, stage);
 
     let context = enemyHud.querySelector('.ui-combat-enemy-context');
     if (!context) {

@@ -13,8 +13,8 @@ const hunt=fs.readFileSync('modules/hunt-combat-v2.js','utf8');
 assert.match(html,/ui-combat-target-v1\.css\?v=combat-readability-target-v1-20260914/,'Combat target CSS must be loaded after locked UI layers');
 assert.match(html,/ui-combat-visual-polish\.css\?v=combat-visual-polish-v1-20260915/,'Combat visual polish layer must be loaded');
 assert.match(html,/ui-combat-camera-polish\.css\?v=combat-camera-polish-v14-20260916/,'Combat camera/compact polish cache key must include V180 portrait geometry');
-assert.match(html,/ui-combat-information-v1\.css\?v=combat-information-v2-20260916/,'Combat information cache key must include active-state/farm semantics');
-assert.match(html,/ui-combat-target-v1\.js\?v=combat-information-v5-20260916/,'Combat context bridge cache key must include timed-farm semantics');
+assert.match(html,/ui-combat-information-v1\.css\?v=combat-information-v3-20260916/,'Combat information cache key must include active-state/farm semantics');
+assert.match(html,/ui-combat-target-v1\.js\?v=combat-information-v6-20260916/,'Combat context bridge cache key must include timed-farm semantics');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-player-hud/,'Combat target must stay isolated to Hunt');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-enemy-hud/,'Enemy HUD readability target missing');
 assert.match(css,/grid-template-columns:repeat\(7,minmax\(0,1fr\)\)/,'All seven backend-authored skill slots must remain visible');
@@ -92,6 +92,15 @@ assert.doesNotMatch(bridge,/\/api\//,'Presentation bridge must not call backend 
 assert.doesNotMatch(bridge,/localStorage|sessionStorage/,'Presentation bridge must not author persistent state');
 assert.match(hunt,/event\.type==='battleEnd'[\s\S]*?showResult\(root,won\?'TRẤN SÁT':'THẤT BẠI'/,'Canonical battleEnd must remain the authority for victory/defeat result');
 assert.doesNotMatch(bridge,/battleEnd/,'Presentation bridge must not reinterpret battle outcome');
+
+assert.match(info,/Combat composition reset candidate[\s\S]*?\.huntv2-actor\.player\{[\s\S]*?bottom:20%!important[\s\S]*?\.huntv2-actor\.enemy\{[\s\S]*?bottom:20%!important/,'Player and Boss must share the same portrait ground plane');
+assert.match(info,/\.huntv2-status-tray \.status\.status-hidden\{display:none!important\}/,'Status overflow must never reveal runtime-hidden chips');
+assert.match(info,/\.v5-combat-engaged :is\(\.v5-boss-briefing,\.huntv2-action-deck,\.huntv2-log-preview\)\{display:none!important\}/,'Engaged combat must remove pre-fight chrome');
+assert.match(info,/\.v5-combat-engaged \.huntv2-console\{[\s\S]*?min-height:92px!important/,'Active combat must reclaim lower-console space for battlefield');
+assert.match(bridge,/function syncEngagedPresentation\(screen, stage\)/,'Bridge must derive engaged presentation without gameplay authority');
+assert.match(bridge,/stage\.classList\.contains\('presentation-active'\)/,'Engaged presentation must follow canonical presentation activity');
+assert.match(bridge,/v5-combat-engaged/,'Engaged presentation class must drive state-specific UI');
+
 
 assert.ok(Buffer.byteLength(css,'utf8')<30000,'Combat target CSS must stay under 30 KB');
 assert.ok(Buffer.byteLength(polish,'utf8')<36000,'Combat visual polish CSS must stay under 36 KB');
