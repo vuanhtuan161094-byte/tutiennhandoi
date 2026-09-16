@@ -25,7 +25,7 @@ jobs:
           s=p.read_text(encoding='utf-8')
           s=s.replace('from pathlib import Path\n','from pathlib import Path\nimport re\n',1)
           old="s = s[:s.index(PORTRAIT_ANCHOR)].rstrip() + '\\n\\n' + INFO_BLOCK"
-          new="compact = re.sub(r'\\s*([{}:;,])\\s*', r'\\1', re.sub(r'\\s+', ' ', INFO_BLOCK)).strip()\ncompact = compact.replace('/* Combat composition reset candidate — 2026-09-16 visual audit. One portrait composition; battlefield first; runtime/gameplay remains locked. */','/* Combat composition reset candidate — 2026-09-16 visual audit. */')\ns = s[:s.index(PORTRAIT_ANCHOR)].rstrip() + '\\n\\n' + compact + '\\n'"
+          new="cut=INFO_BLOCK.rfind('@media(max-width:360px)')\nsource=INFO_BLOCK[:cut] if cut>=0 else INFO_BLOCK\nsource=source.replace('box-shadow:0 3px 8px rgba(0,0,0,.22)!important;','').replace('.huntv2-combat-v8 .huntv2-rail-btn i{font-size:11px!important}\\n','')\ncompact = re.sub(r'\\s*([{}:;,])\\s*', r'\\1', re.sub(r'\\s+', ' ', source)).strip()\ncompact = compact.replace('/* Combat composition reset candidate — 2026-09-16 visual audit. One portrait composition; battlefield first; runtime/gameplay remains locked. */','/* Combat composition reset candidate — 2026-09-16 visual audit. */')\ns = s[:s.index(PORTRAIT_ANCHOR)].rstrip() + '\\n\\n' + compact + '\\n'"
           if old not in s:
               raise SystemExit('patcher compaction anchor not found')
           p.write_text(s.replace(old,new,1),encoding='utf-8')
