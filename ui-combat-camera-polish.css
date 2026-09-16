@@ -314,6 +314,7 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
 /* V180 portrait tactical text floor — transient/action text may not shrink below 10px. */
 @media(max-width:430px){
   body[data-game-screen="hunt"] .huntv2-float.damage-main small.show,
+  body[data-game-screen="hunt"] .huntv2-float.damage-main span,
   body[data-game-screen="hunt"] .huntv2-skill-callout small,
   body[data-game-screen="hunt"] .huntv2-enemy-intent span,
   body[data-game-screen="hunt"] .huntv2-enemy-intent small,
