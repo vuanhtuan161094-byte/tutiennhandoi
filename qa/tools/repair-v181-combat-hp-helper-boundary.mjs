@@ -34,6 +34,10 @@ combat=combat.slice(0,pos)+helpers+combat.slice(pos);
 write('modules/hunt-combat-v2.js',combat);
 
 let test=read('qa/tests/ui-combat-hp-display-contract-test.js');
+const oldBoundary="const start=combat.indexOf('function setHp('),end=combat.indexOf('\\nfunction setPoise(',start);assert.ok(start>=0&&end>start,'setHp must remain bounded');const body=combat.slice(start,end);";
+const newBoundary="const start=combat.indexOf('function setHp('),spiritStart=combat.indexOf('\\nfunction setSpirit(',start),poiseStart=combat.indexOf('\\nfunction setPoise(',start);const end=spiritStart>start?spiritStart:poiseStart;assert.ok(start>=0&&end>start,'setHp must remain bounded');const body=combat.slice(start,end);";
+if(!test.includes(oldBoundary))throw new Error('HP test function boundary marker missing');
+test=test.replace(oldBoundary,newBoundary);
 const marker="assert.doesNotMatch(body,/Number\\(current\\)/,'setHp must not reverse-parse formatted current HP');";
 if(!test.includes(marker))throw new Error('HP test marker missing');
 test=test.replace(marker,marker+"\nfor(const helper of ['setSpirit','setBossPhaseBadge','resetCombatStagingState'])assert.match(combat,new RegExp(`function ${helper}\\\\(`),`${helper} must survive HP contract migrations`);");
