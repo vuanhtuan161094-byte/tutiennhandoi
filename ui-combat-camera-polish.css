@@ -329,5 +329,6 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
   body[data-game-screen="hunt"] .huntv2-status-tray .status>em,
   body[data-game-screen="hunt"] .huntv2-status-tray .status>strong,
   body[data-game-screen="hunt"] .huntv2-status-tray .status>small,
+  body[data-game-screen="hunt"] .huntv2-status-tray .status>span,
   body[data-game-screen="hunt"] .huntv2-status-tray .status-more{font-size:10px!important;line-height:1!important}
 }
