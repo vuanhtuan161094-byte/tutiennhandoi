@@ -332,3 +332,11 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
   body[data-game-screen="hunt"] .huntv2-status-tray .status>span,
   body[data-game-screen="hunt"] .huntv2-status-tray .status-more{font-size:10px!important;line-height:1!important}
 }
+
+/* V180 exact visible DoT damage-label floor. */
+@media(max-width:430px){
+  body[data-game-screen="hunt"] .huntv2-screen .huntv2-float.damage-main>span{
+    font-size:10px!important;
+    line-height:1!important
+  }
+}
