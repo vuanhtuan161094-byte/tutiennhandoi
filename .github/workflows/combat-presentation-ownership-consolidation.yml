@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'qa/tools/consolidate-combat-presentation-ownership-v1.mjs'
+      - 'qa/tools/consolidate-combat-presentation-ownership-v2.mjs'
       - '.github/workflows/combat-presentation-ownership-consolidation.yml'
 
 permissions:
@@ -24,11 +24,10 @@ jobs:
         run: |
           git fetch origin main
           test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || { echo 'main moved; aborting safe consolidation'; exit 2; }
-      - name: Apply ownership consolidation
-        run: node qa/tools/consolidate-combat-presentation-ownership-v1.mjs
+      - name: Apply geometry ownership consolidation
+        run: node qa/tools/consolidate-combat-presentation-ownership-v2.mjs
       - name: Targeted verification
         run: |
-          node --check modules/combat-presentation-architecture-v140.js
           node --check modules/hunt-combat-v2.js
           node qa/tests/ui-combat-hp-display-contract-test.js
           node qa/tests/ui-combat-presentation-ownership-test.js
@@ -42,7 +41,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || { echo 'main moved during verification; aborting push'; exit 2; }
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm -f qa/tools/consolidate-combat-presentation-ownership-v1.mjs .github/workflows/combat-presentation-ownership-consolidation.yml
+          git rm -f qa/tools/consolidate-combat-presentation-ownership-v1.mjs qa/tools/consolidate-combat-presentation-ownership-v2.mjs .github/workflows/combat-presentation-ownership-consolidation.yml
           git add -A
-          git commit -m "refactor(combat): consolidate presentation ownership"
+          git commit -m "refactor(combat): consolidate portrait geometry ownership"
           git push origin HEAD:main
