@@ -22,6 +22,9 @@ function sync(){
   const lane=screen.querySelector('.huntv2-intel-lane');
   const actors=screen.querySelectorAll('.huntv2-actor.player,.huntv2-actor.enemy');
   const callout=screen.querySelector('.huntv2-skill-callout');
+  const playerHud=screen.querySelector('.huntv2-player-hud');
+  const playerStatus=screen.querySelector('.huntv2-status-tray.player');
+  const supports=screen.querySelector('.huntv2-hud-extension-slots');
 
   if(compact&&lane){
     setImportant(lane,'left','0');
@@ -35,6 +38,29 @@ function sync(){
     if(compact&&prefight)setImportant(actor,'bottom','29%');
     else clear(actor,'bottom');
   });
+
+  /* Active portrait accessory lane: supports + statuses live above the HP HUD,
+     keeping transient/full-chaos chrome away from the player face and body. */
+  if(compact&&engaged&&playerHud){
+    const screenRect=screen.getBoundingClientRect();
+    const hudRect=playerHud.getBoundingClientRect();
+    const accessoryTop=Math.max(154,Math.round(hudRect.top-screenRect.top-37));
+    if(supports){
+      setImportant(supports,'top',`${accessoryTop}px`);
+      setImportant(supports,'left','11px');
+      setImportant(supports,'right','auto');
+      setImportant(supports,'bottom','auto');
+    }
+    if(playerStatus){
+      setImportant(playerStatus,'top',`${accessoryTop+2}px`);
+      setImportant(playerStatus,'left','121px');
+      setImportant(playerStatus,'right','auto');
+      setImportant(playerStatus,'bottom','auto');
+    }
+  }else{
+    clear(supports,'top','left','right','bottom');
+    clear(playerStatus,'top','left','right','bottom');
+  }
 
   const playerUltimate=compact&&callout&&!callout.classList.contains('enemy')&&(callout.classList.contains('ultimate')||callout.classList.contains('tier-ultimate'));
   if(playerUltimate){

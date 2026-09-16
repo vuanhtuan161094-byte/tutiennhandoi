@@ -68,6 +68,10 @@ assert.match(portraitSafety,/setImportant\(actor,'bottom','29%'\)/,'pre-fight ac
 assert.match(portraitSafety,/playerUltimate/,'portrait safety must detect the player ultimate plaque');
 assert.match(portraitSafety,/setImportant\(callout,'left','10px'\)/,'ultimate callout must stay inside the left portrait safe inset');
 assert.match(portraitSafety,/setImportant\(callout,'right','10px'\)/,'ultimate callout must stay inside the right portrait safe inset');
+assert.match(portraitSafety,/\.huntv2-hud-extension-slots/,'portrait safety must own the active support accessory lane');
+assert.match(portraitSafety,/const accessoryTop=Math\.max\(154,Math\.round\(hudRect\.top-screenRect\.top-37\)\)/,'active accessory lane must derive from the actual player HUD geometry');
+assert.match(portraitSafety,/setImportant\(supports,'left','11px'\)/,'support orbs must stay in the left accessory track');
+assert.match(portraitSafety,/setImportant\(playerStatus,'left','121px'\)/,'visible player statuses must sit beside support orbs instead of over the actor');
 assert.doesNotMatch(portraitSafety,/\/api\/|localStorage|sessionStorage/,'portrait safety must remain presentation-only');
 
 assert.match(index,/ui-combat-target-v1\.js\?v=combat-information-v6-20260916/,'combat bridge cache token must expose the latest presentation integration');
