@@ -12,7 +12,7 @@ const hunt=fs.readFileSync('modules/hunt-combat-v2.js','utf8');
 
 assert.match(html,/ui-combat-target-v1\.css\?v=combat-readability-target-v1-20260914/,'Combat target CSS must be loaded after locked UI layers');
 assert.match(html,/ui-combat-visual-polish\.css\?v=combat-visual-polish-v1-20260915/,'Combat visual polish layer must be loaded');
-assert.match(html,/ui-combat-camera-polish\.css\?v=combat-camera-polish-v10-20260916/,'Combat camera/compact polish cache key must include V180 portrait geometry');
+assert.match(html,/ui-combat-camera-polish\.css\?v=combat-camera-polish-v11-20260916/,'Combat camera/compact polish cache key must include V180 portrait geometry');
 assert.match(html,/ui-combat-information-v1\.css\?v=combat-information-v2-20260916/,'Combat information cache key must include active-state/farm semantics');
 assert.match(html,/ui-combat-target-v1\.js\?v=combat-information-v5-20260916/,'Combat context bridge cache key must include timed-farm semantics');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-player-hud/,'Combat target must stay isolated to Hunt');
