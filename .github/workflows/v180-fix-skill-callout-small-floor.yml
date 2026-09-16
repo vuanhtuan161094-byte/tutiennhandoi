@@ -1,0 +1,60 @@
+name: V180 Fix Skill Callout Small Floor
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v180-fix-skill-callout-small-floor.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Patch skill callout label floor
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('ui-combat-camera-polish.css')
+          s=p.read_text(encoding='utf-8')
+          needle='  body[data-game-screen="hunt"] .huntv2-skill-callout em,\n'
+          add='  body[data-game-screen="hunt"] .huntv2-skill-callout small,\n'
+          if add not in s:
+              if needle not in s:
+                  raise SystemExit('skill callout floor anchor not found')
+              s=s.replace(needle, needle+add, 1)
+              p.write_text(s,encoding='utf-8')
+
+          html=Path('index.html')
+          h=html.read_text(encoding='utf-8')
+          h=h.replace('combat-camera-polish-v12-20260916','combat-camera-polish-v13-20260916')
+          html.write_text(h,encoding='utf-8')
+
+          test=Path('qa/tests/ui-combat-readability-target-test.js')
+          t=test.read_text(encoding='utf-8')
+          t=t.replace('combat-camera-polish-v12-20260916','combat-camera-polish-v13-20260916')
+          if '.huntv2-skill-callout small' not in t:
+              anchor="assert.match(camera,/V180 portrait tactical text floor[\\s\\S]*?\\.huntv2-enemy-intent span,[\\s\\S]*?\\.huntv2-result-pop span,[\\s\\S]*?font-size:10px!important/,'Transient combat text must have an explicit 10px portrait floor');"
+              extra="\nassert.match(camera,/\\.huntv2-skill-callout small,[\\s\\S]*?font-size:10px!important/,'Ultimate/callout labels must never render below 10px on portrait');"
+              if anchor not in t:
+                  raise SystemExit('readability assertion anchor not found')
+              t=t.replace(anchor,anchor+extra,1)
+              test.write_text(t,encoding='utf-8')
+          PY
+          node qa/tests/ui-combat-readability-target-test.js
+      - name: Self-clean and commit
+        shell: bash
+        run: |
+          git rm .github/workflows/v180-fix-skill-callout-small-floor.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ui-combat-camera-polish.css index.html qa/tests/ui-combat-readability-target-test.js
+          git commit -m 'fix(ui): lock skill callout label at 10px'
+          git push origin HEAD:main
