@@ -1,0 +1,41 @@
+name: V181 Apply Combat HP Display Contract
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'qa/tools/apply-v181-combat-hp-display-contract.mjs'
+      - '.github/workflows/v181-apply-combat-hp-display-contract.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ !contains(github.event.head_commit.message, '[v181-hp-applied]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply HP display contract
+        run: node qa/tools/apply-v181-combat-hp-display-contract.mjs
+      - name: Targeted verification
+        run: |
+          node --check modules/hunt-combat-v2.js
+          node --check qa/visual/capture-combat-runtime.mjs
+          node qa/tests/ui-combat-hp-display-contract-test.js
+          node qa/tests/ui-combat-readability-target-test.js
+          node qa/tests/ui-combat-showcase-contract-test.js
+          node qa/tests/ui-combat-third-party-tools-test.js
+      - name: Commit production patch and remove one-shot plumbing
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f qa/tools/apply-v181-combat-hp-display-contract.mjs .github/workflows/v181-apply-combat-hp-display-contract.yml
+          git add modules/hunt-combat-v2.js qa/visual/capture-combat-runtime.mjs qa/tests/ui-combat-hp-display-contract-test.js qa/runners/v140-frontend-gates.js
+          git commit -m "fix(combat): separate HP display from numeric authority [v181-hp-applied]"
+          git push origin HEAD:main
