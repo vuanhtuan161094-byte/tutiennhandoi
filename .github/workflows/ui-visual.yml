@@ -33,7 +33,7 @@ concurrency:
 jobs:
   runtime-visual-proof:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@v4
@@ -76,15 +76,25 @@ jobs:
           TUTIEN_VISUAL_REALM: '10'
         run: node qa/visual/capture-runtime-ui.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual
 
-      - name: Capture Combat runtime proof
+      - name: Capture Combat runtime proof 390x844
         env:
           CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
         run: node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual --cdp-port 9223
 
-      - name: Capture compact Combat runtime proof
+      - name: Capture Combat runtime proof 360x800
         env:
           CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
         run: node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual/compact --cdp-port 9224 --width 360 --height 800
+
+      - name: Capture Combat runtime proof 412x915
+        env:
+          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+        run: node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual/portrait-412 --cdp-port 9225 --width 412 --height 915
+
+      - name: Capture Combat runtime proof 430x932
+        env:
+          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+        run: node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual/portrait-430 --cdp-port 9226 --width 430 --height 932
 
       - name: Validate proof files
         shell: bash
@@ -94,56 +104,59 @@ jobs:
           test -s artifacts/ui-visual/home-hud-390x844.png
           test -s artifacts/ui-visual/home-hud-412x915.png
           test -s artifacts/ui-visual/character-baseline-390x844.png
-          test -s artifacts/ui-visual/combat-runtime-390x844.png
-          test -s artifacts/ui-visual/combat-runtime-stress-390x844.png
-          test -s artifacts/ui-visual/combat-runtime-action-390x844.png
-          test -s artifacts/ui-visual/compact/combat-runtime-360x800.png
-          test -s artifacts/ui-visual/compact/combat-runtime-stress-360x800.png
-          test -s artifacts/ui-visual/compact/combat-runtime-action-360x800.png
-          test -s artifacts/ui-visual/combat-runtime-metrics.json
-          test -s artifacts/ui-visual/combat-runtime-stress-metrics.json
           test -s artifacts/ui-visual/combat-target-reference.png
           test -s artifacts/ui-visual/manifest.json
           node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('artifacts/ui-visual/manifest.json','utf8'));if(m.mockOrReconstruction!==false||m.screens?.length!==3)process.exit(1);console.log('VISUAL MANIFEST PASS ·',m.screens.map(x=>x.file).join(', '));"
-          node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('artifacts/ui-visual/combat-runtime-metrics.json','utf8'));const l=m.combatLayout||{};if(!m.hasCombat||!m.hasPlayerHud||!m.hasEnemyHud||!m.hasEnemyContext||m.hasHorizontalOverflow||m.skillCount!==7||m.visibleText.length>0||l.supportCount!==3||l.supportYSpread>14||l.playerHudTop>=310)process.exit(1);console.log('COMBAT VISUAL METRICS PASS · skills='+m.skillCount+' · supportYSpread='+l.supportYSpread+' · playerHudTop='+l.playerHudTop);"
-          node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('artifacts/ui-visual/combat-runtime-stress-metrics.json','utf8'));const s=m.statusStress||{};if(m.hasHorizontalOverflow||s.player?.visible<4||s.enemy?.visible<4||!s.player?.more||!s.enemy?.more||!String(s.enemy?.mark||'').includes('6/6'))process.exit(1);console.log('COMBAT STATUS STRESS PASS · player='+s.player.visible+' enemy='+s.enemy.visible+' mark='+s.enemy.mark);"
-          for scene in 01-clean 02-status-stress 04-damage-stress 06-full-chaos; do
-            test -s "artifacts/ui-visual/${scene}-390x844.png"
-            test -s "artifacts/ui-visual/compact/${scene}-360x800.png"
-          done
-          test -s artifacts/ui-visual/04-damage-stress-normal-390x844.png
-          test -s artifacts/ui-visual/compact/04-damage-stress-normal-360x800.png
-          for skill in 01 02 03 04 05 06 07; do
-            test -s "artifacts/ui-visual/03-skill-cast-${skill}-cast-390x844.png"
-            test -s "artifacts/ui-visual/03-skill-cast-${skill}-impact-390x844.png"
-            test -s "artifacts/ui-visual/compact/03-skill-cast-${skill}-cast-360x800.png"
-            test -s "artifacts/ui-visual/compact/03-skill-cast-${skill}-impact-360x800.png"
-          done
-          for state in near-break broken recovery; do
-            test -s "artifacts/ui-visual/05-boss-break-${state}-390x844.png"
-            test -s "artifacts/ui-visual/compact/05-boss-break-${state}-360x800.png"
-          done
-          for kind in light heavy critical ultimate boss; do
-            for phase in before impact peak settled; do
-              test -s "artifacts/ui-visual/screen-shake-${kind}-${phase}-390x844.png"
-              test -s "artifacts/ui-visual/compact/screen-shake-${kind}-${phase}-360x800.png"
+
+          for spec in "artifacts/ui-visual|390x844" "artifacts/ui-visual/compact|360x800" "artifacts/ui-visual/portrait-412|412x915" "artifacts/ui-visual/portrait-430|430x932"; do
+            dir="${spec%%|*}"
+            viewport="${spec##*|}"
+            test -s "$dir/combat-runtime-$viewport.png"
+            test -s "$dir/combat-runtime-stress-$viewport.png"
+            test -s "$dir/combat-runtime-action-$viewport.png"
+            test -s "$dir/combat-runtime-metrics.json"
+            test -s "$dir/combat-runtime-stress-metrics.json"
+            test -s "$dir/combat-showcase-$viewport-metrics.json"
+            test -s "$dir/combat-shake-metrics.json"
+            for scene in 01-clean 02-status-stress 04-damage-stress 06-full-chaos; do
+              test -s "$dir/${scene}-$viewport.png"
+            done
+            test -s "$dir/04-damage-stress-normal-$viewport.png"
+            for skill in 01 02 03 04 05 06 07; do
+              test -s "$dir/03-skill-cast-${skill}-cast-$viewport.png"
+              test -s "$dir/03-skill-cast-${skill}-impact-$viewport.png"
+            done
+            for state in near-break broken recovery; do
+              test -s "$dir/05-boss-break-${state}-$viewport.png"
+            done
+            for kind in light heavy critical ultimate boss; do
+              for phase in before impact peak settled; do
+                test -s "$dir/screen-shake-${kind}-${phase}-$viewport.png"
+              done
             done
           done
-          test -s artifacts/ui-visual/combat-shake-metrics.json
-          test -s artifacts/ui-visual/compact/combat-shake-metrics.json
-          test -s artifacts/ui-visual/combat-showcase-390x844-metrics.json
-          test -s artifacts/ui-visual/compact/combat-showcase-360x800-metrics.json
+
           node <<'NODE'
           const fs=require('fs');
-          const check=(file,label)=>{
-            const m=JSON.parse(fs.readFileSync(file,'utf8'));
-            if(m.mockOrReconstruction!==false||m.scenes?.length!==6||m.skills?.length!==7||m.shake?.length!==5)throw new Error(`${label} showcase manifest incomplete`);
-            if(!m.shake.every(frame=>frame.neutral&&['before','impact','peak','settled'].every(phase=>frame[phase]?.file)))throw new Error(`${label} shake frame manifest incomplete`);
-            if(!m.shake.every(frame=>Math.max(Math.abs(frame.impact?.state?.cameraX||0),Math.abs(frame.impact?.state?.cameraY||0),Math.abs(frame.peak?.state?.cameraX||0),Math.abs(frame.peak?.state?.cameraY||0))>0.05))throw new Error(`${label} shake camera impulse missing`);
-            console.log(`${label} COMBAT SHOWCASE MANIFEST PASS · scenes=${m.scenes.length} · skills=${m.skills.length} · shake=${m.shake.length}`);
-          };
-          check('artifacts/ui-visual/combat-showcase-390x844-metrics.json','390x844');
-          check('artifacts/ui-visual/compact/combat-showcase-360x800-metrics.json','360x800');
+          const targets=[
+            ['artifacts/ui-visual','390x844'],
+            ['artifacts/ui-visual/compact','360x800'],
+            ['artifacts/ui-visual/portrait-412','412x915'],
+            ['artifacts/ui-visual/portrait-430','430x932'],
+          ];
+          for(const [dir,label] of targets){
+            const base=JSON.parse(fs.readFileSync(`${dir}/combat-runtime-metrics.json`,'utf8'));
+            const layout=base.combatLayout||{};
+            if(!base.hasCombat||!base.hasPlayerHud||!base.hasEnemyHud||!base.hasEnemyContext||base.hasHorizontalOverflow||base.skillCount!==7||base.visibleText.length>0||layout.supportCount!==3||layout.supportYSpread>14||layout.playerHudTop>=310)throw new Error(`${label} combat layout/legibility failed`);
+            const stress=JSON.parse(fs.readFileSync(`${dir}/combat-runtime-stress-metrics.json`,'utf8'));
+            const s=stress.statusStress||{};
+            if(stress.hasHorizontalOverflow||s.player?.visible<4||s.enemy?.visible<4||!s.player?.more||!s.enemy?.more||!String(s.enemy?.mark||'').includes('6/6'))throw new Error(`${label} status stress failed`);
+            const showcase=JSON.parse(fs.readFileSync(`${dir}/combat-showcase-${label}-metrics.json`,'utf8'));
+            if(showcase.mockOrReconstruction!==false||showcase.scenes?.length!==6||showcase.skills?.length!==7||showcase.shake?.length!==5)throw new Error(`${label} showcase manifest incomplete`);
+            if(!showcase.shake.every(frame=>frame.neutral&&['before','impact','peak','settled'].every(phase=>frame[phase]?.file)))throw new Error(`${label} shake frame manifest incomplete`);
+            if(!showcase.shake.every(frame=>Math.max(Math.abs(frame.impact?.state?.cameraX||0),Math.abs(frame.impact?.state?.cameraY||0),Math.abs(frame.peak?.state?.cameraX||0),Math.abs(frame.peak?.state?.cameraY||0))>0.05))throw new Error(`${label} shake camera impulse missing`);
+            console.log(`${label} COMBAT REVIEW PASS · skills=${showcase.skills.length} · scenes=${showcase.scenes.length} · shake=${showcase.shake.length}`);
+          }
           NODE
 
       - name: Upload exact-SHA runtime screenshots
