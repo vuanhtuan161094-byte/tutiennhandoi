@@ -19,6 +19,9 @@ body[data-game-screen="hunt"] .huntv2-screen .v5-boss-briefing{
   pointer-events:auto;
 }
 body[data-game-screen="hunt"] .huntv2-combat-v8.is-prefight:not(.is-active-combat) .v5-boss-briefing{display:grid}
+/* Active combat is tactical-only: pre-fight briefing and challenge controls must disappear. */
+body[data-game-screen="hunt"] .huntv2-combat-v8.is-active-combat .v5-boss-briefing,
+body[data-game-screen="hunt"] .huntv2-combat-v8.is-active-combat .huntv2-action-deck{display:none!important}
 body[data-game-screen="hunt"] .huntv2-screen .v5-boss-briefing button{font:inherit}
 body[data-game-screen="hunt"] .huntv2-screen .v5-boss-briefing-head{display:grid;grid-template-columns:minmax(0,1fr) 26px;align-items:center;gap:7px;min-width:0}
 body[data-game-screen="hunt"] .huntv2-screen .v5-boss-briefing-head>div{min-width:0}
@@ -59,13 +62,14 @@ body[data-game-screen="hunt"] .huntv2-combat-v8.is-prefight:not(.is-active-comba
 body[data-game-screen="hunt"] .huntv2-combat-v8 .huntv2-context-button.v5-farm-summary strong{font-size:10px}
 body[data-game-screen="hunt"] .huntv2-combat-v8 .huntv2-context-button.v5-farm-summary span{font-size:10px;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* Canonical battleEnd result stays reward-neutral until backend exposes actual drop payload. */
+/* battleEnd is progression-only; Hunt economy is settled by timed virtual farm. */
 body[data-game-screen="hunt"] .huntv2-combat-v8 .huntv2-result-pop.show{z-index:98;min-width:150px;padding:9px 15px;border-radius:13px;backdrop-filter:blur(4px);box-shadow:0 12px 34px rgba(0,0,0,.36)}
 body[data-game-screen="hunt"] .huntv2-combat-v8 .huntv2-result-pop.show b{font-size:18px;letter-spacing:.08em}
 body[data-game-screen="hunt"] .huntv2-combat-v8 .huntv2-result-pop.show.victory{border-color:rgba(233,198,108,.55);background:rgba(55,43,15,.90)}
 body[data-game-screen="hunt"] .huntv2-combat-v8 .huntv2-result-pop.show.defeat{border-color:rgba(222,101,92,.50);background:rgba(58,19,21,.91)}
 
-@media(max-width:430px) and (max-height:860px){
+/* One portrait policy for 360–430px. Height no longer selects a different composition. */
+@media(max-width:430px){
   body[data-game-screen="hunt"] .huntv2-screen .v5-boss-briefing{bottom:7px;width:calc(100% - 16px);gap:4px;padding:6px 7px;border-radius:11px}
   body[data-game-screen="hunt"] .huntv2-screen .v5-boss-briefing-head{grid-template-columns:minmax(0,1fr) 23px;gap:5px}
   body[data-game-screen="hunt"] .huntv2-screen .v5-boss-briefing-head strong{font-size:12px}
