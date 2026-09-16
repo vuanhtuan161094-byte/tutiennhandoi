@@ -514,7 +514,7 @@ export function renderHuntCombatV2(ctx){
 
         <div class="huntv2-enemy-hud ${boss?'boss':''}" data-actor-hud="enemy" data-hud-zone="boss-core">
           <div class="huntv2-portrait enemy enemy-art">${enemyPortrait(m)}</div>
-          <div class="huntv2-hud-main"><div><strong id="huntv2EnemyName">${esc(m.name||'Yêu thú')}</strong>${boss?'<em class="huntv2-boss-phase" id="huntv2BossPhase" data-phase="1" title="Phase hiện tại của Boss">P1</em>':''}</div><div class="huntv2-hp enemy" data-max-value="${esc(m.hp||'')}"><u id="huntv2EnemyHpLag" style="width:${enemyHp}%"></u><i id="huntv2EnemyHp" style="width:${enemyHp}%"></i><b id="huntv2EnemyHpText">${esc(m.hp||'—')} / ${esc(m.hp||'—')}</b></div><div class="huntv2-poise-row" id="huntv2EnemyPoiseRow" data-poise-help role="button" tabindex="0" aria-label="Xem giải thích Phá Thế" title="Phá Thế: tích đủ 100 để khiến mục tiêu Thất Thế"><b>PHÁ THẾ</b><div class="huntv2-poise"><i id="huntv2EnemyPoise" style="width:0%"></i><em id="huntv2EnemyPoiseText">0/100</em></div></div><div class="huntv2-status-line"><div class="huntv2-element-icons">${elementIcons}</div>${boss&&m.bossMechanic?`<button class="huntv2-boss-trait" type="button" data-sheet-open="monster" title="${esc(m.bossMechanic.description||m.bossMechanic.name)}"><i>⚠</i><span>${esc(m.bossMechanic.name)}</span></button>`:''}</div></div>
+          <div class="huntv2-hud-main"><div><strong id="huntv2EnemyName">${esc(m.name||'Yêu thú')}</strong>${boss?'<em class="huntv2-boss-phase" id="huntv2BossPhase" data-phase="1" title="Phase hiện tại của Boss">P1</em>':''}</div><div class="huntv2-hp enemy" data-max-display="${esc(m.hp||'')}"><u id="huntv2EnemyHpLag" style="width:${enemyHp}%"></u><i id="huntv2EnemyHp" style="width:${enemyHp}%"></i><b id="huntv2EnemyHpText">${esc(m.hp||'—')} / ${esc(m.hp||'—')}</b></div><div class="huntv2-poise-row" id="huntv2EnemyPoiseRow" data-poise-help role="button" tabindex="0" aria-label="Xem giải thích Phá Thế" title="Phá Thế: tích đủ 100 để khiến mục tiêu Thất Thế"><b>PHÁ THẾ</b><div class="huntv2-poise"><i id="huntv2EnemyPoise" style="width:0%"></i><em id="huntv2EnemyPoiseText">0/100</em></div></div><div class="huntv2-status-line"><div class="huntv2-element-icons">${elementIcons}</div>${boss&&m.bossMechanic?`<button class="huntv2-boss-trait" type="button" data-sheet-open="monster" title="${esc(m.bossMechanic.description||m.bossMechanic.name)}"><i>⚠</i><span>${esc(m.bossMechanic.name)}</span></button>`:''}</div></div>
           <button class="huntv2-enemy-info" type="button" data-sheet-open="monster" aria-label="Xem thông tin Boss">i</button>
         </div>
         <div class="huntv2-status-lanes" data-hud-zone="status" aria-label="Buff và debuff hiện tại"><div class="huntv2-status-tray player" data-status-tray="player">${Number(h.playerInjury||0)>0?`<i class="status debuff injury" data-status-key="persistent:injury" data-priority="3" title="Thương Thế ${fmt(h.playerInjury||0,0)}/100"><b>血</b><em>Thương Thế</em><strong>${fmt(h.playerInjury||0,0)}/100</strong></i>`:''}</div><div class="huntv2-status-tray enemy" data-status-tray="enemy"></div></div>
@@ -793,34 +793,27 @@ function setHp(root,target,pct,current='',max=''){
   const lag=q(root,target==='enemy'?'#huntv2EnemyHpLag':'#huntv2PlayerHpLag');
   const label=q(root,target==='enemy'?'#huntv2EnemyHpText':'#huntv2PlayerHpText');
   if(bar)bar.style.width=`${value}%`;
-  const fallbackMax=Number(bar?.closest?.('.huntv2-vital,.huntv2-hp')?.dataset?.maxValue||bar?.parentElement?.dataset?.maxValue||0);
-  const maxValue=Number(max)||fallbackMax||0;
-  const currentValue=Number.isFinite(Number(current))&&current!==''?Math.max(0,Number(current)):(maxValue>0?maxValue*value/100:0);
-  if(label)label.textContent=maxValue>0?`${displayCombatAmount(currentValue)} / ${displayCombatAmount(maxValue)}`:displayCombatAmount(currentValue);
+  const container=bar?.closest?.('.huntv2-vital,.huntv2-hp')||bar?.parentElement;
+  const numericMax=Number(container?.dataset?.maxValue||0);
+  const hasNumericMax=Number.isFinite(numericMax)&&numericMax>0;
+  const storedMaxDisplay=String(container?.dataset?.maxDisplay||'').trim();
+  const hasCurrent=current!==''&&current!==undefined&&current!==null;
+  const hasMax=max!==''&&max!==undefined&&max!==null;
+  const explicitCurrentDisplay=hasCurrent?displayCombatAmount(current):'';
+  const explicitMaxDisplay=hasMax?displayCombatAmount(max):'';
+  const maxDisplay=explicitMaxDisplay||storedMaxDisplay||(hasNumericMax?displayCombatAmount(numericMax):'');
+  if(container&&maxDisplay)container.dataset.maxDisplay=maxDisplay;
+  let currentDisplay=explicitCurrentDisplay;
+  if(!currentDisplay){
+    if(value<=0)currentDisplay='0';
+    else if(value>=99.95&&maxDisplay)currentDisplay=maxDisplay;
+    else if(hasNumericMax)currentDisplay=displayCombatAmount(numericMax*value/100);
+    else currentDisplay=String(label?.dataset?.currentDisplay||'').trim()||'—';
+  }
+  if(label){label.dataset.currentDisplay=currentDisplay;label.textContent=maxDisplay?`${currentDisplay} / ${maxDisplay}`:currentDisplay;}
   if(lag){clearTimeout(lag._lagTimer);lag._lagTimer=setTimeout(()=>{if(lag.isConnected)lag.style.width=`${value}%`;},220);}
   const hud=q(root,`[data-actor-hud="${target}"]`); if(hud)hud.classList.toggle('danger',value<=30);
 }
-function setSpirit(root,pct,current='',max=''){
-  const vital=q(root,'.huntv2-vital.spirit'),bar=vital?.querySelector('i'),label=vital?.querySelector('em');if(!bar||!label)return;
-  const maxValue=Number(max)||Number(vital?.dataset?.maxValue||0)||0;
-  const value=Number.isFinite(Number(pct))?clamp(Number(pct),0,100):(maxValue>0&&Number.isFinite(Number(current))?clamp(Number(current)/maxValue*100,0,100):100);
-  const currentValue=Number.isFinite(Number(current))&&current!==''?Math.max(0,Number(current)):(maxValue>0?maxValue*value/100:0);
-  bar.style.width=`${value}%`;
-  label.textContent=maxValue>0?`${displayCombatAmount(currentValue)} / ${displayCombatAmount(maxValue)}`:displayCombatAmount(currentValue);
-}
-function setBossPhaseBadge(root,phase=1,label=''){
-  const badge=q(root,'#huntv2BossPhase');if(!badge)return;const p=Math.max(1,Math.min(3,Math.round(Number(phase)||1)));badge.textContent=`P${p}`;badge.dataset.phase=String(p);badge.hidden=p<=1;badge.title=label?`P${p} · ${label}`:`Boss Phase ${p}`;
-}
-function resetCombatStagingState(root){
-  if(!root?.isConnected)return;
-  clearEnemyIntent(root);stopBreakWindow(root);clearStatuses(root);resetCombatIntelligence(root);resetBossState(root);
-  const playerVital=q(root,'.huntv2-vital.hp');const playerMax=playerVital?.dataset?.maxValue||'';
-  const spiritVital=q(root,'.huntv2-vital.spirit');const spiritMax=spiritVital?.dataset?.maxValue||'';
-  const enemyHp=q(root,'.huntv2-hp.enemy')?.dataset?.maxValue||'';
-  setHp(root,'player',100,playerMax,playerMax);setSpirit(root,100,spiritMax,spiritMax);setHp(root,'enemy',100,enemyHp,enemyHp);setPoise(root,100,'ready');setBossPhaseBadge(root,1);
-  const stage=q(root,'#huntV2Stage');if(stage){stage.dataset.bossPhase='1';stage.classList.remove('boss-phase-2','boss-phase-3','boss-phase-transition');}
-}
-
 function setPoise(root,poisePct=100,state='ready',defenseReductionPct=0){
   const row=q(root,'#huntv2EnemyPoiseRow'),bar=q(root,'#huntv2EnemyPoise'),label=q(root,'#huntv2EnemyPoiseText');if(!row||!bar||!label)return;
   const poise=clamp(Number(poisePct)||0,0,100);const breakPct=state==='broken'?100:clamp(100-poise,0,100);

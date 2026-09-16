@@ -115,6 +115,9 @@ async function showcaseState(client) {
 }
 async function verifiedShowcaseState(client) {
   const state=await showcaseState(client);
+  const hpSemantic=await client.eval(`(()=>{const bar=document.querySelector('#huntv2EnemyHp');const label=document.querySelector('#huntv2EnemyHpText');const parent=bar?.parentElement;const styled=parseFloat(bar?.style?.width||'');const br=bar?.getBoundingClientRect?.(),pr=parent?.getBoundingClientRect?.();const pct=Number.isFinite(styled)?styled:(br&&pr&&pr.width>0?100*br.width/pr.width:0);return{enemyPct:Number(pct||0),enemyLabel:String(label?.textContent||'').trim()};})()`);
+  state.hpSemantic=hpSemantic;
+  if(hpSemantic.enemyPct>0.5&&(!hpSemantic.enemyLabel||/^0(?:\s*\/|$)/.test(hpSemantic.enemyLabel)||/^—/.test(hpSemantic.enemyLabel)))throw new Error(`Combat HP semantic mismatch: ${JSON.stringify(hpSemantic)}`);
   if(state.docOverflow||state.structuralOverflow?.length)throw new Error(`Combat structural overflow: ${JSON.stringify({docOverflow:state.docOverflow,rootOverflowTelemetry:state.rootOverflow,structuralOverflow:state.structuralOverflow,stageClass:state.stageClass})}`);
   if(state.smallText?.length)throw new Error(`Combat text below 10px: ${JSON.stringify(state.smallText)}`);
   if(state.engagedCombat&&(state.preFightVisible||state.actionDeckVisible))throw new Error(`Engaged Combat leaked pre-fight UI: ${JSON.stringify({activeCombat:state.activeCombat,engagedCombat:state.engagedCombat,preFightVisible:state.preFightVisible,actionDeckVisible:state.actionDeckVisible})}`);
