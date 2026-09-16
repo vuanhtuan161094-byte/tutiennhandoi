@@ -38,12 +38,6 @@
     return '';
   }
 
-  function findBossRewardPanel(lootSheet) {
-    if (!lootSheet) return null;
-    const panels = [...lootSheet.querySelectorAll('.v1086-panel')];
-    return panels.find(panel => normalized(panel.querySelector(':scope > strong')?.textContent).includes('thưởng boss')) || lootSheet;
-  }
-
   function ensureBossBriefing(stage) {
     let briefing = stage.querySelector('.v5-boss-briefing');
     if (briefing) return briefing;
@@ -66,9 +60,9 @@
           <span data-v5-readiness-detail></span>
         </button>
         <button type="button" class="v5-boss-reward" data-sheet-open="loot">
-          <small>THƯỞNG DỰ KIẾN</small>
-          <strong data-v5-reward></strong>
-          <span>Chi tiết chiến lợi phẩm</span>
+          <small>FARM SAU PHÁ TẦNG</small>
+          <strong data-v5-reward>Mở bãi Săn Ảo tầng này</strong>
+          <span data-v5-reward-detail>Reward tích theo thời gian</span>
         </button>
       </div>
       <button type="button" class="v5-boss-mechanic-summary" data-sheet-open="monster">
@@ -98,7 +92,6 @@
 
   function syncBossInformation(screen, stage, enemyHud) {
     const monsterSheet = screen.querySelector('[data-sheet-panel="monster"]') || document.querySelector('[data-sheet-panel="monster"]');
-    const lootSheet = screen.querySelector('[data-sheet-panel="loot"]') || document.querySelector('[data-sheet-panel="loot"]');
     const actionDeck = screen.querySelector('.huntv2-action-deck');
     const fight = actionDeck?.querySelector('[data-endless-fight]');
     const isBoss = enemyHud.classList.contains('boss') || Boolean(monsterSheet && fight);
@@ -139,15 +132,14 @@
     setText(briefing.querySelector('[data-v5-mechanic]'), mechanic || 'Đối sách Boss');
     setText(briefing.querySelector('[data-v5-counter]'), counterSummary);
 
-    const rewardPanel = findBossRewardPanel(lootSheet);
-    const spiritReward = metricValue(rewardPanel, 'Linh thạch') || metricValue(rewardPanel, 'Linh Thạch');
-    const equipmentReward = metricValue(rewardPanel, 'Tỉ lệ trang bị') || metricValue(rewardPanel, 'Trang bị');
-    const rewardBits = [];
-    if (spiritReward && spiritReward !== '—') rewardBits.push(spiritReward);
-    if (equipmentReward && equipmentReward !== '—') rewardBits.push(`Trang bị ${equipmentReward}`);
+    const farmButton = actionDeck?.querySelector('.huntv2-context-button.loot');
+    const farmLabel = clean(farmButton?.querySelector('strong')?.textContent);
+    const farmDetail = clean(farmButton?.querySelector('span')?.textContent);
+    const farmReady = Boolean(farmButton && farmLabel && !/^CHƯA/i.test(farmLabel));
     const rewardButton = briefing.querySelector('.v5-boss-reward');
-    rewardButton.hidden = rewardBits.length === 0;
-    setText(briefing.querySelector('[data-v5-reward]'), rewardBits.join(' · '));
+    rewardButton.hidden = false;
+    setText(briefing.querySelector('[data-v5-reward]'), farmReady ? farmLabel : 'Mở bãi Săn Ảo tầng này');
+    setText(briefing.querySelector('[data-v5-reward-detail]'), farmReady && farmDetail ? farmDetail : 'Reward tích theo thời gian');
 
     const blocker = briefing.querySelector('[data-v5-blocker]');
     const blockerReason = clean(fight?.querySelector('span')?.textContent);
@@ -161,9 +153,6 @@
     setText(mechanicChip.querySelector('strong'), mechanic);
     setText(mechanicChip.querySelector('span'), counterSummary);
 
-    const farmButton = actionDeck?.querySelector('.huntv2-context-button.loot');
-    const farmLabel = clean(farmButton?.querySelector('strong')?.textContent);
-    const farmReady = Boolean(farmButton && farmLabel && !/^CHƯA/i.test(farmLabel));
     farmButton?.classList.toggle('v5-farm-summary', farmReady);
     screen.classList.toggle('v5-farm-ready', farmReady);
 
