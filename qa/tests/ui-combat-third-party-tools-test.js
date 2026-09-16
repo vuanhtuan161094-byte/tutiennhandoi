@@ -4,10 +4,12 @@ import path from 'node:path';
 
 const root=process.cwd();
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
+const stripComments=source=>source.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/.*$/gm,'');
 const bridge=read('ui-combat-target-v1.js');
 const loader=read('modules/third-party-runtime-v1.js');
 const anime=read('modules/combat-motion-anime-v1.js');
 const devTools=read('modules/dev-third-party-tools-v1.js');
+const devToolsCode=stripComments(devTools);
 const harness=read('modules/dev-test-harness-v1.js');
 const portraitSafety=read('modules/combat-portrait-safety-v1.js');
 const entry=read('standalone-entry.js');
@@ -46,7 +48,7 @@ assert.match(devTools,/Combat DEV Tuning/,'lil-gui combat tuning panel missing')
 assert.match(devTools,/damagePunch/,'damage motion tuning missing');
 assert.match(devTools,/skillPunch/,'skill-name motion tuning missing');
 assert.match(devTools,/import\('\.\/dev-test-harness-v1\.js'\)/,'DEV Test Harness must stay behind the DEV tools lazy boundary');
-assert.doesNotMatch(devTools,/fetch\s*\(|localStorage\.setItem|sessionStorage\.setItem|\/api\//,'motion tuning owner must remain presentation-only');
+assert.doesNotMatch(devToolsCode,/fetch\s*\(|localStorage\.setItem|sessionStorage\.setItem|\/api\//,'motion tuning owner must remain presentation-only');
 
 assert.match(harness,/p\.get\('dev'\)==='1'/,'Test Harness must require DEV mode');
 assert.match(harness,/p\.get\('tools'\)==='1'/,'Test Harness must require tools opt-in');
