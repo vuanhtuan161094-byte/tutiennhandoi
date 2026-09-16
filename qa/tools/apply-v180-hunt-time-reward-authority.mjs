@@ -40,22 +40,23 @@ const summaryOnly = `        const bossRetryLine = !result.won && result.monster
 fight = fight.slice(0, summaryStart) + summaryOnly + fight.slice(returnStart);
 
 const oldReturn = "        return { seed, won: result.won, rewardContext: options.rewardContext ?? 'online',";
-const returnPos = fight.indexOf(oldReturn);
-if (returnPos < 0) fail('return rewardContext');
+if (!fight.includes(oldReturn)) fail('return rewardContext');
 fight = fight.replace(oldReturn, "        return { seed, won: result.won, rewardContext: 'progression-only', directBossLoot: false,");
 
-// The current read model historically advertised per-Boss loot. Keep the shape
-// compatible, but make the authority explicit so no UI can mistake it for a real drop lane.
-const rewardModel = /rewards: \{ cultivationPct: 0, spiritStonesHint: `~\$\{stoneHint\.toLocaleString\('vi-VN'\)\}`, materialChancePct: economyChances\.materialChancePct, equipmentChancePct: economyChances\.equipmentChancePct, rareChancePct: economyChances\.rareChancePct, cultivationPillChancePct: Math\.min\(100, rewards\.cultivationPillChancePct \* effectiveLoot\), injuryPillChancePct: Math\.min\(55, \(monster\.grade === 'boss' \? 30 : monster\.grade === 'elite' \? 6 : monster\.grade === 'enhanced' \? 1\.5 : \.25\) \* effectiveLoot\) \}/;
-const rewardMatches = source.match(rewardModel);
-if (!rewardMatches) fail('Boss reward preview model');
-source = source.replace(rewardModel, "rewards: { cultivationPct: 0, mode: 'time-farm-only', directBossLoot: false, spiritStonesHint: 'Săn Ảo theo thời gian', materialChancePct: 0, equipmentChancePct: 0, rareChancePct: 0, cultivationPillChancePct: 0, injuryPillChancePct: 0 }");
-
+// Splice the canonical fight authority first. Any later replacement may change file
+// length, so offsets captured from the original source must not be reused afterwards.
 source = source.slice(0, fightStart) + fight + source.slice(fightEnd);
 
+// The read model historically advertised per-Boss loot. Keep its shape compatible,
+// but make the authority explicit so presentation cannot mistake it for a drop lane.
+const rewardModel = /rewards: \{ cultivationPct: 0, spiritStonesHint: `~\$\{stoneHint\.toLocaleString\('vi-VN'\)\}`, materialChancePct: economyChances\.materialChancePct, equipmentChancePct: economyChances\.equipmentChancePct, rareChancePct: economyChances\.rareChancePct, cultivationPillChancePct: Math\.min\(100, rewards\.cultivationPillChancePct \* effectiveLoot\), injuryPillChancePct: Math\.min\(55, \(monster\.grade === 'boss' \? 30 : monster\.grade === 'elite' \? 6 : monster\.grade === 'enhanced' \? 1\.5 : \.25\) \* effectiveLoot\) \}/;
+if (!rewardModel.test(source)) fail('Boss reward preview model');
+source = source.replace(rewardModel, "rewards: { cultivationPct: 0, mode: 'time-farm-only', directBossLoot: false, spiritStonesHint: 'Săn Ảo theo thời gian', materialChancePct: 0, equipmentChancePct: 0, rareChancePct: 0, cultivationPillChancePct: 0, injuryPillChancePct: 0 }");
+
 // Postconditions: real Boss fight cannot own any Hunt loot mint lane.
-const patchedFightEnd = source.indexOf('    equipmentCombatImpact(itemId) {', fightStart);
-const patchedFight = source.slice(fightStart, patchedFightEnd);
+const patchedFightStart = source.indexOf('    fightEndlessFloor(options = {}) {');
+const patchedFightEnd = source.indexOf('    equipmentCombatImpact(itemId) {', patchedFightStart);
+const patchedFight = source.slice(patchedFightStart, patchedFightEnd);
 for (const forbidden of [
   'settleRealHuntEquipmentFragmentsV142(',
   'applyEconomyResourceDrops(',
