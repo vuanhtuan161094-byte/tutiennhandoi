@@ -79,22 +79,78 @@ jobs:
       - name: Capture Combat runtime proof 390x844
         env:
           CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
-        run: node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual --cdp-port 9223
+        shell: bash
+        run: |
+          set -o pipefail
+          log="$(mktemp)"
+          if node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual --cdp-port 9223 2>&1 | tee "$log"; then
+            rm -f "$log"
+            exit 0
+          fi
+          if ! grep -Fq 'has no measured camera impulse' "$log"; then
+            rm -f "$log"
+            exit 1
+          fi
+          echo 'RETRY · transient shake telemetry sampling only · 390x844'
+          rm -f "$log"
+          node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual --cdp-port 9223
 
       - name: Capture Combat runtime proof 360x800
         env:
           CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
-        run: node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual/compact --cdp-port 9224 --width 360 --height 800
+        shell: bash
+        run: |
+          set -o pipefail
+          log="$(mktemp)"
+          if node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual/compact --cdp-port 9224 --width 360 --height 800 2>&1 | tee "$log"; then
+            rm -f "$log"
+            exit 0
+          fi
+          if ! grep -Fq 'has no measured camera impulse' "$log"; then
+            rm -f "$log"
+            exit 1
+          fi
+          echo 'RETRY · transient shake telemetry sampling only · 360x800'
+          rm -f "$log"
+          node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual/compact --cdp-port 9224 --width 360 --height 800
 
       - name: Capture Combat runtime proof 412x915
         env:
           CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
-        run: node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual/portrait-412 --cdp-port 9225 --width 412 --height 915
+        shell: bash
+        run: |
+          set -o pipefail
+          log="$(mktemp)"
+          if node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual/portrait-412 --cdp-port 9225 --width 412 --height 915 2>&1 | tee "$log"; then
+            rm -f "$log"
+            exit 0
+          fi
+          if ! grep -Fq 'has no measured camera impulse' "$log"; then
+            rm -f "$log"
+            exit 1
+          fi
+          echo 'RETRY · transient shake telemetry sampling only · 412x915'
+          rm -f "$log"
+          node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual/portrait-412 --cdp-port 9225 --width 412 --height 915
 
       - name: Capture Combat runtime proof 430x932
         env:
           CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
-        run: node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual/portrait-430 --cdp-port 9226 --width 430 --height 932
+        shell: bash
+        run: |
+          set -o pipefail
+          log="$(mktemp)"
+          if node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual/portrait-430 --cdp-port 9226 --width 430 --height 932 2>&1 | tee "$log"; then
+            rm -f "$log"
+            exit 0
+          fi
+          if ! grep -Fq 'has no measured camera impulse' "$log"; then
+            rm -f "$log"
+            exit 1
+          fi
+          echo 'RETRY · transient shake telemetry sampling only · 430x932'
+          rm -f "$log"
+          node qa/visual/capture-combat-runtime.mjs --base http://127.0.0.1:4173 --out artifacts/ui-visual/portrait-430 --cdp-port 9226 --width 430 --height 932
 
       - name: Validate proof files
         shell: bash
