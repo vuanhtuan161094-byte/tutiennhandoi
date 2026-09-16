@@ -1,23 +1,23 @@
-name: V180 Apply Hunt Time Reward Authority
+name: V180 Apply Combat Portrait Geometry
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'qa/tools/apply-v180-hunt-time-reward-authority.mjs'
+      - 'qa/tools/apply-v180-combat-portrait-geometry.mjs'
       - '.github/workflows/v180-apply-hunt-time-reward.yml'
 
 permissions:
   contents: write
 
 concurrency:
-  group: v180-hunt-time-reward-authority
+  group: v180-combat-portrait-geometry
   cancel-in-progress: false
 
 jobs:
   apply:
-    if: ${{ !contains(github.event.head_commit.message, 'apply V180 Hunt time reward authority') }}
+    if: ${{ !contains(github.event.head_commit.message, 'apply V180 unified portrait geometry') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -32,22 +32,19 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Apply V180 migration
-        run: node qa/tools/apply-v180-hunt-time-reward-authority.mjs
+      - name: Apply unified portrait geometry
+        run: node qa/tools/apply-v180-combat-portrait-geometry.mjs
 
-      - name: Verify syntax
-        run: node --check dist/core/session.js
-
-      - name: Commit canonical authority patch
+      - name: Commit presentation patch
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet -- dist/core/session.js; then
+          if git diff --quiet -- ui-combat-camera-polish.css; then
             echo 'No change produced.'
             exit 1
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add dist/core/session.js
-          git commit -m 'fix(hunt): apply V180 Hunt time reward authority'
+          git add ui-combat-camera-polish.css
+          git commit -m 'fix(ui): apply V180 unified portrait geometry'
           git push origin HEAD:main
