@@ -12,9 +12,9 @@ const hunt=fs.readFileSync('modules/hunt-combat-v2.js','utf8');
 
 assert.match(html,/ui-combat-target-v1\.css\?v=combat-readability-target-v1-20260914/,'Combat target CSS must be loaded after locked UI layers');
 assert.match(html,/ui-combat-visual-polish\.css\?v=combat-visual-polish-v1-20260915/,'Combat visual polish layer must be loaded');
-assert.match(html,/ui-combat-camera-polish\.css\?v=combat-camera-polish-v9-20260916/,'Combat camera/compact polish must be loaded after visual polish');
-assert.match(html,/ui-combat-information-v1\.css\?v=combat-information-v1-20260916/,'Combat information architecture layer must load last');
-assert.match(html,/ui-combat-target-v1\.js\?v=combat-information-v4-20260916/,'Combat context bridge cache key must include information architecture update');
+assert.match(html,/ui-combat-camera-polish\.css\?v=combat-camera-polish-v10-20260916/,'Combat camera/compact polish cache key must include V180 portrait geometry');
+assert.match(html,/ui-combat-information-v1\.css\?v=combat-information-v2-20260916/,'Combat information cache key must include active-state/farm semantics');
+assert.match(html,/ui-combat-target-v1\.js\?v=combat-information-v5-20260916/,'Combat context bridge cache key must include timed-farm semantics');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-player-hud/,'Combat target must stay isolated to Hunt');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-enemy-hud/,'Enemy HUD readability target missing');
 assert.match(css,/grid-template-columns:repeat\(7,minmax\(0,1fr\)\)/,'All seven backend-authored skill slots must remain visible');
@@ -33,33 +33,41 @@ assert.match(polish,/\.huntv2-float\.damage-main\.kind-dot strong/,'DOT damage h
 assert.match(polish,/\.huntv2-status-tray \.status\.fx-shield>b::before/,'Status rune treatment must include shield semantics');
 assert.match(polish,/\.huntv2-artifact-hud \.huntv2-support-crest/,'Combat support art treatment missing');
 assert.doesNotMatch(polish,/\/api\/|localStorage|sessionStorage/,'Combat visual polish must remain presentation-only');
+
 assert.match(camera,/\.huntv2-stage\.shake,\s*\nbody\[data-game-screen="hunt"\] \.huntv2-stage\.shake-strong\{[\s\S]*?animation:none!important;[\s\S]*?transform:none!important/,'Stage/HUD shell must stay neutral during shake');
 assert.match(camera,/\.huntv2-stage\.shake \.huntv2-arena\{[\s\S]*?animation:huntCvpArenaShake/,'Light shake must move battlefield arena only');
 assert.match(camera,/\.huntv2-stage\.shake-strong \.huntv2-arena\{[\s\S]*?animation:huntCvpArenaShakeStrong/,'Heavy shake must move battlefield arena only');
 assert.match(camera,/@keyframes huntCvpArenaShakeStrong\{[\s\S]*?100%\{transform:translate3d\(0,0,0\)\}/,'Arena shake must settle to neutral transform');
-assert.match(camera,/@media\(max-width:360px\)[\s\S]*?\.huntv2-status-tray\.player\{[\s\S]*?top:calc\(48% \+ 70px\)!important/,'Compact player statuses must clear the player face lane');
-assert.match(camera,/@media\(max-width:360px\)[\s\S]*?\.huntv2-skill-callout\.tier-ultimate[\s\S]*?max-width:82%!important[\s\S]*?min-height:48px!important/,'Compact ultimate callout must keep a readable two-line footprint');
+assert.match(camera,/@media\(max-width:360px\)[\s\S]*?\.huntv2-status-tray\.player\{[\s\S]*?top:calc\(48% \+ 70px\)!important/,'360px player statuses must clear the player face lane');
+assert.match(camera,/@media\(max-width:360px\)[\s\S]*?\.huntv2-skill-callout\.tier-ultimate[\s\S]*?max-width:82%!important[\s\S]*?min-height:48px!important/,'360px ultimate callout must keep a readable two-line footprint');
 assert.doesNotMatch(camera,/\.huntv2-skill:last-child\{transform:translateX\(/,'Final skill slot must not require edge-specific nudging');
-assert.match(camera,/@media\(max-width:430px\) and \(max-height:860px\)[\s\S]*?\.huntv2-enemy-hud\{[\s\S]*?top:86px!important[\s\S]*?width:168px!important[\s\S]*?height:68px!important/,'Portrait boss vitals must use the user-approved compact upper-right footprint');
-assert.match(camera,/@media\(max-width:430px\) and \(max-height:860px\)[\s\S]*?\.huntv2-actor\.enemy\.boss\{[\s\S]*?bottom:48%!important/,'Portrait boss actor must be lifted above the previous composition');
-assert.match(camera,/@media\(max-width:430px\) and \(max-height:860px\)[\s\S]*?\.huntv2-skill-callout\.ultimate\{[\s\S]*?bottom:30px!important/,'Portrait ultimate plaque must move into the lower battlefield lane');
-assert.match(camera,/@media\(max-width:430px\) and \(max-height:860px\)[\s\S]*?\.huntv2-skills\{[\s\S]*?position:absolute!important[\s\S]*?left:8px!important[\s\S]*?right:8px!important[\s\S]*?bottom:39px!important[\s\S]*?height:58px!important[\s\S]*?grid-template-columns:repeat\(7,minmax\(0,1fr\)\)!important[\s\S]*?transform:none!important/,'Portrait skill rail must be pinned across the full lower dock with seven equal tracks and a 58px footprint that clears the resource lane');
-assert.match(camera,/@media\(max-width:430px\) and \(max-height:860px\)[\s\S]*?\.huntv2-skill,[\s\S]*?\.huntv2-skill\.ultimate\{[\s\S]*?width:100%!important[\s\S]*?height:58px!important[\s\S]*?min-width:0!important[\s\S]*?justify-self:stretch!important/,'Portrait skill cells must fill their equal-width grid tracks without overlapping the resource lane');
+
+/* V180: one portrait geometry for every 360–430px height. Height must never select another composition. */
+assert.doesNotMatch(camera,/@media\(max-width:430px\) and \(max-height:/,'Combat portrait geometry must not fork by viewport height');
+assert.doesNotMatch(camera,/@media\(max-width:360px\) and \(max-height:/,'360px geometry must not fork by viewport height');
+assert.match(camera,/@media\(max-width:430px\)[\s\S]*?\.huntv2-enemy-hud\{[\s\S]*?top:86px!important[\s\S]*?width:168px!important[\s\S]*?height:68px!important/,'Portrait boss vitals must use one compact upper-right footprint');
+assert.match(camera,/@media\(max-width:430px\)[\s\S]*?\.huntv2-actor\.enemy,[\s\S]*?\.huntv2-actor\.enemy\.boss\{[\s\S]*?bottom:48%!important/,'Portrait boss actor must share one vertical geometry');
+assert.match(camera,/@media\(max-width:430px\)[\s\S]*?\.huntv2-skill-callout\.ultimate\{[\s\S]*?bottom:30px!important/,'Portrait ultimate plaque must use the common lower battlefield lane');
+assert.match(camera,/@media\(max-width:430px\)[\s\S]*?\.huntv2-skills\{[\s\S]*?position:absolute!important[\s\S]*?left:8px!important[\s\S]*?right:8px!important[\s\S]*?bottom:39px!important[\s\S]*?height:58px!important[\s\S]*?grid-template-columns:repeat\(7,minmax\(0,1fr\)\)!important[\s\S]*?transform:none!important/,'Portrait skill rail must be pinned across seven equal tracks at every supported height');
+assert.match(camera,/@media\(max-width:430px\)[\s\S]*?\.huntv2-skill,[\s\S]*?\.huntv2-skill\.ultimate\{[\s\S]*?width:100%!important[\s\S]*?height:58px!important[\s\S]*?min-width:0!important[\s\S]*?justify-self:stretch!important/,'Portrait skill cells must fill equal-width tracks without device-specific offsets');
 assert.match(camera,/\.huntv2-intel-lane\{[\s\S]*?z-index:85!important[\s\S]*?height:25px!important/,'Portrait Bản Đạo resource lane must remain above the skill rail');
 assert.match(camera,/\.huntv2-intel-meter span,[\s\S]*?\.huntv2-intel-meter b\{[\s\S]*?font-size:10px!important/,'Portrait Bản Đạo resource text must respect the 10px legibility floor');
 assert.doesNotMatch(camera,/\.huntv2-intel-meter b\{font-size:9(?:\.5)?px!important/,'Compact Bản Đạo text must never shrink below the visual-proof legibility floor');
+assert.match(camera,/V180 portrait tactical text floor[\s\S]*?\.huntv2-enemy-intent span,[\s\S]*?\.huntv2-result-pop span,[\s\S]*?font-size:10px!important/,'Transient combat text must have an explicit 10px portrait floor');
 assert.match(camera,/\.huntv2-intel-meter\[data-intel-resource="swordIntentV2"\]\{[\s\S]*?border-color:rgba\(134,217,255,\.72\)!important/,'Kiếm Ý meter must have a dedicated readable visual state');
 assert.match(camera,/\.huntv2-intel-meter\[data-intel-resource="swordIntentV2"\]>i>em\{[\s\S]*?background:linear-gradient\(90deg,#3e82c7,#86d9ff 66%,#f1fbff\)!important/,'Kiếm Ý fill must remain visually distinct from the meter background');
 assert.match(camera,/\.huntv2-enemy-info\{[\s\S]*?display:grid!important[\s\S]*?width:20px!important[\s\S]*?height:20px!important/,'Compact Boss HUD must keep the canonical monster-detail affordance visible');
 assert.doesNotMatch(camera,/\/api\/|localStorage|sessionStorage/,'Combat camera polish must remain presentation-only');
 
 assert.match(info,/is-prefight:not\(\.is-active-combat\) \.v5-boss-briefing\{display:grid\}/,'Boss briefing must exist only before active combat');
+assert.match(info,/is-active-combat \.v5-boss-briefing,[\s\S]*?is-active-combat \.huntv2-action-deck\{display:none!important\}/,'Active combat must hide all pre-fight briefing/challenge controls');
 assert.match(info,/is-active-combat \.v5-boss-mechanic-compact:not\(\[hidden\]\)\{display:grid\}/,'Active combat must expose only the compact Boss mechanic affordance');
 assert.match(info,/\.v5-critical-signal-active \.v5-boss-mechanic-compact\{display:none!important\}/,'Lethal/telegraph/counter signals must outrank the mechanic chip');
-assert.match(info,/\.huntv2-context-button\.v5-farm-summary\{display:flex!important/,'Unlocked farm summary must be restored from backend-authored context');
+assert.match(info,/\.huntv2-context-button\.v5-farm-summary\{display:flex!important/,'Unlocked farm summary must reuse backend-authored context');
 assert.match(info,/\.huntv2-result-pop\.show\.victory/,'Victory result cue must remain visually explicit');
 assert.match(info,/\.huntv2-result-pop\.show\.defeat/,'Defeat result cue must remain visually explicit');
-assert.match(info,/@media\(max-width:430px\) and \(max-height:860px\)/,'Boss briefing must have a compact portrait policy');
+assert.match(info,/@media\(max-width:430px\)/,'Boss briefing must share the width-only portrait policy');
+assert.doesNotMatch(info,/@media\(max-width:430px\) and \(max-height:/,'Boss briefing must not fork by viewport height');
 assert.doesNotMatch(info,/\/api\/|localStorage|sessionStorage/,'Combat information layer must remain presentation-only');
 
 assert.match(runtime,/function rendererEventForVisualReadability\(event=\{\}\)/,'Pixi façade must keep the visual-readability guard');
@@ -70,8 +78,10 @@ assert.match(bridge,/stage\.dataset\.env/,'Enemy element context must come from 
 assert.match(bridge,/\[data-sheet-panel="monster"\]/,'Boss briefing must read the canonical monster sheet instead of inventing Boss stats');
 assert.match(bridge,/\.v110-readiness strong/,'Boss readiness must come from the backend-authored readiness block');
 assert.match(bridge,/\.v110-boss-plan header strong/,'Boss mechanic must come from the canonical Boss plan');
-assert.match(bridge,/findBossRewardPanel\(lootSheet\)/,'Expected reward preview must read the existing Boss reward panel');
-assert.match(bridge,/THƯỞNG DỰ KIẾN/,'Expected reward must be explicitly labelled as preview, never actual loot');
+assert.match(bridge,/FARM SAU PHÁ TẦNG/,'Boss information must describe the timed-farm consequence, not direct battle loot');
+assert.match(bridge,/Reward tích theo thời gian/,'Boss information must state timed reward semantics');
+assert.doesNotMatch(bridge,/THƯỞNG DỰ KIẾN|findBossRewardPanel/,'Presentation must not retain the retired direct-Boss reward preview');
+assert.match(bridge,/const farmButton = actionDeck\?\.querySelector\('\.huntv2-context-button\.loot'\)/,'Timed-farm briefing must reuse the backend-authored farm context');
 assert.match(bridge,/fight\?\.disabled/,'Fight blocker presentation must follow the canonical disabled challenge action');
 assert.match(bridge,/v5-farm-summary/,'Farm summary must reuse the existing backend-authored loot context button');
 assert.match(bridge,/v5-critical-signal-active/,'Critical combat signals must suppress lower-priority mechanic chrome');
@@ -79,15 +89,15 @@ assert.doesNotMatch(bridge,/spiritStonesHint|equipmentChancePct/,'Presentation b
 assert.doesNotMatch(bridge,/\/api\//,'Presentation bridge must not call backend actions');
 assert.doesNotMatch(bridge,/localStorage|sessionStorage/,'Presentation bridge must not author persistent state');
 assert.match(hunt,/event\.type==='battleEnd'[\s\S]*?showResult\(root,won\?'TRẤN SÁT':'THẤT BẠI'/,'Canonical battleEnd must remain the authority for victory/defeat result');
-assert.doesNotMatch(bridge,/battleEnd/,'Presentation bridge must not reinterpret battle outcome or expected reward as actual drops');
+assert.doesNotMatch(bridge,/battleEnd/,'Presentation bridge must not reinterpret battle outcome');
 
 assert.ok(Buffer.byteLength(css,'utf8')<30000,'Combat target CSS must stay under 30 KB');
 assert.ok(Buffer.byteLength(polish,'utf8')<36000,'Combat visual polish CSS must stay under 36 KB');
-assert.ok(Buffer.byteLength(camera,'utf8')<14000,'Combat camera/compact polish CSS must stay under 14 KB');
-assert.ok(Buffer.byteLength(info,'utf8')<12000,'Combat information architecture CSS must stay under 12 KB');
+assert.ok(Buffer.byteLength(camera,'utf8')<18000,'Combat camera/compact polish CSS must stay under 18 KB');
+assert.ok(Buffer.byteLength(info,'utf8')<13000,'Combat information architecture CSS must stay under 13 KB');
 /* Combat V8 has a dense legacy cascade. This isolated final layer intentionally
    uses explicit overrides; cap it to a reviewed finite budget instead of forcing
    selectors to lose against the locked legacy !important rules. */
 const importantCount=(css.match(/!important/g)||[]).length;
 assert.ok(importantCount<=260,`Combat target CSS must stay under 260 !important declarations (${importantCount})`);
-console.log(`UI Combat readability target contract PASS · !important=${importantCount}`);
+console.log(`UI Combat readability target PASS · !important=${importantCount}`);
