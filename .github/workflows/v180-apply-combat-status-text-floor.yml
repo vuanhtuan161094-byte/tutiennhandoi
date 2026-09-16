@@ -1,0 +1,37 @@
+name: V180 Apply Combat Status Text Floor
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'qa/tools/apply-v180-combat-status-text-floor.mjs'
+      - '.github/workflows/v180-apply-combat-status-text-floor.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ !contains(github.event.head_commit.message, 'apply V180 combat status text floor') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply status text floor
+        run: node qa/tools/apply-v180-combat-status-text-floor.mjs
+      - name: Commit canonical CSS patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ui-combat-camera-polish.css
+          git commit -m 'fix(ui): apply V180 combat status text floor'
+          git push origin HEAD:main
