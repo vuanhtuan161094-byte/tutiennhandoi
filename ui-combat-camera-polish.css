@@ -323,5 +323,10 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
   body[data-game-screen="hunt"] .huntv2-result-pop span,
   body[data-game-screen="hunt"] .huntv2-status-callout,
   body[data-game-screen="hunt"] .huntv2-stage-boss-telegraph small,
-  body[data-game-screen="hunt"] .huntv2-break-window small{font-size:10px!important}
+  body[data-game-screen="hunt"] .huntv2-break-window small,
+  body[data-game-screen="hunt"] .huntv2-status-tray .status>b,
+  body[data-game-screen="hunt"] .huntv2-status-tray .status>em,
+  body[data-game-screen="hunt"] .huntv2-status-tray .status>strong,
+  body[data-game-screen="hunt"] .huntv2-status-tray .status>small,
+  body[data-game-screen="hunt"] .huntv2-status-tray .status-more{font-size:10px!important;line-height:1!important}
 }
