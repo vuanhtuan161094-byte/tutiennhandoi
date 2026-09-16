@@ -8,6 +8,9 @@ const bridge=read('ui-combat-target-v1.js');
 const loader=read('modules/third-party-runtime-v1.js');
 const anime=read('modules/combat-motion-anime-v1.js');
 const devTools=read('modules/dev-third-party-tools-v1.js');
+const harness=read('modules/dev-test-harness-v1.js');
+const portraitSafety=read('modules/combat-portrait-safety-v1.js');
+const entry=read('standalone-entry.js');
 const index=read('index.html');
 const devLauncher=read('CHOI_UI_DEV.cmd');
 
@@ -42,10 +45,32 @@ assert.match(devTools,/loadLilGuiV1\(\)/,'DEV tools must load lil-gui');
 assert.match(devTools,/Combat DEV Tuning/,'lil-gui combat tuning panel missing');
 assert.match(devTools,/damagePunch/,'damage motion tuning missing');
 assert.match(devTools,/skillPunch/,'skill-name motion tuning missing');
-assert.doesNotMatch(devTools,/fetch\s*\(|localStorage\.setItem|sessionStorage\.setItem|\/api\//,'DEV tuning must remain presentation-only');
+assert.match(devTools,/import\('\.\/dev-test-harness-v1\.js'\)/,'DEV Test Harness must stay behind the DEV tools lazy boundary');
+assert.doesNotMatch(devTools,/fetch\s*\(|localStorage\.setItem|sessionStorage\.setItem|\/api\//,'motion tuning owner must remain presentation-only');
 
-assert.match(index,/ui-combat-target-v1\.js\?v=combat-information-v5-20260916/,'combat bridge cache token must expose the latest presentation integration');
+assert.match(harness,/p\.get\('dev'\)==='1'/,'Test Harness must require DEV mode');
+assert.match(harness,/p\.get\('tools'\)==='1'/,'Test Harness must require tools opt-in');
+assert.match(harness,/\/api\/dev\/action/,'Test Harness must use isolated DEV action transport');
+assert.match(harness,/\/api\/dev\/new/,'Test Harness must expose isolated DEV reset');
+assert.match(harness,/\/api\/dev\/save/,'Test Harness must persist isolated DEV fixtures');
+assert.match(harness,/devSandboxSyncSave/,'Harness must sync the current sandbox before cumulative DEV actions');
+assert.match(harness,/devSandboxPreset/,'Boss/sandbox preset missing');
+assert.match(harness,/devSkillLabV12317/,'full-system Skill Lab preset missing');
+assert.match(harness,/BEFORE_FIXTURE_KEY/,'Harness must provide a fixture rollback snapshot');
+assert.doesNotMatch(harness,/['"]\/api\/(?:action|save|new|state)/,'Test Harness must never call production mutation/state endpoints directly');
+
+assert.match(entry,/combat-portrait-safety-v1\.js/,'portrait safety module must load with the production presentation shell');
+assert.match(portraitSafety,/\.huntv2-intel-lane/,'portrait safety must guard the Dao resource lane');
+assert.match(portraitSafety,/setImportant\(lane,'left','0'\)/,'portrait resource lane must cancel the legacy relative offset that clips its right edge');
+assert.match(portraitSafety,/setImportant\(actor,'bottom','29%'\)/,'pre-fight actors must clear the Boss briefing while retaining a shared ground plane');
+assert.match(portraitSafety,/playerUltimate/,'portrait safety must detect the player ultimate plaque');
+assert.match(portraitSafety,/setImportant\(callout,'left','10px'\)/,'ultimate callout must stay inside the left portrait safe inset');
+assert.match(portraitSafety,/setImportant\(callout,'right','10px'\)/,'ultimate callout must stay inside the right portrait safe inset');
+assert.doesNotMatch(portraitSafety,/\/api\/|localStorage|sessionStorage/,'portrait safety must remain presentation-only');
+
+assert.match(index,/ui-combat-target-v1\.js\?v=combat-information-v6-20260916/,'combat bridge cache token must expose the latest presentation integration');
 assert.doesNotMatch(index,/animejs@|stats\.js@|lil-gui@/,'third-party libraries must not be eagerly loaded from index.html');
+assert.match(devLauncher,/for %%P in \(4273 4274 4275 4276 4277 4278 4279 4280\)/,'UI DEV launcher must use an origin isolated from normal-play ports');
 assert.match(devLauncher,/\?dev=1&tools=1&anime=1&tab=hunt/,'UI DEV launcher must explicitly enable integrated tuning tools');
 
-console.log('Combat third-party tools contract PASS · Anime.js opt-in · stats.js/lil-gui DEV-only · no eager production load');
+console.log('Combat tools contract PASS · presentation safety · isolated DEV Test Harness · no eager third-party production load');

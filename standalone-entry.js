@@ -46,6 +46,9 @@ try{
   await import(`./app.js?v=${WIP_CACHE_TOKEN}`);
 }catch(error){showFatalBootError(error,'app.js');throw error;}
 try{
+  await import(`./modules/combat-portrait-safety-v1.js?v=${WIP_CACHE_TOKEN}`);
+}catch(error){console.warn('[bootstrap] combat portrait safety unavailable:',error?.message||error);}
+try{
   await import(`./modules/endgame-ui-v159.js?v=${WIP_CACHE_TOKEN}`);
 }catch(error){showFatalBootError(error,'endgame-ui-v159.js');throw error;}
 try{
