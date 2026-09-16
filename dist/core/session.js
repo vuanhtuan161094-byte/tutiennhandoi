@@ -1027,7 +1027,7 @@ export class SimulationSession {
         const candidateFloors = [...new Set([farm.floor, highestCleared, Math.max(1, highestCleared - 5), Math.max(1, highestCleared - 20), Math.max(1, highestCleared - 60)].filter(floor => floor > 0 && isEndlessHuntFloorCleared(hunt, floor)))];
         const farmCandidates = candidateFloors.map(floor => this.endlessHuntFarmViewV77(floor, personalEntity));
         const productionV110 = buildHuntProductionV110({ bossReady: bossReady(hunt), canFight, injury: this.stateValue.injury, currentFloor: hunt.selectedFloor, highestClearedFloor: hunt.highestClearedFloor, playerPowerLog10, enemyPowerLog10: monster.powerLog10 + mapPowerLog, bossMechanic, map, farm, currentFarmCandidates: farmCandidates });
-        return { schema: 'endless-hunt.v2', selectedFloor: hunt.selectedFloor, highestUnlockedFloor: hunt.highestUnlockedFloor, highestClearedFloor: hunt.highestClearedFloor, kills: 0, killsRequired: 0, bossReady: bossReady(hunt), bossChallengeAvailable: bossReady(hunt), farm, productionV110, totalKills: hunt.totalKills, totalBossKills: hunt.totalBossKills, autoAdvance: hunt.autoAdvance, playerPowerLog10, playerPower: formatLogMagnitude({ log10: playerPowerLog10 }), playerInjury: this.stateValue.injury, canFight, fightBlocker, trainingMultiplier: '×1.00', legacyMultiplier: '×1.00', accountBestFloor: Math.max(this.metaValue.endless?.bestFloorEver ?? 0, hunt.highestClearedFloor), currentMajorRealmIndex: map.majorRealmIndex, currentMajorRealmName: map.realmName, currentMapLocalFloor: map.localFloor, currentZoneFloor: map.zoneFloor, currentMap: map, availableMaps: visibleMaps, currentFloorStats, farmSuggestions, farmRecommendations, farmRewardEfficiency: { pct: farmReward.pct, gap: farmReward.gap, label: farmReward.label, reason: farmReward.reason }, monster: { id: monster.id, name: monster.name, grade: monster.gradeName, gradeId: monster.grade, floor: monster.floor, level: monster.level, tags: [...monster.tags], elements: [...monster.elements], playerElement: elementMatchup.playerElement, elementMatchup: elementMatchup.label, elementPowerModifierPct: (elementMatchup.enemyPowerMultiplier - 1) * 100, bossMechanic, power: display.power, hp: display.hp, attack: display.attack, defense: display.defense, powerLog10: monster.powerLog10 + mapPowerLog, fortuneBonusPct: monster.fortuneBonusPct, rewards: { cultivationPct: 0, spiritStonesHint: `~${stoneHint.toLocaleString('vi-VN')}`, materialChancePct: economyChances.materialChancePct, equipmentChancePct: economyChances.equipmentChancePct, rareChancePct: economyChances.rareChancePct, cultivationPillChancePct: Math.min(100, rewards.cultivationPillChancePct * effectiveLoot), injuryPillChancePct: Math.min(55, (monster.grade === 'boss' ? 30 : monster.grade === 'elite' ? 6 : monster.grade === 'enhanced' ? 1.5 : .25) * effectiveLoot) } } };
+        return { schema: 'endless-hunt.v2', selectedFloor: hunt.selectedFloor, highestUnlockedFloor: hunt.highestUnlockedFloor, highestClearedFloor: hunt.highestClearedFloor, kills: 0, killsRequired: 0, bossReady: bossReady(hunt), bossChallengeAvailable: bossReady(hunt), farm, productionV110, totalKills: hunt.totalKills, totalBossKills: hunt.totalBossKills, autoAdvance: hunt.autoAdvance, playerPowerLog10, playerPower: formatLogMagnitude({ log10: playerPowerLog10 }), playerInjury: this.stateValue.injury, canFight, fightBlocker, trainingMultiplier: '×1.00', legacyMultiplier: '×1.00', accountBestFloor: Math.max(this.metaValue.endless?.bestFloorEver ?? 0, hunt.highestClearedFloor), currentMajorRealmIndex: map.majorRealmIndex, currentMajorRealmName: map.realmName, currentMapLocalFloor: map.localFloor, currentZoneFloor: map.zoneFloor, currentMap: map, availableMaps: visibleMaps, currentFloorStats, farmSuggestions, farmRecommendations, farmRewardEfficiency: { pct: farmReward.pct, gap: farmReward.gap, label: farmReward.label, reason: farmReward.reason }, monster: { id: monster.id, name: monster.name, grade: monster.gradeName, gradeId: monster.grade, floor: monster.floor, level: monster.level, tags: [...monster.tags], elements: [...monster.elements], playerElement: elementMatchup.playerElement, elementMatchup: elementMatchup.label, elementPowerModifierPct: (elementMatchup.enemyPowerMultiplier - 1) * 100, bossMechanic, power: display.power, hp: display.hp, attack: display.attack, defense: display.defense, powerLog10: monster.powerLog10 + mapPowerLog, fortuneBonusPct: monster.fortuneBonusPct, rewards: { cultivationPct: 0, mode: 'time-farm-only', directBossLoot: false, spiritStonesHint: 'Săn Ảo theo thời gian', materialChancePct: 0, equipmentChancePct: 0, rareChancePct: 0, cultivationPillChancePct: 0, injuryPillChancePct: 0 } } };
     }
     selectEndlessFloor(floor) {
         if (!this.stateValue.alive)
@@ -1111,74 +1111,16 @@ export class SimulationSession {
         const economyMaterialDrops = {}, economyRareDrops = {};
         let spiritualRootRewardsV145;
         const fateNotes = [...fateMods.notes, ...fateEvent.notes];
-        const mapRewards = realmMapRewardProfile(result.monster.grade, map.zone, map.zoneFloor);
+        // V180: Boss thật chỉ là progression gate. Mọi tài nguyên Hunt được kết toán
+        // qua Săn Ảo theo thời gian; trận Boss không mint loot/economy/first-clear reward.
         if (result.won) {
-            // V77 canonical: Săn Yêu (including Boss first-clear) never grants direct Tu Vi.
-            // The independent Tu Luyện stream keeps running at 100% while the player hunts.
             cultivationGain = 0;
-            const confidant = collectionConfidantV87Summary(this.stateValue.collectionV12316), specialty = confidant.activeSpecialty, huntRewardPct = specialty?.unlocked && specialty.id === 'hunt' ? specialty.strengthPct : 0, huntRewardMultiplier = 1 + huntRewardPct / 100, confidantResourceFlat = Math.max(0, Number(confidant.fortune.resourceMastery)||0);
-            spiritStones = this.fateSpiritStoneGainV4(Math.max(0, Math.round(result.spiritStones * map.rewardDepthMultiplier * economyBandScale(map.majorRealmIndex) * fateMods.rewardMultiplier * fateEvent.rewardMultiplier * farmReward.multiplier * huntRewardMultiplier)) + fateEvent.spiritStoneDelta + confidantResourceFlat);
-            this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + spiritStones;
-            const rng = new SeededRng((seed ^ 0x7f4a7c15) >>> 0);
-            // V129: Hunt's pill tier follows the same 8-band economy mapping as Alchemy.
-            // Using raw majorRealmIndex here made Nhân Tiên+ clamp straight to T8, bypassing tier progression.
-            const huntAlchemyTier = economyTierForMajorRealmIndex(map.majorRealmIndex);
-            const effectiveLoot = loot * (1 + result.monster.fortuneBonusPct / 100) * farmReward.multiplier * huntRewardMultiplier;
-            const rewardContext = options.rewardContext ?? 'online';
-            const baseJackpotChance = huntEconomyDropChances(result.monster.grade, effectiveLoot).rareChancePct;
-            const jackpotChance = huntJackpotChanceV135(this.stateValue.economy, baseJackpotChance, rewardContext, offlineSpecialOpportunityFactorV127(this.stateValue));
-            const economyLoot = rollHuntEconomyLoot({ seed, grade: result.monster.grade, realmTier: map.zone, primaryElement: map.primaryElement, monsterTags: result.monster.tags, lootMultiplier: effectiveLoot, bossKillNumber: result.monster.grade === 'boss' ? hunt.totalBossKills : undefined, rareChancePctOverride: jackpotChance.effectiveChancePct });
-            const randomNamedTreasure = Boolean(economyLoot.rareRollSucceeded && Object.keys(economyLoot.rareTreasureDrops).some(id => isHeavenlyTreasureResourceId(id)));
-            settleHuntJackpotV135(this.stateValue.economy, result.monster.grade, rewardContext, economyLoot.rareRollSucceeded, randomNamedTreasure);
-            jackpotHit = economyLoot.rareRollSucceeded;
-            jackpotChancePctApplied = jackpotChance.effectiveChancePct;
-            Object.assign(economyMaterialDrops, economyLoot.materialDrops);
-            Object.assign(economyRareDrops, economyLoot.rareTreasureDrops);
-            applyEconomyResourceDrops(this.stateValue.inventory, economyMaterialDrops);
-            applyHeavenlyTreasureDrops(this.stateValue.economy, economyRareDrops);
-            const equipmentChancePct = Math.min(100, economyLoot.equipmentChancePct + fateMods.equipmentChanceBonusPct);
-            const equipmentEventV142 = rng.chance(equipmentChancePct);
-            const fragmentSettlementV142 = settleRealHuntEquipmentFragmentsV142(this.stateValue, {
-                majorRealmIndex: map.majorRealmIndex, zone: map.zone, monsterGrade: result.monster.grade,
-                firstClear: Boolean(result.bossCleared), equipmentEvent: equipmentEventV142, rankRoll01: rng.next(),
-                source: `hunt.real.${result.monster.floor}`,
-            });
-            if (fragmentSettlementV142.totalFragments > 0) {
-                const drop = fragmentSettlementV142.drops[0];
-                equipmentDropId = drop.resourceId;
-                equipmentDropName = `Mảnh Trang Bị · ${drop.rankName} +${drop.amount}`;
-            }
-            // V85: new PvE drops use the canonical Alchemy pill families. Legacy resource.pill.* remains compatibility-only.
-            if (rng.chance(Math.min(100, mapRewards.cultivationPillChancePct * effectiveLoot))) {
-                const quality = rollPillQuality(rng.next()), id = alchemyPillResourceId('cultivation', huntAlchemyTier, quality);
-                cultivationPillDrops = 1;
-                this.stateValue.inventory[id] = (this.stateValue.inventory[id] ?? 0) + 1;
-            }
-            const injuryPillChancePct = result.monster.grade === 'boss' ? 30 : result.monster.grade === 'elite' ? 6 : result.monster.grade === 'enhanced' ? 1.5 : .25;
-            if (rng.chance(Math.min(55, injuryPillChancePct * effectiveLoot))) {
-                const quality = rollPillQuality(rng.next());
-                injuryPillDropId = alchemyPillResourceId('injury', huntAlchemyTier, quality);
-                injuryPillDropName = alchemyPillName('injury', huntAlchemyTier, quality);
-                this.stateValue.inventory[injuryPillDropId] = (this.stateValue.inventory[injuryPillDropId] ?? 0) + 1;
-            }
-            if (result.monster.grade === 'boss' && rng.chance(Math.min(12, (1 + map.zone * 1.15) * farmReward.multiplier))) {
-                const ids = bloodlineIds();
-                const id = ids[Math.floor(rng.next() * ids.length)];
-                trueBloodDropId = trueBloodResourceId(id);
-                this.stateValue.inventory[trueBloodDropId] = (this.stateValue.inventory[trueBloodDropId] ?? 0) + 1;
-            }
-            // V145: Linh Căn Hunt rewards are generic; no elemental target/material lane survives.
-            spiritualRootRewardsV145 = settleSpiritualRootHuntV145(this.stateValue.character, this.stateValue.inventory, { kills: 1, firstClear: Boolean(result.bossCleared), countForOriginMeter: false, majorRealmIndex: map.majorRealmIndex, currentMajorRealmIndex: majorRealmIndexForRealmOrder(this.stateValue.realm.maxRealmOrder), zone: map.zone });
             if (fateEvent.injuryDelta > 0)
                 this.stateValue.injury = Math.min(100, this.stateValue.injury + fateEvent.injuryDelta);
             fateNotes.push(...fateOnHuntResult(this.currentLifeValue.birth.originsV101?.fate, fateRuntime, true, result.monster.grade === 'elite' || result.monster.grade === 'boss'));
             recordActiveArtifactBattle(this.stateValue.artifacts, true, this.stateValue.worldTimeYears, result.monster.name);
         }
         else {
-            if (fateEvent.spiritStoneDelta > 0) {
-                spiritStones = this.fateSpiritStoneGainV4(fateEvent.spiritStoneDelta);
-                this.stateValue.inventory['resource.spirit_stone'] = (this.stateValue.inventory['resource.spirit_stone'] ?? 0) + spiritStones;
-            }
             this.stateValue.injury = Math.min(100, this.stateValue.injury + result.injuryGain + fateEvent.injuryDelta);
             fateNotes.push(...fateOnHuntResult(this.currentLifeValue.birth.originsV101?.fate, fateRuntime, false, result.monster.grade === 'elite' || result.monster.grade === 'boss'));
             recordActiveArtifactBattle(this.stateValue.artifacts, false, this.stateValue.worldTimeYears, result.monster.name);
@@ -1188,17 +1130,29 @@ export class SimulationSession {
         const combatEvents = options.emitCombatEvents === false ? [] : buildEndlessHuntCombatStreamFromKernelV2({ registry: this.registry, battle: kernelCombat.battle, result, playerId: kernelCombat.playerEntity.id, enemyId: kernelCombat.enemyEntity.id, bossMechanic });
         const significance = result.won ? (result.monster.grade === 'boss' ? 34 : result.monster.grade === 'elite' ? 18 : result.monster.grade === 'enhanced' ? 11 : 6) : 18;
         const openedText = result.bossCleared && result.unlockedFloor ? `; mở tầng ${zoneFloorForMapFloor(result.unlockedFloor)} ${realmMapDefinitionForFloor(result.unlockedFloor).zoneName}` : '';
-        const event = { id: `endless.hunt.${seed}.${result.monster.floor}.${result.monster.grade}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: result.won ? 'combat' : 'injury', significance, message: result.won ? `${result.monster.gradeName} · ${map.zoneName} tầng ${map.zoneFloor}: hạ ${result.monster.name}; Linh Thạch +${spiritStones}${equipmentDropName ? `, rơi ${equipmentDropName}` : ''}${cultivationPillDrops ? `, Tu Vi Đan +${cultivationPillDrops}` : ''}${injuryPillDropName ? `, ${injuryPillDropName} +1` : ''}${trueBloodDropId ? `, Bản Mệnh Tinh Huyết +1` : ''}${openedText}.${fateNotes.length ? ` ${fateNotes.join(' ')}` : ''}` : `Thất bại trước ${result.monster.name} · ${map.zoneName} tầng ${map.zoneFloor}; thương thế +${result.injuryGain}.${fateNotes.length ? ` ${fateNotes.join(' ')}` : ''}`, locationId: this.stateValue.locationId, tags: ['EndlessHunt', result.won ? 'Victory' : 'Defeat', result.monster.grade, map.zoneGradeId, ...result.monster.elements.map(x => `Element:${x}`), ...(result.bossCleared ? ['FloorBoss', 'FirstClear', 'FirstClearLike'] : []), ...(jackpotHit ? ['Jackpot'] : [])], data: { floor: result.monster.floor, localFloor: map.localFloor, zoneFloor: map.zoneFloor, zone: map.zone, majorRealmIndex: map.majorRealmIndex, grade: result.monster.grade, monsterName: result.monster.name, playerPowerLog10: result.playerPowerLog10, enemyPowerLog10: result.enemyPowerLog10, powerRatio: result.powerRatio, cultivationGain, spiritStones, equipmentDropId: equipmentDropId ?? '', economyMaterialDropsJson: JSON.stringify(economyMaterialDrops), economyRareDropsJson: JSON.stringify(economyRareDrops), bossCleared: result.bossCleared, unlockedFloor: result.unlockedFloor ?? 0, trainingPowerLogGain: result.trainingPowerLogGain, farmRewardEfficiencyPct: farmReward.pct, bossMechanicId: bossMechanic?.id ?? '', bossMechanicCoveragePct: bossMechanic?.coveragePct ?? 0, skillPracticeXp: skillPractice.reduce((a, x) => a + x.xpGain, 0), spiritualRootRewardsV145Json: JSON.stringify(spiritualRootRewardsV145 ?? {}) } };
-        const economyAwards = options.recordHistory !== false && result.won && result.monster.grade === 'boss'
-            ? [...recordEconomyActivityV89(ensureCollectionProgressStateV12316(this.stateValue), 'huntBossWins', 1).awards, ...(result.bossCleared ? (() => { const x = recordFirstClearBoundJadeV89(ensureCollectionProgressStateV12316(this.stateValue), `hunt.${result.monster.floor}`); return x.awarded ? [{ id: `first-clear.hunt.${result.monster.floor}`, label: 'Thưởng công phá tầng đầu', boundJade: x.boundJade }] : []; })() : [])]
-            : [];
+        const farmOpenedText = result.bossCleared ? `; bãi Săn Ảo tầng ${map.zoneFloor} đã mở` : '';
+        const event = { id: `endless.hunt.${seed}.${result.monster.floor}.${result.monster.grade}`, worldTimeYears: this.stateValue.worldTimeYears, ageYears: this.stateValue.ageYears, type: result.won ? 'combat' : 'injury', significance, message: result.won ? `${result.monster.gradeName} · ${map.zoneName} tầng ${map.zoneFloor}: hạ ${result.monster.name}${openedText}${farmOpenedText}.${fateNotes.length ? ` ${fateNotes.join(' ')}` : ''}` : `Thất bại trước ${result.monster.name} · ${map.zoneName} tầng ${map.zoneFloor}; thương thế +${result.injuryGain}.${fateNotes.length ? ` ${fateNotes.join(' ')}` : ''}`, locationId: this.stateValue.locationId, tags: ['EndlessHunt', result.won ? 'Victory' : 'Defeat', result.monster.grade, map.zoneGradeId, ...result.monster.elements.map(x => `Element:${x}`), ...(result.bossCleared ? ['FloorBoss', 'FirstClear', 'FirstClearLike'] : [])], data: { floor: result.monster.floor, localFloor: map.localFloor, zoneFloor: map.zoneFloor, zone: map.zone, majorRealmIndex: map.majorRealmIndex, grade: result.monster.grade, monsterName: result.monster.name, playerPowerLog10: result.playerPowerLog10, enemyPowerLog10: result.enemyPowerLog10, powerRatio: result.powerRatio, cultivationGain: 0, spiritStones: 0, equipmentDropId: '', economyMaterialDropsJson: '{}', economyRareDropsJson: '{}', bossCleared: result.bossCleared, unlockedFloor: result.unlockedFloor ?? 0, trainingPowerLogGain: result.trainingPowerLogGain, farmRewardEfficiencyPct: farmReward.pct, bossMechanicId: bossMechanic?.id ?? '', bossMechanicCoveragePct: bossMechanic?.coveragePct ?? 0, skillPracticeXp: skillPractice.reduce((a, x) => a + x.xpGain, 0), spiritualRootRewardsV145Json: '{}' } };
+        const economyAwards = [];
         if (options.recordHistory !== false)
             this.historyValue.append(event);
         this.actionIndexValue += 1;
         const bossRetryLine = !result.won && result.monster.grade === 'boss' ? 'Khiêu chiến Boss thất bại: Boss tầng này vẫn còn, có thể thử lại bất cứ lúc nào; bãi farm đã mở trước đó không bị mất.' : undefined;
-        const summaryLines = result.won ? [`Hạ ${result.monster.name} [${result.monster.gradeName}] · ${map.zoneName} tầng ${map.zoneFloor} trong ${result.battleSeconds.toFixed(1)}s · HP còn ${result.playerHpRemainingPct.toFixed(0)}%.`, `Sát thương thực gây ra ${formatLogMagnitude({ log10: result.effectiveDamageLog10 })} · Linh Thạch +${spiritStones}. Tu Luyện vẫn chạy độc lập 100%.`, ...(farmReward.pct < 100 ? [`Hiệu suất farm tầng thấp: ${farmReward.pct}% (${farmReward.reason})`] : []), ...(bossMechanic ? [`Cơ chế Boss: ${bossMechanic.name} · đối sách ${bossMechanic.coveragePct}% · ${bossMechanic.counterHint}`] : []), ...(result.monster.elements.length ? [`Ngũ Hành: ${result.monster.elements.join(' + ')} · ${elementMatchup.label}.`] : []), ...(equipmentDropName ? [`Rơi: ${equipmentDropName}.`] : []), ...(Object.keys(economyMaterialDrops).length ? [`Nguyên liệu: ${Object.entries(economyMaterialDrops).map(([id, n]) => `${economyMaterialDefinition(id)?.name ?? id} +${n}`).join(' · ')}.`] : []), ...(Object.keys(economyRareDrops).length ? [`Bảo vật: ${Object.entries(economyRareDrops).map(([id, n]) => `${heavenlyTreasureDefinitions[id]?.name ?? id} +${n}`).join(' · ')}.`] : []), ...((cultivationPillDrops || injuryPillDropName) ? [`Đan dược: ${cultivationPillDrops ? `Tu Vi Đan +${cultivationPillDrops}` : ''}${cultivationPillDrops && injuryPillDropName ? ' · ' : ''}${injuryPillDropName ? `${injuryPillDropName} +1` : ''}.`] : []), ...(trueBloodDropId ? [`Căn nguyên hiếm: Bản Mệnh Tinh Huyết +1.`] : []), ...(spiritualRootRewardsV145 && (spiritualRootRewardsV145.tendon !== '0' || spiritualRootRewardsV145.origin > 0) ? [`Linh Căn: Linh Tủy +${spiritualRootRewardsV145.tendon}${spiritualRootRewardsV145.origin ? ` · Bản Nguyên +${spiritualRootRewardsV145.origin}` : ''}.`] : []), ...(jackpotHit ? [`Dị tượng chiến lợi phẩm: vận may hiếm đã kích hoạt.`] : []), ...fateNotes, ...(result.bossCleared && result.unlockedFloor ? [`Boss tầng bị hạ: đã mở ${realmMapDefinitionForFloor(result.unlockedFloor).zoneName} tầng ${zoneFloorForMapFloor(result.unlockedFloor)}.`] : [])] : [`${result.outcome === 'timeout' ? 'Hết thời gian giao tranh' : 'Bị đánh bại'} trước ${result.monster.name}; HP ngươi còn ${result.playerHpRemainingPct.toFixed(0)}% · HP mục tiêu còn ${result.enemyHpRemainingPct.toFixed(0)}%.`, `Thương thế +${result.injuryGain}; Chiến Lực chỉ còn là chỉ báo, thắng/thua do HP thực quyết định.`, ...(bossRetryLine ? [bossRetryLine] : []), ...realCombat.diagnosis, ...fateNotes];
-        summaryLines.push(...economyAwards.map(x => `${x.label}: Tiên Ngọc Khóa +${x.boundJade}.`));
-        return { seed, won: result.won, rewardContext: options.rewardContext ?? 'online', jackpotHit, jackpotChancePctApplied, floor: result.monster.floor, monsterId: result.monster.id, monsterName: result.monster.name, grade: result.monster.gradeName, battleSeconds: result.battleSeconds, damage: formatLogMagnitude({ log10: result.effectiveDamageLog10 }), powerRatio: result.powerRatio, cultivationGain, spiritStones, cultivationPillDrops, injuryPillDropId, injuryPillDropName, economyMaterialDrops: { ...economyMaterialDrops }, economyRareDrops: { ...economyRareDrops }, skillPractice, equipmentDropId, equipmentDropName, spiritualRootRewardsV145, injuryGain: result.injuryGain, bossCleared: result.bossCleared, unlockedFloor: result.unlockedFloor, farmRewardEfficiencyPct: farmReward.pct, bossMechanic, combatEvents, summaryLines, economyAwards, event, state: options.cloneState === false ? this.stateValue : this.state };
+        const summaryLines = result.won ? [
+            `Hạ ${result.monster.name} [${result.monster.gradeName}] · ${map.zoneName} tầng ${map.zoneFloor} trong ${result.battleSeconds.toFixed(1)}s · HP còn ${result.playerHpRemainingPct.toFixed(0)}%.`,
+            'Boss chỉ mở tiến độ; tài nguyên Săn Yêu được kết toán qua Săn Ảo theo thời gian. Tu Luyện vẫn chạy độc lập 100%.',
+            ...(bossMechanic ? [`Cơ chế Boss: ${bossMechanic.name} · đối sách ${bossMechanic.coveragePct}% · ${bossMechanic.counterHint}`] : []),
+            ...(result.monster.elements.length ? [`Ngũ Hành: ${result.monster.elements.join(' + ')} · ${elementMatchup.label}.`] : []),
+            ...fateNotes,
+            ...(result.bossCleared ? [`Bãi Săn Ảo tầng ${map.zoneFloor} đã mở; reward bắt đầu tích theo thời gian ở bãi farm.`] : []),
+            ...(result.bossCleared && result.unlockedFloor ? [`Đã mở ${realmMapDefinitionForFloor(result.unlockedFloor).zoneName} tầng ${zoneFloorForMapFloor(result.unlockedFloor)} để tiếp tục khiêu chiến.`] : []),
+        ] : [
+            `${result.outcome === 'timeout' ? 'Hết thời gian giao tranh' : 'Bị đánh bại'} trước ${result.monster.name}; HP ngươi còn ${result.playerHpRemainingPct.toFixed(0)}% · HP mục tiêu còn ${result.enemyHpRemainingPct.toFixed(0)}%.`,
+            `Thương thế +${result.injuryGain}; Chiến Lực chỉ còn là chỉ báo, thắng/thua do HP thực quyết định.`,
+            ...(bossRetryLine ? [bossRetryLine] : []),
+            ...realCombat.diagnosis,
+            ...fateNotes,
+        ];
+        return { seed, won: result.won, rewardContext: 'progression-only', directBossLoot: false, jackpotHit, jackpotChancePctApplied, floor: result.monster.floor, monsterId: result.monster.id, monsterName: result.monster.name, grade: result.monster.gradeName, battleSeconds: result.battleSeconds, damage: formatLogMagnitude({ log10: result.effectiveDamageLog10 }), powerRatio: result.powerRatio, cultivationGain, spiritStones, cultivationPillDrops, injuryPillDropId, injuryPillDropName, economyMaterialDrops: { ...economyMaterialDrops }, economyRareDrops: { ...economyRareDrops }, skillPractice, equipmentDropId, equipmentDropName, spiritualRootRewardsV145, injuryGain: result.injuryGain, bossCleared: result.bossCleared, unlockedFloor: result.unlockedFloor, farmRewardEfficiencyPct: farmReward.pct, bossMechanic, combatEvents, summaryLines, economyAwards, event, state: options.cloneState === false ? this.stateValue : this.state };
     }
     equipmentCombatImpact(itemId) {
         const snapshot = this.state;
