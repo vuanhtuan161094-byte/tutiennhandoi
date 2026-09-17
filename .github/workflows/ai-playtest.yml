@@ -50,6 +50,12 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Expose Git Bash
+        run: |
+          @echo off
+          if not exist "C:\Program Files\Git\bin\bash.exe" exit /b 1
+          echo C:\Program Files\Git\bin>>"%GITHUB_PATH%"
+
       - name: Locate installed Chrome
         run: |
           @echo off
@@ -68,16 +74,20 @@ jobs:
         run: node qa/playtest/validate-contracts.mjs
 
       - name: Start canonical game server
+        shell: bash
         run: |
-          @echo off
-          if not exist artifacts\ai-playtest mkdir artifacts\ai-playtest
-          start "" /b node web/server.mjs 4173 127.0.0.1 > artifacts\ai-playtest\server.log 2>&1
-          for /L %%A in (1,1,30) do (
-            curl.exe --fail --silent http://127.0.0.1:4173/__tutien_launcher_health > artifacts\ai-playtest\health.json && exit /b 0
-            timeout /t 1 /nobreak >nul
-          )
-          type artifacts\ai-playtest\server.log
-          exit /b 1
+          set -euo pipefail
+          mkdir -p artifacts/ai-playtest
+          node web/server.mjs 4173 127.0.0.1 > artifacts/ai-playtest/server.log 2>&1 &
+          echo $! > artifacts/ai-playtest/server.pid
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/__tutien_launcher_health > artifacts/ai-playtest/health.json; then
+              exit 0
+            fi
+            sleep 0.5
+          done
+          cat artifacts/ai-playtest/server.log
+          exit 1
 
       - name: Run deterministic browser journeys
         run: node qa/playtest/run-scenarios.mjs --base http://127.0.0.1:4173 --out artifacts/ai-playtest
