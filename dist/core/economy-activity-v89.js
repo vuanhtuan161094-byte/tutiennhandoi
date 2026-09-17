@@ -10,7 +10,10 @@ export const ECONOMY_SHOP_OFFERS_V89 = [
     { id: 'v89.offer.relic.refine', name: 'Chí Bảo Linh Tinh', description: 'Đầu tư Chí Bảo hiện tại thay vì dùng Ngọc Khóa cho Gacha.', cost: 220, weeklyCap: 2, category: 'relic', material: 45, breakthrough: 0 },
     { id: 'v89.offer.manual.grow', name: 'Công Pháp Tàn Ý', description: 'Đẩy Công Pháp/Tâm Pháp nền cho build hiện tại.', cost: 160, weeklyCap: 3, category: 'manual', material: 55, breakthrough: 0 },
 ];
+// Keep legacy Boss counters for save compatibility/activity telemetry only. Boss is progression authority;
+// Săn Ảo/huntKills is the recurring Săn Yêu economy settlement path.
 const EMPTY_COUNTERS = { huntBossWins: 0, huntKills: 0, resourceClears: 0, bossWins: 0, retreatHours: 0, craftActions: 0 };
+const PROGRESSION_ONLY_ACTIVITY_METRICS = new Set(['huntBossWins', 'bossWins']);
 function counters() { return { ...EMPTY_COUNTERS }; }
 function dayKey(now) { const d = new Date(now + 7 * 3600_000); return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`; }
 function weekKey(now) { const d = new Date(now + 7 * 3600_000), day = (d.getUTCDay() + 6) % 7; const monday = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - day)); return `${monday.getUTCFullYear()}-${String(monday.getUTCMonth() + 1).padStart(2, '0')}-${String(monday.getUTCDate()).padStart(2, '0')}`; }
@@ -75,16 +78,14 @@ const DAILY = [
     { scope: 'daily', id: 'resource.1', metric: 'resourceClears', threshold: 1, reward: 20, label: 'Bí Cảnh tài nguyên · lượt Ngọc 1/3' },
     { scope: 'daily', id: 'resource.2', metric: 'resourceClears', threshold: 2, reward: 20, label: 'Bí Cảnh tài nguyên · lượt Ngọc 2/3' },
     { scope: 'daily', id: 'resource.3', metric: 'resourceClears', threshold: 3, reward: 20, label: 'Bí Cảnh tài nguyên · lượt Ngọc 3/3' },
-    { scope: 'daily', id: 'hunt.boss.1', metric: 'huntBossWins', threshold: 1, reward: 20, label: 'Hạ Boss Săn Yêu đầu tiên' },
-    { scope: 'daily', id: 'hunt.kills.150', metric: 'huntKills', threshold: 150, reward: 15, label: 'Săn 150 yêu thú' },
-    { scope: 'daily', id: 'boss.1', metric: 'bossWins', threshold: 1, reward: 20, label: 'Thắng Thủ Lĩnh/Thí Luyện đầu tiên' },
+    { scope: 'daily', id: 'hunt.kills.150', metric: 'huntKills', threshold: 150, reward: 15, label: 'Săn Ảo · 150 yêu thú' },
 ];
 const WEEKLY = [
     { scope: 'weekly', id: 'active.3d', threshold: 3, reward: 50, label: 'Có hoạt động thật trong 3 ngày' },
     { scope: 'weekly', id: 'active.5d', threshold: 5, reward: 70, label: 'Có hoạt động thật trong 5 ngày' },
     { scope: 'weekly', id: 'active.7d', threshold: 7, reward: 80, label: 'Có hoạt động thật đủ 7 ngày' },
     { scope: 'weekly', id: 'lanes.5', threshold: 5, reward: 50, label: 'Chạm đủ 5 loại gameplay' },
-    { scope: 'weekly', id: 'combat.12', threshold: 12, reward: 50, label: 'Tổng 12 lần Boss/Bí Cảnh' },
+    { scope: 'weekly', id: 'combat.12', threshold: 12, reward: 50, label: 'Hoàn tất 12 lượt Bí Cảnh Tài Nguyên' },
 ];
 function awardMilestones(state, e) {
     const awards = [];
@@ -113,7 +114,7 @@ function awardMilestones(state, e) {
         else if (m.id === 'lanes.5')
             value = new Set(e.weekly.lanes).size;
         else if (m.id === 'combat.12')
-            value = e.weekly.counters.resourceClears + e.weekly.counters.bossWins + e.weekly.counters.huntBossWins;
+            value = e.weekly.counters.resourceClears;
         if (value < m.threshold)
             continue;
         e.weekly.awardedIds.push(m.id);
@@ -133,6 +134,9 @@ export function recordEconomyActivityV89(state, metric, amount = 1, now = Date.n
         e.weekly.lanes.push(lane);
     if (!e.weekly.activeDays.includes(e.daily.key))
         e.weekly.activeDays.push(e.daily.key);
+    // Boss wins stay observable for compatibility/activity diversity, but a Boss action itself never settles economy rewards.
+    if (PROGRESSION_ONLY_ACTIVITY_METRICS.has(metric))
+        return { awards: [], summary: e };
     return { awards: awardMilestones(state, e), summary: e };
 }
 export function recordProgressionBoundJadeV89(state, id, reward, label, now = Date.now()) {
@@ -175,9 +179,9 @@ export function economyActivitySummaryV89(state, inventory, now = Date.now()) {
     const e = ensureEconomyActivityV89(state, now), awarded = new Set(e.daily.awardedIds), weeklyAwarded = new Set(e.weekly.awardedIds);
     const resourcePaid = Math.min(3, Math.floor(e.daily.counters.resourceClears));
     const laneCards = [
-        { id: 'hunt', name: 'Săn Yêu', description: 'Boss thật để mở tầng; Săn Ảo chạy lâu để farm throughput. Ngọc Khóa chỉ ở vài mốc đầu ngày.', route: 'hunt', jade: `Boss ${awarded.has('hunt.boss.1') ? '1/1' : '0/1'} · Săn ${Math.min(150, Math.floor(e.daily.counters.huntKills))}/150`, milestones: [{ label: 'Boss đầu ngày', ...metricProgress(e, 'huntBossWins', 1), done: awarded.has('hunt.boss.1'), reward: 20 }, { label: 'Săn 150 yêu thú', ...metricProgress(e, 'huntKills', 150), done: awarded.has('hunt.kills.150'), reward: 15 }] },
+        { id: 'hunt', name: 'Săn Yêu', description: 'Boss thật chỉ mở tầng; Săn Ảo chạy lâu để farm throughput và kết toán kinh tế.', route: 'hunt', jade: `Săn ${Math.min(150, Math.floor(e.daily.counters.huntKills))}/150`, milestones: [{ label: 'Săn Ảo · 150 yêu thú', ...metricProgress(e, 'huntKills', 150), done: awarded.has('hunt.kills.150'), reward: 15 }] },
         { id: 'resource', name: 'Bí Cảnh Tài Nguyên', description: 'Farm đúng hệ đang thiếu. Chỉ 3 chiến thắng đầu/ngày phát Ngọc Khóa; lượt sau vẫn rơi nguyên liệu đầy đủ.', route: 'dungeons', jade: `${resourcePaid}/3 lượt Ngọc hôm nay`, milestones: [1, 2, 3].map(i => ({ label: `Lượt Ngọc ${i}/3`, ...metricProgress(e, 'resourceClears', i), done: awarded.has(`resource.${i}`), reward: 20 })) },
-        { id: 'boss', name: 'Thủ Lĩnh & Thí Luyện', description: 'CombatKernel thật, first-clear mở tiến trình; tái chiến vẫn có giá trị build/test.', route: 'combat', jade: `${awarded.has('boss.1') ? '1/1' : '0/1'} lượt Ngọc hôm nay`, milestones: [{ label: 'Chiến thắng đầu ngày', ...metricProgress(e, 'bossWins', 1), done: awarded.has('boss.1'), reward: 20 }] },
+        { id: 'boss', name: 'Thủ Lĩnh & Thí Luyện', description: 'CombatKernel thật; Boss là cửa tiến trình/first-clear, không phải điểm kết toán kinh tế.', route: 'combat', jade: 'Không phát Ngọc trực tiếp', milestones: [] },
         { id: 'cultivation', name: 'Tu Luyện & Bế Quan', description: 'Đẩy cảnh giới theo nhịp của bạn. Không ép Bế Quan để lấy Ngọc; tham gia chỉ tính đa dạng hoạt động.', route: 'cultivation', jade: 'Không phát Ngọc trực tiếp', milestones: [] },
         { id: 'craft', name: 'Động Phủ', description: 'Luyện Đan, Luyện Khí, Luyện Bảo để biến nguyên liệu thành sức mạnh. Không phải nút daily claim.', route: 'dongfu', jade: 'Không phát Ngọc trực tiếp', milestones: [] },
     ];
@@ -186,13 +190,13 @@ export function economyActivitySummaryV89(state, inventory, now = Date.now()) {
         { id: 'active.5d', label: 'Hoạt động 5 ngày', value: e.weekly.activeDays?.length ?? 0, target: 5, reward: 70, done: weeklyAwarded.has('active.5d') },
         { id: 'active.7d', label: 'Hoạt động đủ 7 ngày', value: e.weekly.activeDays?.length ?? 0, target: 7, reward: 80, done: weeklyAwarded.has('active.7d') },
         { id: 'lanes.5', label: 'Chạm đủ 5 loại gameplay', value: new Set(e.weekly.lanes).size, target: 5, reward: 50, done: weeklyAwarded.has('lanes.5') },
-        { id: 'combat.12', label: '12 lượt Boss/Bí Cảnh', value: e.weekly.counters.resourceClears + e.weekly.counters.bossWins + e.weekly.counters.huntBossWins, target: 12, reward: 50, done: weeklyAwarded.has('combat.12') },
+        { id: 'combat.12', label: '12 lượt Bí Cảnh Tài Nguyên', value: e.weekly.counters.resourceClears, target: 12, reward: 50, done: weeklyAwarded.has('combat.12') },
     ];
     const offers = ECONOMY_SHOP_OFFERS_V89.map(o => { const bought = e.weekly.purchases?.[o.id] ?? 0; return { ...o, bought, remaining: o.weeklyCap - bought, affordable: state.currencies.boundImmortalJade >= o.cost, rewardText: [o.material ? `${o.material} ${MATERIAL_NAME_V12326[o.category]}` : '', o.breakthrough ? `${o.breakthrough} ${BREAK_NAME_V12326[o.category]}` : ''].filter(Boolean).join(' + ') }; });
     const dailyPotential = DAILY.reduce((a, x) => a + x.reward, 0) + 25, weeklyPotential = WEEKLY.reduce((a, x) => a + x.reward, 0);
     return { schema: ECONOMY_ACTIVITY_SCHEMA_V89, currencies: { ...state.currencies }, daily: { dayKey: e.daily.key, lanes: laneCards, diversity: { value: new Set(e.daily.lanes).size, target: 5, reward3: 15, reward5: 10 }, earned: e.daily.awardedIds.reduce((sum, id) => { const m = DAILY.find(x => x.id === id); if (m)
                 return sum + m.reward; if (id === 'diversity.3')
                 return sum + 15; if (id === 'diversity.5')
-                return sum + 10; return sum; }, 0), maxAuthored: dailyPotential, resourceDungeonJade: { paidClears: resourcePaid, capClears: 3, rewardPerClear: 20, remainingClears: Math.max(0, 3 - resourcePaid), rule: 'Chỉ giới hạn lượt nhận Ngọc Khóa; không giới hạn lượt farm Phó Bản.' } }, weekly: { weekKey: e.weekly.key, activeDays: e.weekly.activeDays?.length ?? 0, lanes: new Set(e.weekly.lanes).size, milestones: weekly, firstClearBonusRemaining: Math.max(0, 5 - (e.weekly.firstClears ?? 0)), maxAuthored: weeklyPotential }, shop: { offers, rule: 'Shop là lựa chọn tăng tốc. Gacha bằng Ngọc Khóa KHÔNG có giới hạn lượt; chỉ số dư Ngọc quyết định quay được bao nhiêu.' }, ledger: { ...e.lifetime, earnedBySource: { ...e.lifetime.earnedBySource }, spentBySink: { ...e.lifetime.spentBySink } }, rules: { gachaBoundJadePullCap: null, noInfiniteFarmBoundJade: true, resourceDungeonJadePaidClearCap: 3, resourceDungeonFarmCap: null, autoMilestoneRewards: true, noManualClaimChores: true, budgetTarget: 'Nguồn Ngọc Khóa lặp có cap; sink mở. Người chơi tự chọn Gacha, tăng tốc hay dự trữ.' } };
+                return sum + 10; return sum; }, 0), maxAuthored: dailyPotential, resourceDungeonJade: { paidClears: resourcePaid, capClears: 3, rewardPerClear: 20, remainingClears: Math.max(0, 3 - resourcePaid), rule: 'Chỉ giới hạn lượt nhận Ngọc Khóa; không giới hạn lượt farm Phó Bản.' } }, weekly: { weekKey: e.weekly.key, activeDays: e.weekly.activeDays?.length ?? 0, lanes: new Set(e.weekly.lanes).size, milestones: weekly, firstClearBonusRemaining: Math.max(0, 5 - (e.weekly.firstClears ?? 0)), maxAuthored: weeklyPotential }, shop: { offers, rule: 'Shop là lựa chọn tăng tốc. Gacha bằng Ngọc Khóa KHÔNG có giới hạn lượt; chỉ số dư Ngọc quyết định quay được bao nhiêu.' }, ledger: { ...e.lifetime, earnedBySource: { ...e.lifetime.earnedBySource }, spentBySink: { ...e.lifetime.spentBySink } }, rules: { gachaBoundJadePullCap: null, noInfiniteFarmBoundJade: true, resourceDungeonJadePaidClearCap: 3, resourceDungeonFarmCap: null, autoMilestoneRewards: true, noManualClaimChores: true, bossProgressionOnly: true, huntEconomySettlement: true, budgetTarget: 'Nguồn Ngọc Khóa lặp có cap; sink mở. Người chơi tự chọn Gacha, tăng tốc hay dự trữ.' } };
 }
 //# sourceMappingURL=economy-activity-v89.js.map
