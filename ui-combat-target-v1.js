@@ -1,6 +1,8 @@
-/* Combat Readability Target V1 — DOM presentation bridge + optional motion/dev tools.
-   Reads already-rendered/backend-authored combat context; never mutates gameplay state. */
+/* Combat Readability Target V1 — transitional DOM presentation bridge + optional motion/dev tools.
+   Reads already-rendered/backend-authored combat context; never mutates gameplay state.
+   Lifecycle is scoped to the mounted Combat screen: no document.body observer and no geometry ownership. */
 (() => {
+  const COMBAT_PRESENTATION_EVENT = 'tutien:combat-presentation';
   const elementLabel = value => ({water:'Thủy',fire:'Hỏa',wood:'Mộc',metal:'Kim',earth:'Thổ'})[String(value || '').toLowerCase()] || '';
   const params = (() => { try { return new URLSearchParams(location.search); } catch { return new URLSearchParams(); } })();
   const devMode = params.get('dev') === '1' || globalThis.__TUTIEN_DEV_FORCE__ === true;
@@ -8,6 +10,11 @@
   const animeOptIn = params.get('anime') === '1' || (devMode && toolsOptIn);
   const clean = value => String(value || '').replace(/\s+/g, ' ').trim();
   const normalized = value => clean(value).toLocaleLowerCase('vi');
+
+  let activeScreen = null;
+  let activeObserver = null;
+  let shellObserver = null;
+  let scheduled = false;
 
   function bootPresentationTools() {
     if (animeOptIn) {
@@ -91,7 +98,7 @@
   }
 
   function syncBossInformation(screen, stage, enemyHud) {
-    const monsterSheet = screen.querySelector('[data-sheet-panel="monster"]') || document.querySelector('[data-sheet-panel="monster"]');
+    const monsterSheet = screen.querySelector('[data-sheet-panel="monster"]');
     const actionDeck = screen.querySelector('.huntv2-action-deck');
     const fight = actionDeck?.querySelector('[data-endless-fight]');
     const isBoss = enemyHud.classList.contains('boss') || Boolean(monsterSheet && fight);
@@ -169,11 +176,11 @@
     screen.classList.toggle('v5-combat-engaged', engaged);
   }
 
-  function syncCombatContext() {
-    const screen = document.querySelector('.huntv2-screen');
-    const stage = screen?.querySelector('#huntV2Stage, .huntv2-stage');
-    const enemyHud = screen?.querySelector('.huntv2-enemy-hud');
-    if (!screen || !stage || !enemyHud) return;
+  function syncCombatContext(screen = activeScreen) {
+    if (!screen?.isConnected) return;
+    const stage = screen.querySelector('#huntV2Stage, .huntv2-stage');
+    const enemyHud = screen.querySelector('.huntv2-enemy-hud');
+    if (!stage || !enemyHud) return;
 
     syncEngagedPresentation(screen, stage);
 
@@ -217,22 +224,62 @@
     syncBossInformation(screen, stage, enemyHud);
   }
 
-  let scheduled = false;
   const scheduleSync = () => {
-    if (scheduled) return;
+    if (scheduled || !activeScreen) return;
     scheduled = true;
     requestAnimationFrame(() => {
       scheduled = false;
-      syncCombatContext();
+      const screen = activeScreen;
+      if (screen?.isConnected) syncCombatContext(screen);
     });
   };
 
-  const observer = new MutationObserver(scheduleSync);
-  const start = () => {
-    observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'hidden', 'data-monster-level', 'data-monster-name', 'data-env', 'data-boss-phase'] });
-    bootPresentationTools();
+  function detachCombatScreen() {
+    if (activeScreen) activeScreen.removeEventListener(COMBAT_PRESENTATION_EVENT, scheduleSync);
+    activeObserver?.disconnect();
+    activeObserver = null;
+    activeScreen = null;
+    scheduled = false;
+  }
+
+  function attachCombatScreen(screen) {
+    if (screen === activeScreen) return;
+    detachCombatScreen();
+    if (!screen) return;
+    activeScreen = screen;
+    activeScreen.addEventListener(COMBAT_PRESENTATION_EVENT, scheduleSync);
+    activeObserver = new MutationObserver(scheduleSync);
+    activeObserver.observe(activeScreen, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['class', 'hidden', 'data-monster-level', 'data-monster-name', 'data-env', 'data-boss-phase']
+    });
     scheduleSync();
-  };
+  }
+
+  function refreshCombatMount() {
+    const content = document.querySelector('#content');
+    const next = content?.querySelector('.huntv2-screen') || null;
+    if (next !== activeScreen) attachCombatScreen(next);
+  }
+
+  function destroy() {
+    shellObserver?.disconnect();
+    shellObserver = null;
+    detachCombatScreen();
+  }
+
+  function start() {
+    const content = document.querySelector('#content');
+    if (!content) return;
+    bootPresentationTools();
+    shellObserver = new MutationObserver(refreshCombatMount);
+    shellObserver.observe(content, { childList: true });
+    refreshCombatMount();
+    addEventListener('pagehide', destroy, { once: true });
+  }
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
   else start();
 })();
