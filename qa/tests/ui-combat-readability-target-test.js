@@ -14,7 +14,7 @@ assert.match(html,/ui-combat-target-v1\.css\?v=combat-readability-target-v1-2026
 assert.match(html,/ui-combat-visual-polish\.css\?v=combat-visual-polish-v1-20260915/,'Combat visual polish layer must be loaded');
 assert.match(html,/ui-combat-camera-polish\.css\?v=combat-camera-polish-v14-20260916/,'Combat camera/compact polish cache key must include V180 portrait geometry');
 assert.match(html,/ui-combat-information-v1\.css\?v=combat-information-v3-20260916/,'Combat information cache key must include active-state/farm semantics');
-assert.match(html,/ui-combat-target-v1\.js\?v=combat-information-v6-20260916/,'Combat context bridge cache key must include timed-farm semantics');
+assert.match(html,/ui-combat-target-v1\.js\?v=combat-information-v7-scoped-lifecycle-20260917/,'Combat context bridge cache key must include the scoped lifecycle integration');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-player-hud/,'Combat target must stay isolated to Hunt');
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-enemy-hud/,'Enemy HUD readability target missing');
 assert.match(css,/grid-template-columns:repeat\(7,minmax\(0,1fr\)\)/,'All seven backend-authored skill slots must remain visible');
