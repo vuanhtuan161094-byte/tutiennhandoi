@@ -51,6 +51,9 @@ assert.match(info,/is-active-combat \.v5-boss-briefing,[\s\S]*?is-active-combat 
 assert.match(info,/is-active-combat \.v5-boss-mechanic-compact:not\(\[hidden\]\)\{display:grid\}/,'Active combat must expose compact Boss mechanic affordance');
 assert.match(info,/\.v5-critical-signal-active \.v5-boss-mechanic-compact\{display:none!important\}/,'Critical signals must outrank mechanic chrome');
 assert.match(info,/\.huntv2-context-button\.v5-farm-summary\{display:flex!important/,'Unlocked farm summary must reuse the canonical context button');
+assert.match(info,/data-combat-action-state="available"/,'Available challenge state styling missing');
+assert.match(info,/data-combat-action-state="blocked"/,'Blocked challenge state styling missing');
+assert.doesNotMatch(info,/\.huntv2-actor\.(?:player|enemy)[^{]*\{[^}]*\b(?:left|right|top|bottom):/s,'Final information owner must not reposition battlefield actors');
 assert.doesNotMatch(info,/\/api\/|localStorage|sessionStorage/,'Combat information layer must remain presentation-only');
 
 assert.match(runtime,/function rendererEventForVisualReadability\(event=\{\}\)/,'Pixi façade visual-readability guard missing');
@@ -72,7 +75,9 @@ assert.doesNotMatch(bridge,/metricValue|data-sheet-panel|v110-readiness|v110-bos
 assert.doesNotMatch(bridge,/\/api\/|localStorage|sessionStorage/,'Bridge must not call backend actions or author persistence');
 
 assert.match(renderer,/export function renderCombatPresentationV1\(/,'DOM renderer boundary missing');
-assert.match(renderer,/FARM SAU PHÁ TẦNG/,'Boss briefing must frame rewards as the post-clear Hunt consequence');
+assert.match(renderer,/function renderChallengeState\(/,'Challenge interaction projection missing');
+assert.match(renderer,/data-combat-action-state/,'Challenge interaction state must be exposed to CSS/accessibility');
+assert.doesNotMatch(renderer,/FARM SAU PHÁ TẦNG|data-v5-reward/,'Boss briefing must not duplicate Săn Ảo economy/reward copy');
 assert.match(renderer,/v5-farm-summary/,'Renderer must reuse existing farm affordance instead of authoring economy truth');
 assert.doesNotMatch(renderer,/productionV110|metric-row|data-sheet-panel|v110-readiness|v110-boss-plan/,'Renderer must consume view-model rather than scrape source DOM');
 assert.doesNotMatch(renderer,/\/api\/|localStorage|sessionStorage/,'Renderer must remain presentation-only');

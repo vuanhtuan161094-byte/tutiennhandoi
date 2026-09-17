@@ -65,10 +65,25 @@ function renderBoss(screen,stage,enemyHud,model={}){
   const mechanicChip=ensureActiveMechanic(enemyHud);mechanicChip.hidden=!mechanic?.name;setText(mechanicChip.querySelector('strong'),mechanic?.name||'');setText(mechanicChip.querySelector('span'),mechanic?.counterSummary||'');
 }
 
+function renderChallengeState(screen,model={},transient={}){
+  const challenge=model.challenge||{};
+  const engaged=Boolean(transient.engaged);
+  const state=engaged?'active':model.mode==='farm'?'context':challenge.blocked?'blocked':challenge.ready&&challenge.canFight?'available':'inactive';
+  screen.setAttribute('data-combat-action-state',state);
+  for(const name of ['available','blocked','inactive'])screen.classList.toggle(`v5-challenge-${name}`,state===name);
+  const button=screen.querySelector('.huntv2-fight[data-endless-fight]');if(!button)return;
+  button.setAttribute('data-combat-action-state',state);
+  if(state==='available')button.disabled=false;
+  else if(state==='blocked'||state==='inactive')button.disabled=true;
+  button.setAttribute('aria-disabled',button.disabled?'true':'false');
+  if(state==='blocked'&&challenge.blockedReason){const reason=clean(challenge.blockedReason);button.title=reason;button.setAttribute('aria-label',`Chưa thể khiêu chiến Boss: ${reason}`);}
+  else if(state==='available'){const purpose=clean(challenge.progressionLabel||'Khiêu chiến Boss');button.title=purpose;button.setAttribute('aria-label',purpose);}
+}
+
 function renderActivity(screen,transient={}){screen.classList.toggle('v5-critical-signal-active',Boolean(transient.criticalSignal));screen.classList.toggle('v5-combat-engaged',Boolean(transient.engaged));}
 
 export function renderCombatPresentationV1(screen,model,transient={}){
   if(!screen?.isConnected||!model)return false;
   const stage=screen.querySelector('#huntV2Stage, .huntv2-stage');const enemyHud=screen.querySelector('.huntv2-enemy-hud');if(!stage||!enemyHud)return false;
-  renderActivity(screen,transient);renderEnemyContext(enemyHud,model);renderBoss(screen,stage,enemyHud,model);screen.dataset.combatPresentationModel=String(model.version||'');screen.dataset.combatPresentationSignature=String(model.signature||'');return true;
+  renderActivity(screen,transient);renderEnemyContext(enemyHud,model);renderBoss(screen,stage,enemyHud,model);renderChallengeState(screen,model,transient);screen.dataset.combatPresentationModel=String(model.version||'');screen.dataset.combatPresentationSignature=String(model.signature||'');return true;
 }
