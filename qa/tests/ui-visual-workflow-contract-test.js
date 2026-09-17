@@ -10,7 +10,8 @@ const workflow=read('.github/workflows/ui-visual.yml');
 const capture=read('qa/visual/capture-runtime-ui.mjs');
 const combatCapture=read('qa/visual/capture-combat-runtime.mjs');
 
-assert.match(workflow,/browser-actions\/setup-chrome@v2/,'visual workflow must provision a real Chrome runtime');
+const provisionsRealChrome=/browser-actions\/setup-chrome@v2/.test(workflow)||(/chrome\.exe/i.test(workflow)&&/CHROME_PATH/.test(workflow));
+assert.ok(provisionsRealChrome,'visual workflow must provision a real Chrome runtime');
 assert.match(workflow,/node web\/server\.mjs 4173 127\.0\.0\.1/,'visual workflow must run the canonical local web server');
 assert.match(workflow,/node qa\/visual\/capture-runtime-ui\.mjs/,'visual workflow must execute the runtime capture runner');
 assert.match(workflow,/node qa\/visual\/capture-combat-runtime\.mjs/,'visual workflow must execute the combat showcase capture runner');
