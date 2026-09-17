@@ -1,0 +1,54 @@
+name: Runner Diagnostics
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: cmd
+
+jobs:
+  diagnostics:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Environment
+        run: |
+          @echo off
+          echo Computer: %COMPUTERNAME%
+          echo User: %USERNAME%
+          node --version
+          git --version
+          if not exist "C:\Program Files\Git\bin\bash.exe" exit /b 1
+          where node
+          where git
+
+      - name: Chrome
+        run: |
+          @echo off
+          set "CHROME="
+          if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" set "CHROME=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
+          if not defined CHROME if exist "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" set "CHROME=%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
+          if not defined CHROME for /f "tokens=2,*" %%A in ('reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe" /ve 2^>nul ^| find "REG_SZ"') do set "CHROME=%%B"
+          if not defined CHROME exit /b 1
+          echo Chrome: %CHROME%
+
+      - name: Launcher health
+        shell: bash
+        run: |
+          set -euo pipefail
+          node web/server.mjs 4173 127.0.0.1 > runner-diagnostics-server.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            if curl --fail --silent http://127.0.0.1:4173/__tutien_launcher_health; then
+              exit 0
+            fi
+            sleep 0.5
+          done
+          cat runner-diagnostics-server.log
+          exit 1

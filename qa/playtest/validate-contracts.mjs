@@ -1,25 +1,45 @@
-import { access, readFile } from 'node:fs/promises';
+import { access, readFile, readdir } from 'node:fs/promises';
 
 const readJson = async path => JSON.parse(await readFile(path, 'utf8'));
 const fail = message => { throw new Error(message); };
 const exists = async path => { try { await access(path); return true; } catch { return false; } };
 
 const agentContract = await readFile('AGENTS.md', 'utf8');
-const requiredWorkflowLockClauses = [
+for (const clause of [
   '## 0. NON-NEGOTIABLE WORKFLOW LOCK',
   'No exact-SHA evidence = no completion claim.',
-  'AI Browser Playtest',
-  'Runtime Visual Proof for UI-visible changes',
-  'do **not** stop and wait for the user to say `continue`',
-  'report `BLOCKED` with the exact blocker',
-];
-for (const clause of requiredWorkflowLockClauses) {
+  'Game CI',
+  'Runtime Smoke',
+  'explicit user visual approval',
+]) {
   if (!agentContract.includes(clause)) fail(`AGENTS workflow lock missing required clause: ${clause}`);
+}
+
+const workflowNames = (await readdir('.github/workflows')).filter(name => /\.ya?ml$/i.test(name)).sort();
+const expectedWorkflows = ['ci.yml','runner-diagnostics.yml'];
+if (JSON.stringify(workflowNames) !== JSON.stringify(expectedWorkflows)) {
+  fail(`Workflow set must stay lean: expected ${expectedWorkflows.join(', ')}, got ${workflowNames.join(', ')}`);
+}
+
+const workflow = await readFile('.github/workflows/ci.yml', 'utf8');
+for (const clause of [
+  'node qa/runners/v140-backend-gates.js fast',
+  'node qa/runners/v140-frontend-gates.js fast',
+  'node qa/playtest/run-scenarios.mjs',
+  'node qa/runners/v140-backend-gates.js closure',
+  'node qa/runners/v140-frontend-gates.js closure',
+  'runtime-smoke-${{ github.sha }}',
+  "contains(github.event.head_commit.message, '[closure]')",
+]) {
+  if (!workflow.includes(clause)) fail(`Game CI missing required clause: ${clause}`);
+}
+if (workflow.includes('capture-combat-runtime.mjs') || workflow.includes('capture-runtime-ui.mjs')) {
+  fail('Normal Game CI must not run the heavyweight visual showcase');
 }
 
 const scenarios = await readJson('qa/playtest/scenarios.json');
 if (scenarios.schema !== 'tutien-ai-playtest.scenarios.v1') fail('Unexpected playtest scenario schema');
-if (!Array.isArray(scenarios.scenarios) || scenarios.scenarios.length < 4) fail('Expected at least four playtest scenarios');
+if (!Array.isArray(scenarios.scenarios) || scenarios.scenarios.length !== 4) fail('Runtime smoke must stay at four representative journeys');
 const ids = new Set();
 for (const scenario of scenarios.scenarios) {
   if (!scenario.id || ids.has(scenario.id)) fail(`Invalid/duplicate scenario id: ${scenario.id}`);
@@ -27,21 +47,9 @@ for (const scenario of scenarios.scenarios) {
   if (!scenario.tab || !scenario.expectedScreen) fail(`${scenario.id}: tab/expectedScreen required`);
   if (!Array.isArray(scenario.requiredSelectors) || !scenario.requiredSelectors.length) fail(`${scenario.id}: requiredSelectors required`);
 }
-
-const workflow = await readFile('.github/workflows/ai-playtest.yml', 'utf8');
-const requiredProductionTriggers = [
-  "'index.html'",
-  "'app.js'",
-  "'styles.css'",
-  "'combat-v2.css'",
-  "'assets/**'",
-  "'modules/**'",
-  "'web/server.mjs'",
-];
-for (const trigger of requiredProductionTriggers) {
-  if (!workflow.includes(trigger)) fail(`AI playtest workflow missing production trigger ${trigger}`);
+for (const id of ['home-navigation','character-equipment','combat-action','save-restore-smoke']) {
+  if (!ids.has(id)) fail(`Required representative runtime journey missing: ${id}`);
 }
-if (!workflow.includes('summarize-report.mjs')) fail('AI playtest workflow must publish strict report summary');
 
 const registry = await readJson('assets/_pipeline/registry.json');
 if (registry.schema !== 'tutien-asset-pipeline.registry.v2') fail('Unexpected asset registry schema');
@@ -88,4 +96,4 @@ for (const asset of registry.assets) {
 
 const schema = await readJson('assets/_pipeline/brief.schema.json');
 if (schema.$id !== 'tutien-asset-brief.v2') fail('Unexpected asset brief schema id');
-console.log(`AI PIPELINE CONTRACT PASS · workflowLock=${requiredWorkflowLockClauses.length} · scenarios=${scenarios.scenarios.length} · assets=${registry.assets.length} · productionTriggers=${requiredProductionTriggers.length}`);
+console.log(`RUNTIME PIPELINE CONTRACT PASS · workflows=${workflowNames.length} · scenarios=${scenarios.scenarios.length} · assets=${registry.assets.length}`);

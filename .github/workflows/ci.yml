@@ -1,0 +1,120 @@
+name: Game CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Run fast feedback only or include canonical closure QA
+        required: true
+        default: fast
+        type: choice
+        options:
+          - fast
+          - closure
+
+permissions:
+  contents: read
+
+concurrency:
+  group: game-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: cmd
+
+jobs:
+  fast:
+    name: Fast QA + Runtime Smoke
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Fast backend
+        run: node qa/runners/v140-backend-gates.js fast
+
+      - name: Fast frontend
+        run: node qa/runners/v140-frontend-gates.js fast
+
+      - name: Validate runtime smoke contracts
+        run: node qa/playtest/validate-contracts.mjs
+
+      - name: Expose Git Bash
+        run: |
+          @echo off
+          if not exist "C:\Program Files\Git\bin\bash.exe" exit /b 1
+          echo C:\Program Files\Git\bin>>"%GITHUB_PATH%"
+
+      - name: Locate installed Chrome
+        run: |
+          @echo off
+          set "CHROME="
+          if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" set "CHROME=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
+          if not defined CHROME if exist "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" set "CHROME=%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
+          if not defined CHROME for /f "tokens=2,*" %%A in ('reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe" /ve 2^>nul ^| find "REG_SZ"') do set "CHROME=%%B"
+          if not defined CHROME exit /b 1
+          echo CHROME_PATH=%CHROME%>>"%GITHUB_ENV%"
+
+      - name: Start canonical game server
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/runtime-smoke
+          node web/server.mjs 4173 127.0.0.1 > artifacts/runtime-smoke/server.log 2>&1 &
+          echo $! > artifacts/runtime-smoke/server.pid
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/__tutien_launcher_health > artifacts/runtime-smoke/health.json; then
+              exit 0
+            fi
+            sleep 0.5
+          done
+          cat artifacts/runtime-smoke/server.log
+          exit 1
+
+      - name: Runtime smoke
+        run: node qa/playtest/run-scenarios.mjs --base http://127.0.0.1:4173 --out artifacts/runtime-smoke
+
+      - name: Runtime smoke summary
+        if: always()
+        env:
+          TUTIEN_PLAYTEST_SHA: ${{ github.sha }}
+        run: node qa/playtest/summarize-report.mjs artifacts/runtime-smoke/playtest-report.json
+
+      - name: Upload exact-SHA runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-smoke-${{ github.sha }}
+          path: artifacts/runtime-smoke/
+          if-no-files-found: error
+          retention-days: 7
+
+  canonical:
+    name: Canonical Closure QA
+    needs: fast
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.mode == 'closure') || (github.event_name == 'push' && contains(github.event.head_commit.message, '[closure]')) }}
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact closure candidate
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Backend canonical
+        run: node qa/runners/v140-backend-gates.js closure
+
+      - name: Frontend canonical
+        run: node qa/runners/v140-frontend-gates.js closure

@@ -1,4 +1,4 @@
-# DEVELOPMENT PROTOCOL — SINGLE MAIN / MINIMAL CONTEXT
+# DEVELOPMENT PROTOCOL — SINGLE MAIN / LEAN CI
 
 This repository is the project source of truth. Conversation history is not the project database.
 
@@ -6,82 +6,79 @@ This repository is the project source of truth. Conversation history is not the 
 
 Read only:
 
-1. `/CURRENT_CHECKPOINT.md`
-2. `/docs/versions/<ACTIVE_VERSION>.md` when an active numbered version exists
-3. `/docs/systems/INDEX.md` only when routing is unclear
-4. exact source/test regions needed for the task
+1. `/CURRENT_CHECKPOINT.md`;
+2. the active version/workflow spec when one exists;
+3. exact source/test regions needed for the task;
+4. `/AGENTS.md` for AI-assisted production work.
 
-For AI-assisted production work, also follow `/AGENTS.md`.
-
-Do not preload historical reports, old chats, raw simulations, complete CI logs, or unrelated source files.
+Do not preload historical reports, old chats, full CI logs, or unrelated source files.
 
 ## 2. Source search
 
 Use `search -> narrow -> read -> patch`.
 
 Normal task context target:
-- 1 checkpoint
-- 1 active workflow/version spec
-- 2–5 relevant source regions
-- targeted tests
-
-Open a complete large source file only when architecture cannot be resolved from targeted regions.
+- 1 checkpoint;
+- 1 active workflow/version spec;
+- 2–5 relevant source regions;
+- targeted tests only when they materially help.
 
 ## 3. Git strategy
 
 Use **`main` as the only working branch** unless the user explicitly requests isolation.
 
 Rules:
-- commit small, coherent changes directly to `main`;
+- commit small coherent changes directly to `main`;
 - refresh HEAD immediately before writes when multiple chats/agents may be active;
 - never force-update `main`;
-- use Git history as rollback/archive instead of duplicate legacy files;
-- before creating a new source file, verify that current authority cannot be safely extended;
-- remove obsolete duplicate implementations only after references are checked and tests remain green.
+- use Git history instead of duplicate backup files;
+- remove obsolete duplicate implementations only after references are checked.
 
 ## 4. Testing pyramid
 
-- G0: targeted/unit test after a local mechanic change
-- G1: affected subsystem tests after mechanic completion
-- G2: Fast QA after executable/source commits
-- G2B: AI Browser Playtest after covered runtime/UI/asset changes
-- G2V: Runtime Visual Proof for UI-visible candidates
-- G3: Canonical QA only for an explicit closure candidate
+- G0: targeted test when changing a narrow mechanic/contract;
+- G1: **Game CI Fast** after executable/source changes;
+- G2: real-browser **Runtime Smoke** in the same Game CI job;
+- G3: **Canonical Closure QA** only for approved `[closure]` or manual closure mode.
 
-Do not run full canonical closure after every normal commit.
+For UI-visible work, the Runtime Smoke artifact is the normal visual-smoke evidence because it comes from the real game at the primary 390×844 viewport.
+
+Extra screenshots are risk-driven, not automatic:
+- add compact/tall viewport proof only for responsive/layout-sensitive changes;
+- use `qa/visual/` deep showcase tools only for animation/transient-state debugging or deliberate visual review;
+- do not run the 7-skill / multi-shake / multi-frame showcase on every push.
 
 ## 5. GitHub Actions
 
-Three workflows have distinct authority:
+### `.github/workflows/ci.yml`
 
-### `.github/workflows/qa.yml`
-- normal executable push to `main` -> Fast QA;
-- commit message containing `[closure]` -> Fast QA then Canonical QA;
-- manual dispatch -> Fast QA then Canonical QA.
+Normal push to `main`:
+1. Backend Fast QA;
+2. Frontend Fast QA;
+3. validate runtime-smoke contracts;
+4. boot canonical server;
+5. run deterministic real-browser journeys;
+6. upload exact-SHA runtime report/screenshots.
 
-### `.github/workflows/ai-playtest.yml`
-- automatically runs on important production runtime/UI/asset paths;
-- boots the real canonical server and deterministic DEV fixture;
-- executes browser journeys through Chrome CDP;
-- fails on scripted journey failure, horizontal overflow, missing runtime images, browser/runtime console errors, or non-cancelled network failures;
-- uploads exact-SHA screenshots, raw report and strict health summary.
+Closure:
+- a commit message containing `[closure]`, or manual dispatch with `mode=closure`, runs Canonical backend/frontend QA after Fast + Runtime Smoke pass.
 
-### `.github/workflows/ui-visual.yml`
-- runs for UI-visible paths;
-- captures exact-runtime screenshots and Combat proof;
-- supports visual review but does not replace explicit user approval.
+The workflow deliberately keeps browser smoke and visual smoke together so the runner is checked out, configured and booted only once.
 
-For a normal runtime/UI candidate, do not call it healthy until Fast QA and AI Browser Playtest are green. For visible UI changes, Runtime Visual Proof is also required before user review.
+### `.github/workflows/runner-diagnostics.yml`
 
-For CI inspection:
-1. read run status;
-2. if green, stop;
-3. if failed, read failed job/step summary;
-4. fetch only the failing log or exact artifact needed.
+Manual only. Use when the self-hosted runner itself is suspect. It checks Node, Git/Bash, Chrome and launcher health; it does not rerun the game QA suite.
 
-Never fetch complete successful job logs.
+## 6. CI inspection
 
-## 6. Asset generation pipeline
+1. inspect run status;
+2. if green, stop unless runtime screenshots must be reviewed;
+3. if failed, inspect only the failed step/log/artifact;
+4. classify runtime vs test-harness vs runner failure before patching.
+
+Do not fetch complete successful logs.
+
+## 7. Asset pipeline
 
 Generated/edited production art is governed by `assets/_pipeline/`.
 
@@ -93,31 +90,13 @@ Lifecycle:
 - no exact-SHA runtime proof -> no `locked`;
 - concept images never count as runtime proof.
 
-The metadata gate is enforced by `qa/playtest/validate-contracts.mjs`.
+## 8. UI/UX closure
 
-## 7. Repository structure policy
+For UI/UX:
 
-Prefer stable semantic filenames over version-suffixed filenames for future work.
+`source snapshot -> real baseline -> narrow audit/brief -> candidate patch -> Game CI -> runtime screenshot review -> user approval -> [closure] -> Canonical QA -> checkpoint`
 
-Do not rename a live versioned authority just for aesthetics. Rename/consolidate only when:
-- all imports/consumers are known;
-- tests cover the move;
-- no gameplay behavior changes.
-
-Retired patch scripts, generated backup snapshots and stale handoff docs should be deleted because Git history already preserves them.
-
-## 8. Version/UI closure
-
-At closure record only:
-- version/slice and status;
-- exact candidate/closure SHA;
-- exact green QA/Playtest/Visual Proof runs as applicable;
-- material changes;
-- known debt;
-- next task/version.
-
-For UI/UX, explicit user visual approval must precede `[closure]`.
-Then update `CURRENT_CHECKPOINT.md` so the next chat does not need development history.
+Primary review viewport is 390×844. Additional viewports are required only when the changed risk is responsive/layout-related or an observed defect needs them.
 
 ## 9. Authority order
 
