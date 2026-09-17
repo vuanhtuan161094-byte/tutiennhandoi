@@ -14,14 +14,13 @@ function ensureBossBriefing(stage){
   briefing.setAttribute('aria-label','Thông tin khiêu chiến Boss');
   briefing.innerHTML=`
     <header class="v5-boss-briefing-head">
-      <div><small>THỦ LĨNH ĐANG CHỜ</small><strong data-v5-boss-name>Boss</strong><span data-v5-boss-meta></span></div>
+      <div><small>KHIÊU CHIẾN BOSS</small><strong data-v5-boss-name>Boss</strong><span data-v5-boss-meta></span></div>
       <button type="button" class="v5-boss-detail" data-sheet-open="monster" aria-label="Mở hồ sơ Boss" title="Hồ sơ Boss">i</button>
     </header>
     <div class="v5-boss-briefing-signals">
-      <button type="button" class="v5-boss-readiness" data-sheet-open="monster"><small>ĐỘ NGUY HIỂM</small><strong data-v5-readiness>Đang rà soát</strong><span data-v5-readiness-detail></span></button>
-      <button type="button" class="v5-boss-reward" data-sheet-open="loot"><small>FARM SAU PHÁ TẦNG</small><strong data-v5-reward>Mở bãi Săn Ảo tầng này</strong><span data-v5-reward-detail>Reward tích theo thời gian</span></button>
+      <button type="button" class="v5-boss-readiness" data-sheet-open="monster"><small>TÌNH TRẠNG</small><strong data-v5-readiness>Đang rà soát</strong><span data-v5-readiness-detail></span></button>
+      <button type="button" class="v5-boss-mechanic-summary" data-sheet-open="monster" aria-label="Xem dị tượng và đối sách Boss"><span data-v5-mechanic>Dị tượng chưa rõ</span><b data-v5-counter></b></button>
     </div>
-    <button type="button" class="v5-boss-mechanic-summary" data-sheet-open="monster"><span data-v5-mechanic>Dị tượng chưa rõ</span><b data-v5-counter></b></button>
     <div class="v5-boss-blocker" data-v5-blocker hidden><strong>CHƯA THỂ KHIÊU CHIẾN</strong><span></span></div>`;
   stage.appendChild(briefing);
   return briefing;
@@ -56,12 +55,11 @@ function renderBoss(screen,stage,enemyHud,model={}){
 
   const briefing=ensureBossBriefing(stage);
   const enemy=model.enemy||{};
-  const meta=[`Lv.${Math.max(1,Number(enemy.level)||1)}`,enemy.grade&&String(enemy.grade).toLowerCase()!=='boss'?enemy.grade:'',elementLabel(enemy.element),challenge.floor?`Boss tầng ${challenge.floor}`:''].filter(Boolean).join(' · ');
+  const meta=[`Lv.${Math.max(1,Number(enemy.level)||1)}`,enemy.grade&&String(enemy.grade).toLowerCase()!=='boss'?enemy.grade:'',elementLabel(enemy.element),challenge.progressionLabel||''].filter(Boolean).join(' · ');
   setText(briefing.querySelector('[data-v5-boss-name]'),enemy.name||'Thủ Lĩnh');setText(briefing.querySelector('[data-v5-boss-meta]'),meta);
 
   const readiness=boss.readiness||{};const readinessButton=briefing.querySelector('.v5-boss-readiness');readinessButton.hidden=!readiness.label;setText(briefing.querySelector('[data-v5-readiness]'),readiness.label||'Đang rà soát');setText(briefing.querySelector('[data-v5-readiness-detail]'),readiness.description||'');
   const mechanic=boss.mechanic||null;const mechanicButton=briefing.querySelector('.v5-boss-mechanic-summary');mechanicButton.hidden=!mechanic?.name&&!mechanic?.counterSummary;setText(briefing.querySelector('[data-v5-mechanic]'),mechanic?.name||'Đối sách Boss');setText(briefing.querySelector('[data-v5-counter]'),mechanic?.counterSummary||'');
-  setText(briefing.querySelector('[data-v5-reward]'),farm.label||'Mở bãi Săn Ảo tầng này');setText(briefing.querySelector('[data-v5-reward-detail]'),farm.detail||'Reward tích theo thời gian');
 
   const blocker=briefing.querySelector('[data-v5-blocker]');blocker.hidden=!challenge.blocked;setText(blocker.querySelector('span'),challenge.blocked?challenge.blockedReason:'');briefing.classList.toggle('blocked',Boolean(challenge.blocked));
   const mechanicChip=ensureActiveMechanic(enemyHud);mechanicChip.hidden=!mechanic?.name;setText(mechanicChip.querySelector('strong'),mechanic?.name||'');setText(mechanicChip.querySelector('span'),mechanic?.counterSummary||'');
