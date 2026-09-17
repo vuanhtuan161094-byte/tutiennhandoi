@@ -21,6 +21,9 @@ coverage/
 .tmp/
 tmp/
 
+# Local CI evidence (generated from the real runtime on the developer machine)
+artifacts/local-ci/
+
 # Generated packaging artifacts
 *.zip
 *.7z
