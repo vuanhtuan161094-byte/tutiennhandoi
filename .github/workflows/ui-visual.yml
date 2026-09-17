@@ -64,8 +64,8 @@ jobs:
             echo Chrome executable was not found for the self-hosted runner.
             exit /b 1
           )
+          echo Chrome found at: %CHROME%
           echo CHROME_PATH=%CHROME%>>"%GITHUB_ENV%"
-          "%CHROME%" --version
 
       - name: Verify visual workflow contract
         run: node qa/tests/ui-visual-workflow-contract-test.js
