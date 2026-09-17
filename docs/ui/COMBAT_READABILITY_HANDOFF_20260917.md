@@ -42,6 +42,22 @@ Current audited gameplay semantics:
 
 Older economy/activity source still contains `huntBossWins` / a legacy first-Boss milestone semantic while the current Boss flow is progression-only and the active economy path is Săn Ảo. Treat this as **semantic/dead-code debt to audit**, not permission to change balance. Establish whether it is truly unreachable/obsolete and remove or reconcile only with targeted proof.
 
+### Step 1 closure — 2026-09-17 — CLOSED
+
+The semantic debt above has now been traced and reconciled on current `main` without reopening V168 authority:
+
+- canonical Boss challenge settlement in `dist/core/session.js` remains `rewardContext: 'progression-only'`, `directBossLoot: false`, with direct economy payloads zeroed;
+- Săn Ảo/time-farm remains the hunt economy settlement path and continues to record `huntKills`;
+- legacy `huntBossWins` / `bossWins` counters remain readable for save compatibility/activity telemetry, but a Boss activity call itself cannot settle Bound Jade;
+- obsolete daily `hunt.boss.1` and `boss.1` Bound Jade milestones were removed from active economy milestones;
+- weekly `combat.12` no longer counts Boss progression wins and is now backed by 12 resource-dungeon clears;
+- the active authored non-PvP daily Bound Jade cap is therefore 100 rather than the stale 140 that included two obsolete 20-Jade Boss milestones;
+- `qa/tests/v161-economy-source-sink-test.js` now locks the boundary by asserting Boss progression counters do not mint Bound Jade directly and that active daily/weekly caps reconcile to 100/300.
+
+No CombatKernel, damage, Boss outcome, save schema, direct Boss loot, or Săn Ảo settlement authority was changed.
+
+Local CI was **not rerun from the connector-only coding session** because that environment could not clone GitHub (`Could not resolve host: github.com`). A clean Local CI Fast run remains required before the Combat Readability slice is closed; do not substitute GitHub-hosted Actions.
+
 ## 4. HP contract already fixed
 
 A prior UI bug displayed Boss HP as `0` even though the bar was full.
@@ -135,7 +151,7 @@ Consolidate ownership first.
 
 ## 7. Execution plan — MUST follow this order
 
-### Step 1 — Backend semantic cleanup audit
+### Step 1 — Backend semantic cleanup audit — CLOSED 2026-09-17
 
 Search and trace at least:
 
@@ -147,7 +163,7 @@ Search and trace at least:
 
 Goal: prove the current canonical semantics and remove/reconcile truly obsolete semantic debt without changing balance or locked authority.
 
-Proof: targeted tests + Local CI Fast. If no production change is justified, document that and move on.
+Closure evidence is recorded in Section 3. Step 2 is now the next active step.
 
 ### Step 2 — Combat presentation architecture consolidation
 
@@ -263,19 +279,21 @@ During this consolidation, do not:
 
 ## 9. First action for the next chat
 
-1. Refresh current `main` HEAD — current main at handoff start was `412f08e018768f15361f733746bfabb44e2cbed1`; the handoff commit itself will advance HEAD.
+1. Refresh current `main` HEAD.
 2. Read `AGENTS.md`.
 3. Read `CURRENT_CHECKPOINT.md`.
 4. Read `docs/DEVELOPMENT_PROTOCOL.md`.
 5. Read `docs/ui/UI_UX_WORKFLOW_V2_20260913.md`.
 6. Read **this file**.
 7. Audit current source again before patching because current `main` is always source of truth.
-8. Start with **Step 1**, then **Step 2**. Do not jump directly to visual polish.
+8. **Step 1 is closed. Continue with Step 2.** Do not jump directly to visual polish.
 
 ## 10. Handoff status
 
 - Combat Readability: **OPEN**.
+- Step 1 — Boss progression / Săn Ảo economy boundary: **CLOSED 2026-09-17**.
+- Step 2 — Combat presentation architecture consolidation: **NEXT**.
 - Home / App Shell / Character slices: remain locked as documented in `CURRENT_CHECKPOINT.md`.
-- V160–V179 selected runtime authorities: remain CLOSED / LOCKED.
-- Local CI: operational; user-confirmed Mode 5 FULL CLEAN PASS before this handoff.
+- V160–V180 selected runtime authorities: remain CLOSED / LOCKED.
+- Local CI: operational in the project; latest pre-handoff user-confirmed Mode 5 FULL CLEAN PASS remains the last executed full local run. A post-Step-1 local rerun is still pending because the connector coding environment cannot clone GitHub.
 - User has **not** visually approved Combat as closed. The latest screenshots explicitly identified the issues recorded above.
