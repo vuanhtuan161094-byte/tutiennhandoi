@@ -24,18 +24,31 @@ function freshCollection() {
   return state;
 }
 
+test('B6 Boss progression counters cannot settle Bound Jade directly', () => {
+  const state = freshCollection();
+  const huntBoss = recordEconomyActivityV89(state, 'huntBossWins', 1, monday);
+  const boss = recordEconomyActivityV89(state, 'bossWins', 1, monday);
+  const ledger = ensureEconomyActivityV89(state, monday).lifetime.earnedBySource;
+  assert.deepEqual(huntBoss.awards, []);
+  assert.deepEqual(boss.awards, []);
+  assert.equal(state.currencies.boundImmortalJade, 0);
+  assert.equal(ledger['daily.hunt.boss.1'], undefined);
+  assert.equal(ledger['daily.boss.1'], undefined);
+});
+
 test('B6 authored daily and weekly Bound Jade sources reconcile to the production caps', () => {
   const state = freshCollection();
-  recordEconomyActivityV89(state, 'resourceClears', 3, monday);
+  recordEconomyActivityV89(state, 'resourceClears', 12, monday);
   recordEconomyActivityV89(state, 'huntBossWins', 1, monday);
   recordEconomyActivityV89(state, 'huntKills', 150, monday);
-  recordEconomyActivityV89(state, 'bossWins', 8, monday);
+  recordEconomyActivityV89(state, 'bossWins', 1, monday);
   recordEconomyActivityV89(state, 'retreatHours', 3, monday);
   recordEconomyActivityV89(state, 'craftActions', 1, monday);
   for (let day = 1; day < 7; day++) recordEconomyActivityV89(state, 'craftActions', 1, monday + day * 86400_000);
   const ledger = ensureEconomyActivityV89(state, monday + 6 * 86400_000).lifetime.earnedBySource;
   assert.equal(sumByPrefix(ledger, 'daily.'), ECONOMY_PRODUCTION_V111.dailyActivityBoundJade);
   assert.equal(sumByPrefix(ledger, 'weekly.'), ECONOMY_PRODUCTION_V111.weeklyRecurringBoundJade);
+  assert.equal(ECONOMY_PRODUCTION_V111.dailyActivityBoundJade, 100);
 });
 
 test('B6 PvP Bound Jade source pays exactly five wins and then stops paying', () => {
@@ -77,7 +90,7 @@ test('B6 premium Jade is compatibility/external-only and cannot inflate recurrin
   const model = buildEconomyProductionV111({
     activity: {
       currencies: { boundImmortalJade: 1600, immortalJade: 777 },
-      daily: { earned: 0, maxAuthored: 140 },
+      daily: { earned: 0, maxAuthored: 100 },
       weekly: { maxAuthored: 300 },
       ledger: {},
       shop: { offers: [] },
@@ -91,7 +104,7 @@ test('B6 premium Jade is compatibility/external-only and cannot inflate recurrin
   assert.equal(model.premiumJade.sourceModel, 'external-or-dev-only');
   assert.equal(model.premiumJade.recurringInGameSource, 0);
   assert.equal(model.premiumJade.includedInBoundJadeBudget, false);
-  assert.equal(model.boundJade.cycle28d.recurringMax, 6240);
+  assert.equal(model.boundJade.cycle28d.recurringMax, 5120);
   assert.equal(model.health.premiumJadeExcludedFromRecurringBudget, true);
 });
 
