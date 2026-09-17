@@ -16,6 +16,7 @@ for (const file of [
   'home-hud-390x844.png',
   'home-hud-412x915.png',
   'character-baseline-390x844.png',
+  'combat-target-reference.png',
   'manifest.json',
 ]) mustFile(file);
 
