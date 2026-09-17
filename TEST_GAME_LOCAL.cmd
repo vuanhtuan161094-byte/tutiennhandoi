@@ -10,8 +10,8 @@ if not exist "qa\local\run-local-ci.mjs" goto :wrongfolder
 if not exist "web\server.mjs" goto :wrongfolder
 
 set "MODE=%~1"
+set "EXTRA=%~2"
 if not defined MODE goto :menu
-shift
 goto :run
 
 :menu
@@ -20,12 +20,12 @@ echo ==============================================
 echo   TU TIEN NHAN ROI - LOCAL CI
 echo ==============================================
 echo.
-echo  [1] FAST    - Backend Fast + Frontend Fast
-echo  [2] BROWSER - Browser Playtest runtime that
-echo  [3] VISUAL  - Runtime UI + Combat 4 viewport
-echo  [4] FULL    - FAST + BROWSER + VISUAL
+echo  [1] FAST       - Backend Fast + Frontend Fast
+echo  [2] BROWSER    - Browser Playtest runtime that
+echo  [3] VISUAL     - Runtime UI + Combat 4 viewport
+echo  [4] FULL       - FAST + BROWSER + VISUAL
 echo  [5] FULL CLEAN - FULL va bat buoc git working tree sach
-echo  [D] DEV     - Mo CHOI_UI_DEV.cmd
+echo  [D] DEV        - Mo CHOI_UI_DEV.cmd
 echo  [Q] Thoat
 echo.
 set /p "CHOICE=Chon che do: "
@@ -51,7 +51,7 @@ echo.
 echo GitHub Actions KHONG duoc su dung boi launcher nay.
 echo Ket qua se nam trong artifacts\local-ci\
 echo.
-node qa\local\run-local-ci.mjs %MODE% %EXTRA% %*
+node qa\local\run-local-ci.mjs %MODE% %EXTRA%
 set "RC=%ERRORLEVEL%"
 echo.
 if "%RC%"=="0" (
