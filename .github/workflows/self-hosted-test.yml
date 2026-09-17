@@ -1,0 +1,36 @@
+name: Self-hosted Runner Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-runner:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show runner info
+        shell: powershell
+        run: |
+          Write-Host "===== SELF HOSTED RUNNER ====="
+          Write-Host "Computer: $env:COMPUTERNAME"
+          Write-Host "User: $env:USERNAME"
+          Write-Host "Working directory: $PWD"
+          node --version
+          git --version
+
+      - name: Run backend fast QA
+        shell: powershell
+        run: |
+          node qa/runners/v140-backend-gates.js fast
+
+      - name: Run frontend fast QA
+        shell: powershell
+        run: |
+          node qa/runners/v140-frontend-gates.js fast
