@@ -50,11 +50,19 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Setup Chrome
-        id: setup-chrome
-        uses: browser-actions/setup-chrome@v2
-        with:
-          chrome-version: stable
+      - name: Locate installed Chrome
+        run: |
+          @echo off
+          set "CHROME="
+          if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" set "CHROME=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
+          if not defined CHROME if exist "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" set "CHROME=%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
+          if not defined CHROME for /f "tokens=2,*" %%A in ('reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe" /ve 2^>nul ^| find "REG_SZ"') do set "CHROME=%%B"
+          if not defined CHROME (
+            echo Chrome executable was not found for the self-hosted runner.
+            exit /b 1
+          )
+          echo CHROME_PATH=%CHROME%>>"%GITHUB_ENV%"
+          "%CHROME%" --version
 
       - name: Validate AI pipeline contracts
         run: node qa/playtest/validate-contracts.mjs
@@ -72,8 +80,6 @@ jobs:
           exit /b 1
 
       - name: Run deterministic browser journeys
-        env:
-          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
         run: node qa/playtest/run-scenarios.mjs --base http://127.0.0.1:4173 --out artifacts/ai-playtest
 
       - name: Publish strict playtest summary
