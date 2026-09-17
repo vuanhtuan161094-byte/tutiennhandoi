@@ -3,15 +3,15 @@
    This file owns lifecycle + transient visual observation only; DOM mutation lives in the renderer. */
 (() => {
   const COMBAT_PRESENTATION_EVENT='tutien:combat-presentation';
-  const params=(()=>{try{return new URLSearchParams(location.search);}catch{return new URLSearchParams();}})();
-  const devMode=params.get('dev')==='1'||globalThis.__TUTIEN_DEV_FORCE__===true;
-  const toolsOptIn=params.get('tools')==='1'||params.get('devtools')==='1';
-  const animeOptIn=params.get('anime')==='1'||(devMode&&toolsOptIn);
+  const params = (() => { try { return new URLSearchParams(location.search); } catch { return new URLSearchParams(); } })();
+  const devMode = params.get('dev') === '1' || globalThis.__TUTIEN_DEV_FORCE__ === true;
+  const toolsOptIn = params.get('tools') === '1' || params.get('devtools') === '1';
+  const animeOptIn = params.get('anime') === '1' || (devMode && toolsOptIn);
   let activeScreen=null,activeObserver=null,shellObserver=null,scheduled=false,rendererPromise=null;
 
   function bootPresentationTools(){
-    if(animeOptIn)import('./modules/combat-motion-anime-v1.js').then(mod=>mod.initCombatAnimeMotionV1?.()).catch(()=>{try{document.body.dataset.combatMotionEngine='css-fallback';}catch{}});
-    if(devMode&&toolsOptIn)import('./modules/dev-third-party-tools-v1.js').then(mod=>mod.initDevThirdPartyToolsV1?.()).catch(()=>{try{document.body.dataset.devThirdPartyTools='fallback';}catch{}});
+    if (animeOptIn) import('./modules/combat-motion-anime-v1.js').then(mod=>mod.initCombatAnimeMotionV1?.()).catch(()=>{try{document.body.dataset.combatMotionEngine='css-fallback';}catch{}});
+    if (devMode && toolsOptIn) import('./modules/dev-third-party-tools-v1.js').then(mod=>mod.initDevThirdPartyToolsV1?.()).catch(()=>{try{document.body.dataset.devThirdPartyTools='fallback';}catch{}});
   }
   function renderer(){return rendererPromise||(rendererPromise=import('./modules/combat-dom-renderer-v1.js'));}
   function presentationModel(){try{return globalThis.__TUTIEN_COMBAT_PRESENTATION_MODEL_V1__||null;}catch{return null;}}
