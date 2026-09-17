@@ -7,7 +7,13 @@ if errorlevel 1 goto :badpath
 where node >nul 2>&1
 if errorlevel 1 goto :nonode
 if not exist "qa\local\run-local-ci.mjs" goto :wrongfolder
+if not exist "qa\local\validate-visual-proof.mjs" goto :wrongfolder
 if not exist "web\server.mjs" goto :wrongfolder
+
+node --check qa\local\run-local-ci.mjs >nul 2>&1
+if errorlevel 1 goto :badlocalci
+node --check qa\local\validate-visual-proof.mjs >nul 2>&1
+if errorlevel 1 goto :badlocalci
 
 set "MODE=%~1"
 set "EXTRA=%~2"
@@ -20,7 +26,7 @@ echo ==============================================
 echo   TU TIEN NHAN ROI - LOCAL CI
 echo ==============================================
 echo.
-echo  [1] FAST       - Backend Fast + Frontend Fast
+echo  [1] FAST       - Active gates + Backend Fast + Frontend Fast
 echo  [2] BROWSER    - Browser Playtest runtime that
 echo  [3] VISUAL     - Runtime UI + Combat 4 viewport
 echo  [4] FULL       - FAST + BROWSER + VISUAL
@@ -85,6 +91,14 @@ echo [LOI] Khong tim thay CHOI_UI_DEV.cmd
 pause
 exit /b 1
 
+:badlocalci
+echo [LOI] Local CI script bi loi JavaScript syntax.
+echo Chay thu:
+echo   node --check qa\local\run-local-ci.mjs
+echo   node --check qa\local\validate-visual-proof.mjs
+pause
+exit /b 1
+
 :nonode
 echo [LOI] Khong tim thay Node.js trong PATH.
 echo Can Node.js 22 tro len.
@@ -93,7 +107,7 @@ exit /b 1
 
 :wrongfolder
 echo [LOI] Day khong phai thu muc repo day du.
-echo Thieu qa\local\run-local-ci.mjs hoac web\server.mjs.
+echo Thieu Local CI scripts hoac web\server.mjs.
 pause
 exit /b 1
 
