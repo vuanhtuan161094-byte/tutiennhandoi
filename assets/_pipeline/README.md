@@ -12,7 +12,7 @@ Optional terminal state: `retired`.
 - `candidate`: generated/edited options exist and are referenced by the brief.
 - `approved`: the user explicitly selected one candidate.
 - `integrated`: the approved winner exists at its real production path and is wired into runtime code/CSS.
-- `locked`: exact-SHA Browser Playtest + runtime visual proof are green and the owning UI slice has been approved/closed.
+- `locked`: exact-SHA runtime smoke/evidence is green and the owning UI slice has been approved/closed.
 - `retired`: intentionally no longer used.
 
 ## Required workflow
@@ -23,10 +23,56 @@ Optional terminal state: `retired`.
 4. Record candidate references in the brief and move status to `candidate`.
 5. User explicitly selects/approves one option. Record `selectedCandidateRef`, `approvedByUser: true`, and `approvalNote`; move to `approved`.
 6. Put the selected binary in a semantic production asset folder, wire it into the actual runtime, record `productionPath`, and move to `integrated`.
-7. The production-path change automatically triggers `.github/workflows/ai-playtest.yml`; UI paths also trigger `UI Visual Proof`.
+7. Production changes are checked by the normal `Game CI` fast/runtime-smoke path. Deep visual tooling is run only when the change actually needs it.
 8. After the exact integration SHA is green and the user approves the real runtime visual result, record `runtimeProofSha` + `runtimeProofRunId` and move to `locked`.
 
 Generated concept art is never implementation proof. A file is not production-ready merely because it looks good outside the game.
+
+## Sprite sheet creator
+
+The repo uses `free-tex-packer-core@0.3.9` through the small wrapper in `assets/_pipeline/tools/sprite-sheet.mjs`.
+
+Install the asset-tool dependency once:
+
+```bash
+cd assets/_pipeline/tools
+npm install
+```
+
+Create a Pixi-compatible atlas from an ordered frame directory:
+
+```bash
+npm run sprites -- \
+  --input ../candidates/kiem-khi/frames \
+  --output ../../combat/vfx/kiem-khi \
+  --name kiem-khi \
+  --fps 12
+```
+
+Default behavior is deliberately conservative for VFX animation:
+
+- Pixi JSON exporter;
+- deterministic source-file ordering;
+- no rotation;
+- no transparent trimming unless `--trim` is explicitly requested;
+- 2 px padding + 1 px extrusion to reduce texture bleeding;
+- 2048×2048 max atlas;
+- PNG output;
+- `OptimalPacker` packing;
+- sidecar `<name>.tutien.json` with source frame order, fps and loop metadata.
+
+Useful optional flags:
+
+```text
+--format webp
+--width 4096 --height 4096
+--trim
+--rotate
+--pot
+--once
+```
+
+Do not commit `node_modules/`; it is already ignored by the repository root `.gitignore`.
 
 ## CI enforcement
 
