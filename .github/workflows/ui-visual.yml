@@ -30,9 +30,13 @@ concurrency:
   group: ui-visual-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: cmd
+
 jobs:
   runtime-visual-proof:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Windows, X64]
     timeout-minutes: 15
     steps:
       - name: Checkout exact candidate
@@ -43,12 +47,17 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Expose Git Bash
+        run: |
+          @echo off
+          if not exist "C:\Program Files\Git\bin\bash.exe" exit /b 1
+          echo C:\Program Files\Git\bin>>"%GITHUB_PATH%"
+
       - name: Setup Chrome
         id: setup-chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: stable
-          install-dependencies: true
 
       - name: Verify visual workflow contract
         run: node qa/tests/ui-visual-workflow-contract-test.js
