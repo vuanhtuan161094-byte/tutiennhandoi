@@ -11,7 +11,6 @@ const anime=read('modules/combat-motion-anime-v1.js');
 const devTools=read('modules/dev-third-party-tools-v1.js');
 const devToolsCode=stripComments(devTools);
 const harness=read('modules/dev-test-harness-v1.js');
-const portraitSafety=read('modules/combat-portrait-safety-v1.js');
 const entry=read('standalone-entry.js');
 const index=read('index.html');
 const devLauncher=read('CHOI_UI_DEV.cmd');
@@ -62,21 +61,11 @@ assert.match(harness,/BEFORE_FIXTURE_KEY/,'Harness must provide a fixture rollba
 assert.doesNotMatch(harness,/['"]\/api\/(?:action|save|new|state)/,'Test Harness must never call production mutation/state endpoints directly');
 
 assert.doesNotMatch(entry,/combat-portrait-safety-v1\.js/,'retired portrait geometry shim must not load with the production presentation shell');
-assert.match(portraitSafety,/\.huntv2-intel-lane/,'retained portrait safety source must remain scoped to presentation geometry only');
-assert.match(portraitSafety,/setImportant\(lane,'left','0'\)/,'retained portrait safety source must preserve its historical resource-lane geometry contract');
-assert.match(portraitSafety,/setImportant\(actor,'bottom','29%'\)/,'retained portrait safety source must preserve its historical pre-fight geometry contract');
-assert.match(portraitSafety,/playerUltimate/,'retained portrait safety source must remain presentation-only if inspected historically');
-assert.match(portraitSafety,/setImportant\(callout,'left','10px'\)/,'retained portrait safety source must preserve its historical left safe inset');
-assert.match(portraitSafety,/setImportant\(callout,'right','10px'\)/,'retained portrait safety source must preserve its historical right safe inset');
-assert.match(portraitSafety,/\.huntv2-hud-extension-slots/,'retained portrait safety source must remain scoped to the former support accessory lane');
-assert.match(portraitSafety,/const accessoryTop=Math\.max\(154,Math\.round\(hudRect\.top-screenRect\.top-37\)\)/,'retained portrait safety source must preserve its historical HUD-derived geometry');
-assert.match(portraitSafety,/setImportant\(supports,'left','11px'\)/,'retained portrait safety source must preserve its historical support-orb track');
-assert.match(portraitSafety,/setImportant\(playerStatus,'left','121px'\)/,'retained portrait safety source must preserve its historical status track');
-assert.doesNotMatch(portraitSafety,/\/api\/|localStorage|sessionStorage/,'retired portrait safety source must remain presentation-only and non-authoritative');
+assert.equal(fs.existsSync(path.join(root,'modules/combat-portrait-safety-v1.js')),false,'retired portrait geometry shim must be removed from the repository once CSS owns portrait geometry');
 
-assert.match(index,/ui-combat-target-v1\.js\?v=combat-information-v6-20260916/,'combat bridge cache token must expose the latest presentation integration');
+assert.match(index,/ui-combat-target-v1\.js\?v=combat-information-v7-scoped-lifecycle-20260917/,'combat bridge cache token must expose the scoped presentation lifecycle integration');
 assert.doesNotMatch(index,/animejs@|stats\.js@|lil-gui@/,'third-party libraries must not be eagerly loaded from index.html');
 assert.match(devLauncher,/for %%P in \(4273 4274 4275 4276 4277 4278 4279 4280\)/,'UI DEV launcher must use an origin isolated from normal-play ports');
 assert.match(devLauncher,/\?dev=1&tools=1&anime=1&tab=hunt/,'UI DEV launcher must explicitly enable integrated tuning tools');
 
-console.log('Combat tools contract PASS · retired portrait shim stays out of production · isolated DEV Test Harness · no eager third-party production load');
+console.log('Combat tools contract PASS · portrait geometry shim removed · isolated DEV Test Harness · no eager third-party production load');
