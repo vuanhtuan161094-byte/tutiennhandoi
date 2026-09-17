@@ -45,9 +45,10 @@ function renderEnemyContext(enemyHud,model={}){
   if(enemy.name)enemyHud.setAttribute('aria-label',`${clean(enemy.name)}, cấp ${Math.max(1,Number(enemy.level)||1)}${enemy.isBoss?', Boss':''}${element?`, hệ ${element}`:''}`);
 }
 
-function renderBoss(screen,stage,enemyHud,model={}){
+function renderBoss(screen,stage,enemyHud,model={},transient={}){
   const boss=model.boss||{};const challenge=model.challenge||{};const farm=model.farm||{};
   screen.classList.toggle('v5-boss-context-ready',Boolean(boss.isBoss));
+  screen.classList.toggle('v5-boss-engaged',Boolean(boss.isBoss&&transient.engaged));
   screen.classList.toggle('v5-farm-ready',Boolean(farm.available));
   const farmButton=screen.querySelector('.huntv2-context-button.loot');
   farmButton?.classList.toggle('v5-farm-summary',Boolean(farm.available));
@@ -80,10 +81,22 @@ function renderChallengeState(screen,model={},transient={}){
   else if(state==='available'){const purpose=clean(challenge.progressionLabel||'Khiêu chiến Boss');button.title=purpose;button.setAttribute('aria-label',purpose);}
 }
 
+function renderPostCombat(screen,model={}){
+  const box=screen.querySelector('#huntv2ResultPop');if(!box)return;
+  const result=model.result||null;
+  if(!result){box.removeAttribute('data-result-context');return;}
+  box.setAttribute('data-result-context',clean(result.context||'combat'));
+  box.setAttribute('data-result-fight-count',String(Math.max(0,Number(result.fightCount)||0)));
+  if(!box.classList.contains('show'))return;
+  setText(box.querySelector('b'),result.title|| (result.won?'TRẤN SÁT':'THẤT BẠI'));
+  setText(box.querySelector('span'),result.detail||'');
+  box.setAttribute('aria-label',[clean(result.title),clean(result.detail)].filter(Boolean).join('. '));
+}
+
 function renderActivity(screen,transient={}){screen.classList.toggle('v5-critical-signal-active',Boolean(transient.criticalSignal));screen.classList.toggle('v5-combat-engaged',Boolean(transient.engaged));}
 
 export function renderCombatPresentationV1(screen,model,transient={}){
   if(!screen?.isConnected||!model)return false;
   const stage=screen.querySelector('#huntV2Stage, .huntv2-stage');const enemyHud=screen.querySelector('.huntv2-enemy-hud');if(!stage||!enemyHud)return false;
-  renderActivity(screen,transient);renderEnemyContext(enemyHud,model);renderBoss(screen,stage,enemyHud,model);renderChallengeState(screen,model,transient);screen.dataset.combatPresentationModel=String(model.version||'');screen.dataset.combatPresentationSignature=String(model.signature||'');return true;
+  renderActivity(screen,transient);renderEnemyContext(enemyHud,model);renderBoss(screen,stage,enemyHud,model,transient);renderChallengeState(screen,model,transient);renderPostCombat(screen,model);screen.dataset.combatPresentationModel=String(model.version||'');screen.dataset.combatPresentationSignature=String(model.signature||'');return true;
 }

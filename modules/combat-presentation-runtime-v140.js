@@ -88,21 +88,22 @@ export function combatPresentationActive(){
   try{return Boolean(rendererApi&&document.body.dataset.combatRenderer==='pixi');}catch{return false;}
 }
 
-/* Sword skills already carry their identity in anticipation/cast/travel choreography.
-   The final contact flash is deliberately normalized to a compact, normal-weight
-   punctuation mark so the target silhouette stays readable. Camera and hit-stop
-   values are preserved from the canonical presentation event. */
+/* Sword G2 keeps its skill identity only for compact impact variants. Heavy
+   G2 impacts remain normalized so their cast/travel identity never turns the
+   contact flash into a second large effect over the target silhouette. */
+const COMPACT_SWORD_G2_IMPACTS=new Set(['nurture','flow_slash']);
 function rendererEventForVisualReadability(event={}){
   const type=String(event?.type||event?.phase||'').toLowerCase();
   const fallbackDao=String(event?.fallbackDao||'').toLowerCase();
   const skillId=String(event?.skill?.id||'').toLowerCase();
   const swordImpact=type==='impact'&&(fallbackDao==='sword'||skillId.startsWith('skill.dao.sword.'));
   if(!swordImpact)return event;
-  return {
-    ...event,
-    strong:false,
-    skill:{id:'',name:'',description:'',delivery:'sword',tags:['Sword']},
-  };
+  const suffix=skillId.split('.').at(-1)||'';
+  const lightG2Impact=COMPACT_SWORD_G2_IMPACTS.has(suffix);
+  const skill=lightG2Impact
+    ?{...(event.skill||{}),delivery:'sword',tags:[...new Set([...(event.skill?.tags||[]),'Sword'])]}
+    :{id:'',name:'',description:'',delivery:'sword',tags:['Sword']};
+  return {...event,strong:false,skill};
 }
 
 export function playCombatPresentationFx(event={}){try{return Boolean(combatPresentationActive()&&rendererApi.playCombatPixiFx?.(rendererEventForVisualReadability(event)));}catch{return false;}}

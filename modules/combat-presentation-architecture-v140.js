@@ -93,6 +93,25 @@ export function buildCombatPresentationModelV1({model={},live={}}={}){
   const farmDetail=farm.available
     ?`T${((farmFloor-1)%100)+1} · ${compact(farm.spiritStonesPerHour||0)} Linh Thạch/h · ${compact(farm.demonCoresPerHour||0)} Yêu Đan/h`
     :'Reward tích theo thời gian';
+  const lastFight=live?.lastFight&&typeof live.lastFight==='object'?live.lastFight:null;
+  const resultFloor=Math.max(1,Number(lastFight?.floor)||floor);
+  const unlockedFloor=Math.max(0,Number(lastFight?.unlockedFloor)||0);
+  const resultMonsterName=String(lastFight?.monsterName||enemy.name||'Thủ Lĩnh');
+  const result=lastFight?{
+    fightCount:Math.max(0,Number(live?.fightCount)||0),
+    won:Boolean(lastFight.won),
+    bossCleared:Boolean(lastFight.bossCleared),
+    floor:resultFloor,
+    unlockedFloor,
+    monsterName:resultMonsterName,
+    rewardContext:String(lastFight.rewardContext||''),
+    directBossLoot:Boolean(lastFight.directBossLoot),
+    context:String(lastFight.rewardContext||'')==='progression-only'&&!Boolean(lastFight.directBossLoot)?'progression':'combat',
+    title:lastFight.won?'TRẤN SÁT':'THẤT BẠI',
+    detail:lastFight.won
+      ?(unlockedFloor>resultFloor?'Đã mở cửa ải kế':lastFight.bossCleared?`Boss tầng ${resultFloor} đã hạ`:`Đã hạ ${resultMonsterName}`)
+      :`Chưa vượt qua ${resultMonsterName}`,
+  }:null;
   const snapshot={
     version:COMBAT_PRESENTATION_MODEL_VERSION,
     mode:farmActive?'farm':ready?'prefight':'field',
@@ -122,8 +141,9 @@ export function buildCombatPresentationModelV1({model={},live={}}={}){
       available:Boolean(farm.available),active:farmActive,floor:farmFloor,
       zoneName:String(farm.zoneName||map.zoneName||''),label:farmLabel,detail:farmDetail,
     },
+    result,
   };
-  snapshot.signature=[snapshot.mode,enemy.id,enemy.name,enemy.level,enemy.gradeId,enemy.element,snapshot.boss.readiness.label,snapshot.boss.mechanic?.name||'',snapshot.boss.mechanic?.counterSummary||'',ready?1:0,canFight?1:0,snapshot.challenge.blockedReason,snapshot.farm.available?1:0,snapshot.farm.active?1:0,snapshot.farm.floor,snapshot.farm.label,snapshot.farm.detail].join('|');
+  snapshot.signature=[snapshot.mode,enemy.id,enemy.name,enemy.level,enemy.gradeId,enemy.element,snapshot.boss.readiness.label,snapshot.boss.mechanic?.name||'',snapshot.boss.mechanic?.counterSummary||'',ready?1:0,canFight?1:0,snapshot.challenge.blockedReason,snapshot.farm.available?1:0,snapshot.farm.active?1:0,snapshot.farm.floor,snapshot.farm.label,snapshot.farm.detail,result?.fightCount||0,result?.won?1:0,result?.bossCleared?1:0,result?.unlockedFloor||0,result?.rewardContext||'',result?.directBossLoot?1:0].join('|');
   return snapshot;
 }
 
