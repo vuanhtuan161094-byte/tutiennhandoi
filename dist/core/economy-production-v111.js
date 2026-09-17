@@ -3,7 +3,7 @@ import { caveFacilityUpgradeCostV12316 } from './collection-progression-v12316.j
 export const ECONOMY_PRODUCTION_V111_SCHEMA = 'economy-production.v111';
 export const ECONOMY_PRODUCTION_V111 = Object.freeze({
   cycleDays: 28,
-  dailyActivityBoundJade: 140,
+  dailyActivityBoundJade: 100,
   dailyPvpPaidWins: 5,
   pvpRewardPerWin: 8,
   weeklyRecurringBoundJade: 300,
