@@ -94,15 +94,15 @@ body[data-game-screen="hunt"] .huntv2-combat-v8 .huntv2-result-pop.show.defeat{b
   .huntv2-combat-v8 .v5-boss-readiness strong{font-size:10px!important}
   .huntv2-combat-v8 .v5-boss-mechanic-summary{min-height:32px!important;padding:3px 6px!important}
   .huntv2-combat-v8 .v5-boss-blocker{min-height:22px!important;padding:2px 6px!important}
-  .huntv2-combat-v8.v5-combat-engaged :is(.v5-boss-briefing,.huntv2-action-deck,.huntv2-log-preview){display:none!important}
-  .huntv2-combat-v8.v5-combat-engaged .v5-boss-mechanic-compact:not([hidden]){display:grid}
-  .huntv2-combat-v8.v5-combat-engaged .huntv2-console{flex:0 0 92px!important;min-height:92px!important;padding:3px 8px!important}
-  .huntv2-combat-v8.v5-combat-engaged .huntv2-skills{bottom:3px!important}
-  .huntv2-combat-v8.is-prefight:not(.v5-combat-engaged) .huntv2-log-preview{display:none!important}
-  .huntv2-combat-v8.is-prefight:not(.v5-combat-engaged) .huntv2-console{flex:0 0 126px!important;min-height:126px!important}
-  .huntv2-combat-v8.is-prefight:not(.v5-combat-engaged) .huntv2-action-deck{display:flex!important;align-items:center!important;justify-content:center!important;min-height:36px!important;height:36px!important}
-  .huntv2-combat-v8.is-prefight:not(.v5-combat-engaged) .huntv2-action-deck .huntv2-context-button{display:none!important}
-  .huntv2-combat-v8.is-prefight:not(.v5-combat-engaged) .huntv2-fight{width:min(210px,72%)!important;min-height:34px!important;height:34px!important;margin:0 auto!important}
+  .huntv2-combat-v8.is-active-combat :is(.v5-boss-briefing,.huntv2-action-deck,.huntv2-log-preview){display:none!important}
+  .huntv2-combat-v8.is-active-combat .v5-boss-mechanic-compact:not([hidden]){display:grid}
+  .huntv2-combat-v8.is-active-combat .huntv2-console{flex:0 0 92px!important;min-height:92px!important;padding:3px 8px!important}
+  .huntv2-combat-v8.is-active-combat .huntv2-skills{bottom:3px!important}
+  .huntv2-combat-v8.is-prefight:not(.is-active-combat) .huntv2-log-preview{display:none!important}
+  .huntv2-combat-v8.is-prefight:not(.is-active-combat) .huntv2-console{flex:0 0 126px!important;min-height:126px!important}
+  .huntv2-combat-v8.is-prefight:not(.is-active-combat) .huntv2-action-deck{display:flex!important;align-items:center!important;justify-content:center!important;min-height:36px!important;height:36px!important}
+  .huntv2-combat-v8.is-prefight:not(.is-active-combat) .huntv2-action-deck .huntv2-context-button{display:none!important}
+  .huntv2-combat-v8.is-prefight:not(.is-active-combat) .huntv2-fight{width:min(210px,72%)!important;min-height:34px!important;height:34px!important;margin:0 auto!important}
   .huntv2-combat-v8 .huntv2-skill-callout{left:50%!important;right:auto!important;top:auto!important;bottom:76px!important;transform:translateX(-50%)!important;max-width:min(70%,270px)!important;min-height:46px!important;padding:5px 8px!important}
   .huntv2-combat-v8 .huntv2-skill-callout:is(.tier-ultimate,.ultimate){bottom:74px!important;max-width:min(74%,286px)!important;min-height:52px!important;padding:6px 9px!important}
   .huntv2-combat-v8 .huntv2-skill-callout.enemy{left:auto!important;right:8px!important;top:174px!important;bottom:auto!important;transform:none!important;max-width:198px!important}

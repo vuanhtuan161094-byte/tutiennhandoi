@@ -45,10 +45,9 @@ function renderEnemyContext(enemyHud,model={}){
   if(enemy.name)enemyHud.setAttribute('aria-label',`${clean(enemy.name)}, cấp ${Math.max(1,Number(enemy.level)||1)}${enemy.isBoss?', Boss':''}${element?`, hệ ${element}`:''}`);
 }
 
-function renderBoss(screen,stage,enemyHud,model={},transient={}){
+function renderBoss(screen,stage,enemyHud,model={}){
   const boss=model.boss||{};const challenge=model.challenge||{};const farm=model.farm||{};
   screen.classList.toggle('v5-boss-context-ready',Boolean(boss.isBoss));
-  screen.classList.toggle('v5-boss-engaged',Boolean(boss.isBoss&&transient.engaged));
   screen.classList.toggle('v5-farm-ready',Boolean(farm.available));
   const farmButton=screen.querySelector('.huntv2-context-button.loot');
   farmButton?.classList.toggle('v5-farm-summary',Boolean(farm.available));
@@ -93,10 +92,10 @@ function renderPostCombat(screen,model={}){
   box.setAttribute('aria-label',[clean(result.title),clean(result.detail)].filter(Boolean).join('. '));
 }
 
-function renderActivity(screen,transient={}){screen.classList.toggle('v5-critical-signal-active',Boolean(transient.criticalSignal));screen.classList.toggle('v5-combat-engaged',Boolean(transient.engaged));}
+function renderActivity(screen,transient={}){screen.classList.toggle('v5-critical-signal-active',Boolean(transient.criticalSignal));}
 
 export function renderCombatPresentationV1(screen,model,transient={}){
   if(!screen?.isConnected||!model)return false;
   const stage=screen.querySelector('#huntV2Stage, .huntv2-stage');const enemyHud=screen.querySelector('.huntv2-enemy-hud');if(!stage||!enemyHud)return false;
-  renderActivity(screen,transient);renderEnemyContext(enemyHud,model);renderBoss(screen,stage,enemyHud,model,transient);renderChallengeState(screen,model,transient);renderPostCombat(screen,model);screen.dataset.combatPresentationModel=String(model.version||'');screen.dataset.combatPresentationSignature=String(model.signature||'');return true;
+  renderActivity(screen,transient);renderEnemyContext(enemyHud,model);renderBoss(screen,stage,enemyHud,model);renderChallengeState(screen,model,transient);renderPostCombat(screen,model);screen.dataset.combatPresentationModel=String(model.version||'');screen.dataset.combatPresentationSignature=String(model.signature||'');return true;
 }
