@@ -10,7 +10,7 @@ Double-click:
 
 Modes:
 
-- `FAST` — contract validation + Backend Fast + Frontend Fast.
+- `FAST` — contract validation + hosted Active Phase gates + Backend Fast + Frontend Fast.
 - `BROWSER` — canonical local server + deterministic browser journeys + strict summary.
 - `VISUAL` — real runtime UI capture + Combat proof at 390x844, 360x800, 412x915, 430x932 + semantic validation.
 - `FULL` — FAST + BROWSER + VISUAL.
@@ -59,8 +59,9 @@ A dirty working tree is useful for iteration, but it is **not exact-SHA evidence
 
 ## Design rule
 
-Local CI does not replace or fork the project's test logic. It calls the same repository runners used by hosted CI:
+Local CI does not replace or fork the project's test logic. It calls the same repository tests/runners used by hosted CI:
 
+- V161–V169 Active Phase authority tests from `.github/workflows/qa.yml`
 - `qa/runners/v140-backend-gates.js`
 - `qa/runners/v140-frontend-gates.js`
 - `qa/playtest/run-scenarios.mjs`
