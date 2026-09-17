@@ -33,9 +33,13 @@ concurrency:
   group: ai-playtest-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: cmd
+
 jobs:
   browser-playtest:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Windows, X64]
     timeout-minutes: 12
     steps:
       - name: Checkout exact candidate
@@ -51,26 +55,21 @@ jobs:
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: stable
-          install-dependencies: true
 
       - name: Validate AI pipeline contracts
         run: node qa/playtest/validate-contracts.mjs
 
       - name: Start canonical game server
-        shell: bash
         run: |
-          set -euo pipefail
-          mkdir -p artifacts/ai-playtest
-          node web/server.mjs 4173 127.0.0.1 > artifacts/ai-playtest/server.log 2>&1 &
-          echo $! > artifacts/ai-playtest/server.pid
-          for attempt in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:4173/__tutien_launcher_health > artifacts/ai-playtest/health.json; then
-              exit 0
-            fi
-            sleep 0.5
-          done
-          cat artifacts/ai-playtest/server.log
-          exit 1
+          @echo off
+          if not exist artifacts\ai-playtest mkdir artifacts\ai-playtest
+          start "" /b node web/server.mjs 4173 127.0.0.1 > artifacts\ai-playtest\server.log 2>&1
+          for /L %%A in (1,1,30) do (
+            curl.exe --fail --silent http://127.0.0.1:4173/__tutien_launcher_health > artifacts\ai-playtest\health.json && exit /b 0
+            timeout /t 1 /nobreak >nul
+          )
+          type artifacts\ai-playtest\server.log
+          exit /b 1
 
       - name: Run deterministic browser journeys
         env:
