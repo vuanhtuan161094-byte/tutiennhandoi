@@ -30,13 +30,14 @@ function targetNode(target=targetMeta()){return combatScreen()?.querySelector(ta
 function screenRect(){return combatScreen()?.getBoundingClientRect?.()||null;}
 function relativeRect(node){const sr=screenRect(),r=node?.getBoundingClientRect?.();if(!sr||!r)return null;return{x:round(r.left-sr.left),y:round(r.top-sr.top),width:round(r.width),height:round(r.height)};}
 function remember(node){if(!node||originals.has(node))return;const data={};for(const k of ['translate','width','height'])data[k]={value:node.style.getPropertyValue(k),priority:node.style.getPropertyPriority(k)};originals.set(node,data);}
-function restore(node){const old=originals.get(node);if(!old)return;for(const[k,v]of Object.entries(old)){if(v.value)node.style.setProperty(k,v.value,v.priority||'');else node.style.removeProperty(k);}originals.delete(node);}
+function syncPresentationLayout(){try{frame.contentWindow?.__TUTIEN_COMBAT_LAYOUT_PREVIEW_SYNC__?.();}catch{}}
+function restore(node){const old=originals.get(node);if(!old)return;for(const[k,v]of Object.entries(old)){if(v.value)node.style.setProperty(k,v.value,v.priority||'');else node.style.removeProperty(k);}originals.delete(node);syncPresentationLayout();}
 function stateFor(target=targetMeta()){
   const node=targetNode(target);if(!node)return null;let state=states.get(target.id);
   if(!state||state.node!==node){remember(node);const rect=relativeRect(node);if(!rect||rect.width<2||rect.height<2)return null;const cs=frame.contentWindow.getComputedStyle(node);const draft=savedDraft?.elements?.[target.id]||{};state={id:target.id,node,dx:Number(draft.deltaX||0),dy:Number(draft.deltaY||0),width:Number(draft.width||rect.width),height:Number(draft.height||rect.height),anchorX:cs.right!=='auto'&&cs.left==='auto'?'right':'left',anchorY:cs.bottom!=='auto'&&cs.top==='auto'?'bottom':'top'};states.set(target.id,state);apply(state);}
   return state;
 }
-function apply(state){if(!state?.node?.isConnected)return;state.node.style.setProperty('translate',`${round(state.dx)}px ${round(state.dy)}px`,'important');state.node.style.setProperty('width',`${Math.max(24,round(state.width))}px`,'important');state.node.style.setProperty('height',`${Math.max(20,round(state.height))}px`,'important');}
+function apply(state){if(!state?.node?.isConnected)return;state.node.style.setProperty('translate',`${round(state.dx)}px ${round(state.dy)}px`,'important');state.node.style.setProperty('width',`${Math.max(24,round(state.width))}px`,'important');state.node.style.setProperty('height',`${Math.max(20,round(state.height))}px`,'important');syncPresentationLayout();}
 function clearStates(){for(const state of states.values())restore(state.node);states.clear();}
 function currentViewport(){const key=$('#viewport').value;const [width,height]=VIEWPORTS[key]||VIEWPORTS['390x844'];return{key,width,height};}
 function frameUrl(){const u=new URL('/',location.href);u.searchParams.set('dev','1');u.searchParams.set('anime','1');u.searchParams.set('tab','hunt');u.searchParams.set('studio','1');u.searchParams.set('layoutViewport',currentViewport().key);return u.pathname+u.search;}

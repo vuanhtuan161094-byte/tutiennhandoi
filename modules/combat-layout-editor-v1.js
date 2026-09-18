@@ -38,10 +38,11 @@ function rememberOriginal(node){
   if(!node||originals.has(node))return;
   originals.set(node,['translate','width','height'].reduce((a,k)=>(a[k]={value:node.style.getPropertyValue(k),priority:node.style.getPropertyPriority(k)},a),{}));
 }
+function syncPresentationLayout(){try{globalThis.__TUTIEN_COMBAT_LAYOUT_PREVIEW_SYNC__?.();}catch{}}
 function restoreNode(node){
   const old=originals.get(node);if(!old)return;
   for(const [k,v] of Object.entries(old)){if(v.value)node.style.setProperty(k,v.value,v.priority||'');else node.style.removeProperty(k);}
-  originals.delete(node);
+  originals.delete(node);syncPresentationLayout();
 }
 function stateFor(meta=targetMeta()){
   const node=targetNode(meta);if(!node)return null;
@@ -61,6 +62,7 @@ function applyState(state){
   state.node.style.setProperty('translate',`${round(state.dx)}px ${round(state.dy)}px`,'important');
   state.node.style.setProperty('width',`${Math.max(24,round(state.width))}px`,'important');
   state.node.style.setProperty('height',`${Math.max(20,round(state.height))}px`,'important');
+  syncPresentationLayout();
 }
 function syncAllAvailable(){for(const meta of TARGETS)stateFor(meta);}
 

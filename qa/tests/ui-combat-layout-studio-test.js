@@ -6,6 +6,7 @@ const root=process.cwd();
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const html=read('combat-layout-studio.html');
 const studio=read('modules/combat-layout-studio-v1.js');
+const bridge=read('ui-combat-target-v1.js');
 const launcher=read('CHINH_UI_COMBAT.cmd');
 
 assert.match(html,/id="gameFrame"/,'studio must contain the real-game iframe preview');
@@ -27,6 +28,9 @@ assert.match(studio,/\.huntv2-intel-lane/,'studio must expose combat resource ge
 assert.match(studio,/setProperty\('translate'/,'studio must preview position without replacing transform choreography');
 assert.match(studio,/setProperty\('width'/,'studio must preview width live');
 assert.match(studio,/setProperty\('height'/,'studio must preview height live');
+assert.match(studio,/frame\.contentWindow\?\.__TUTIEN_COMBAT_LAYOUT_PREVIEW_SYNC__/,'studio geometry changes must request live Pixi re-layout');
+assert.match(bridge,/__TUTIEN_COMBAT_LAYOUT_PREVIEW_SYNC__/,'combat bridge must expose DEV-only live layout sync');
+assert.match(bridge,/requestCombatPresentationLayout/,'combat bridge live layout sync must remeasure the Pixi actor anchors');
 assert.match(studio,/tutien\.dev\.combat-layout-draft\.v1/,'studio draft storage must stay isolated from the game save');
 assert.match(studio,/navigator\.clipboard\.writeText/,'studio must copy JSON for production handoff');
 assert.match(studio,/combat-layout-\$\{data\.viewport\.width\}x\$\{data\.viewport\.height\}\.json/,'studio must download viewport-labelled JSON');

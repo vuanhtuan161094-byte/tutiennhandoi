@@ -59,6 +59,7 @@ assert.match(layoutEditor,/\.huntv2-actor\.enemy/,'Layout Editor must expose Bos
 assert.match(layoutEditor,/\.huntv2-player-hud/,'Layout Editor must expose Player HUD geometry');
 assert.match(layoutEditor,/\.huntv2-enemy-hud/,'Layout Editor must expose Boss HUD geometry');
 assert.match(layoutEditor,/setProperty\('translate'/,'Layout Editor must preview position without replacing transform choreography');
+assert.match(layoutEditor,/__TUTIEN_COMBAT_LAYOUT_PREVIEW_SYNC__/,'HUD Tuner must request live Pixi re-layout after geometry changes');
 assert.match(layoutEditor,/navigator\.clipboard\.writeText/,'Layout Editor must export copyable JSON');
 assert.match(layoutEditor,/combat-layout-\$\{data\.viewport\.width\}x\$\{data\.viewport\.height\}\.json/,'Layout Editor must export a viewport-labelled JSON file');
 assert.doesNotMatch(layoutEditorCode,/fetch\s*\(|\/api\//,'Layout Editor must never call gameplay or DEV action APIs');
