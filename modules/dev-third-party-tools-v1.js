@@ -2,11 +2,13 @@
    Loaded only from the DEV combat presentation bridge. Motion tuning stays presentation-only;
    the optional Test Harness is isolated in its own /api/dev/* module. */
 import {loadStatsJsV1,loadLilGuiV1,thirdPartyRuntimeStatusV1} from './third-party-runtime-v1.js';
+import {initCombatLayoutEditorV1} from './combat-layout-editor-v1.js';
 
 let statsInstance=null;
 let statsRaf=0;
 let guiInstance=null;
 let harnessInstance=null;
+let layoutEditorInstance=null;
 
 function isDev(){
   try{return new URLSearchParams(location.search).get('dev')==='1'||globalThis.__TUTIEN_DEV_FORCE__===true;}catch{return false;}
@@ -82,6 +84,7 @@ function mountGui(GUI,state){
 export async function initDevThirdPartyToolsV1(){
   if(!isDev())return {ok:false,reason:'dev-only'};
   const state=tuningState();
+  try{layoutEditorInstance=initCombatLayoutEditorV1();}catch(error){console.warn('[DEV layout editor] unavailable',error?.message||error);}
   const [statsResult,guiResult]=await Promise.allSettled([loadStatsJsV1(),loadLilGuiV1()]);
   if(statsResult.status==='fulfilled')mountStats(statsResult.value,state);
   if(guiResult.status==='fulfilled'){
@@ -92,12 +95,13 @@ export async function initDevThirdPartyToolsV1(){
     }catch(error){console.warn('[DEV harness] unavailable',error?.message||error);}
   }
   const status=thirdPartyRuntimeStatusV1();
-  globalThis.__TUTIEN_DEV_THIRD_PARTY_V1__={status:()=>thirdPartyRuntimeStatusV1(),tuning:state,stats:statsInstance,gui:guiInstance,harness:harnessInstance};
+  globalThis.__TUTIEN_DEV_THIRD_PARTY_V1__={status:()=>thirdPartyRuntimeStatusV1(),tuning:state,stats:statsInstance,gui:guiInstance,harness:harnessInstance,layout:layoutEditorInstance};
   try{document.body.dataset.devThirdPartyTools=(statsResult.status==='fulfilled'||guiResult.status==='fulfilled')?'ready':'fallback';}catch{}
-  return {ok:statsResult.status==='fulfilled'||guiResult.status==='fulfilled',status,harness:Boolean(harnessInstance?.ok)};
+  return {ok:Boolean(layoutEditorInstance?.ok)||statsResult.status==='fulfilled'||guiResult.status==='fulfilled',status,harness:Boolean(harnessInstance?.ok),layout:Boolean(layoutEditorInstance?.ok)};
 }
 
 export function destroyDevThirdPartyToolsV1(){
+  try{layoutEditorInstance?.destroy?.();}catch{}layoutEditorInstance=null;
   try{harnessInstance?.destroy?.();}catch{}harnessInstance=null;
   if(statsRaf)cancelAnimationFrame(statsRaf);statsRaf=0;
   const dom=statsInstance?.dom||statsInstance?.domElement;dom?.remove?.();statsInstance=null;

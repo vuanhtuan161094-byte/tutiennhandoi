@@ -10,6 +10,8 @@ const loader=read('modules/third-party-runtime-v1.js');
 const anime=read('modules/combat-motion-anime-v1.js');
 const devTools=read('modules/dev-third-party-tools-v1.js');
 const devToolsCode=stripComments(devTools);
+const layoutEditor=read('modules/combat-layout-editor-v1.js');
+const layoutEditorCode=stripComments(layoutEditor);
 const harness=read('modules/dev-test-harness-v1.js');
 const entry=read('standalone-entry.js');
 const index=read('index.html');
@@ -47,7 +49,19 @@ assert.match(devTools,/Combat DEV Tuning/,'lil-gui combat tuning panel missing')
 assert.match(devTools,/damagePunch/,'damage motion tuning missing');
 assert.match(devTools,/skillPunch/,'skill-name motion tuning missing');
 assert.match(devTools,/import\('\.\/dev-test-harness-v1\.js'\)/,'DEV Test Harness must stay behind the DEV tools lazy boundary');
+assert.match(devTools,/combat-layout-editor-v1\.js/,'Combat Layout Editor must stay behind the DEV tools lazy boundary');
 assert.doesNotMatch(devToolsCode,/fetch\s*\(|localStorage\.setItem|sessionStorage\.setItem|\/api\//,'motion tuning owner must remain presentation-only');
+
+assert.match(layoutEditor,/tutien\.dev\.combat-layout-draft\.v1/,'Layout Editor draft storage must use an isolated DEV key');
+assert.match(layoutEditor,/dev-tools-only/,'Layout Editor must reject execution without DEV + tools opt-in');
+assert.match(layoutEditor,/\.huntv2-actor\.player/,'Layout Editor must expose Player geometry');
+assert.match(layoutEditor,/\.huntv2-actor\.enemy/,'Layout Editor must expose Boss\/Enemy geometry');
+assert.match(layoutEditor,/\.huntv2-player-hud/,'Layout Editor must expose Player HUD geometry');
+assert.match(layoutEditor,/\.huntv2-enemy-hud/,'Layout Editor must expose Boss HUD geometry');
+assert.match(layoutEditor,/setProperty\('translate'/,'Layout Editor must preview position without replacing transform choreography');
+assert.match(layoutEditor,/navigator\.clipboard\.writeText/,'Layout Editor must export copyable JSON');
+assert.match(layoutEditor,/combat-layout-\$\{data\.viewport\.width\}x\$\{data\.viewport\.height\}\.json/,'Layout Editor must export a viewport-labelled JSON file');
+assert.doesNotMatch(layoutEditorCode,/fetch\s*\(|\/api\//,'Layout Editor must never call gameplay or DEV action APIs');
 
 assert.match(harness,/p\.get\('dev'\)==='1'/,'Test Harness must require DEV mode');
 assert.match(harness,/p\.get\('tools'\)==='1'/,'Test Harness must require tools opt-in');
