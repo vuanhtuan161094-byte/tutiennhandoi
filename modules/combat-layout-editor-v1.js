@@ -48,7 +48,7 @@ function stateFor(meta=targetMeta()){
   let state=states.get(meta.id);
   if(!state||state.node!==node){
     rememberOriginal(node);
-    const rect=relativeRect(node);if(!rect)return null;
+    const rect=relativeRect(node);if(!rect||rect.width<2||rect.height<2)return null;
     const cs=getComputedStyle(node);
     const draft=savedDraft?.elements?.[meta.id]||{};
     state={id:meta.id,node,base:rect,dx:Number(draft.deltaX||0),dy:Number(draft.deltaY||0),width:Number(draft.width||rect.width),height:Number(draft.height||rect.height),anchorX:cs.right!=='auto'&&cs.left==='auto'?'right':'left',anchorY:cs.bottom!=='auto'&&cs.top==='auto'?'bottom':'top'};
