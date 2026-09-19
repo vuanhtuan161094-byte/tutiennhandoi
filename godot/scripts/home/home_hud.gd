@@ -40,7 +40,10 @@ var rate_label: Label
 var eta_label: Label
 var status_label: Label
 
+var primary_shell: PanelContainer
 var primary_button: Button
+var primary_title_label: Label
+var primary_subtitle_label: Label
 var quick_actions: HBoxContainer
 var retreat_button: Button
 var retreat_action_visual: Control
@@ -85,12 +88,16 @@ func bind(vm: Dictionary) -> void:
 	cultivation_state_label.text = "Tu Vi viên mãn" if ready else "Đang tu luyện…"
 	eta_label.text = _advance_text(progression) if ready else "ETA · %s" % _duration(float(progression.get("eta_seconds", 0)))
 
-	primary_button.visible = ready and (transition == "tribulation" or transition == "ascend")
+	var show_primary := ready and (transition == "tribulation" or transition == "ascend")
+	primary_shell.visible = show_primary
+	primary_button.visible = show_primary
 	if ready and transition == "tribulation":
-		primary_button.text = "DẪN THIÊN KIẾP"
+		primary_title_label.text = "DẪN THIÊN KIẾP"
+		primary_subtitle_label.text = "Chuẩn bị vượt kiếp → %s" % str(progression.get("next_realm", ""))
 		primary_button.set_meta("action_id", "tribulationV140")
 	elif ready and transition == "ascend":
-		primary_button.text = "THĂNG CẢNH"
+		primary_title_label.text = "THĂNG CẢNH"
+		primary_subtitle_label.text = "Đủ điều kiện → %s" % str(progression.get("next_realm", ""))
 		primary_button.set_meta("action_id", "ascendRealmV140")
 	_update_action_band()
 
@@ -348,22 +355,71 @@ func _build_progress() -> void:
 	shell.add_child(tap)
 
 func _build_primary() -> void:
+	primary_shell = PanelContainer.new()
+	primary_shell.visible = false
+	_anchor_bottom_wide(primary_shell, 58.0, 58.0, -269.0, -213.0)
+	primary_shell.add_theme_stylebox_override(
+		"panel",
+		_flat(Color(0.18, 0.115, 0.025, 0.94), 28, Color(1.0, 0.79, 0.32, 0.86), 2)
+	)
+	add_child(primary_shell)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 12)
+	margin.add_theme_constant_override("margin_right", 12)
+	margin.add_theme_constant_override("margin_top", 5)
+	margin.add_theme_constant_override("margin_bottom", 5)
+	primary_shell.add_child(margin)
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	margin.add_child(row)
+
+	var icon_wrap := CenterContainer.new()
+	icon_wrap.custom_minimum_size = Vector2(34, 0)
+	row.add_child(icon_wrap)
+
+	var icon := TextureRect.new()
+	icon.texture = ICON_SPARK
+	icon.custom_minimum_size = Vector2(26, 26)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.modulate = GOLD_HI
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon_wrap.add_child(icon)
+
+	var labels := VBoxContainer.new()
+	labels.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	labels.add_theme_constant_override("separation", -1)
+	row.add_child(labels)
+
+	primary_title_label = _readable_label("THĂNG CẢNH", 13, GOLD_HI)
+	primary_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	labels.add_child(primary_title_label)
+
+	primary_subtitle_label = _readable_label("Đủ điều kiện", 7, Color("f0d58c"))
+	primary_subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	primary_subtitle_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	labels.add_child(primary_subtitle_label)
+
 	primary_button = Button.new()
 	primary_button.name = "PrimaryCTA"
-	primary_button.icon = ICON_SPARK
 	primary_button.visible = false
-	_anchor_bottom_wide(primary_button, 62.0, 62.0, -267.0, -217.0)
-	primary_button.add_theme_font_size_override("font_size", 13)
-	primary_button.add_theme_color_override("font_color", GOLD_HI)
-	primary_button.add_theme_color_override("font_hover_color", Color.WHITE)
-	primary_button.add_theme_color_override("icon_normal_color", GOLD_HI)
-	primary_button.add_theme_color_override("icon_hover_color", Color.WHITE)
-	primary_button.add_theme_stylebox_override("normal", _flat(Color(0.20, 0.135, 0.035, 0.92), 24, Color(1.0, 0.79, 0.32, 0.82), 2))
-	primary_button.add_theme_stylebox_override("hover", _flat(Color(0.30, 0.205, 0.05, 0.97), 24, GOLD_HI, 2))
+	primary_button.text = ""
+	primary_button.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	primary_button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
+	primary_button.add_theme_stylebox_override(
+		"hover",
+		_flat(Color(1.0, 0.78, 0.30, 0.075), 28, Color(1.0, 0.88, 0.55, 0.92), 2)
+	)
+	primary_button.add_theme_stylebox_override(
+		"pressed",
+		_flat(Color(1.0, 0.75, 0.24, 0.13), 28, GOLD_HI, 2)
+	)
 	primary_button.pressed.connect(func():
 		primary_action_requested.emit(str(primary_button.get_meta("action_id", "")))
 	)
-	add_child(primary_button)
+	primary_shell.add_child(primary_button)
 
 func _build_quick_actions() -> void:
 	quick_actions = HBoxContainer.new()
