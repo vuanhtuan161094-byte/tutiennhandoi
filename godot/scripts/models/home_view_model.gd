@@ -20,6 +20,7 @@ static func build(home: Dictionary) -> Dictionary:
 	var root: Dictionary = home.get("spiritualRoot", {})
 	var resources: Dictionary = home.get("resources", {})
 	var retreat: Dictionary = cultivation.get("retreat", {})
+	var home_context: Dictionary = home.get("homeContext", {})
 
 	var tu_vi := maxf(0.0, float(cultivation.get("tuVi", 0)))
 	var required := maxf(0.0, float(cultivation.get("requiredTuVi", 0)))
@@ -50,7 +51,9 @@ static func build(home: Dictionary) -> Dictionary:
 			"tu_vi": tu_vi,
 			"required_tu_vi": required,
 			"progress_pct": progress_pct,
+			"base_rate_per_15s": maxf(0.0, float(cultivation.get("baseTuViPer15s", cultivation.get("finalTuViPer15s", 0)))),
 			"rate_per_15s": maxf(0.0, float(cultivation.get("finalTuViPer15s", 0))),
+			"rate_sources": cultivation.get("sources", []),
 			"eta_seconds": maxf(0.0, float(cultivation.get("etaRealSeconds", 0))),
 			"injury_pct": clampf(float(cultivation.get("injury", 0)), 0.0, 100.0),
 			"age_years": age_years,
@@ -72,6 +75,14 @@ static func build(home: Dictionary) -> Dictionary:
 			"spirit_stone": maxf(0.0, float(resources.get("spiritStone", 0))),
 			"reincarnation_cp": maxf(0.0, float(resources.get("reincarnationCp", 0))),
 		},
+		"context": {
+			"actions": home_context.get("actions", []),
+			"hints": home_context.get("hints", []),
+			"major_events": home_context.get("majorEvents", []),
+			"active_technique": str(home_context.get("activeTechnique", "")),
+			"build": home_context.get("build", {}),
+			"hunt": home_context.get("hunt", {}),
+		},
 	}
 
 static func _validate(home: Dictionary) -> String:
@@ -84,7 +95,7 @@ static func _validate(home: Dictionary) -> String:
 		return "Thiếu authority"
 	if str(authority.get("cultivation", "")) != EXPECTED_CULTIVATION_AUTHORITY:
 		return "Sai cultivation authority"
-	for key in ["character", "life", "cultivation", "spiritualRoot", "resources"]:
+	for key in ["character", "life", "cultivation", "spiritualRoot", "resources", "homeContext"]:
 		if typeof(home.get(key, null)) != TYPE_DICTIONARY:
 			return "Thiếu DTO: %s" % key
 	return ""
