@@ -1,0 +1,13 @@
+# Keep Godot text resources stable across Windows/Linux checkouts.
+# Godot recommends LF for project metadata and text resources.
+godot/project.godot text eol=lf
+godot/**/*.gd text eol=lf
+godot/**/*.gd.uid text eol=lf
+godot/**/*.tscn text eol=lf
+godot/**/*.tres text eol=lf
+godot/**/*.cfg text eol=lf
+godot/**/*.svg text eol=lf
+
+# Windows helper scripts stay native CRLF.
+*.cmd text eol=crlf
+*.bat text eol=crlf
