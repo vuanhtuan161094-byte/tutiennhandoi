@@ -4,18 +4,22 @@
 /* Pull the duel inward and slightly upward so neither silhouette hugs the edge.
    Keep enough center space for skill FX / telegraphs instead of filling it with UI. */
 body[data-game-screen="hunt"] .huntv2-actor.player{
-  left:8%!important;
-  bottom:13%!important;
-  width:min(44%,180px)!important;
-  height:min(46%,238px)!important;
+  left:6.63%!important;
+  bottom:5.21%!important;
+  width:31.98%!important;
+  height:39.04%!important;
 }
 body[data-game-screen="hunt"] .huntv2-actor.enemy{
-  right:8%!important;
-  bottom:43%!important;
+  right:9.17%!important;
+  bottom:44.02%!important;
+  width:32.25%!important;
+  height:38.69%!important;
 }
 body[data-game-screen="hunt"] .huntv2-actor.enemy.boss{
-  right:8%!important;
-  bottom:43%!important;
+  right:9.17%!important;
+  bottom:44.02%!important;
+  width:32.25%!important;
+  height:38.69%!important;
 }
 
 /* Brighter painted battlefield and two faint faction light pools. The scenery
@@ -361,13 +365,13 @@ body[data-game-screen="hunt"] .huntv2-enemy-intent strong{
 
 @media(max-width:360px){
   body[data-game-screen="hunt"] .huntv2-actor.player{
-    left:7%!important;
-    bottom:12%!important;
+    left:6.63%!important;
+    bottom:5.21%!important;
   }
   body[data-game-screen="hunt"] .huntv2-actor.enemy,
   body[data-game-screen="hunt"] .huntv2-actor.enemy.boss{
-    right:7%!important;
-    bottom:42%!important;
+    right:9.17%!important;
+    bottom:44.02%!important;
   }
   body[data-game-screen="hunt"] .huntv2-back-seal{
     width:232px!important;

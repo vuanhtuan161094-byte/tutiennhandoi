@@ -10,6 +10,7 @@ const TARGETS=[
   {id:'playerStatus',label:'Player Status',selector:'.huntv2-status-tray.player'},
   {id:'bossStatus',label:'Boss Status',selector:'.huntv2-status-tray.enemy'},
   {id:'supports',label:'Support Row',selector:'.huntv2-hud-extension-slots'},
+  {id:'resources',label:'Resource Lane',selector:'.huntv2-intel-lane'},
   {id:'skills',label:'Skill Bar',selector:'.huntv2-skills'},
   {id:'bossBriefing',label:'Boss Briefing',selector:'.v5-boss-briefing'},
   {id:'actionDeck',label:'Action Deck',selector:'.huntv2-action-deck'},
@@ -114,7 +115,7 @@ function bindDrag(handle,kind){
 function snapshot(){
   const sr=screenRect();const elements={};
   for(const meta of TARGETS){const state=stateFor(meta);if(!state)continue;const rect=relativeRect(state.node);if(!rect)continue;elements[meta.id]={label:meta.label,selector:meta.selector,anchorX:state.anchorX,anchorY:state.anchorY,x:rect.x,y:rect.y,width:rect.width,height:rect.height,deltaX:round(state.dx),deltaY:round(state.dy)};}
-  return {version:'combat-layout-draft.v1',createdAt:new Date().toISOString(),viewport:{width:innerWidth,height:innerHeight,dpr:Number(devicePixelRatio||1)},screen:sr?{width:round(sr.width),height:round(sr.height)}:null,elements};
+  return {version:'combat-layout-draft.v1',createdAt:new Date().toISOString(),viewport:sr?{width:round(sr.width),height:round(sr.height),dpr:Number(devicePixelRatio||1)}:{width:innerWidth,height:innerHeight,dpr:Number(devicePixelRatio||1)},browserViewport:{width:innerWidth,height:innerHeight},screen:sr?{width:round(sr.width),height:round(sr.height)}:null,elements};
 }
 function saveDraft(){const data=snapshot();try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));savedDraft=data;}catch{}panel.querySelector('[data-json]').value=JSON.stringify(data,null,2);flash('Đã lưu draft');return data;}
 async function copyJson(){const text=JSON.stringify(saveDraft(),null,2);try{await navigator.clipboard.writeText(text);flash('Đã copy JSON');}catch{const ta=panel.querySelector('[data-json]');ta.focus();ta.select();document.execCommand?.('copy');flash('Đã chọn JSON');}}

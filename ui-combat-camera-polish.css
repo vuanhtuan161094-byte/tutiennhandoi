@@ -102,11 +102,11 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
    breathing room for the seven real skill icons. Presentation only. */
 @media(max-width:430px){
   body[data-game-screen="hunt"] .huntv2-enemy-hud{
-    top:86px!important;
-    right:6px!important;
-    left:auto!important;
-    width:168px!important;
-    height:68px!important;
+    top:94px!important;
+    right:auto!important;
+    left:41.35%!important;
+    width:55.72%!important;
+    height:82px!important;
     padding:5px 6px!important;
   }
   body[data-game-screen="hunt"] .huntv2-hud-main{
@@ -147,11 +147,11 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
 
   body[data-game-screen="hunt"] .huntv2-actor.enemy,
   body[data-game-screen="hunt"] .huntv2-actor.enemy.boss{
-    bottom:48%!important;
+    bottom:44.02%!important;
   }
   body[data-game-screen="hunt"] .huntv2-status-tray.enemy{
-    top:162px!important;
-    right:8px!important;
+    top:179px!important;
+    right:3%!important;
   }
 
   body[data-game-screen="hunt"] .huntv2-skill-callout{
@@ -169,11 +169,11 @@ body[data-game-screen="hunt"] .huntv2-stage.shake-strong .huntv2-arena{
     position:absolute!important;
     z-index:82!important;
     display:grid!important;
-    left:8px!important;
-    right:8px!important;
-    bottom:39px!important;
+    left:4.17%!important;
+    right:5.74%!important;
+    bottom:26px!important;
     width:auto!important;
-    height:58px!important;
+    height:71px!important;
     min-width:0!important;
     max-width:none!important;
     margin:0!important;
