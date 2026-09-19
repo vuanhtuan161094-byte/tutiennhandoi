@@ -12,10 +12,35 @@ $GdUnitRunner = Join-Path $GodotProject "addons\gdUnit4\runtest.cmd"
 $ArtifactsRoot = Join-Path $RepoRoot "artifacts\godot-tools"
 $SetupScript = Join-Path $PSScriptRoot "Setup-GodotTooling.ps1"
 $ApprovedBaseline = Join-Path $GodotProject "tests\visual-baselines\home-390x844.png"
+$ToolingLockPath = Join-Path $PSScriptRoot "TOOLING_LOCK.json"
+$InstallManifest = Join-Path $ToolsRoot "installed.json"
+$ToolingLock = Get-Content -Raw $ToolingLockPath | ConvertFrom-Json
+$ExpectedEngineVersion = [string]$ToolingLock.engine.version
 
 function Assert-Exit([string]$Label) {
     if ($LASTEXITCODE -ne 0) {
         throw "$Label failed with exit code $LASTEXITCODE"
+    }
+}
+
+function Test-PinnedTooling() {
+    if (-not (Test-Path $StagehandExe) -or -not (Test-Path $GdUnitRunner) -or -not (Test-Path $InstallManifest)) {
+        return $false
+    }
+
+    try {
+        $manifest = Get-Content -Raw $InstallManifest | ConvertFrom-Json
+        $stagehandHash = (Get-FileHash -Algorithm SHA256 $StagehandExe).Hash.ToLowerInvariant()
+        $expectedStagehandHash = ([string]$ToolingLock.stagehand.windows_sha256).ToLowerInvariant()
+
+        if ($stagehandHash -ne $expectedStagehandHash) { return $false }
+        if ([string]$manifest.stagehand.version -ne [string]$ToolingLock.stagehand.tag) { return $false }
+        if (([string]$manifest.stagehand.sha256).ToLowerInvariant() -ne $expectedStagehandHash) { return $false }
+        if ([string]$manifest.gdunit4.tag -ne [string]$ToolingLock.gdunit4.tag) { return $false }
+        if ([string]$manifest.gdunit4.commit -ne [string]$ToolingLock.gdunit4.commit) { return $false }
+        return $true
+    } catch {
+        return $false
     }
 }
 
@@ -55,19 +80,23 @@ Write-Host "  VERIFY GODOT LOCAL"
 Write-Host "================================================"
 Write-Host ""
 
-if (-not (Test-Path $StagehandExe) -or -not (Test-Path $GdUnitRunner)) {
-    Write-Host "[0/7] Tooling missing; bootstrapping pinned versions ..."
+if (-not (Test-PinnedTooling)) {
+    Write-Host "[0/7] Tooling missing or does not match TOOLING_LOCK; bootstrapping pinned versions ..."
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $SetupScript
     if ($LASTEXITCODE -ne 0) {
         throw "Godot tooling bootstrap failed."
     }
 }
+if (-not (Test-PinnedTooling)) {
+    throw "Installed Godot tooling does not match tools/godot/TOOLING_LOCK.json."
+}
 
 $Godot = Resolve-GodotBinary $GodotBin
 $version = (& $Godot --version | Select-Object -First 1).Trim()
 Assert-Exit "Godot --version"
-if ($version -notmatch "^4\.7\.2") {
-    throw "Expected Godot 4.7.2, got '$version'"
+$expectedVersionPattern = "^" + [regex]::Escape($ExpectedEngineVersion)
+if ($version -notmatch $expectedVersionPattern) {
+    throw "Expected Godot $ExpectedEngineVersion, got '$version'"
 }
 Write-Host "[Godot] $version"
 Write-Host "[Godot] $Godot"
