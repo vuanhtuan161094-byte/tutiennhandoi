@@ -6,38 +6,48 @@ signal retreat_pressed
 signal route_requested(route_id: StringName)
 signal primary_action_requested(action_id: String)
 
+const HERO_PORTRAIT := preload("res://art/approved/hero_portrait.webp")
 const ICON_CHARACTER := preload("res://art/icons/character.svg")
 const ICON_ROOT := preload("res://art/icons/root.svg")
 const ICON_COMBAT := preload("res://art/icons/combat.svg")
 const ICON_RETREAT := preload("res://art/icons/retreat.svg")
 
 const GOLD := Color("e3bf70")
-const GOLD_HI := Color("f5ddb0")
-const CYAN := Color("8fd7f5")
-const MINT := Color("8bd2b5")
-const TEXT := Color("f6f1e7")
-const MUTED := Color("aebbb8")
+const GOLD_HI := Color("fff0bd")
+const CYAN := Color("70d9ff")
+const MINT := Color("76e5bf")
+const VIOLET := Color("c285ff")
+const TEXT := Color("f7f2e8")
+const MUTED := Color("b6c2c8")
+const DEEP := Color(0.008, 0.025, 0.040, 0.82)
 
 var bridge_label: Label
 var stone_label: Label
 var cp_label: Label
+
+var name_label: Label
 var life_label: Label
 var realm_label: Label
+var root_label: Label
+var lifespan_label: Label
+var injury_badge: Button
+
+var cultivation_state_label: Label
 var progress_bar: ProgressBar
 var progress_text: Label
 var rate_label: Label
 var eta_label: Label
 var status_label: Label
+
 var primary_button: Button
-var retreat_button: Button
 var quick_actions: HBoxContainer
-var context_button: Button
+var retreat_button: Button
+var retreat_subtitle_label: Label
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
-	_build_top()
-	_build_identity()
-	_build_context_notice()
+	_build_top_shell()
+	_build_identity_clusters()
 	_build_progress()
 	_build_primary()
 	_build_quick_actions()
@@ -46,22 +56,32 @@ func bind(vm: Dictionary) -> void:
 	var identity: Dictionary = vm.get("identity", {})
 	var progression: Dictionary = vm.get("progression", {})
 	var resources: Dictionary = vm.get("resources", {})
-	var context: Dictionary = vm.get("context", {})
 	var retreat: Dictionary = progression.get("retreat", {})
 
-	life_label.text = "ĐỜI %d" % int(identity.get("life_number", 1))
+	name_label.text = str(identity.get("name", "Tu Sĩ"))
+	life_label.text = "Đời %d" % int(identity.get("life_number", 1))
 	realm_label.text = str(identity.get("realm", "Phàm Nhân"))
+	root_label.text = "Linh Căn · %s" % str(identity.get("root_name", "Phàm Căn"))
+
+	var remaining_life := float(progression.get("remaining_life_years", 0))
+	lifespan_label.text = "Thọ nguyên còn · %s năm" % _fmt_decimal(remaining_life)
+
+	var injury := float(progression.get("injury_pct", 0))
+	injury_badge.visible = injury > 0.0
+	if injury_badge.visible:
+		injury_badge.text = "Thương Thế %.0f%%" % injury
 
 	var tu_vi := float(progression.get("tu_vi", 0))
 	var required := maxf(1.0, float(progression.get("required_tu_vi", 1)))
 	progress_bar.max_value = required
 	progress_bar.value = tu_vi
 	progress_text.text = "%s / %s" % [_fmt_num(tu_vi), _fmt_num(required)]
-	rate_label.text = "+%s / 15s" % _fmt_num(float(progression.get("rate_per_15s", 0)))
+	rate_label.text = "+%s Tu Vi / 15s" % _fmt_num(float(progression.get("rate_per_15s", 0)))
 
 	var ready := bool(progression.get("ready", false))
 	var transition := str(progression.get("transition", "auto"))
-	eta_label.text = _advance_text(progression) if ready else "Còn %s" % _duration(float(progression.get("eta_seconds", 0)))
+	cultivation_state_label.text = "Tu Vi viên mãn" if ready else "Đang tu luyện…"
+	eta_label.text = _advance_text(progression) if ready else "ETA · %s" % _duration(float(progression.get("eta_seconds", 0)))
 
 	primary_button.visible = ready and (transition == "tribulation" or transition == "ascend")
 	if ready and transition == "tribulation":
@@ -70,13 +90,14 @@ func bind(vm: Dictionary) -> void:
 	elif ready and transition == "ascend":
 		primary_button.text = "THĂNG CẢNH"
 		primary_button.set_meta("action_id", "ascendRealmV140")
-	_update_quick_action_position()
+	_update_action_band()
 
 	var retreat_enabled := bool(retreat.get("enabled", false))
-	retreat_button.visible = retreat_enabled
+	retreat_button.visible = true
 	retreat_button.disabled = not retreat_enabled
+	retreat_button.modulate = Color.WHITE if retreat_enabled else Color(0.62, 0.67, 0.70, 0.72)
+	retreat_subtitle_label.text = "Tích lũy Tu Vi" if retreat_enabled else "Chưa mở"
 
-	_update_context_notice(progression, context)
 	stone_label.text = _fmt_num(float(resources.get("spirit_stone", 0)))
 	cp_label.text = _fmt_num(float(resources.get("reincarnation_cp", 0)))
 
@@ -84,151 +105,203 @@ func bind(vm: Dictionary) -> void:
 		status_label.text = ""
 
 func set_bridge_status(online: bool, message: String) -> void:
-	bridge_label.text = "ONLINE" if online else message
+	bridge_label.text = "ONLINE" if online else _friendly_bridge_message(message)
 	bridge_label.visible = not online
 	bridge_label.add_theme_color_override("font_color", MUTED)
 
 func set_status_message(message: String) -> void:
 	status_label.text = message
 
-func _build_top() -> void:
-	var top_margin := MarginContainer.new()
-	top_margin.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	top_margin.offset_bottom = 54.0
-	top_margin.add_theme_constant_override("margin_left", 14)
-	top_margin.add_theme_constant_override("margin_right", 14)
-	top_margin.add_theme_constant_override("margin_top", 8)
-	top_margin.add_theme_constant_override("margin_bottom", 5)
-	add_child(top_margin)
+func _build_top_shell() -> void:
+	var shell := MarginContainer.new()
+	shell.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	shell.offset_bottom = 58.0
+	shell.add_theme_constant_override("margin_left", 10)
+	shell.add_theme_constant_override("margin_right", 10)
+	shell.add_theme_constant_override("margin_top", 7)
+	add_child(shell)
 
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
-	top_margin.add_child(row)
+	row.add_theme_constant_override("separation", 7)
+	shell.add_child(row)
 
 	var brand := VBoxContainer.new()
+	brand.custom_minimum_size = Vector2(116, 0)
 	brand.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	brand.add_theme_constant_override("separation", -1)
+	brand.add_theme_constant_override("separation", -4)
 	row.add_child(brand)
 
-	var title := _readable_label("TU TIÊN NHÀN DỖI", 17, GOLD_HI)
-	brand.add_child(title)
+	var title_top := _readable_label("TU TIÊN", 19, Color("eaf8ff"))
+	title_top.add_theme_color_override("font_outline_color", Color(0.02, 0.16, 0.28, 0.95))
+	brand.add_child(title_top)
 
-	bridge_label = _readable_label("ĐANG NỐI…", 7, MUTED)
+	var title_bottom := _readable_label("NHÀN DỖI", 17, CYAN)
+	title_bottom.add_theme_color_override("font_outline_color", Color(0.02, 0.12, 0.22, 0.95))
+	brand.add_child(title_bottom)
+
+	bridge_label = _readable_label("ĐANG KẾT NỐI…", 7, MUTED)
 	bridge_label.name = "BridgeStatus"
 	brand.add_child(bridge_label)
 
 	var resources := HBoxContainer.new()
-	resources.add_theme_constant_override("separation", 6)
+	resources.add_theme_constant_override("separation", 5)
 	row.add_child(resources)
 
-	var stone := _resource("LINH THẠCH", CYAN)
-	stone.custom_minimum_size = Vector2(70, 40)
+	var stone := _resource_chip("LINH THẠCH", CYAN)
+	stone.custom_minimum_size = Vector2(82, 42)
 	resources.add_child(stone)
 	stone_label = stone.find_child("Value", true, false) as Label
 
-	var cp := _resource("LUÂN HỒI", GOLD)
-	cp.custom_minimum_size = Vector2(68, 40)
+	var cp := _resource_chip("LUÂN HỒI", GOLD)
+	cp.custom_minimum_size = Vector2(78, 42)
 	resources.add_child(cp)
 	cp_label = cp.find_child("Value", true, false) as Label
 
-func _build_identity() -> void:
-	var identity_margin := MarginContainer.new()
-	identity_margin.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	identity_margin.offset_top = 58.0
-	identity_margin.offset_bottom = 134.0
-	identity_margin.add_theme_constant_override("margin_left", 15)
-	identity_margin.add_theme_constant_override("margin_right", 15)
-	add_child(identity_margin)
+func _build_identity_clusters() -> void:
+	var left := PanelContainer.new()
+	left.anchor_left = 0.0
+	left.anchor_right = 0.0
+	left.offset_left = 8.0
+	left.offset_top = 66.0
+	left.offset_right = 224.0
+	left.offset_bottom = 153.0
+	left.add_theme_stylebox_override("panel", _flat(Color(0.01, 0.04, 0.06, 0.56), 20, Color(0.70, 0.84, 0.92, 0.16), 1))
+	add_child(left)
 
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", -1)
-	identity_margin.add_child(col)
+	var left_margin := MarginContainer.new()
+	left_margin.add_theme_constant_override("margin_left", 7)
+	left_margin.add_theme_constant_override("margin_right", 8)
+	left_margin.add_theme_constant_override("margin_top", 6)
+	left_margin.add_theme_constant_override("margin_bottom", 6)
+	left.add_child(left_margin)
 
-	life_label = _readable_label("ĐỜI —", 8, GOLD)
-	col.add_child(life_label)
+	var identity_row := HBoxContainer.new()
+	identity_row.add_theme_constant_override("separation", 7)
+	left_margin.add_child(identity_row)
 
-	realm_label = _readable_label("Đang đọc cảnh giới", 27, Color("fff4db"))
+	var portrait_ring := PanelContainer.new()
+	portrait_ring.custom_minimum_size = Vector2(68, 68)
+	portrait_ring.add_theme_stylebox_override("panel", _flat(Color(0.035, 0.08, 0.10, 0.96), 34, GOLD, 2))
+	identity_row.add_child(portrait_ring)
+
+	var portrait_margin := MarginContainer.new()
+	portrait_margin.add_theme_constant_override("margin_left", 4)
+	portrait_margin.add_theme_constant_override("margin_right", 4)
+	portrait_margin.add_theme_constant_override("margin_top", 4)
+	portrait_margin.add_theme_constant_override("margin_bottom", 4)
+	portrait_ring.add_child(portrait_margin)
+
+	var portrait := TextureRect.new()
+	portrait.texture = HERO_PORTRAIT
+	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	portrait_margin.add_child(portrait)
+
+	var identity_col := VBoxContainer.new()
+	identity_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	identity_col.add_theme_constant_override("separation", -1)
+	identity_row.add_child(identity_col)
+
+	name_label = _readable_label("Tu Sĩ", 12, TEXT)
+	name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	identity_col.add_child(name_label)
+
+	life_label = _readable_label("Đời —", 8, GOLD)
+	identity_col.add_child(life_label)
+
+	realm_label = _readable_label("Phàm Nhân", 15, Color("e9f8ff"))
 	realm_label.name = "RealmLabel"
 	realm_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	col.add_child(realm_label)
-
-	var hint := _readable_label("Chạm cảnh giới để xem hồ sơ đời hiện tại", 8, Color(0.80, 0.84, 0.82, 0.82))
-	col.add_child(hint)
+	identity_col.add_child(realm_label)
 
 	var tap := Button.new()
 	tap.name = "IdentityTap"
 	tap.anchor_left = 0.0
-	tap.anchor_right = 0.82
+	tap.anchor_right = 0.0
 	tap.offset_left = 8.0
-	tap.offset_top = 54.0
-	tap.offset_right = 0.0
-	tap.offset_bottom = 136.0
+	tap.offset_top = 66.0
+	tap.offset_right = 224.0
+	tap.offset_bottom = 153.0
 	tap.text = ""
 	tap.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
-	tap.add_theme_stylebox_override("hover", _flat(Color(0.95, 0.82, 0.50, 0.035), 12))
+	tap.add_theme_stylebox_override("hover", _flat(Color(0.95, 0.82, 0.50, 0.05), 20, Color(0.95, 0.82, 0.50, 0.32), 1))
 	tap.pressed.connect(func(): identity_pressed.emit())
 	add_child(tap)
 
-func _build_context_notice() -> void:
-	context_button = Button.new()
-	context_button.visible = false
-	context_button.anchor_left = 0.0
-	context_button.anchor_right = 0.0
-	context_button.offset_left = 15.0
-	context_button.offset_top = 139.0
-	context_button.offset_right = 196.0
-	context_button.offset_bottom = 169.0
-	context_button.add_theme_font_size_override("font_size", 8)
-	context_button.add_theme_color_override("font_color", Color("f3dda7"))
-	context_button.add_theme_stylebox_override("normal", _flat(Color(0.10, 0.075, 0.035, 0.70), 15, Color(0.90, 0.72, 0.36, 0.28), 1))
-	context_button.add_theme_stylebox_override("hover", _flat(Color(0.14, 0.10, 0.04, 0.86), 15, GOLD, 1))
-	context_button.pressed.connect(func(): identity_pressed.emit())
-	add_child(context_button)
+	var right := PanelContainer.new()
+	right.anchor_left = 1.0
+	right.anchor_right = 1.0
+	right.offset_left = -159.0
+	right.offset_top = 72.0
+	right.offset_right = -8.0
+	right.offset_bottom = 151.0
+	right.add_theme_stylebox_override("panel", _flat(Color(0.01, 0.04, 0.06, 0.67), 15, Color(0.35, 0.85, 0.72, 0.22), 1))
+	add_child(right)
 
-func _update_context_notice(progression: Dictionary, context: Dictionary) -> void:
-	context_button.visible = false
-	var injury := float(progression.get("injury_pct", 0))
-	if injury > 0.0:
-		context_button.text = "Thương Thế %.0f%% · xem chi tiết" % injury
-		context_button.visible = true
-		return
-	var events = context.get("major_events", [])
-	if typeof(events) == TYPE_ARRAY and not events.is_empty():
-		var event_text := str(events[0])
-		if not event_text.is_empty():
-			context_button.text = event_text.left(24)
-			context_button.visible = true
+	var right_margin := MarginContainer.new()
+	right_margin.add_theme_constant_override("margin_left", 10)
+	right_margin.add_theme_constant_override("margin_right", 10)
+	right_margin.add_theme_constant_override("margin_top", 8)
+	right_margin.add_theme_constant_override("margin_bottom", 7)
+	right.add_child(right_margin)
+
+	var root_col := VBoxContainer.new()
+	root_col.add_theme_constant_override("separation", 5)
+	right_margin.add_child(root_col)
+
+	root_label = _readable_label("Linh Căn · —", 9, MINT)
+	root_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	root_col.add_child(root_label)
+
+	lifespan_label = _readable_label("Thọ nguyên còn · —", 8, TEXT)
+	lifespan_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	root_col.add_child(lifespan_label)
+
+	injury_badge = Button.new()
+	injury_badge.visible = false
+	injury_badge.custom_minimum_size = Vector2(0, 24)
+	injury_badge.add_theme_font_size_override("font_size", 7)
+	injury_badge.add_theme_color_override("font_color", Color("ffd4a8"))
+	injury_badge.add_theme_stylebox_override("normal", _flat(Color(0.22, 0.075, 0.025, 0.74), 10, Color(0.95, 0.47, 0.24, 0.50), 1))
+	injury_badge.pressed.connect(func(): identity_pressed.emit())
+	root_col.add_child(injury_badge)
 
 func _build_progress() -> void:
 	var shell := Control.new()
 	shell.name = "CultivationShell"
-	_anchor_bottom_wide(shell, 24.0, 24.0, -372.0, -292.0)
+	_anchor_bottom_wide(shell, 26.0, 26.0, -350.0, -274.0)
 	add_child(shell)
 
 	var box := PanelContainer.new()
 	box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	box.add_theme_stylebox_override("panel", _flat(Color(0.008, 0.040, 0.055, 0.68), 18, Color(0.83, 0.72, 0.45, 0.20), 1))
+	box.add_theme_stylebox_override("panel", _flat(Color(0.004, 0.026, 0.043, 0.76), 18, Color(0.44, 0.77, 0.92, 0.24), 1))
 	shell.add_child(box)
 
 	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 14)
-	margin.add_theme_constant_override("margin_right", 14)
-	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_left", 15)
+	margin.add_theme_constant_override("margin_right", 15)
+	margin.add_theme_constant_override("margin_top", 7)
 	margin.add_theme_constant_override("margin_bottom", 7)
 	box.add_child(margin)
 
 	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 3)
+	col.add_theme_constant_override("separation", 2)
 	margin.add_child(col)
 
-	var row := HBoxContainer.new()
-	col.add_child(row)
-	var title := _label("TU VI", 8, GOLD)
+	cultivation_state_label = _label("Đang tu luyện…", 9, TEXT)
+	cultivation_state_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	col.add_child(cultivation_state_label)
+
+	var number_row := HBoxContainer.new()
+	col.add_child(number_row)
+	var title := _label("TU VI", 8, MINT)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(title)
-	progress_text = _label("— / —", 10, TEXT)
+	number_row.add_child(title)
+	progress_text = _label("— / —", 9, TEXT)
 	progress_text.name = "CultivationText"
-	row.add_child(progress_text)
+	number_row.add_child(progress_text)
 
 	progress_bar = ProgressBar.new()
 	progress_bar.name = "CultivationProgress"
@@ -237,19 +310,19 @@ func _build_progress() -> void:
 	progress_bar.show_percentage = false
 	progress_bar.custom_minimum_size = Vector2(0, 7)
 	progress_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	progress_bar.add_theme_stylebox_override("background", _flat(Color(0.0, 0.025, 0.04, 0.78), 4))
-	progress_bar.add_theme_stylebox_override("fill", _flat(CYAN, 4))
+	progress_bar.add_theme_stylebox_override("background", _flat(Color(0.0, 0.015, 0.025, 0.92), 4, Color(0.36, 0.55, 0.60, 0.28), 1))
+	progress_bar.add_theme_stylebox_override("fill", _flat(MINT, 4))
 	col.add_child(progress_bar)
 
 	var foot := HBoxContainer.new()
 	col.add_child(foot)
-	rate_label = _label("+— / 15s", 8, CYAN)
+	rate_label = _label("+— Tu Vi / 15s", 8, MINT)
 	rate_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	foot.add_child(rate_label)
-	eta_label = _label("Còn —", 8, MUTED)
+	eta_label = _label("ETA · —", 8, MUTED)
 	foot.add_child(eta_label)
 
-	status_label = _label("", 7, Color(0.86, 0.88, 0.82, 0.9))
+	status_label = _label("", 7, Color(0.90, 0.90, 0.82, 0.92))
 	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(status_label)
 
@@ -258,7 +331,7 @@ func _build_progress() -> void:
 	tap.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	tap.text = ""
 	tap.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
-	tap.add_theme_stylebox_override("hover", _flat(Color(0.75, 0.92, 1.0, 0.03), 18))
+	tap.add_theme_stylebox_override("hover", _flat(Color(0.40, 0.88, 1.0, 0.035), 18, Color(0.45, 0.86, 1.0, 0.24), 1))
 	tap.pressed.connect(func(): cultivation_pressed.emit())
 	shell.add_child(tap)
 
@@ -266,11 +339,12 @@ func _build_primary() -> void:
 	primary_button = Button.new()
 	primary_button.name = "PrimaryCTA"
 	primary_button.visible = false
-	_anchor_bottom_wide(primary_button, 31.0, 31.0, -287.0, -239.0)
+	_anchor_bottom_wide(primary_button, 62.0, 62.0, -267.0, -217.0)
 	primary_button.add_theme_font_size_override("font_size", 13)
-	primary_button.add_theme_color_override("font_color", Color("fff0cf"))
-	primary_button.add_theme_stylebox_override("normal", _flat(Color(0.24, 0.19, 0.08, 0.88), 16, Color(0.95, 0.81, 0.49, 0.56), 1))
-	primary_button.add_theme_stylebox_override("hover", _flat(Color(0.32, 0.25, 0.10, 0.95), 16, GOLD_HI, 1))
+	primary_button.add_theme_color_override("font_color", GOLD_HI)
+	primary_button.add_theme_color_override("font_hover_color", Color.WHITE)
+	primary_button.add_theme_stylebox_override("normal", _flat(Color(0.20, 0.135, 0.035, 0.92), 24, Color(1.0, 0.79, 0.32, 0.82), 2))
+	primary_button.add_theme_stylebox_override("hover", _flat(Color(0.30, 0.205, 0.05, 0.97), 24, GOLD_HI, 2))
 	primary_button.pressed.connect(func():
 		primary_action_requested.emit(str(primary_button.get_meta("action_id", "")))
 	)
@@ -278,61 +352,89 @@ func _build_primary() -> void:
 
 func _build_quick_actions() -> void:
 	quick_actions = HBoxContainer.new()
-	quick_actions.add_theme_constant_override("separation", 7)
-	_anchor_bottom_wide(quick_actions, 28.0, 28.0, -265.0, -202.0)
+	quick_actions.add_theme_constant_override("separation", 2)
+	_anchor_bottom_wide(quick_actions, 14.0, 14.0, -216.0, -98.0)
 	add_child(quick_actions)
 
-	retreat_button = _quick_button(ICON_RETREAT, "Bế Quan", GOLD)
-	retreat_button.name = "RetreatButton"
+	retreat_button = _add_action_cell(ICON_RETREAT, "Bế Quan", "Tích lũy Tu Vi", GOLD, "RetreatButton")
+	retreat_subtitle_label = retreat_button.get_meta("subtitle_label") as Label
 	retreat_button.pressed.connect(func(): retreat_pressed.emit())
-	quick_actions.add_child(retreat_button)
 
-	var character := _quick_button(ICON_CHARACTER, "Nhân Vật", Color("eadbb8"))
+	var character := _add_action_cell(ICON_CHARACTER, "Nhân Vật", "Hồ sơ đời", VIOLET, "CharacterAction")
 	character.pressed.connect(func(): identity_pressed.emit())
-	quick_actions.add_child(character)
 
-	var root := _quick_button(ICON_ROOT, "Linh Căn", MINT)
+	var root := _add_action_cell(ICON_ROOT, "Linh Căn", "Căn cơ", MINT, "RootAction")
 	root.pressed.connect(func(): route_requested.emit(&"roots"))
-	quick_actions.add_child(root)
 
-	var combat := _quick_button(ICON_COMBAT, "Chiến Đấu", CYAN)
+	var combat := _add_action_cell(ICON_COMBAT, "Chiến Đấu", "Khiêu chiến", CYAN, "CombatAction")
 	combat.pressed.connect(func(): route_requested.emit(&"dungeons"))
-	quick_actions.add_child(combat)
 
-func _update_quick_action_position() -> void:
+func _update_action_band() -> void:
 	if primary_button.visible:
-		_anchor_bottom_wide(quick_actions, 28.0, 28.0, -219.0, -156.0)
+		_anchor_bottom_wide(quick_actions, 14.0, 14.0, -160.0, -98.0)
 	else:
-		_anchor_bottom_wide(quick_actions, 28.0, 28.0, -265.0, -202.0)
+		_anchor_bottom_wide(quick_actions, 14.0, 14.0, -216.0, -98.0)
 
-func _resource(caption: String, accent: Color) -> PanelContainer:
+func _add_action_cell(icon: Texture2D, caption: String, subtitle: String, accent: Color, button_name: String) -> Button:
+	var cell := VBoxContainer.new()
+	cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	cell.add_theme_constant_override("separation", 1)
+	quick_actions.add_child(cell)
+
+	var center := CenterContainer.new()
+	center.custom_minimum_size = Vector2(0, 72)
+	cell.add_child(center)
+
+	var button := Button.new()
+	button.name = button_name
+	button.icon = icon
+	button.text = ""
+	button.custom_minimum_size = Vector2(68, 68)
+	button.add_theme_color_override("icon_normal_color", accent)
+	button.add_theme_color_override("icon_hover_color", Color.WHITE)
+	button.add_theme_color_override("icon_disabled_color", Color(0.48, 0.54, 0.56, 0.80))
+	button.add_theme_stylebox_override("normal", _flat(Color(0.012, 0.040, 0.060, 0.90), 34, Color(accent.r, accent.g, accent.b, 0.70), 2))
+	button.add_theme_stylebox_override("hover", _flat(Color(0.025, 0.065, 0.090, 0.98), 34, accent, 3))
+	button.add_theme_stylebox_override("disabled", _flat(Color(0.016, 0.030, 0.040, 0.82), 34, Color(0.35, 0.40, 0.42, 0.70), 2))
+	center.add_child(button)
+
+	var title := _readable_label(caption, 9, TEXT)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	cell.add_child(title)
+
+	var sub := _readable_label(subtitle, 6, MUTED)
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	cell.add_child(sub)
+	button.set_meta("subtitle_label", sub)
+	return button
+
+func _resource_chip(caption: String, accent: Color) -> PanelContainer:
 	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", _flat(Color(0.008, 0.032, 0.045, 0.68), 12, Color(accent.r, accent.g, accent.b, 0.22), 1))
+	panel.add_theme_stylebox_override("panel", _flat(Color(0.008, 0.035, 0.055, 0.82), 14, Color(accent.r, accent.g, accent.b, 0.24), 1))
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 7)
+	margin.add_theme_constant_override("margin_right", 7)
+	margin.add_theme_constant_override("margin_top", 4)
+	margin.add_theme_constant_override("margin_bottom", 4)
+	panel.add_child(margin)
+
 	var col := VBoxContainer.new()
 	col.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.add_theme_constant_override("separation", -2)
+	margin.add_child(col)
+
 	var title := _label(caption, 5, MUTED)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(title)
-	var value := _label("—", 9, accent)
+
+	var value := _label("—", 10, accent)
 	value.name = "Value"
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(value)
-	panel.add_child(col)
 	return panel
-
-func _quick_button(icon: Texture2D, caption: String, accent: Color) -> Button:
-	var button := Button.new()
-	button.icon = icon
-	button.text = caption
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.custom_minimum_size = Vector2(0, 60)
-	button.add_theme_font_size_override("font_size", 8)
-	button.add_theme_color_override("font_color", accent)
-	button.add_theme_color_override("icon_normal_color", accent)
-	button.add_theme_color_override("icon_hover_color", Color.WHITE)
-	button.add_theme_stylebox_override("normal", _flat(Color(0.008, 0.035, 0.045, 0.42), 18, Color(accent.r, accent.g, accent.b, 0.16), 1))
-	button.add_theme_stylebox_override("hover", _flat(Color(0.03, 0.09, 0.11, 0.66), 18, Color(accent.r, accent.g, accent.b, 0.34), 1))
-	return button
 
 func _advance_text(progression: Dictionary) -> String:
 	var transition := str(progression.get("transition", "auto"))
@@ -340,8 +442,15 @@ func _advance_text(progression: Dictionary) -> String:
 	if transition == "tribulation":
 		return "Thiên Kiếp → %s" % next_realm
 	if transition == "ascend":
-		return "Có thể Thăng Cảnh → %s" % next_realm
+		return "Thăng Cảnh → %s" % next_realm
 	return "Đã viên mãn"
+
+func _friendly_bridge_message(message: String) -> String:
+	if message.is_empty():
+		return "Mất kết nối"
+	if message.length() > 28:
+		return "Mất kết nối"
+	return message
 
 func _duration(seconds: float) -> String:
 	var total := maxi(0, int(ceil(seconds)))
@@ -362,6 +471,11 @@ func _fmt_num(value: float) -> String:
 		count += 1
 	return out
 
+func _fmt_decimal(value: float) -> String:
+	if is_equal_approx(value, round(value)):
+		return str(int(round(value)))
+	return "%.1f" % value
+
 func _label(value: String, size: int, color: Color) -> Label:
 	var label := Label.new()
 	label.text = value
@@ -371,8 +485,8 @@ func _label(value: String, size: int, color: Color) -> Label:
 
 func _readable_label(value: String, size: int, color: Color) -> Label:
 	var label := _label(value, size, color)
-	label.add_theme_constant_override("outline_size", 4)
-	label.add_theme_color_override("font_outline_color", Color(0.0, 0.02, 0.03, 0.86))
+	label.add_theme_constant_override("outline_size", 3)
+	label.add_theme_color_override("font_outline_color", Color(0.0, 0.015, 0.025, 0.90))
 	return label
 
 func _flat(fill: Color, radius: int, border: Color = Color.TRANSPARENT, border_width: int = 0) -> StyleBoxFlat:
