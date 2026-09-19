@@ -98,6 +98,11 @@ try{
   assert(after>before,`Canonical cultivation commit did not increase Tu Vi: ${before} -> ${after}`);
 
   await sleep(2300);
+  await request('/diagnostic/shutdown',{method:'POST',body:{}});
+  await Promise.race([
+    new Promise(resolve=>first.child.once('exit',resolve)),
+    sleep(1800),
+  ]);
   await stop(first.child);
   first=null;
   await sleep(250);
