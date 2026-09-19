@@ -127,6 +127,7 @@ func _build_identity() -> void:
 	add_child(hint)
 
 	var tap := Button.new()
+	tap.name = "IdentityTap"
 	_place(tap, Vector2(9, 55), Vector2(312, 80))
 	tap.text = ""
 	tap.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
@@ -209,6 +210,7 @@ func _build_progress() -> void:
 	col.add_child(status_label)
 
 	var tap := Button.new()
+	tap.name = "CultivationTap"
 	_place(tap, Vector2(26, 474), Vector2(338, 72))
 	tap.text = ""
 	tap.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
