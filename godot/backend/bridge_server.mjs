@@ -131,7 +131,12 @@ class GodotCanonicalRuntime {
         ready:Boolean(cultivation.ready),
         transition:String(cultivation.transition||'auto'),
         nextRealm:String(cultivation.nextRealm||''),
-        retreat:cultivation.retreat||{}
+        retreat:{
+          bankHours:Math.max(0,Number(cultivation?.retreat?.bankHours)||0),
+          capHours:Math.max(0,Number(cultivation?.retreat?.capHours)||9),
+          dailyAccrualHours:Math.max(0,Number(cultivation?.retreat?.dailyAccrualHours)||3),
+          rewardPct3h:Math.max(0,Number(cultivation?.retreat?.rewardPct3h)||0)
+        }
       },
       spiritualRoot:{
         name:String(root?.grade?.name||character?.root||'Phàm Căn'),
