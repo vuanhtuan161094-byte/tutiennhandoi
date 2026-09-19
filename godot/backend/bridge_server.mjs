@@ -127,7 +127,14 @@ class GodotCanonicalRuntime {
         tuVi:Math.max(0,Number(cultivation.tuVi)||0),
         requiredTuVi:Math.max(0,Number(cultivation.requiredTuVi)||0),
         progressPct:Math.max(0,Math.min(100,Number(cultivation.progressPct)||0)),
+        baseTuViPer15s:Math.max(0,Number(cultivation.baseTuViPer15s)||0),
         finalTuViPer15s:Math.max(0,Number(cultivation.finalTuViPer15s)||0),
+        sources:Array.isArray(cultivation.sources)?cultivation.sources.map(x=>({
+          id:String(x?.id||''),
+          label:String(x?.label||x?.name||x?.id||''),
+          kind:String(x?.kind||''),
+          value:Number(x?.value)||0
+        })):[],
         etaRealSeconds:Math.max(0,Number(cultivation.etaRealSeconds)||0),
         injury:Math.max(0,Number(cultivation.injury??overview.injury)||0),
         ready:Boolean(cultivation.ready),
