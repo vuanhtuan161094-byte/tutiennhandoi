@@ -16,6 +16,7 @@ var life_label: Label
 var realm_label: Label
 var root_label: Label
 var progress_bar: ProgressBar
+var mini_progress_bar: ProgressBar
 var progress_text: Label
 var vitality_label: Label
 var stone_label: Label
@@ -75,12 +76,12 @@ func _build_brand() -> void:
 
 	var jade := _resource_pill("Linh Thạch", CYAN)
 	_place(jade, Vector2(233, 9), Vector2(70, 39))
-	stone_label = jade.get_node("Value")
+	stone_label = jade.find_child("Value", true, false) as Label
 	add_child(jade)
 
 	var cp := _resource_pill("Luân Hồi", GOLD)
 	_place(cp, Vector2(307, 9), Vector2(69, 39))
-	cp_label = cp.get_node("Value")
+	cp_label = cp.find_child("Value", true, false) as Label
 	add_child(cp)
 
 func _build_profile() -> void:
@@ -199,15 +200,15 @@ func _build_cultivation() -> void:
 	rate_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(rate_label)
 
-	var p := ProgressBar.new()
-	p.name = "CultivationMiniProgress"
-	p.max_value = 100
-	p.value = 0
-	p.show_percentage = false
-	p.custom_minimum_size = Vector2(0, 7)
-	p.add_theme_stylebox_override("background", _flat(Color(0.0, 0.025, 0.05, 0.94), 4))
-	p.add_theme_stylebox_override("fill", _flat(Color(0.16, 0.78, 0.52, 1.0), 4))
-	col.add_child(p)
+	mini_progress_bar = ProgressBar.new()
+	mini_progress_bar.name = "CultivationMiniProgress"
+	mini_progress_bar.max_value = 100
+	mini_progress_bar.value = 0
+	mini_progress_bar.show_percentage = false
+	mini_progress_bar.custom_minimum_size = Vector2(0, 7)
+	mini_progress_bar.add_theme_stylebox_override("background", _flat(Color(0.0, 0.025, 0.05, 0.94), 4))
+	mini_progress_bar.add_theme_stylebox_override("fill", _flat(Color(0.16, 0.78, 0.52, 1.0), 4))
+	col.add_child(mini_progress_bar)
 
 	eta_label = _label("Còn —", 9, MUTED)
 	eta_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -303,11 +304,7 @@ func _on_home_updated(home: Dictionary) -> void:
 	var rate := float(cultivation.get("finalTuViPer15s", 0))
 	rate_label.text = "+%s Tu Vi / 15s" % _fmt_num(rate)
 
-	var mini: ProgressBar = get_node_or_null("CultivationMiniProgress")
-	if mini == null:
-		mini = _find_named_progress(self, "CultivationMiniProgress")
-	if mini != null:
-		mini.value = float(cultivation.get("progressPct", tu_vi / required * 100.0))
+	mini_progress_bar.value = float(cultivation.get("progressPct", tu_vi / required * 100.0))
 
 	var ready := bool(cultivation.get("ready", false))
 	var transition := str(cultivation.get("transition", "auto"))
@@ -336,8 +333,8 @@ func _on_advance_pressed() -> void:
 	else:
 		backend_bridge.perform_action("useCultivationPill")
 
-func _on_bridge_status_changed(online: bool, _message: String) -> void:
-	bridge_label.text = "CANONICAL V140 • ONLINE" if online else "CANONICAL V140 • ĐANG KẾT NỐI"
+func _on_bridge_status_changed(online: bool, message: String) -> void:
+	bridge_label.text = "CANONICAL V140 • ONLINE" if online else "CANONICAL V140 • %s" % message.to_upper()
 	bridge_label.add_theme_color_override("font_color", MINT if online else MUTED)
 
 func _on_action_failed(message: String) -> void:
@@ -368,8 +365,8 @@ func _duration(seconds: float) -> String:
 	if total < 60:
 		return "%d giây" % total
 	if total < 3600:
-		return "%d phút %d giây" % [total / 60, total % 60]
-	return "%d giờ %d phút" % [total / 3600, (total % 3600) / 60]
+		return "%d phút %d giây" % [floori(total / 60.0), total % 60]
+	return "%d giờ %d phút" % [floori(total / 3600.0), floori((total % 3600) / 60.0)]
 
 func _fmt_num(value: float) -> String:
 	var raw := str(int(round(value)))
@@ -385,15 +382,6 @@ func _fmt_num(value: float) -> String:
 		out = raw.substr(i, 1) + out
 		count += 1
 	return sign_text + out
-
-func _find_named_progress(node: Node, wanted: String) -> ProgressBar:
-	if node.name == wanted and node is ProgressBar:
-		return node as ProgressBar
-	for child in node.get_children():
-		var found := _find_named_progress(child, wanted)
-		if found != null:
-			return found
-	return null
 
 func _resource_pill(title_text: String, accent: Color) -> PanelContainer:
 	var box := _panel(Color(0.012, 0.05, 0.085, 0.91), 11, Color(accent.r, accent.g, accent.b, 0.32))
