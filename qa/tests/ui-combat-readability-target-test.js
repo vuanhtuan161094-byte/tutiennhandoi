@@ -29,6 +29,8 @@ assert.match(css,/\.huntv2-status-tray\.enemy/,'Enemy status tray must have a pr
 assert.match(css,/\.huntv2-enemy-intent/,'Enemy intent must have a protected battlefield zone');
 assert.match(css,/\.huntv2-break-window/,'Break window must have a protected battlefield zone');
 assert.match(css,/\.huntv2-quick-controls/,'Secondary controls must be compacted');
+assert.match(css,/\.huntv2-monster-sheet \.v106-sheet-body/,'Boss intel must use the dedicated combat glass overlay');
+assert.match(css,/\.huntv2-monster-skill/,'Boss intel must keep authored skills readable without metric-card chrome');
 
 assert.match(polish,/\.huntv2-skill-callout\.tier-ultimate[\s\S]*?white-space:normal!important/,'Ultimate skill names must remain fully readable');
 assert.match(polish,/\.huntv2-float\.damage-main\.crit strong/,'Critical damage hierarchy missing');
@@ -86,6 +88,11 @@ assert.doesNotMatch(renderer,/productionV110|metric-row|data-sheet-panel|v110-re
 assert.doesNotMatch(renderer,/\/api\/|localStorage|sessionStorage/,'Renderer must remain presentation-only');
 
 assert.match(hunt,/event\.type==='battleEnd'[\s\S]*?showResult\(root,won\?'TRẤN SÁT':'THẤT BẠI'/,'Canonical battleEnd must remain victory/defeat authority');
+assert.match(hunt,/const bossSkills=\(m\.bossMechanic\?\.skills\|\|\[\]\)\.slice\(0,3\)/,'Boss intel must use authored Hunt Boss skills');
+assert.match(hunt,/huntv2-monster-intel/,'Boss detail interaction must render the compact combat intel surface');
+assert.match(hunt,/huntv2-monster-sheet/,'Boss detail interaction must use its scoped presentation sheet');
+assert.doesNotMatch(hunt,/v110-boss-plan/,'Boss detail must not restore the old telemetry plan wall');
+assert.doesNotMatch(hunt,/Vì sao nên leo tầng\?/,'Boss detail must not restore the old progression essay');
 assert.doesNotMatch(bridge,/battleEnd/,'Bridge must not reinterpret battle outcome');
 
 assert.ok(Buffer.byteLength(css,'utf8')<30000,'Combat target CSS must stay under 30 KB');
