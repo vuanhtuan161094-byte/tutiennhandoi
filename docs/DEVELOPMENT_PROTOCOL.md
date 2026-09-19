@@ -101,3 +101,30 @@ Primary review viewport is 390×844. Additional viewports are required only when
 ## 9. Authority order
 
 Current user instruction > live `main` production code/tests > current checkpoint/workflow > active version spec > Git history.
+
+
+## 10. Godot migration validation
+
+Godot work has an additional project-local validation lane.
+
+Before editing `godot/**`, read `godot/AGENTS.md` and the mapped vendored skills under `skills/**`.
+
+Godot candidate loop:
+
+`source snapshot -> relevant skill -> narrow patch -> full import when resources changed -> parse-check changed GDScript -> targeted/bridge test -> bounded runtime smoke -> actual runtime screenshot for UI -> user approval`
+
+Minimum technical gate when Godot is available locally:
+
+```
+godot --headless --path godot --import
+godot --headless --path godot --check-only --script res://<changed-script>.gd
+godot --headless --path godot --quit-after 300
+```
+
+Rules:
+- a source-only review is not a Godot runtime PASS;
+- adding/removing assets requires the import gate;
+- UI-visible Godot work requires actual 390×844 runtime evidence;
+- do not ask the user to discover obvious parser/import failures that a headless gate can catch;
+- when Stagehand visual automation is later installed and locked, its scenario/screenshot diff becomes the normal pre-review visual gate;
+- this lane supplements, not replaces, existing Game CI for web/backend surfaces.
