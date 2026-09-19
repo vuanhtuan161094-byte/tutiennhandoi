@@ -22,6 +22,7 @@ const SAVE_PATH=process.env.TUTIEN_GODOT_BRIDGE_SAVE
   : resolve(HERE,'../.runtime/godot-bridge-save.json');
 const PORT=Math.max(1,Math.min(65535,Number(process.argv[2]||4190)||4190));
 const HOST='127.0.0.1';
+const DIAGNOSTIC_MODE=process.env.TUTIEN_GODOT_BRIDGE_DIAGNOSTIC==='1';
 const registry=buildRegistry();
 
 class GodotCanonicalRuntime {
@@ -149,6 +150,9 @@ class GodotCanonicalRuntime {
     else if(id==='useCultivationPill')result=this.api.useCultivationPill();
     else if(id==='ascendRealmV140')result=this.api.ascendRealm();
     else if(id==='tribulationV140')result=this.api.perform({type:'tribulation',intensity:1});
+    else if(id==='diagnosticCommit'&&DIAGNOSTIC_MODE){
+      result=this.session.advanceRealtimeCultivationV140(LIVE_COMMIT_REAL_SECONDS);
+    }
     else throw new Error('Godot bridge action không hỗ trợ: '+id);
     this.dirty=true;
     return result;
