@@ -1,0 +1,86 @@
+{
+  "name": "tutien-home-runtime-smoke",
+  "description": "Launch the real Godot Home headlessly, verify canonical bridge connectivity and exercise progressive disclosure.",
+  "target": {
+    "mode": "launch",
+    "project_path": "../..",
+    "headless": true,
+    "timeout_ms": 60000
+  },
+  "steps": [
+    {
+      "name": "Home stage exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:HomeStage",
+        "state": "exists",
+        "timeout_ms": 15000
+      }
+    },
+    {
+      "name": "Home HUD exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:HomeHUD",
+        "state": "exists",
+        "timeout_ms": 15000
+      }
+    },
+    {
+      "name": "Canonical bridge reaches ONLINE",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:BridgeStatus",
+        "property": "text",
+        "operator": "contains",
+        "expected_value": "ONLINE",
+        "timeout_ms": 20000,
+        "poll_interval_ms": 200
+      }
+    },
+    {
+      "name": "Realm text is populated",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:RealmLabel",
+        "property": "text",
+        "operator": "not_equals",
+        "expected": ""
+      }
+    },
+    {
+      "name": "Cultivation contract is usable",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CultivationProgress",
+        "property": "max_value",
+        "operator": "greater_than",
+        "expected": 0
+      }
+    },
+    {
+      "name": "Open current-life sheet",
+      "action": "click",
+      "with": {
+        "selector": "name:IdentityTap"
+      }
+    },
+    {
+      "name": "Progressive-disclosure sheet appears",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:ActiveSheet",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Scene tree remains inspectable",
+      "action": "tree",
+      "with": {
+        "root_path": "/root",
+        "max_depth": 5
+      }
+    }
+  ]
+}
