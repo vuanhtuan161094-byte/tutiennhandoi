@@ -93,8 +93,10 @@ class GodotCanonicalRuntime {
     this.api.syncForgingV12328(now);
     const patch=buildWebClientViewPatch(this.api,'cultivation',now,'');
     const overview=patch.overview||{};
-    const life=overview.life||{};
-    const cultivation=patch.character||overview.cultivation||{};
+    const canonicalOverview=this.api.getOverview?.()||overview||{};
+    const dashboard=this.game.dashboard?.()||{};
+    const life=overview.life||canonicalOverview.life||{};
+    const cultivation=patch.character||overview.cultivation||canonicalOverview.cultivation||{};
     const character=this.api.getCharacter();
     const root=this.api.getSpiritualRootV145();
     const stones=(patch.inventory||[]).find(x=>x.id==='resource.spirit_stone')?.quantity??0;
@@ -147,6 +149,30 @@ class GodotCanonicalRuntime {
       resources:{
         spiritStone:Number(stones)||0,
         reincarnationCp:Number(cp)||0
+      },
+      homeContext:{
+        actions:Array.isArray(canonicalOverview.actions)?canonicalOverview.actions.map(x=>({
+          key:String(x?.key||''),
+          label:String(x?.label||''),
+          priority:String(x?.priority||'normal'),
+          reason:String(x?.reason||'')
+        })):[],
+        hints:Array.isArray(dashboard.activityHints)?dashboard.activityHints.map(String).slice(0,4):[],
+        majorEvents:Array.isArray(dashboard.majorEvents)?dashboard.majorEvents.map(String).slice(0,4):[],
+        activeTechnique:String(dashboard.activeTechnique||''),
+        build:{
+          score:Number(canonicalOverview?.build?.score)||0,
+          identity:String(canonicalOverview?.build?.identity||''),
+          strongestAxis:String(canonicalOverview?.build?.strongestAxis||''),
+          bottleneckAxis:String(canonicalOverview?.build?.bottleneckAxis||''),
+          unspentPotential:Number(canonicalOverview?.potential?.unspent)||0
+        },
+        hunt:{
+          selectedFloor:Number(canonicalOverview?.endlessHunt?.selectedFloor)||0,
+          highestUnlockedFloor:Number(canonicalOverview?.endlessHunt?.highestUnlockedFloor)||0,
+          monsterName:String(canonicalOverview?.endlessHunt?.monsterName||''),
+          monsterGrade:String(canonicalOverview?.endlessHunt?.monsterGrade||'')
+        }
       }
     };
   }
