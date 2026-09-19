@@ -22,7 +22,8 @@ func _ready() -> void:
 func set_route(route_id: StringName) -> void:
 	for key in _items.keys():
 		var nav_id := StringName(str(key))
-		_apply_state(_items[key] as Dictionary, nav_id == route_id)
+		var item: Dictionary = _items[key]
+		_apply_state(item, nav_id == route_id)
 
 func _build() -> void:
 	var dock := Panel.new()
