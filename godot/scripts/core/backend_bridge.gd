@@ -4,7 +4,6 @@ signal home_updated(home: Dictionary)
 signal bridge_status_changed(online: bool, message: String)
 signal action_failed(message: String)
 
-const HOST := "127.0.0.1"
 const PORT := 4190
 const BASE_URL := "http://127.0.0.1:4190"
 const POLL_SECONDS := 1.0
