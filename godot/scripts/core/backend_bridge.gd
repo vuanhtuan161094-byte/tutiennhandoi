@@ -4,8 +4,8 @@ signal home_updated(home: Dictionary)
 signal bridge_status_changed(online: bool, message: String)
 signal action_failed(message: String)
 
-const PORT := 4190
-const BASE_URL := "http://127.0.0.1:4190"
+const PORT := 4192
+const BASE_URL := "http://127.0.0.1:4192"
 const POLL_SECONDS := 1.0
 const EXPECTED_HOME_SCHEMA := "godot-home-bridge.v1"
 const EXPECTED_BRIDGE_VERSION := "godot-bridge.v2"
