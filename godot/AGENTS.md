@@ -83,7 +83,33 @@ For UI-visible work:
 - candidate is not visually approved until the user approves the actual runtime screenshot;
 - visual regression automation should be used once Stagehand is installed and locked for this project.
 
-## 5. Scene and resource safety
+## 5. Stagehand / GdUnit4 tooling
+
+Pinned toolchain:
+- Stagehand `v0.4.1`, addon vendored under `godot/addons/stagehand`;
+- GdUnit4 `v6.2.1`, installed locally by `SETUP_GODOT_TOOLING.cmd`;
+- exact versions/checksums live in `tools/godot/TOOLING_LOCK.json`.
+
+For any executable Godot change, use:
+- `VERIFY_GODOT_LOCAL.cmd` as the normal local gate;
+- `/skills/godot-stagehand/SKILL.md` for Stagehand scenario / selector / screenshot work.
+
+The gate performs:
+1. project import;
+2. parse-check of project scripts;
+3. GdUnit4;
+4. canonical bridge smoke;
+5. bounded Godot runtime smoke;
+6. Stagehand structural runtime smoke;
+7. visual capture or visual regression.
+
+Visual rule:
+- before a user-approved baseline exists, verification captures a deterministic 390x844 candidate only;
+- only explicit user approval may promote that candidate with `APPROVE_GODOT_HOME_BASELINE.cmd`;
+- once a committed baseline exists, verification runs Stagehand screenshot diff automatically;
+- never refresh a golden baseline merely to make a failing diff green.
+
+## 6. Scene and resource safety
 
 - never edit `.godot/**`;
 - never fabricate `uid://` values;
@@ -91,7 +117,7 @@ For UI-visible work:
 - run a full import after adding/removing assets/scenes;
 - generated `*.import` and script UID sidecars are local engine artifacts unless deliberately tracked by project policy.
 
-## 6. UI production rules
+## 7. UI production rules
 
 For production UI:
 - information architecture before decoration;
@@ -102,7 +128,7 @@ For production UI:
 - mockup is a visual target, not implementation proof;
 - do not iterate by random pixel nudging without comparing against the locked target.
 
-## 7. Completion language
+## 8. Completion language
 
 Do not say `done`, `fixed`, `PASS`, or equivalent from static inspection alone.
 
