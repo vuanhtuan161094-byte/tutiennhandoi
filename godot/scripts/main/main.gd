@@ -26,6 +26,7 @@ var eta_label: Label
 var bridge_label: Label
 var advance_button: Button
 var route_label: Label
+var retreat_popup: PopupPanel
 var nav_buttons: Dictionary = {}
 var _home: Dictionary = {}
 var backend_bridge
@@ -37,6 +38,7 @@ func _ready() -> void:
 	backend_bridge.home_updated.connect(_on_home_updated)
 	backend_bridge.bridge_status_changed.connect(_on_bridge_status_changed)
 	backend_bridge.action_failed.connect(_on_action_failed)
+	backend_bridge.action_completed.connect(_on_action_completed)
 	add_child(backend_bridge)
 	AppState.route_changed.connect(_on_route_changed)
 
@@ -220,7 +222,7 @@ func _build_actions() -> void:
 	add_child(row)
 
 	var retreat := _action_button("◉", "Bế Quan", GOLD)
-	retreat.pressed.connect(func(): backend_bridge.perform_action("retreatV140", {"hours": 1}))
+	retreat.pressed.connect(_open_retreat_popup)
 	row.add_child(retreat)
 
 	advance_button = _action_button("✦", "Tu Vi Đan", Color("bb77ff"))
@@ -320,6 +322,96 @@ func _on_home_updated(home: Dictionary) -> void:
 
 	stone_label.text = _fmt_num(float(resources.get("spiritStone", 0)))
 	cp_label.text = _fmt_num(float(resources.get("reincarnationCp", 0)))
+
+func _open_retreat_popup() -> void:
+	if _home.is_empty():
+		status_label.text = "Chưa đồng bộ dữ liệu Bế Quan"
+		return
+
+	var cultivation: Dictionary = _home.get("cultivation", {})
+	var retreat: Dictionary = cultivation.get("retreat", {})
+	var bank := maxf(0.0, float(retreat.get("bankHours", 0)))
+	var cap := maxf(0.0, float(retreat.get("capHours", 9)))
+	var daily := maxf(0.0, float(retreat.get("dailyAccrualHours", 3)))
+	var reward_pct_3h := maxf(0.0, float(retreat.get("rewardPct3h", 0)))
+
+	if retreat_popup != null and is_instance_valid(retreat_popup):
+		retreat_popup.queue_free()
+
+	retreat_popup = PopupPanel.new()
+	retreat_popup.name = "RetreatPopup"
+	retreat_popup.add_theme_stylebox_override("panel", _flat(Color(0.01, 0.04, 0.075, 0.98), 18, Color(0.33, 0.58, 0.72, 0.72), 1))
+	add_child(retreat_popup)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 16)
+	margin.add_theme_constant_override("margin_right", 16)
+	margin.add_theme_constant_override("margin_top", 14)
+	margin.add_theme_constant_override("margin_bottom", 14)
+	retreat_popup.add_child(margin)
+
+	var col := VBoxContainer.new()
+	col.custom_minimum_size = Vector2(260, 0)
+	col.add_theme_constant_override("separation", 8)
+	margin.add_child(col)
+
+	var title := _label("BẾ QUAN", 18, GOLD)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	col.add_child(title)
+
+	var summary := _label("%.2f / %.0f giờ tích lũy" % [bank, cap], 12, TEXT)
+	summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	col.add_child(summary)
+
+	var detail_text := "Mỗi ngày +%.0fh" % daily
+	if reward_pct_3h > 0:
+		detail_text += "  •  3h ≈ %.2f%% yêu cầu cảnh giới" % reward_pct_3h
+	var detail := _label(detail_text, 9, MUTED)
+	detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	col.add_child(detail)
+
+	var choices := HBoxContainer.new()
+	choices.add_theme_constant_override("separation", 6)
+	col.add_child(choices)
+
+	for hour in [1, 3, 6, 9]:
+		if float(hour) > cap:
+			continue
+		var button := Button.new()
+		button.text = "%dh" % hour
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.custom_minimum_size = Vector2(52, 42)
+		button.disabled = bank <= 0.0
+		button.add_theme_color_override("font_color", GOLD if hour == 3 else TEXT)
+		button.pressed.connect(_on_retreat_hour_selected.bind(hour))
+		choices.add_child(button)
+
+	var close_button := Button.new()
+	close_button.text = "Đóng"
+	close_button.pressed.connect(func(): retreat_popup.hide())
+	col.add_child(close_button)
+
+	retreat_popup.popup_centered(Vector2i(300, 220))
+
+func _on_retreat_hour_selected(hours: int) -> void:
+	if retreat_popup != null and is_instance_valid(retreat_popup):
+		retreat_popup.hide()
+	status_label.text = "Đang Bế Quan %dh…" % hours
+	backend_bridge.perform_action("retreatV140", {"hours": hours})
+
+func _on_action_completed(action_id: String, result: Dictionary) -> void:
+	if action_id != "retreatV140":
+		return
+	var used := float(result.get("hoursUsed", 0))
+	var gained := float(result.get("gained", 0))
+	var bank_after := float(result.get("bankHoursAfter", -1))
+	if gained > 0:
+		status_label.text = "Bế Quan %.2fh  •  +%s Tu Vi" % [used, _fmt_num(gained)]
+	elif bank_after == 0:
+		status_label.text = "Không còn giờ Bế Quan tích lũy"
+	else:
+		status_label.text = "Bế Quan chưa tạo thêm Tu Vi"
 
 func _on_advance_pressed() -> void:
 	var cultivation: Dictionary = _home.get("cultivation", {})
