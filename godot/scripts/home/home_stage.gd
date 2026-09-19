@@ -4,7 +4,7 @@ const HOME_BG := preload("res://art/approved/home_bg_blue_valley.webp")
 const CULTIVATOR := preload("res://art/approved/home_cultivator_centered.png")
 const SPARK := preload("res://art/icons/spark.svg")
 
-const HERO_BASE_Y := 176.0
+const HERO_BASE_Y := 228.0
 
 var _time := 0.0
 var _hero: TextureRect
@@ -47,20 +47,20 @@ func _build_world() -> void:
 	add_child(bottom_shade)
 
 	var hero_light := Panel.new()
-	_anchor_center_x(hero_light, -112.0, 112.0, 196.0, 474.0)
+	_anchor_center_x(hero_light, -112.0, 112.0, 226.0, 492.0)
 	hero_light.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hero_light.add_theme_stylebox_override("panel", _flat(Color(0.42, 0.82, 0.94, 0.042), 112, Color(0.55, 0.88, 0.95, 0.08), 1))
 	add_child(hero_light)
 
 	_aura_outer = Panel.new()
-	_anchor_center_x(_aura_outer, -136.0, 136.0, 196.0, 468.0)
+	_anchor_center_x(_aura_outer, -136.0, 136.0, 218.0, 490.0)
 	_aura_outer.pivot_offset = Vector2(136.0, 136.0)
 	_aura_outer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_aura_outer.add_theme_stylebox_override("panel", _flat(Color.TRANSPARENT, 136, Color(0.98, 0.77, 0.34, 0.38), 2))
 	add_child(_aura_outer)
 
 	_aura_inner = Panel.new()
-	_anchor_center_x(_aura_inner, -109.0, 109.0, 223.0, 441.0)
+	_anchor_center_x(_aura_inner, -109.0, 109.0, 245.0, 463.0)
 	_aura_inner.pivot_offset = Vector2(109.0, 109.0)
 	_aura_inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_aura_inner.add_theme_stylebox_override("panel", _flat(Color(0.16, 0.68, 0.76, 0.018), 109, Color(0.48, 0.90, 0.96, 0.32), 1))
@@ -81,8 +81,8 @@ func _build_world() -> void:
 
 	_hero = TextureRect.new()
 	_hero.texture = CULTIVATOR
-	_anchor_center_x(_hero, -120.0, 120.0, HERO_BASE_Y, HERO_BASE_Y + 336.0)
-	_hero.pivot_offset = Vector2(120.0, 336.0)
+	_anchor_center_x(_hero, -112.0, 112.0, HERO_BASE_Y, 512.0)
+	_hero.pivot_offset = Vector2(112.0, 284.0)
 	_hero.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_hero.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_hero.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
