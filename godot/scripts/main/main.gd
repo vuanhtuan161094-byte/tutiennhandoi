@@ -241,7 +241,7 @@ func _build_nav() -> void:
 		row.add_child(b)
 
 func _resource_pill(value: String, accent: Color) -> Control:
-	var box := _glass_panel(Color(0.012, 0.05, 0.085, 0.90), 11, Color(accent, 0.30))
+	var box := _glass_panel(Color(0.012, 0.05, 0.085, 0.90), 11, Color(accent.r, accent.g, accent.b, 0.30))
 	var l := _label(value, 10, accent)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
