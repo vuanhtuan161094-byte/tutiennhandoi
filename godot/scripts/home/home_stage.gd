@@ -81,8 +81,8 @@ func _build_world() -> void:
 
 	_hero = TextureRect.new()
 	_hero.texture = CULTIVATOR
-	_anchor_center_x(_hero, -112.0, 112.0, HERO_BASE_Y, 512.0)
-	_hero.pivot_offset = Vector2(112.0, 284.0)
+	_anchor_center_x(_hero, -112.0, 112.0, HERO_BASE_Y, 490.0)
+	_hero.pivot_offset = Vector2(112.0, 262.0)
 	_hero.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_hero.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_hero.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
