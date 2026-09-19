@@ -5,3 +5,7 @@
 .runtime/
 
 *.import
+addons/gdUnit4/
+reports/
+stagehand-baselines/
+stagehand-diffs/
