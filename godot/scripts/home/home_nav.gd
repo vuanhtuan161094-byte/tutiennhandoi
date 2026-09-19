@@ -112,7 +112,7 @@ func _nav_item(icon: Texture2D, caption: String, route_id: StringName) -> Dictio
 	var label := Label.new()
 	label.text = caption
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 8)
+	label.add_theme_font_size_override("font_size", 9)
 	label.add_theme_constant_override("outline_size", 2)
 	label.add_theme_color_override("font_outline_color", Color(0.0, 0.01, 0.02, 0.90))
 	col.add_child(label)
