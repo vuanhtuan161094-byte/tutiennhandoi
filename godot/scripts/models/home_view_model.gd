@@ -33,7 +33,7 @@ static func build(home: Dictionary) -> Dictionary:
 	var remaining_life := maxf(0.0, lifespan_years - age_years)
 
 	var retreat_reward := maxf(0.0, float(retreat.get("rewardPct3h", 0)))
-	var retreat_enabled := bool(retreat.get("enabled", retreat_reward > 0.0))
+	var retreat_enabled := bool(retreat.get("enabled", false)) and retreat_reward > 0.0
 
 	return {
 		"ok": true,
