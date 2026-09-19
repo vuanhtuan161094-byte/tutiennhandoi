@@ -200,6 +200,11 @@ const server=createServer(async(req,res)=>{
   try{
     if(req.method==='GET'&&url.pathname==='/health')return send(res,200,{ok:true,schema:'godot-bridge-health.v1',bridgeVersion:BRIDGE_VERSION,port:PORT,authority:'canonical-dist'});
     if(req.method==='GET'&&url.pathname==='/home')return send(res,200,runtime.homeView());
+    if(DIAGNOSTIC_MODE&&req.method==='POST'&&url.pathname==='/diagnostic/shutdown'){
+      send(res,200,{ok:true,bridgeVersion:BRIDGE_VERSION,shuttingDown:true});
+      setTimeout(()=>void shutdown('diagnostic'),20);
+      return;
+    }
     if(req.method==='POST'&&url.pathname==='/action'){
       const body=await bodyJson(req);
       const result=runtime.action(String(body.action||''),body);
