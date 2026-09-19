@@ -116,7 +116,7 @@ class GodotCanonicalRuntime {
       life:{
         lifeNumber:Number(life.lifeNumber||1),
         realm:String(cultivation.realm||life.realm||'Phàm Nhân'),
-        realmOrder:Number(life.realmOrder||0),
+        realmOrder:Number(cultivation.realmOrder??life.realmOrder??0),
         ageYears:Number(life.ageYears||0),
         lifespanYears:Number(life.lifespanYears||0),
         alive:life.alive!==false
