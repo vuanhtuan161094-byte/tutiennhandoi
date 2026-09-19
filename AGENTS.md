@@ -114,3 +114,18 @@ Never mark a UI slice `LOCKED` without:
 - checkpoint update by the slice owner.
 
 Do not use `[closure]` merely because a candidate compiles or looks plausible.
+
+
+## 9. Godot migration work
+
+For any change under `godot/**`:
+
+1. read `godot/AGENTS.md`;
+2. load the relevant vendored project-local skill(s) under `skills/godot-*/SKILL.md`;
+3. keep Godot presentation separated from locked JS gameplay authority unless a parity-proven porting slice is explicitly opened;
+4. use the Godot verification gate defined in `godot/AGENTS.md`;
+5. do not use static source review as runtime or visual proof.
+
+The vendored Godot skill snapshot is pinned in `skills/README.md`. Do not silently follow upstream `main`.
+
+Until Godot validation is wired into the unified Game CI, the local Godot import/parse/smoke gate is mandatory for Godot candidates. Existing web/backend Game CI remains authoritative for the locked web/runtime surfaces it covers.
