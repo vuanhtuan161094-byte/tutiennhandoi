@@ -135,7 +135,9 @@ class GodotCanonicalRuntime {
           bankHours:Math.max(0,Number(cultivation?.retreat?.bankHours)||0),
           capHours:Math.max(0,Number(cultivation?.retreat?.capHours)||9),
           dailyAccrualHours:Math.max(0,Number(cultivation?.retreat?.dailyAccrualHours)||3),
-          rewardPct3h:Math.max(0,Number(cultivation?.retreat?.rewardPct3h)||0)
+          rewardPct3h:Math.max(0,Number(cultivation?.retreat?.rewardPct3h)||0),
+          rewardPctPerHour:Math.max(0,Number(cultivation?.retreat?.rewardPctPerHour)||0),
+          enabled:Math.max(0,Number(cultivation?.retreat?.rewardPct3h)||0)>0
         }
       },
       spiritualRoot:{
@@ -156,7 +158,8 @@ class GodotCanonicalRuntime {
     else if(id==='ascendRealmV140')result=this.api.ascendRealm();
     else if(id==='tribulationV140')result=this.api.perform({type:'tribulation',intensity:1});
     else if(id==='diagnosticCommit'&&DIAGNOSTIC_MODE){
-      result=this.session.advanceRealtimeCultivationV140(LIVE_COMMIT_REAL_SECONDS);
+      const seconds=Math.max(LIVE_COMMIT_REAL_SECONDS,Math.min(3600,Number(payload.seconds)||LIVE_COMMIT_REAL_SECONDS));
+      result=this.session.advanceRealtimeCultivationV140(seconds);
     }
     else throw new Error('Godot bridge action không hỗ trợ: '+id);
     this.dirty=true;
