@@ -334,8 +334,11 @@ body[data-game-screen="hunt"] .huntv2-monster-sheet .v106-close{
   font-size:18px;
 }
 body[data-game-screen="hunt"] .huntv2-monster-sheet .v106-sheet-body{
-  max-height:min(420px,62%);
-  padding:2px 11px 10px;
+  flex:0 1 auto!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:min(420px,62dvh)!important;
+  padding:2px 11px 10px!important;
   border:1px solid rgba(223,191,116,.20)!important;
   border-top:0!important;
   border-radius:0 0 14px 14px;
@@ -417,6 +420,6 @@ body[data-game-screen="hunt"] .huntv2-monster-progression b{
 }
 @media(max-width:360px){
   body[data-game-screen="hunt"] .huntv2-monster-sheet{padding:78px 8px 0}
-  body[data-game-screen="hunt"] .huntv2-monster-sheet .v106-sheet-body{max-height:64%}
+  body[data-game-screen="hunt"] .huntv2-monster-sheet .v106-sheet-body{max-height:64dvh!important}
   body[data-game-screen="hunt"] .huntv2-monster-identity strong{font-size:16px}
 }
