@@ -203,6 +203,7 @@ func _open_sheet(title_text: String, eyebrow_text: String, lines: Array, top: fl
 
 func _make_overlay() -> Control:
 	var root := Control.new()
+	root.name = "ActiveSheet"
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_STOP
 	root.z_index = 80
