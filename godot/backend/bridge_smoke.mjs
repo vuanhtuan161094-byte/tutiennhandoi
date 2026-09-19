@@ -90,15 +90,27 @@ try{
 
   const created=await request('/new',{method:'POST',body:{seed:161094}});
   validateHome(created.home);
-  const before=Number(created.home.cultivation.tuVi)||0;
-  const bankBefore=Number(created.home.cultivation?.retreat?.bankHours)||0;
+  assert(created.home.life.realm==='Phàm Nhân',`Expected fresh realm Phàm Nhân, got ${created.home.life.realm}`);
+  assert(Number(created.home.cultivation?.retreat?.rewardPct3h)===0,'Phàm Nhân retreat reward must be 0 by canonical V140 balance');
+
+  const filled=await request('/action',{method:'POST',body:{action:'diagnosticCommit',seconds:300}});
+  validateHome(filled.home);
+  assert(filled.home.cultivation.ready===true,'Phàm Nhân should reach ready state after diagnostic cultivation');
+
+  const ascended=await request('/action',{method:'POST',body:{action:'ascendRealmV140'}});
+  validateHome(ascended.home);
+  assert(Number(ascended.home.life.realmOrder)>=1,`Expected Luyện Khí or higher after ascension, got order ${ascended.home.life.realmOrder}`);
+  assert(Number(ascended.home.cultivation?.retreat?.rewardPct3h)>0,'Retreat must unlock from Luyện Khí');
+
+  const before=Number(ascended.home.cultivation.tuVi)||0;
+  const bankBefore=Number(ascended.home.cultivation?.retreat?.bankHours)||0;
   assert(bankBefore>0,`Expected canonical retreat bank > 0, got ${bankBefore}`);
 
   const action=await request('/action',{method:'POST',body:{action:'retreatV140',hours:1}});
   validateHome(action.home);
   const after=Number(action.home.cultivation.tuVi)||0;
   const bankAfter=Number(action.home.cultivation?.retreat?.bankHours)||0;
-  assert(after>before,`Canonical retreat did not increase Tu Vi: ${before} -> ${after}`);
+  assert(after>before,`Canonical retreat did not increase Tu Vi at Luyện Khí: ${before} -> ${after}`);
   assert(bankAfter<bankBefore,`Canonical retreat bank did not decrease: ${bankBefore} -> ${bankAfter}`);
   assert(Number(action.result?.hoursUsed)>0,'Canonical retreat result must report hoursUsed > 0');
   assert(Number(action.result?.gained)>0,'Canonical retreat result must report gained > 0');
@@ -123,8 +135,9 @@ try{
   console.log('GODOT PHASE 1 BRIDGE SMOKE: PASS');
   console.log(`Bridge: ${EXPECTED_VERSION}`);
   console.log(`Authority: ${EXPECTED_AUTHORITY}`);
+  console.log('Unlock path: Phàm Nhân -> Luyện Khí');
   console.log(`Retreat bank: ${bankBefore}h -> ${bankAfter}h`);
-  console.log(`Tu Vi: ${before} -> ${after} -> restart ${restoredTuVi}`);
+  console.log(`Tu Vi after unlock: ${before} -> ${after} -> restart ${restoredTuVi}`);
   console.log(`Realm: ${restored.life.realm} · Root: ${restored.spiritualRoot.name}`);
 }catch(error){
   const logs=[first?.logs?.(),second?.logs?.()].filter(Boolean).join('\n');
