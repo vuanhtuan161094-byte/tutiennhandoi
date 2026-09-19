@@ -36,3 +36,16 @@ When updating:
 3. replace the vendored files;
 4. update the pinned SHA in this file;
 5. run the Godot verification gate before relying on new guidance.
+
+
+## Stagehand skill
+
+Stagehand guidance is vendored separately because it comes from a different upstream project:
+
+- skill: `skills/godot-stagehand/SKILL.md`
+- upstream repository: `mrf/godot-stagehand`
+- tag: `v0.4.1`
+- pinned commit: `82c6cb96f3cccb067081db17f4c4c8582562e98b`
+- license: MIT
+
+The corresponding Godot addon is vendored under `godot/addons/stagehand`. The Windows CLI binary is not committed; the pinned bootstrap downloads it and verifies SHA-256 from `tools/godot/TOOLING_LOCK.json`.
