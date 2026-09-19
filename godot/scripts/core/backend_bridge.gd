@@ -8,11 +8,14 @@ const HOST := "127.0.0.1"
 const PORT := 4190
 const BASE_URL := "http://127.0.0.1:4190"
 const POLL_SECONDS := 1.0
+const EXPECTED_HOME_SCHEMA := "godot-home-bridge.v1"
+const EXPECTED_BRIDGE_VERSION := "godot-bridge.v2"
 
 var _http: HTTPRequest
 var _timer: Timer
 var _bridge_pid: int = -1
 var _online := false
+var _status_message := ""
 var _busy := false
 var _pending_kind := ""
 
@@ -87,16 +90,35 @@ func _on_request_completed(_result: int, response_code: int, _headers: PackedStr
 			action_failed.emit(str(data.get("error", "Action thất bại")))
 		return
 
-	_set_online(true, "Canonical backend connected")
 	if _pending_kind == "home":
+		if str(data.get("schema", "")) != EXPECTED_HOME_SCHEMA:
+			_set_online(false, "Sai Home schema")
+			return
+		if str(data.get("bridgeVersion", "")) != EXPECTED_BRIDGE_VERSION:
+			_set_online(false, "Bridge version không khớp")
+			return
+		var authority = data.get("authority", {})
+		if typeof(authority) != TYPE_DICTIONARY or str(authority.get("cultivation", "")) != "character-cultivation.v140":
+			_set_online(false, "Sai cultivation authority")
+			return
+		_set_online(true, "Canonical backend connected")
 		home_updated.emit(data)
 	elif _pending_kind == "action":
 		var home = data.get("home", {})
-		if typeof(home) == TYPE_DICTIONARY:
-			home_updated.emit(home)
+		if typeof(home) != TYPE_DICTIONARY:
+			_set_online(false, "Action thiếu Home DTO")
+			action_failed.emit("Action trả dữ liệu không hợp lệ")
+			return
+		if str(home.get("schema", "")) != EXPECTED_HOME_SCHEMA or str(home.get("bridgeVersion", "")) != EXPECTED_BRIDGE_VERSION:
+			_set_online(false, "Action trả sai bridge schema")
+			action_failed.emit("Action trả sai bridge schema")
+			return
+		_set_online(true, "Canonical backend connected")
+		home_updated.emit(home)
 
 func _set_online(value: bool, message: String) -> void:
-	if _online == value:
+	if _online == value and _status_message == message:
 		return
 	_online = value
+	_status_message = message
 	bridge_status_changed.emit(value, message)
