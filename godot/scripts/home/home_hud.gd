@@ -80,7 +80,7 @@ func bind(vm: Dictionary) -> void:
 	var required := maxf(1.0, float(progression.get("required_tu_vi", 1)))
 	progress_bar.max_value = required
 	progress_bar.value = tu_vi
-	progress_text.text = "%s / %s" % [_fmt_num(tu_vi), _fmt_num(required)]
+	progress_text.text = "Tu Vi · %s / %s" % [_fmt_num(tu_vi), _fmt_num(required)]
 	rate_label.text = "+%s Tu Vi / 15s" % _fmt_num(float(progression.get("rate_per_15s", 0)))
 
 	var ready := bool(progression.get("ready", false))
@@ -290,7 +290,7 @@ func _build_identity_clusters() -> void:
 func _build_progress() -> void:
 	var shell := Control.new()
 	shell.name = "CultivationShell"
-	_anchor_bottom_wide(shell, 26.0, 26.0, -350.0, -274.0)
+	_anchor_bottom_wide(shell, 48.0, 48.0, -350.0, -274.0)
 	add_child(shell)
 
 	var box := PanelContainer.new()
@@ -313,14 +313,10 @@ func _build_progress() -> void:
 	cultivation_state_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(cultivation_state_label)
 
-	var number_row := HBoxContainer.new()
-	col.add_child(number_row)
-	var title := _label("TU VI", 8, MINT)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	number_row.add_child(title)
-	progress_text = _label("— / —", 10, TEXT)
+	progress_text = _label("Tu Vi · — / —", 10, TEXT)
 	progress_text.name = "CultivationText"
-	number_row.add_child(progress_text)
+	progress_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	col.add_child(progress_text)
 
 	progress_bar = ProgressBar.new()
 	progress_bar.name = "CultivationProgress"
