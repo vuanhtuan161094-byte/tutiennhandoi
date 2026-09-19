@@ -302,7 +302,7 @@ func _build_progress() -> void:
 	col.add_theme_constant_override("separation", 2)
 	margin.add_child(col)
 
-	cultivation_state_label = _label("Đang tu luyện…", 9, TEXT)
+	cultivation_state_label = _label("Đang tu luyện…", 10, TEXT)
 	cultivation_state_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(cultivation_state_label)
 
@@ -311,7 +311,7 @@ func _build_progress() -> void:
 	var title := _label("TU VI", 8, MINT)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	number_row.add_child(title)
-	progress_text = _label("— / —", 9, TEXT)
+	progress_text = _label("— / —", 10, TEXT)
 	progress_text.name = "CultivationText"
 	number_row.add_child(progress_text)
 
@@ -328,13 +328,13 @@ func _build_progress() -> void:
 
 	var foot := HBoxContainer.new()
 	col.add_child(foot)
-	rate_label = _label("+— Tu Vi / 15s", 8, MINT)
+	rate_label = _label("+— Tu Vi / 15s", 9, MINT)
 	rate_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	foot.add_child(rate_label)
-	eta_label = _label("ETA · —", 8, MUTED)
+	eta_label = _label("ETA · —", 9, MUTED)
 	foot.add_child(eta_label)
 
-	status_label = _label("", 7, Color(0.90, 0.90, 0.82, 0.92))
+	status_label = _label("", 8, Color(0.90, 0.90, 0.82, 0.92))
 	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(status_label)
 
@@ -470,12 +470,12 @@ func _add_action_cell(icon: Texture2D, caption: String, subtitle: String, accent
 	button.add_theme_stylebox_override("disabled", StyleBoxEmpty.new())
 	orb.add_child(button)
 
-	var title := _readable_label(caption, 9, TEXT)
+	var title := _readable_label(caption, 10, TEXT)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	cell.add_child(title)
 
-	var sub := _readable_label(subtitle, 6, MUTED)
+	var sub := _readable_label(subtitle, 7, MUTED)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	cell.add_child(sub)
@@ -500,7 +500,7 @@ func _resource_chip(caption: String, accent: Color) -> PanelContainer:
 	col.add_theme_constant_override("separation", -2)
 	margin.add_child(col)
 
-	var title := _label(caption, 5, MUTED)
+	var title := _label(caption, 6, MUTED)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(title)
 
