@@ -1,0 +1,124 @@
+param(
+    [switch]$Force
+)
+
+$ErrorActionPreference = "Stop"
+$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$ToolsRoot = Join-Path $RepoRoot ".tools\godot"
+$GodotProject = Join-Path $RepoRoot "godot"
+
+$StagehandVersion = "v0.4.1"
+$StagehandExe = Join-Path $ToolsRoot "stagehand\godot-stagehand.exe"
+$StagehandUrl = "https://github.com/mrf/godot-stagehand/releases/download/v0.4.1/godot-stagehand-windows-amd64.exe"
+$StagehandSha256 = "38bcb425588756d50dec7eed97d4307b545ab635ec9183363fe7bf4eef4eb657"
+
+$GdUnitTag = "v6.2.1"
+$GdUnitCommit = "08ffc7c65b61b1b2edd545616061a99973c13ce1"
+$GdUnitRepo = "https://github.com/godot-gdunit-labs/gdUnit4.git"
+$GdUnitSource = Join-Path $ToolsRoot "gdunit4-src"
+$GdUnitTarget = Join-Path $GodotProject "addons\gdUnit4"
+
+function Assert-LastExitCode([string]$Label) {
+    if ($LASTEXITCODE -ne 0) {
+        throw "$Label failed with exit code $LASTEXITCODE"
+    }
+}
+
+New-Item -ItemType Directory -Force -Path $ToolsRoot | Out-Null
+New-Item -ItemType Directory -Force -Path (Split-Path $StagehandExe -Parent) | Out-Null
+
+Write-Host "================================================"
+Write-Host "  SETUP GODOT TOOLING"
+Write-Host "================================================"
+Write-Host ""
+
+$stagehandNeedsDownload = $Force -or -not (Test-Path $StagehandExe)
+if (-not $stagehandNeedsDownload) {
+    $currentHash = (Get-FileHash -Algorithm SHA256 $StagehandExe).Hash.ToLowerInvariant()
+    $stagehandNeedsDownload = $currentHash -ne $StagehandSha256
+}
+
+if ($stagehandNeedsDownload) {
+    $temp = "$StagehandExe.download"
+    Remove-Item $temp -Force -ErrorAction SilentlyContinue
+    Write-Host "[Stagehand] Downloading $StagehandVersion ..."
+    Invoke-WebRequest -UseBasicParsing -Uri $StagehandUrl -OutFile $temp
+    $hash = (Get-FileHash -Algorithm SHA256 $temp).Hash.ToLowerInvariant()
+    if ($hash -ne $StagehandSha256) {
+        Remove-Item $temp -Force -ErrorAction SilentlyContinue
+        throw "Stagehand SHA256 mismatch. Expected $StagehandSha256, got $hash"
+    }
+    Move-Item -Force $temp $StagehandExe
+} else {
+    Write-Host "[Stagehand] Pinned binary already present."
+}
+
+$stagehandAddon = Join-Path $GodotProject "addons\stagehand\plugin.cfg"
+if (-not (Test-Path $stagehandAddon)) {
+    throw "Vendored Stagehand addon missing: $stagehandAddon"
+}
+
+$git = Get-Command git.exe -ErrorAction SilentlyContinue
+if ($null -eq $git) {
+    $git = Get-Command git -ErrorAction SilentlyContinue
+}
+if ($null -eq $git) {
+    throw "Git is required to install pinned GdUnit4."
+}
+
+if ($Force -and (Test-Path $GdUnitSource)) {
+    Remove-Item -Recurse -Force $GdUnitSource
+}
+
+if (-not (Test-Path (Join-Path $GdUnitSource ".git"))) {
+    Write-Host "[GdUnit4] Creating pinned source cache ..."
+    New-Item -ItemType Directory -Force -Path $GdUnitSource | Out-Null
+    & $git.Source -C $GdUnitSource init --quiet
+    Assert-LastExitCode "git init"
+    & $git.Source -C $GdUnitSource remote add origin $GdUnitRepo
+    Assert-LastExitCode "git remote add"
+}
+
+Write-Host "[GdUnit4] Fetching $GdUnitTag ..."
+& $git.Source -C $GdUnitSource fetch --force --depth 1 origin "refs/tags/$GdUnitTag:refs/tags/$GdUnitTag"
+Assert-LastExitCode "git fetch GdUnit4"
+& $git.Source -C $GdUnitSource checkout --quiet --detach $GdUnitCommit
+Assert-LastExitCode "git checkout GdUnit4"
+
+$actualGdUnitCommit = (& $git.Source -C $GdUnitSource rev-parse HEAD).Trim()
+Assert-LastExitCode "git rev-parse GdUnit4"
+if ($actualGdUnitCommit -ne $GdUnitCommit) {
+    throw "GdUnit4 commit mismatch. Expected $GdUnitCommit, got $actualGdUnitCommit"
+}
+
+$sourceAddon = Join-Path $GdUnitSource "addons\gdUnit4"
+if (-not (Test-Path $sourceAddon)) {
+    throw "Pinned GdUnit4 addon not found at $sourceAddon"
+}
+if (Test-Path $GdUnitTarget) {
+    Remove-Item -Recurse -Force $GdUnitTarget
+}
+New-Item -ItemType Directory -Force -Path (Split-Path $GdUnitTarget -Parent) | Out-Null
+Copy-Item -Recurse -Force $sourceAddon $GdUnitTarget
+
+$manifest = [ordered]@{
+    schema = "tutien-godot-tooling-install.v1"
+    installed_at = (Get-Date).ToString("o")
+    stagehand = [ordered]@{
+        version = $StagehandVersion
+        path = $StagehandExe
+        sha256 = $StagehandSha256
+    }
+    gdunit4 = [ordered]@{
+        tag = $GdUnitTag
+        commit = $GdUnitCommit
+        path = $GdUnitTarget
+    }
+}
+$manifest | ConvertTo-Json -Depth 5 | Set-Content -Encoding UTF8 (Join-Path $ToolsRoot "installed.json")
+
+Write-Host ""
+Write-Host "[OK] Stagehand: $StagehandExe"
+Write-Host "[OK] GdUnit4:   $GdUnitTarget"
+Write-Host ""
+Write-Host "Next: run VERIFY_GODOT_LOCAL.cmd"
