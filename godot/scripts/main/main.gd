@@ -2,6 +2,7 @@ extends Control
 
 const HOME_STAGE := preload("res://art/generated/home_stage_v1.svg")
 const CULTIVATOR := preload("res://art/generated/home_cultivator_v1.svg")
+const BACKEND_BRIDGE_SCRIPT := preload("res://scripts/core/backend_bridge.gd")
 
 const GOLD := Color("f5c96b")
 const CYAN := Color("59d8ff")
@@ -27,13 +28,17 @@ var advance_button: Button
 var route_label: Label
 var nav_buttons: Dictionary = {}
 var _home: Dictionary = {}
+var backend_bridge: Node
 
 func _ready() -> void:
 	_build_ui()
-	AppState.route_changed.connect(_on_route_changed)
+	backend_bridge = BACKEND_BRIDGE_SCRIPT.new()
+	backend_bridge.name = "BackendBridge"
 	backend_bridge.home_updated.connect(_on_home_updated)
 	backend_bridge.bridge_status_changed.connect(_on_bridge_status_changed)
 	backend_bridge.action_failed.connect(_on_action_failed)
+	add_child(backend_bridge)
+	AppState.route_changed.connect(_on_route_changed)
 
 func _build_ui() -> void:
 	_build_background()
