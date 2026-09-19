@@ -11,6 +11,7 @@ const ICON_CHARACTER := preload("res://art/icons/character.svg")
 const ICON_ROOT := preload("res://art/icons/root.svg")
 const ICON_COMBAT := preload("res://art/icons/combat.svg")
 const ICON_RETREAT := preload("res://art/icons/retreat.svg")
+const ICON_SPARK := preload("res://art/icons/spark.svg")
 
 const GOLD := Color("e3bf70")
 const GOLD_HI := Color("fff0bd")
@@ -249,6 +250,15 @@ func _build_identity_clusters() -> void:
 	right_margin.add_theme_constant_override("margin_bottom", 7)
 	right.add_child(right_margin)
 
+	var root_tap := Button.new()
+	root_tap.name = "RootTap"
+	root_tap.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root_tap.text = ""
+	root_tap.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
+	root_tap.add_theme_stylebox_override("hover", _flat(Color(0.30, 0.85, 0.70, 0.045), 15, Color(0.40, 0.90, 0.72, 0.22), 1))
+	root_tap.pressed.connect(func(): route_requested.emit(&"roots"))
+	right.add_child(root_tap)
+
 	var root_col := VBoxContainer.new()
 	root_col.add_theme_constant_override("separation", 5)
 	right_margin.add_child(root_col)
@@ -340,11 +350,14 @@ func _build_progress() -> void:
 func _build_primary() -> void:
 	primary_button = Button.new()
 	primary_button.name = "PrimaryCTA"
+	primary_button.icon = ICON_SPARK
 	primary_button.visible = false
 	_anchor_bottom_wide(primary_button, 62.0, 62.0, -267.0, -217.0)
 	primary_button.add_theme_font_size_override("font_size", 13)
 	primary_button.add_theme_color_override("font_color", GOLD_HI)
 	primary_button.add_theme_color_override("font_hover_color", Color.WHITE)
+	primary_button.add_theme_color_override("icon_normal_color", GOLD_HI)
+	primary_button.add_theme_color_override("icon_hover_color", Color.WHITE)
 	primary_button.add_theme_stylebox_override("normal", _flat(Color(0.20, 0.135, 0.035, 0.92), 24, Color(1.0, 0.79, 0.32, 0.82), 2))
 	primary_button.add_theme_stylebox_override("hover", _flat(Color(0.30, 0.205, 0.05, 0.97), 24, GOLD_HI, 2))
 	primary_button.pressed.connect(func():
@@ -467,7 +480,7 @@ func _add_action_cell(icon: Texture2D, caption: String, subtitle: String, accent
 	sub.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	cell.add_child(sub)
 
-	button.set_meta("visual_root", orb)
+	button.set_meta("visual_root", cell)
 	button.set_meta("subtitle_label", sub)
 	return button
 
