@@ -1,0 +1,55 @@
+{
+  "name": "tutien-home-visual-regression",
+  "description": "Diff deterministic production Home components against the explicit user-approved 390x844 baseline.",
+  "baseline_dir": "../visual-baselines",
+  "target": {
+    "mode": "launch",
+    "project_path": "../..",
+    "headless": false,
+    "timeout_ms": 60000
+  },
+  "steps": [
+    {
+      "name": "Switch to deterministic Home visual harness",
+      "action": "change_scene",
+      "with": {
+        "scene_path": "res://tests/visual/home_visual_harness.tscn"
+      }
+    },
+    {
+      "name": "Home visual harness is visible",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:HomeVisualHarness",
+        "state": "visible",
+        "timeout_ms": 10000
+      }
+    },
+    {
+      "name": "Visual fixture is marked online",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:BridgeStatus",
+        "property": "text",
+        "operator": "contains",
+        "expected": "ONLINE"
+      }
+    },
+    {
+      "name": "Let render settle",
+      "action": "sleep",
+      "with": {
+        "duration_ms": 250
+      }
+    },
+    {
+      "name": "Diff Home against approved baseline",
+      "action": "screenshot_diff",
+      "with": {
+        "name": "home-390x844",
+        "threshold": 0.005,
+        "pixel_sensitivity": 0.03
+      }
+    }
+  ]
+}
