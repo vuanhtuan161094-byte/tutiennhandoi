@@ -14,8 +14,8 @@ const hunt=fs.readFileSync('modules/hunt-combat-v2.js','utf8');
 
 assert.match(html,/ui-combat-target-v1\.css\?v=combat-readability-target-v1-20260914/,'Combat target CSS must be loaded');
 assert.match(html,/ui-combat-visual-polish\.css\?v=combat-visual-polish-v1-20260915/,'Combat visual polish layer must be loaded');
-assert.match(html,/ui-combat-camera-polish\.css\?v=combat-camera-polish-v14-20260916/,'Combat camera layer must remain the compact geometry owner');
-assert.match(html,/ui-combat-information-v1\.css\?v=combat-information-v3-20260916/,'Combat information layer must remain final state owner');
+assert.match(html,/ui-combat-camera-polish\.css\?v=combat-user-layout-v1-20260919/,'Combat camera layer must expose the user-tuned geometry candidate');
+assert.match(html,/ui-combat-information-v1\.css\?v=combat-user-layout-v1-20260919/,'Combat information layer must expose the user-tuned final state candidate');
 assert.match(html,/ui-combat-target-v1\.js\?v=combat-information-v7-scoped-lifecycle-20260917-model-v1/,'Combat bridge cache key must expose model/renderer boundary');
 
 assert.match(css,/body\[data-game-screen="hunt"\] \.huntv2-player-hud/,'Combat target must stay isolated to Hunt');
@@ -40,7 +40,7 @@ assert.match(camera,/\.huntv2-stage\.shake[\s\S]*?animation:none!important;[\s\S
 assert.match(camera,/\.huntv2-stage\.shake \.huntv2-arena\{[\s\S]*?animation:huntCvpArenaShake/,'Light shake must move battlefield arena only');
 assert.match(camera,/@keyframes huntCvpArenaShakeStrong/,'Heavy camera impulse keyframes missing');
 assert.doesNotMatch(camera,/@media\(max-width:430px\) and \(max-height:/,'Portrait geometry must not fork by viewport height');
-assert.match(camera,/@media\(max-width:430px\)[\s\S]*?\.huntv2-enemy-hud\{[\s\S]*?top:86px!important[\s\S]*?width:168px!important[\s\S]*?height:68px!important/,'Portrait boss vitals must stay compact');
+assert.match(camera,/@media\(max-width:430px\)[\s\S]*?\.huntv2-enemy-hud\{[\s\S]*?top:94px!important[\s\S]*?left:41\.35%!important[\s\S]*?width:55\.72%!important[\s\S]*?height:82px!important/,'Portrait boss vitals must follow the user-tuned geometry');
 assert.match(camera,/\.huntv2-intel-meter\[data-intel-resource="swordIntentV2"\]/,'Kiếm Ý meter dedicated visual state missing');
 assert.match(camera,/\.huntv2-intel-meter\[data-intel-resource="swordIntentV2"\]>i>em\{[\s\S]*?background:linear-gradient\(90deg,#3e82c7,#86d9ff 66%,#f1fbff\)!important/,'Kiếm Ý fill must remain visually distinct');
 assert.match(camera,/\.huntv2-enemy-info\{[\s\S]*?display:grid!important/,'Compact Boss HUD must keep detail affordance visible');
