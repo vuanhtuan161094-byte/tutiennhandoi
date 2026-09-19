@@ -31,11 +31,13 @@ var status_label: Label
 var primary_button: Button
 var retreat_button: Button
 var quick_actions: HBoxContainer
+var context_button: Button
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	_build_top()
 	_build_identity()
+	_build_context_notice()
 	_build_progress()
 	_build_primary()
 	_build_quick_actions()
@@ -44,6 +46,7 @@ func bind(vm: Dictionary) -> void:
 	var identity: Dictionary = vm.get("identity", {})
 	var progression: Dictionary = vm.get("progression", {})
 	var resources: Dictionary = vm.get("resources", {})
+	var context: Dictionary = vm.get("context", {})
 	var retreat: Dictionary = progression.get("retreat", {})
 
 	life_label.text = "ĐỜI %d" % int(identity.get("life_number", 1))
@@ -73,6 +76,8 @@ func bind(vm: Dictionary) -> void:
 	var retreat_enabled := bool(retreat.get("enabled", false))
 	retreat_button.visible = retreat_enabled
 	retreat_button.disabled = not retreat_enabled
+
+	_update_context_notice(progression, context)
 
 	stone_label.text = _fmt_num(float(resources.get("spirit_stone", 0)))
 	cp_label.text = _fmt_num(float(resources.get("reincarnation_cp", 0)))
@@ -126,6 +131,31 @@ func _build_identity() -> void:
 	tap.add_theme_stylebox_override("hover", _flat(Color(0.95, 0.82, 0.50, 0.035), 12))
 	tap.pressed.connect(func(): identity_pressed.emit())
 	add_child(tap)
+
+func _build_context_notice() -> void:
+	context_button = Button.new()
+	context_button.visible = false
+	_place(context_button, Vector2(15, 139), Vector2(175, 30))
+	context_button.add_theme_font_size_override("font_size", 8)
+	context_button.add_theme_color_override("font_color", Color("f3dda7"))
+	context_button.add_theme_stylebox_override("normal", _flat(Color(0.10, 0.075, 0.035, 0.72), 15, Color(0.90, 0.72, 0.36, 0.34), 1))
+	context_button.add_theme_stylebox_override("hover", _flat(Color(0.14, 0.10, 0.04, 0.86), 15, GOLD, 1))
+	context_button.pressed.connect(func(): identity_pressed.emit())
+	add_child(context_button)
+
+func _update_context_notice(progression: Dictionary, context: Dictionary) -> void:
+	context_button.visible = false
+	var injury := float(progression.get("injury_pct", 0))
+	if injury > 0.0:
+		context_button.text = "Thương Thế %.0f%% · xem chi tiết" % injury
+		context_button.visible = true
+		return
+	var events = context.get("major_events", [])
+	if typeof(events) == TYPE_ARRAY and not events.is_empty():
+		var event_text := str(events[0])
+		if not event_text.is_empty():
+			context_button.text = event_text.left(24)
+			context_button.visible = true
 
 func _build_progress() -> void:
 	var box := PanelContainer.new()
