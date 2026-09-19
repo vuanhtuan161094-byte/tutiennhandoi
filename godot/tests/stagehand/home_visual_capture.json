@@ -1,6 +1,6 @@
 {
   "name": "tutien-home-visual-capture",
-  "description": "Capture the real 390x844 Godot Home after canonical data is online. This is capture-only until a user-approved baseline is committed.",
+  "description": "Capture deterministic production Home components at 390x844. This is capture-only until a user-approved baseline is committed.",
   "target": {
     "mode": "launch",
     "project_path": "../..",
@@ -9,35 +9,49 @@
   },
   "steps": [
     {
+      "name": "Switch to deterministic Home visual harness",
+      "action": "change_scene",
+      "with": {
+        "scene_path": "res://tests/visual/home_visual_harness.tscn"
+      }
+    },
+    {
+      "name": "Home visual harness is visible",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:HomeVisualHarness",
+        "state": "visible",
+        "timeout_ms": 10000
+      }
+    },
+    {
       "name": "Home HUD is rendered",
       "action": "wait_for_node",
       "with": {
         "selector": "name:HomeHUD",
         "state": "visible",
-        "timeout_ms": 15000
+        "timeout_ms": 10000
       }
     },
     {
-      "name": "Canonical bridge reaches ONLINE",
-      "action": "wait_for_property",
+      "name": "Visual fixture is marked online",
+      "action": "assert_property",
       "with": {
         "selector": "name:BridgeStatus",
         "property": "text",
         "operator": "contains",
-        "expected_value": "ONLINE",
-        "timeout_ms": 20000,
-        "poll_interval_ms": 200
+        "expected": "ONLINE"
       }
     },
     {
-      "name": "Let visual effects settle",
+      "name": "Let render settle",
       "action": "sleep",
       "with": {
-        "duration_ms": 700
+        "duration_ms": 250
       }
     },
     {
-      "name": "Capture Home 390x844",
+      "name": "Capture deterministic Home 390x844",
       "action": "screenshot",
       "with": {
         "output": "home-390x844.png"
