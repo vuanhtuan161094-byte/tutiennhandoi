@@ -29,6 +29,7 @@ var route_label: Label
 var retreat_popup: PopupPanel
 var nav_buttons: Dictionary = {}
 var _home: Dictionary = {}
+var _last_home_generated_at: int = 0
 var backend_bridge
 
 func _ready() -> void:
@@ -280,6 +281,10 @@ func _build_nav() -> void:
 		row.add_child(button)
 
 func _on_home_updated(home: Dictionary) -> void:
+	var generated_at := int(home.get("generatedAtUnixMs", 0))
+	if generated_at > 0 and generated_at < _last_home_generated_at:
+		return
+	_last_home_generated_at = maxi(_last_home_generated_at, generated_at)
 	_home = home
 	var character: Dictionary = home.get("character", {})
 	var life: Dictionary = home.get("life", {})
