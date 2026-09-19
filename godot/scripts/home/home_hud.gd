@@ -42,6 +42,7 @@ var status_label: Label
 var primary_button: Button
 var quick_actions: HBoxContainer
 var retreat_button: Button
+var retreat_action_visual: Control
 var retreat_subtitle_label: Label
 
 func _ready() -> void:
@@ -95,7 +96,7 @@ func bind(vm: Dictionary) -> void:
 	var retreat_enabled := bool(retreat.get("enabled", false))
 	retreat_button.visible = true
 	retreat_button.disabled = not retreat_enabled
-	retreat_button.modulate = Color.WHITE if retreat_enabled else Color(0.62, 0.67, 0.70, 0.72)
+	retreat_action_visual.modulate = Color.WHITE if retreat_enabled else Color(0.56, 0.60, 0.64, 0.72)
 	retreat_subtitle_label.text = "Tích lũy Tu Vi" if retreat_enabled else "Chưa mở"
 
 	stone_label.text = _fmt_num(float(resources.get("spirit_stone", 0)))
@@ -181,6 +182,7 @@ func _build_identity_clusters() -> void:
 
 	var portrait_ring := PanelContainer.new()
 	portrait_ring.custom_minimum_size = Vector2(68, 68)
+	portrait_ring.clip_contents = true
 	portrait_ring.add_theme_stylebox_override("panel", _flat(Color(0.035, 0.08, 0.10, 0.96), 34, GOLD, 2))
 	identity_row.add_child(portrait_ring)
 
@@ -357,6 +359,7 @@ func _build_quick_actions() -> void:
 	add_child(quick_actions)
 
 	retreat_button = _add_action_cell(ICON_RETREAT, "Bế Quan", "Tích lũy Tu Vi", GOLD, "RetreatButton")
+	retreat_action_visual = retreat_button.get_meta("visual_root") as Control
 	retreat_subtitle_label = retreat_button.get_meta("subtitle_label") as Label
 	retreat_button.pressed.connect(func(): retreat_pressed.emit())
 
@@ -381,21 +384,78 @@ func _add_action_cell(icon: Texture2D, caption: String, subtitle: String, accent
 	quick_actions.add_child(cell)
 
 	var center := CenterContainer.new()
-	center.custom_minimum_size = Vector2(0, 72)
+	center.custom_minimum_size = Vector2(0, 76)
 	cell.add_child(center)
+
+	var orb := Control.new()
+	orb.custom_minimum_size = Vector2(72, 72)
+	orb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	center.add_child(orb)
+
+	var outer_ring := Panel.new()
+	outer_ring.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	outer_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	outer_ring.add_theme_stylebox_override(
+		"panel",
+		_flat(
+			Color(accent.r, accent.g, accent.b, 0.055),
+			36,
+			Color(accent.r, accent.g, accent.b, 0.78),
+			2
+		)
+	)
+	orb.add_child(outer_ring)
+
+	var inner_ring := Panel.new()
+	inner_ring.anchor_left = 0.5
+	inner_ring.anchor_right = 0.5
+	inner_ring.anchor_top = 0.5
+	inner_ring.anchor_bottom = 0.5
+	inner_ring.offset_left = -27.0
+	inner_ring.offset_right = 27.0
+	inner_ring.offset_top = -27.0
+	inner_ring.offset_bottom = 27.0
+	inner_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	inner_ring.add_theme_stylebox_override(
+		"panel",
+		_flat(
+			Color(0.010, 0.035, 0.055, 0.94),
+			27,
+			Color(accent.r, accent.g, accent.b, 0.28),
+			1
+		)
+	)
+	orb.add_child(inner_ring)
+
+	var icon_rect := TextureRect.new()
+	icon_rect.texture = icon
+	icon_rect.anchor_left = 0.5
+	icon_rect.anchor_right = 0.5
+	icon_rect.anchor_top = 0.5
+	icon_rect.anchor_bottom = 0.5
+	icon_rect.offset_left = -19.0
+	icon_rect.offset_right = 19.0
+	icon_rect.offset_top = -19.0
+	icon_rect.offset_bottom = 19.0
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_rect.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	icon_rect.modulate = accent
+	icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	orb.add_child(icon_rect)
 
 	var button := Button.new()
 	button.name = button_name
-	button.icon = icon
 	button.text = ""
-	button.custom_minimum_size = Vector2(68, 68)
-	button.add_theme_color_override("icon_normal_color", accent)
-	button.add_theme_color_override("icon_hover_color", Color.WHITE)
-	button.add_theme_color_override("icon_disabled_color", Color(0.48, 0.54, 0.56, 0.80))
-	button.add_theme_stylebox_override("normal", _flat(Color(0.012, 0.040, 0.060, 0.90), 34, Color(accent.r, accent.g, accent.b, 0.70), 2))
-	button.add_theme_stylebox_override("hover", _flat(Color(0.025, 0.065, 0.090, 0.98), 34, accent, 3))
-	button.add_theme_stylebox_override("disabled", _flat(Color(0.016, 0.030, 0.040, 0.82), 34, Color(0.35, 0.40, 0.42, 0.70), 2))
-	center.add_child(button)
+	button.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
+	button.add_theme_stylebox_override(
+		"hover",
+		_flat(Color(accent.r, accent.g, accent.b, 0.10), 36, Color(accent.r, accent.g, accent.b, 0.92), 2)
+	)
+	button.add_theme_stylebox_override("pressed", _flat(Color(accent.r, accent.g, accent.b, 0.16), 36, accent, 2))
+	button.add_theme_stylebox_override("disabled", StyleBoxEmpty.new())
+	orb.add_child(button)
 
 	var title := _readable_label(caption, 9, TEXT)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -406,6 +466,8 @@ func _add_action_cell(icon: Texture2D, caption: String, subtitle: String, accent
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	cell.add_child(sub)
+
+	button.set_meta("visual_root", orb)
 	button.set_meta("subtitle_label", sub)
 	return button
 
