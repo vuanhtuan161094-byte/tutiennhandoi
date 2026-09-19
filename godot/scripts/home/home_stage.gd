@@ -4,12 +4,13 @@ const HOME_BG := preload("res://art/approved/home_bg_blue_valley.webp")
 const CULTIVATOR := preload("res://art/approved/home_cultivator_centered.png")
 const SPARK := preload("res://art/icons/spark.svg")
 
-const HERO_BASE_Y := 126.0
+const HERO_BASE_Y := 176.0
 
 var _time := 0.0
 var _hero: TextureRect
 var _aura_outer: Panel
 var _aura_inner: Panel
+var _pedestal: Panel
 var _sparks: Array = []
 
 func _ready() -> void:
@@ -29,46 +30,59 @@ func _build_world() -> void:
 
 	var wash := ColorRect.new()
 	wash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	wash.color = Color(0.015, 0.055, 0.075, 0.14)
+	wash.color = Color(0.015, 0.050, 0.075, 0.10)
 	wash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(wash)
 
 	var top_shade := ColorRect.new()
-	_anchor_top_wide(top_shade, 0.0, 154.0)
-	top_shade.color = Color(0.0, 0.015, 0.025, 0.32)
+	_anchor_top_wide(top_shade, 0.0, 162.0)
+	top_shade.color = Color(0.0, 0.012, 0.022, 0.31)
 	top_shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(top_shade)
 
 	var bottom_shade := ColorRect.new()
-	_anchor_bottom_wide(bottom_shade, -188.0, 0.0)
-	bottom_shade.color = Color(0.0, 0.018, 0.026, 0.58)
+	_anchor_bottom_wide(bottom_shade, -276.0, 0.0)
+	bottom_shade.color = Color(0.0, 0.014, 0.025, 0.56)
 	bottom_shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bottom_shade)
 
-	var glow := Panel.new()
-	_anchor_center_x(glow, -108.0, 108.0, 170.0, 420.0)
-	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	glow.add_theme_stylebox_override("panel", _flat(Color(0.48, 0.83, 0.93, 0.050), 106, Color(0.47, 0.83, 0.92, 0.09), 1))
-	add_child(glow)
+	var hero_light := Panel.new()
+	_anchor_center_x(hero_light, -112.0, 112.0, 196.0, 474.0)
+	hero_light.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hero_light.add_theme_stylebox_override("panel", _flat(Color(0.42, 0.82, 0.94, 0.042), 112, Color(0.55, 0.88, 0.95, 0.08), 1))
+	add_child(hero_light)
 
 	_aura_outer = Panel.new()
-	_anchor_center_x(_aura_outer, -141.0, 141.0, 145.0, 427.0)
-	_aura_outer.pivot_offset = Vector2(141.0, 141.0)
+	_anchor_center_x(_aura_outer, -136.0, 136.0, 196.0, 468.0)
+	_aura_outer.pivot_offset = Vector2(136.0, 136.0)
 	_aura_outer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_aura_outer.add_theme_stylebox_override("panel", _flat(Color.TRANSPARENT, 141, Color(0.93, 0.77, 0.40, 0.30), 1))
+	_aura_outer.add_theme_stylebox_override("panel", _flat(Color.TRANSPARENT, 136, Color(0.98, 0.77, 0.34, 0.38), 2))
 	add_child(_aura_outer)
 
 	_aura_inner = Panel.new()
-	_anchor_center_x(_aura_inner, -118.0, 118.0, 168.0, 404.0)
-	_aura_inner.pivot_offset = Vector2(118.0, 118.0)
+	_anchor_center_x(_aura_inner, -109.0, 109.0, 223.0, 441.0)
+	_aura_inner.pivot_offset = Vector2(109.0, 109.0)
 	_aura_inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_aura_inner.add_theme_stylebox_override("panel", _flat(Color(0.18, 0.62, 0.70, 0.020), 118, Color(0.48, 0.88, 0.94, 0.36), 1))
+	_aura_inner.add_theme_stylebox_override("panel", _flat(Color(0.16, 0.68, 0.76, 0.018), 109, Color(0.48, 0.90, 0.96, 0.32), 1))
 	add_child(_aura_inner)
+
+	_pedestal = Panel.new()
+	_anchor_center_x(_pedestal, -134.0, 134.0, 452.0, 510.0)
+	_pedestal.pivot_offset = Vector2(134.0, 29.0)
+	_pedestal.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_pedestal.add_theme_stylebox_override("panel", _flat(Color(0.12, 0.24, 0.23, 0.20), 29, Color(0.96, 0.79, 0.38, 0.32), 2))
+	add_child(_pedestal)
+
+	var pedestal_core := Panel.new()
+	_anchor_center_x(pedestal_core, -93.0, 93.0, 466.0, 496.0)
+	pedestal_core.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pedestal_core.add_theme_stylebox_override("panel", _flat(Color(0.48, 0.82, 0.72, 0.08), 15, Color(0.56, 0.92, 0.79, 0.22), 1))
+	add_child(pedestal_core)
 
 	_hero = TextureRect.new()
 	_hero.texture = CULTIVATOR
-	_anchor_center_x(_hero, -113.0, 113.0, HERO_BASE_Y, HERO_BASE_Y + 354.0)
-	_hero.pivot_offset = Vector2(113.0, 354.0)
+	_anchor_center_x(_hero, -120.0, 120.0, HERO_BASE_Y, HERO_BASE_Y + 336.0)
+	_hero.pivot_offset = Vector2(120.0, 336.0)
 	_hero.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_hero.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_hero.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
@@ -76,12 +90,14 @@ func _build_world() -> void:
 	add_child(_hero)
 
 	var spark_specs := [
-		[Vector2(-90, 240), 0.0, 0.70],
-		[Vector2(83, 225), 0.85, 0.82],
-		[Vector2(-110, 330), 1.70, 0.94],
-		[Vector2(107, 348), 2.55, 0.70],
-		[Vector2(-58, 414), 3.40, 0.82],
-		[Vector2(62, 430), 4.25, 0.94],
+		[Vector2(-102, 255), 0.0, 0.70],
+		[Vector2(92, 242), 0.85, 0.82],
+		[Vector2(-118, 346), 1.70, 0.94],
+		[Vector2(114, 356), 2.55, 0.70],
+		[Vector2(-72, 430), 3.40, 0.82],
+		[Vector2(67, 444), 4.25, 0.94],
+		[Vector2(-18, 208), 5.10, 0.76],
+		[Vector2(20, 484), 5.95, 0.88],
 	]
 	for spec in spark_specs:
 		var spark := TextureRect.new()
@@ -90,8 +106,8 @@ func _build_world() -> void:
 		spark.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		spark.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var offset: Vector2 = spec[0]
-		_anchor_center_x(spark, offset.x, offset.x + 13.0, offset.y, offset.y + 13.0)
-		spark.modulate = Color(0.72, 0.93, 1.0, 0.42)
+		_anchor_center_x(spark, offset.x, offset.x + 12.0, offset.y, offset.y + 12.0)
+		spark.modulate = Color(0.75, 0.94, 1.0, 0.40)
 		add_child(spark)
 		_sparks.append({
 			"node": spark,
@@ -103,16 +119,18 @@ func _build_world() -> void:
 func _process(delta: float) -> void:
 	_time += delta
 	if is_instance_valid(_hero):
-		_hero.position.y = HERO_BASE_Y + sin(_time * 1.35) * 2.0
-		var breath := 1.0 + sin(_time * 1.35) * 0.004
+		_hero.position.y = HERO_BASE_Y + sin(_time * 1.28) * 2.0
+		var breath := 1.0 + sin(_time * 1.28) * 0.004
 		_hero.scale = Vector2(breath, breath)
 	if is_instance_valid(_aura_outer):
-		var pulse := 1.0 + sin(_time * 0.72) * 0.018
+		var pulse := 1.0 + sin(_time * 0.68) * 0.016
 		_aura_outer.scale = Vector2.ONE * pulse
-		_aura_outer.modulate.a = 0.82 + sin(_time * 0.72) * 0.12
+		_aura_outer.modulate.a = 0.80 + sin(_time * 0.68) * 0.11
 	if is_instance_valid(_aura_inner):
-		var pulse_inner := 1.0 + sin(_time * 0.91 + 1.2) * 0.012
+		var pulse_inner := 1.0 + sin(_time * 0.92 + 1.1) * 0.012
 		_aura_inner.scale = Vector2.ONE * pulse_inner
+	if is_instance_valid(_pedestal):
+		_pedestal.modulate.a = 0.82 + sin(_time * 0.74 + 0.4) * 0.10
 	for data in _sparks:
 		var node: TextureRect = data["node"]
 		var base: Vector2 = data["base"]
@@ -120,9 +138,9 @@ func _process(delta: float) -> void:
 		var speed := float(data["speed"])
 		node.position = base + Vector2(
 			sin(_time * speed + phase) * 3.0,
-			-fmod(_time * (7.0 + speed * 3.0) + phase * 13.0, 28.0)
+			-fmod(_time * (6.0 + speed * 2.8) + phase * 11.0, 26.0)
 		)
-		node.modulate.a = 0.20 + 0.52 * (0.5 + 0.5 * sin(_time * 1.8 + phase))
+		node.modulate.a = 0.18 + 0.50 * (0.5 + 0.5 * sin(_time * 1.7 + phase))
 
 func _flat(fill: Color, radius: int, border: Color = Color.TRANSPARENT, border_width: int = 0) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
