@@ -357,7 +357,7 @@ func _build_progress() -> void:
 func _build_primary() -> void:
 	primary_shell = PanelContainer.new()
 	primary_shell.visible = false
-	_anchor_bottom_wide(primary_shell, 58.0, 58.0, -269.0, -213.0)
+	_anchor_bottom_wide(primary_shell, 58.0, 58.0, -269.0, -218.0)
 	primary_shell.add_theme_stylebox_override(
 		"panel",
 		_flat(Color(0.18, 0.115, 0.025, 0.94), 28, Color(1.0, 0.79, 0.32, 0.86), 2)
