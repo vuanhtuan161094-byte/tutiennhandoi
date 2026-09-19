@@ -6,15 +6,18 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $ToolsRoot = Join-Path $RepoRoot ".tools\godot"
 $GodotProject = Join-Path $RepoRoot "godot"
+$ToolingLockPath = Join-Path $PSScriptRoot "TOOLING_LOCK.json"
+$ToolingLock = Get-Content -Raw $ToolingLockPath | ConvertFrom-Json
 
-$StagehandVersion = "v0.4.1"
+$StagehandVersion = [string]$ToolingLock.stagehand.tag
+$StagehandAsset = [string]$ToolingLock.stagehand.windows_asset
 $StagehandExe = Join-Path $ToolsRoot "stagehand\godot-stagehand.exe"
-$StagehandUrl = "https://github.com/mrf/godot-stagehand/releases/download/v0.4.1/godot-stagehand-windows-amd64.exe"
-$StagehandSha256 = "38bcb425588756d50dec7eed97d4307b545ab635ec9183363fe7bf4eef4eb657"
+$StagehandUrl = "https://github.com/$($ToolingLock.stagehand.repository)/releases/download/$StagehandVersion/$StagehandAsset"
+$StagehandSha256 = ([string]$ToolingLock.stagehand.windows_sha256).ToLowerInvariant()
 
-$GdUnitTag = "v6.2.1"
-$GdUnitCommit = "08ffc7c65b61b1b2edd545616061a99973c13ce1"
-$GdUnitRepo = "https://github.com/godot-gdunit-labs/gdUnit4.git"
+$GdUnitTag = [string]$ToolingLock.gdunit4.tag
+$GdUnitCommit = [string]$ToolingLock.gdunit4.commit
+$GdUnitRepo = "https://github.com/$($ToolingLock.gdunit4.repository).git"
 $GdUnitSource = Join-Path $ToolsRoot "gdunit4-src"
 $GdUnitTarget = Join-Path $GodotProject "addons\gdUnit4"
 
