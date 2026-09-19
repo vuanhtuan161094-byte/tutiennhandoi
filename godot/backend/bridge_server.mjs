@@ -16,7 +16,10 @@ import { createWebClientSave, parseWebClientSave } from '../../dist/core/web-sav
 import { LIVE_COMMIT_REAL_SECONDS } from '../../dist/core/realtime-balance.js';
 
 const HERE=dirname(fileURLToPath(import.meta.url));
-const SAVE_PATH=resolve(HERE,'../.runtime/godot-bridge-save.json');
+const BRIDGE_VERSION='godot-bridge.v2';
+const SAVE_PATH=process.env.TUTIEN_GODOT_BRIDGE_SAVE
+  ? resolve(process.env.TUTIEN_GODOT_BRIDGE_SAVE)
+  : resolve(HERE,'../.runtime/godot-bridge-save.json');
 const PORT=Math.max(1,Math.min(65535,Number(process.argv[2]||4190)||4190));
 const HOST='127.0.0.1';
 const registry=buildRegistry();
@@ -28,6 +31,7 @@ class GodotCanonicalRuntime {
     this.api=null;
     this.carry=0;
     this.lastTickAt=Date.now();
+    this.dirty=false;
     this.newGame();
   }
   attach(session){
@@ -56,6 +60,7 @@ class GodotCanonicalRuntime {
     this.attach(new SimulationSession(registry,thanhHaWorld,adventureEnemies,playablePlayerProfile,seed,state,0,[],undefined,life));
     this.carry=0;
     this.lastTickAt=Date.now();
+    this.dirty=true;
   }
   saveEnvelope(now=Date.now()){
     return createWebClientSave(this.api,now,{mode:'idle',activity:'idle',autoCombat:false,paused:false,carryRealSeconds:this.carry},{characterSkinId:'skin.white_immortal',characterBackgroundId:'bg.ink_mountain',selectedExpression:'neutral'});
@@ -66,6 +71,7 @@ class GodotCanonicalRuntime {
     this.attach(SimulationSession.restore(registry,thanhHaWorld,adventureEnemies,playablePlayerProfile,envelope.game));
     this.carry=Math.max(0,Number(envelope?.runtime?.carryRealSeconds)||0);
     this.lastTickAt=Date.now();
+    this.dirty=false;
   }
   flushRealtime(now=Date.now()){
     if(!this.session?.stateValue?.alive){this.lastTickAt=now;return;}
@@ -75,7 +81,10 @@ class GodotCanonicalRuntime {
     const available=this.carry+elapsed;
     const commits=Math.floor((available+1e-9)/LIVE_COMMIT_REAL_SECONDS);
     this.carry=Math.max(0,available-commits*LIVE_COMMIT_REAL_SECONDS);
-    if(commits>0)this.session.advanceRealtimeCultivationV140(commits*LIVE_COMMIT_REAL_SECONDS);
+    if(commits>0){
+      this.session.advanceRealtimeCultivationV140(commits*LIVE_COMMIT_REAL_SECONDS);
+      this.dirty=true;
+    }
   }
   homeView(){
     this.flushRealtime();
@@ -92,6 +101,7 @@ class GodotCanonicalRuntime {
     return {
       ok:true,
       schema:'godot-home-bridge.v1',
+      bridgeVersion:BRIDGE_VERSION,
       authority:{
         cultivation:'character-cultivation.v140',
         transport:'web-client-view-patch.v140',
@@ -140,6 +150,7 @@ class GodotCanonicalRuntime {
     else if(id==='ascendRealmV140')result=this.api.ascendRealm();
     else if(id==='tribulationV140')result=this.api.perform({type:'tribulation',intensity:1});
     else throw new Error('Godot bridge action không hỗ trợ: '+id);
+    this.dirty=true;
     return result;
   }
 }
@@ -150,7 +161,15 @@ async function restorePersisted(){
   try{runtime.loadEnvelope(JSON.parse(await readFile(SAVE_PATH,'utf8')));}catch{}
 }
 async function persist(){
-  try{await mkdir(dirname(SAVE_PATH),{recursive:true});await writeFile(SAVE_PATH,JSON.stringify(runtime.saveEnvelope(Date.now())),'utf8');}catch{}
+  try{
+    await mkdir(dirname(SAVE_PATH),{recursive:true});
+    await writeFile(SAVE_PATH,JSON.stringify(runtime.saveEnvelope(Date.now())),'utf8');
+    runtime.dirty=false;
+    return true;
+  }catch(error){
+    console.error('[godot-bridge] save failed:',error?.message||error);
+    return false;
+  }
 }
 await restorePersisted();
 
@@ -175,7 +194,7 @@ const server=createServer(async(req,res)=>{
   if(req.method==='OPTIONS'){res.writeHead(204,{'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'content-type'});res.end();return;}
   const url=new URL(req.url||'/',`http://${HOST}:${PORT}`);
   try{
-    if(req.method==='GET'&&url.pathname==='/health')return send(res,200,{ok:true,schema:'godot-bridge-health.v1',port:PORT,authority:'canonical-dist'});
+    if(req.method==='GET'&&url.pathname==='/health')return send(res,200,{ok:true,schema:'godot-bridge-health.v1',bridgeVersion:BRIDGE_VERSION,port:PORT,authority:'canonical-dist'});
     if(req.method==='GET'&&url.pathname==='/home')return send(res,200,runtime.homeView());
     if(req.method==='POST'&&url.pathname==='/action'){
       const body=await bodyJson(req);
@@ -195,7 +214,25 @@ const server=createServer(async(req,res)=>{
   }
 });
 
+const autosaveTimer=setInterval(async()=>{
+  runtime.flushRealtime();
+  if(runtime.dirty)await persist();
+},2000);
+autosaveTimer.unref?.();
+
+async function shutdown(signal){
+  try{
+    runtime.flushRealtime();
+    if(runtime.dirty)await persist();
+  }finally{
+    server.close(()=>process.exit(0));
+    setTimeout(()=>process.exit(0),800).unref?.();
+  }
+}
+process.on('SIGINT',()=>void shutdown('SIGINT'));
+process.on('SIGTERM',()=>void shutdown('SIGTERM'));
+
 server.listen(PORT,HOST,()=>{
-  console.log(`TU TIEN GODOT BRIDGE V1 · canonical dist · http://${HOST}:${PORT}`);
+  console.log(`TU TIEN GODOT BRIDGE ${BRIDGE_VERSION} · canonical dist · http://${HOST}:${PORT}`);
 });
 server.on('error',error=>{console.error('[godot-bridge]',error?.message||error);process.exitCode=1;});
