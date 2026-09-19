@@ -289,3 +289,134 @@ body[data-game-screen="hunt"] .huntv2-artifact-callout small{font-size:10px}
   body[data-game-screen="hunt"] .huntv2-skill.ultimate .huntv2-skill-art{width:48px!important;height:48px!important}
   body[data-game-screen="hunt"] .huntv2-skills{gap:2px}
 }
+
+
+/* Boss intel sheet: combat-readable glass overlay, not a dashboard panel. */
+body[data-game-screen="hunt"] .huntv2-monster-sheet{
+  justify-content:flex-start;
+  padding:88px 10px 0;
+  background:rgba(2,8,10,.22)!important;
+  backdrop-filter:blur(2px) saturate(.85)!important;
+}
+body[data-game-screen="hunt"] .huntv2-monster-sheet::before{
+  background:linear-gradient(180deg,rgba(2,9,12,.06),rgba(2,9,12,.22) 54%,rgba(2,9,12,.08));
+}
+body[data-game-screen="hunt"] .huntv2-monster-sheet .v106-sheet-head,
+body[data-game-screen="hunt"] .huntv2-monster-sheet .v106-sheet-body{
+  width:min(365px,100%);
+  margin-left:auto;
+  margin-right:auto;
+  color:#eee7d7!important;
+  border-color:rgba(223,191,116,.20)!important;
+}
+body[data-game-screen="hunt"] .huntv2-monster-sheet .v106-sheet-head{
+  min-height:43px;
+  padding:7px 8px 5px 11px;
+  border:1px solid rgba(223,191,116,.20)!important;
+  border-bottom:0!important;
+  border-radius:14px 14px 0 0;
+  background:linear-gradient(180deg,rgba(9,22,26,.78),rgba(7,18,22,.58))!important;
+  box-shadow:none!important;
+  backdrop-filter:blur(8px);
+}
+body[data-game-screen="hunt"] .huntv2-monster-sheet .v106-sheet-head h2{
+  margin:0;
+  font:800 14px/1.1 Georgia,serif;
+  letter-spacing:.02em;
+  color:#f2d48d!important;
+}
+body[data-game-screen="hunt"] .huntv2-monster-sheet .v106-close{
+  width:29px;
+  height:29px;
+  border:0!important;
+  background:rgba(255,255,255,.055)!important;
+  color:#ddd3bd!important;
+  font-size:18px;
+}
+body[data-game-screen="hunt"] .huntv2-monster-sheet .v106-sheet-body{
+  max-height:min(420px,62%);
+  padding:2px 11px 10px;
+  border:1px solid rgba(223,191,116,.20)!important;
+  border-top:0!important;
+  border-radius:0 0 14px 14px;
+  background:linear-gradient(180deg,rgba(7,18,22,.58),rgba(4,12,15,.73))!important;
+  box-shadow:0 12px 32px rgba(0,0,0,.24)!important;
+  backdrop-filter:blur(8px);
+}
+body[data-game-screen="hunt"] .huntv2-monster-intel{display:grid;gap:0;color:#e8e2d6}
+body[data-game-screen="hunt"] .huntv2-monster-identity{padding:4px 0 8px;border-bottom:1px solid rgba(255,255,255,.08)}
+body[data-game-screen="hunt"] .huntv2-monster-identity small{
+  display:block;font-size:8px;font-weight:900;letter-spacing:.12em;color:#b79d69
+}
+body[data-game-screen="hunt"] .huntv2-monster-identity strong{
+  display:block;margin-top:2px;font:800 18px/1.08 Georgia,serif;color:#f4e3b2
+}
+body[data-game-screen="hunt"] .huntv2-monster-identity span{
+  display:block;margin-top:3px;font-size:9px;color:#aeb9b9
+}
+body[data-game-screen="hunt"] .huntv2-monster-stats{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;
+  padding:7px 0;border-bottom:1px solid rgba(255,255,255,.08)
+}
+body[data-game-screen="hunt"] .huntv2-monster-stats>span{
+  min-width:0;padding:0 7px;border-left:1px solid rgba(255,255,255,.07)
+}
+body[data-game-screen="hunt"] .huntv2-monster-stats>span:first-child{padding-left:0;border-left:0}
+body[data-game-screen="hunt"] .huntv2-monster-stats small{
+  display:block;font-size:8px;color:#889a9c
+}
+body[data-game-screen="hunt"] .huntv2-monster-stats b{
+  display:block;margin-top:2px;font-size:11px;color:#efe3ca;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+body[data-game-screen="hunt"] .huntv2-monster-readiness{
+  display:flex;align-items:center;gap:7px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)
+}
+body[data-game-screen="hunt"] .huntv2-monster-readiness span{
+  flex:0 0 auto;font-size:8px;color:#899b9e
+}
+body[data-game-screen="hunt"] .huntv2-monster-readiness strong{
+  min-width:0;font-size:9px;color:#e0c98f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+body[data-game-screen="hunt"] .huntv2-monster-mechanic{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+body[data-game-screen="hunt"] .huntv2-monster-mechanic>small,
+body[data-game-screen="hunt"] .huntv2-monster-skills>small{
+  display:block;font-size:8px;font-weight:900;letter-spacing:.10em;color:#879fa4
+}
+body[data-game-screen="hunt"] .huntv2-monster-mechanic>strong{
+  display:block;margin-top:2px;font-size:11px;color:#d6c07f
+}
+body[data-game-screen="hunt"] .huntv2-monster-mechanic p{
+  margin:3px 0 0;font-size:9px;line-height:1.35;color:#bcc7c6
+}
+body[data-game-screen="hunt"] .huntv2-monster-mechanic>span{
+  display:block;margin-top:4px;font-size:8.5px;line-height:1.32;color:#9eacae
+}
+body[data-game-screen="hunt"] .huntv2-monster-mechanic>span b{color:#dbc57e}
+body[data-game-screen="hunt"] .huntv2-monster-skills{padding:8px 0 3px}
+body[data-game-screen="hunt"] .huntv2-monster-skill{
+  display:grid;grid-template-columns:22px minmax(0,1fr);align-items:start;gap:7px;
+  padding:6px 0;border-bottom:1px solid rgba(255,255,255,.055)
+}
+body[data-game-screen="hunt"] .huntv2-monster-skill:last-child{border-bottom:0}
+body[data-game-screen="hunt"] .huntv2-monster-skill>i{
+  width:20px;height:20px;display:grid;place-items:center;border-radius:50%;
+  border:1px solid rgba(211,178,100,.30);color:#d9bd78;font:800 8px Georgia,serif
+}
+body[data-game-screen="hunt"] .huntv2-monster-skill strong{
+  display:block;font-size:10px;line-height:1.1;color:#eee1bd
+}
+body[data-game-screen="hunt"] .huntv2-monster-skill span{
+  display:block;margin-top:2px;font-size:8px;line-height:1.28;color:#95a5a7
+}
+body[data-game-screen="hunt"] .huntv2-monster-progression{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding-top:7px;font-size:8px;color:#859597
+}
+body[data-game-screen="hunt"] .huntv2-monster-progression b{
+  color:#d9bd78;font-size:8.5px;white-space:nowrap
+}
+@media(max-width:360px){
+  body[data-game-screen="hunt"] .huntv2-monster-sheet{padding:78px 8px 0}
+  body[data-game-screen="hunt"] .huntv2-monster-sheet .v106-sheet-body{max-height:64%}
+  body[data-game-screen="hunt"] .huntv2-monster-identity strong{font-size:16px}
+}
