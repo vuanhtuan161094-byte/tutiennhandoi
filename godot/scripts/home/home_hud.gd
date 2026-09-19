@@ -370,10 +370,9 @@ func _build_quick_actions() -> void:
 	combat.pressed.connect(func(): route_requested.emit(&"dungeons"))
 
 func _update_action_band() -> void:
-	if primary_button.visible:
-		_anchor_bottom_wide(quick_actions, 14.0, 14.0, -160.0, -98.0)
-	else:
-		_anchor_bottom_wide(quick_actions, 14.0, 14.0, -216.0, -98.0)
+	# The target reserves a stable four-orb band. The conditional advancement
+	# plaque occupies the band immediately above it and must not compress orbs.
+	_anchor_bottom_wide(quick_actions, 14.0, 14.0, -216.0, -98.0)
 
 func _add_action_cell(icon: Texture2D, caption: String, subtitle: String, accent: Color, button_name: String) -> Button:
 	var cell := VBoxContainer.new()
