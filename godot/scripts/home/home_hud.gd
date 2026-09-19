@@ -70,15 +70,13 @@ func bind(vm: Dictionary) -> void:
 	elif ready and transition == "ascend":
 		primary_button.text = "THĂNG CẢNH"
 		primary_button.set_meta("action_id", "ascendRealmV140")
-
-	quick_actions.position.y = 625.0 if primary_button.visible else 579.0
+	_update_quick_action_position()
 
 	var retreat_enabled := bool(retreat.get("enabled", false))
 	retreat_button.visible = retreat_enabled
 	retreat_button.disabled = not retreat_enabled
 
 	_update_context_notice(progression, context)
-
 	stone_label.text = _fmt_num(float(resources.get("spirit_stone", 0)))
 	cp_label.text = _fmt_num(float(resources.get("reincarnation_cp", 0)))
 
@@ -86,49 +84,85 @@ func bind(vm: Dictionary) -> void:
 		status_label.text = ""
 
 func set_bridge_status(online: bool, message: String) -> void:
-	bridge_label.text = "CANONICAL V140 • ONLINE" if online else "CANONICAL V140 • %s" % message.to_upper()
-	bridge_label.add_theme_color_override("font_color", MINT if online else MUTED)
+	bridge_label.text = "ONLINE" if online else message
+	bridge_label.visible = not online
+	bridge_label.add_theme_color_override("font_color", MUTED)
 
 func set_status_message(message: String) -> void:
 	status_label.text = message
 
 func _build_top() -> void:
-	var title := _readable_label("TU TIÊN NHÀN DỖI", 20, GOLD_HI)
-	_place(title, Vector2(14, 10), Vector2(215, 25))
-	add_child(title)
+	var top_margin := MarginContainer.new()
+	top_margin.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	top_margin.offset_bottom = 54.0
+	top_margin.add_theme_constant_override("margin_left", 14)
+	top_margin.add_theme_constant_override("margin_right", 14)
+	top_margin.add_theme_constant_override("margin_top", 8)
+	top_margin.add_theme_constant_override("margin_bottom", 5)
+	add_child(top_margin)
 
-	bridge_label = _readable_label("ĐANG NỐI CANONICAL RUNTIME…", 7, MUTED)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	top_margin.add_child(row)
+
+	var brand := VBoxContainer.new()
+	brand.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	brand.add_theme_constant_override("separation", -1)
+	row.add_child(brand)
+
+	var title := _readable_label("TU TIÊN NHÀN DỖI", 17, GOLD_HI)
+	brand.add_child(title)
+
+	bridge_label = _readable_label("ĐANG NỐI…", 7, MUTED)
 	bridge_label.name = "BridgeStatus"
-	_place(bridge_label, Vector2(15, 34), Vector2(210, 13))
-	add_child(bridge_label)
+	brand.add_child(bridge_label)
+
+	var resources := HBoxContainer.new()
+	resources.add_theme_constant_override("separation", 6)
+	row.add_child(resources)
 
 	var stone := _resource("LINH THẠCH", CYAN)
-	_place(stone, Vector2(239, 9), Vector2(65, 38))
-	add_child(stone)
+	stone.custom_minimum_size = Vector2(70, 40)
+	resources.add_child(stone)
 	stone_label = stone.find_child("Value", true, false) as Label
 
 	var cp := _resource("LUÂN HỒI", GOLD)
-	_place(cp, Vector2(309, 9), Vector2(66, 38))
-	add_child(cp)
+	cp.custom_minimum_size = Vector2(68, 40)
+	resources.add_child(cp)
 	cp_label = cp.find_child("Value", true, false) as Label
 
 func _build_identity() -> void:
+	var identity_margin := MarginContainer.new()
+	identity_margin.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	identity_margin.offset_top = 58.0
+	identity_margin.offset_bottom = 134.0
+	identity_margin.add_theme_constant_override("margin_left", 15)
+	identity_margin.add_theme_constant_override("margin_right", 15)
+	add_child(identity_margin)
+
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", -1)
+	identity_margin.add_child(col)
+
 	life_label = _readable_label("ĐỜI —", 8, GOLD)
-	_place(life_label, Vector2(16, 61), Vector2(120, 14))
-	add_child(life_label)
+	col.add_child(life_label)
 
 	realm_label = _readable_label("Đang đọc cảnh giới", 27, Color("fff4db"))
 	realm_label.name = "RealmLabel"
-	_place(realm_label, Vector2(15, 76), Vector2(305, 38))
-	add_child(realm_label)
+	realm_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	col.add_child(realm_label)
 
-	var hint := _readable_label("Chạm để xem hồ sơ", 8, Color(0.80, 0.84, 0.82, 0.85))
-	_place(hint, Vector2(17, 112), Vector2(190, 15))
-	add_child(hint)
+	var hint := _readable_label("Chạm cảnh giới để xem hồ sơ đời hiện tại", 8, Color(0.80, 0.84, 0.82, 0.82))
+	col.add_child(hint)
 
 	var tap := Button.new()
 	tap.name = "IdentityTap"
-	_place(tap, Vector2(9, 55), Vector2(312, 80))
+	tap.anchor_left = 0.0
+	tap.anchor_right = 0.82
+	tap.offset_left = 8.0
+	tap.offset_top = 54.0
+	tap.offset_right = 0.0
+	tap.offset_bottom = 136.0
 	tap.text = ""
 	tap.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
 	tap.add_theme_stylebox_override("hover", _flat(Color(0.95, 0.82, 0.50, 0.035), 12))
@@ -138,10 +172,15 @@ func _build_identity() -> void:
 func _build_context_notice() -> void:
 	context_button = Button.new()
 	context_button.visible = false
-	_place(context_button, Vector2(15, 139), Vector2(175, 30))
+	context_button.anchor_left = 0.0
+	context_button.anchor_right = 0.0
+	context_button.offset_left = 15.0
+	context_button.offset_top = 139.0
+	context_button.offset_right = 196.0
+	context_button.offset_bottom = 169.0
 	context_button.add_theme_font_size_override("font_size", 8)
 	context_button.add_theme_color_override("font_color", Color("f3dda7"))
-	context_button.add_theme_stylebox_override("normal", _flat(Color(0.10, 0.075, 0.035, 0.72), 15, Color(0.90, 0.72, 0.36, 0.34), 1))
+	context_button.add_theme_stylebox_override("normal", _flat(Color(0.10, 0.075, 0.035, 0.70), 15, Color(0.90, 0.72, 0.36, 0.28), 1))
 	context_button.add_theme_stylebox_override("hover", _flat(Color(0.14, 0.10, 0.04, 0.86), 15, GOLD, 1))
 	context_button.pressed.connect(func(): identity_pressed.emit())
 	add_child(context_button)
@@ -161,14 +200,19 @@ func _update_context_notice(progression: Dictionary, context: Dictionary) -> voi
 			context_button.visible = true
 
 func _build_progress() -> void:
+	var shell := Control.new()
+	shell.name = "CultivationShell"
+	_anchor_bottom_wide(shell, 24.0, 24.0, -372.0, -292.0)
+	add_child(shell)
+
 	var box := PanelContainer.new()
-	_place(box, Vector2(26, 474), Vector2(338, 72))
-	box.add_theme_stylebox_override("panel", _flat(Color(0.015, 0.055, 0.075, 0.76), 16, Color(0.83, 0.72, 0.45, 0.22), 1))
-	add_child(box)
+	box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	box.add_theme_stylebox_override("panel", _flat(Color(0.008, 0.040, 0.055, 0.68), 18, Color(0.83, 0.72, 0.45, 0.20), 1))
+	shell.add_child(box)
 
 	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 13)
-	margin.add_theme_constant_override("margin_right", 13)
+	margin.add_theme_constant_override("margin_left", 14)
+	margin.add_theme_constant_override("margin_right", 14)
 	margin.add_theme_constant_override("margin_top", 8)
 	margin.add_theme_constant_override("margin_bottom", 7)
 	box.add_child(margin)
@@ -191,10 +235,10 @@ func _build_progress() -> void:
 	progress_bar.max_value = 1
 	progress_bar.value = 0
 	progress_bar.show_percentage = false
-	progress_bar.custom_minimum_size = Vector2(0, 6)
+	progress_bar.custom_minimum_size = Vector2(0, 7)
 	progress_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	progress_bar.add_theme_stylebox_override("background", _flat(Color(0.0, 0.025, 0.04, 0.82), 3))
-	progress_bar.add_theme_stylebox_override("fill", _flat(CYAN, 3))
+	progress_bar.add_theme_stylebox_override("background", _flat(Color(0.0, 0.025, 0.04, 0.78), 4))
+	progress_bar.add_theme_stylebox_override("fill", _flat(CYAN, 4))
 	col.add_child(progress_bar)
 
 	var foot := HBoxContainer.new()
@@ -211,22 +255,22 @@ func _build_progress() -> void:
 
 	var tap := Button.new()
 	tap.name = "CultivationTap"
-	_place(tap, Vector2(26, 474), Vector2(338, 72))
+	tap.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	tap.text = ""
 	tap.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
-	tap.add_theme_stylebox_override("hover", _flat(Color(0.75, 0.92, 1.0, 0.03), 16))
+	tap.add_theme_stylebox_override("hover", _flat(Color(0.75, 0.92, 1.0, 0.03), 18))
 	tap.pressed.connect(func(): cultivation_pressed.emit())
-	add_child(tap)
+	shell.add_child(tap)
 
 func _build_primary() -> void:
 	primary_button = Button.new()
 	primary_button.name = "PrimaryCTA"
 	primary_button.visible = false
-	_place(primary_button, Vector2(31, 557), Vector2(328, 48))
+	_anchor_bottom_wide(primary_button, 31.0, 31.0, -287.0, -239.0)
 	primary_button.add_theme_font_size_override("font_size", 13)
 	primary_button.add_theme_color_override("font_color", Color("fff0cf"))
-	primary_button.add_theme_stylebox_override("normal", _flat(Color(0.24, 0.19, 0.08, 0.90), 15, Color(0.95, 0.81, 0.49, 0.60), 1))
-	primary_button.add_theme_stylebox_override("hover", _flat(Color(0.32, 0.25, 0.10, 0.95), 15, GOLD_HI, 1))
+	primary_button.add_theme_stylebox_override("normal", _flat(Color(0.24, 0.19, 0.08, 0.88), 16, Color(0.95, 0.81, 0.49, 0.56), 1))
+	primary_button.add_theme_stylebox_override("hover", _flat(Color(0.32, 0.25, 0.10, 0.95), 16, GOLD_HI, 1))
 	primary_button.pressed.connect(func():
 		primary_action_requested.emit(str(primary_button.get_meta("action_id", "")))
 	)
@@ -234,8 +278,8 @@ func _build_primary() -> void:
 
 func _build_quick_actions() -> void:
 	quick_actions = HBoxContainer.new()
-	_place(quick_actions, Vector2(31, 579), Vector2(328, 61))
 	quick_actions.add_theme_constant_override("separation", 7)
+	_anchor_bottom_wide(quick_actions, 28.0, 28.0, -265.0, -202.0)
 	add_child(quick_actions)
 
 	retreat_button = _quick_button(ICON_RETREAT, "Bế Quan", GOLD)
@@ -255,9 +299,15 @@ func _build_quick_actions() -> void:
 	combat.pressed.connect(func(): route_requested.emit(&"dungeons"))
 	quick_actions.add_child(combat)
 
+func _update_quick_action_position() -> void:
+	if primary_button.visible:
+		_anchor_bottom_wide(quick_actions, 28.0, 28.0, -219.0, -156.0)
+	else:
+		_anchor_bottom_wide(quick_actions, 28.0, 28.0, -265.0, -202.0)
+
 func _resource(caption: String, accent: Color) -> PanelContainer:
 	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", _flat(Color(0.008, 0.032, 0.045, 0.78), 11, Color(accent.r, accent.g, accent.b, 0.25), 1))
+	panel.add_theme_stylebox_override("panel", _flat(Color(0.008, 0.032, 0.045, 0.68), 12, Color(accent.r, accent.g, accent.b, 0.22), 1))
 	var col := VBoxContainer.new()
 	col.alignment = BoxContainer.ALIGNMENT_CENTER
 	var title := _label(caption, 5, MUTED)
@@ -275,13 +325,13 @@ func _quick_button(icon: Texture2D, caption: String, accent: Color) -> Button:
 	button.icon = icon
 	button.text = caption
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.custom_minimum_size = Vector2(0, 56)
+	button.custom_minimum_size = Vector2(0, 60)
 	button.add_theme_font_size_override("font_size", 8)
 	button.add_theme_color_override("font_color", accent)
 	button.add_theme_color_override("icon_normal_color", accent)
 	button.add_theme_color_override("icon_hover_color", Color.WHITE)
-	button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
-	button.add_theme_stylebox_override("hover", _flat(Color(0.03, 0.09, 0.11, 0.55), 13, Color(accent.r, accent.g, accent.b, 0.20), 1))
+	button.add_theme_stylebox_override("normal", _flat(Color(0.008, 0.035, 0.045, 0.42), 18, Color(accent.r, accent.g, accent.b, 0.16), 1))
+	button.add_theme_stylebox_override("hover", _flat(Color(0.03, 0.09, 0.11, 0.66), 18, Color(accent.r, accent.g, accent.b, 0.34), 1))
 	return button
 
 func _advance_text(progression: Dictionary) -> String:
@@ -322,7 +372,7 @@ func _label(value: String, size: int, color: Color) -> Label:
 func _readable_label(value: String, size: int, color: Color) -> Label:
 	var label := _label(value, size, color)
 	label.add_theme_constant_override("outline_size", 4)
-	label.add_theme_color_override("font_outline_color", Color(0.0, 0.02, 0.03, 0.88))
+	label.add_theme_color_override("font_outline_color", Color(0.0, 0.02, 0.03, 0.86))
 	return label
 
 func _flat(fill: Color, radius: int, border: Color = Color.TRANSPARENT, border_width: int = 0) -> StyleBoxFlat:
@@ -339,6 +389,12 @@ func _flat(fill: Color, radius: int, border: Color = Color.TRANSPARENT, border_w
 	style.border_width_bottom = border_width
 	return style
 
-func _place(control: Control, pos: Vector2, size_value: Vector2) -> void:
-	control.position = pos
-	control.size = size_value
+func _anchor_bottom_wide(control: Control, left_margin: float, right_margin: float, top_offset: float, bottom_offset: float) -> void:
+	control.anchor_left = 0.0
+	control.anchor_right = 1.0
+	control.anchor_top = 1.0
+	control.anchor_bottom = 1.0
+	control.offset_left = left_margin
+	control.offset_right = -right_margin
+	control.offset_top = top_offset
+	control.offset_bottom = bottom_offset
