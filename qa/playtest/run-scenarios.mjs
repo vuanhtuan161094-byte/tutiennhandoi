@@ -376,6 +376,18 @@ try {
       if (result.before.missingImages.length) throw new Error(`Missing images: ${result.before.missingImages.join(', ')}`);
       result.screenshots.push(await screenshot(client, scenario.id));
 
+      if (scenario.id === 'combat-action') {
+        const bossInfoSelector='.huntv2-enemy-info';
+        const bossSheetSelector='.huntv2-monster-sheet.open .huntv2-monster-intel';
+        await waitFor(client,`document.querySelector(${JSON.stringify(bossInfoSelector)})`, 'combat boss info control');
+        await client.eval(`(()=>{const el=document.querySelector(${JSON.stringify(bossInfoSelector)});if(!el)throw new Error('boss info control unavailable');el.click();return true;})()`);
+        await waitFor(client,`document.querySelector(${JSON.stringify(bossSheetSelector)})`, 'combat boss info sheet');
+        await visualReady(client);
+        result.screenshots.push(await screenshot(client, 'combat-boss-info'));
+        await client.eval(`(()=>{const el=document.querySelector('.huntv2-monster-sheet.open [data-sheet-close]');if(!el)throw new Error('boss info close unavailable');el.click();return true;})()`);
+        await waitFor(client,`!document.querySelector('.huntv2-monster-sheet.open')`, 'combat boss info close');
+      }
+
       result.interaction = await executeInteraction(client, scenario);
       if (scenario.interaction) {
         await visualReady(client);
