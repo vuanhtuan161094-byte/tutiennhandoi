@@ -1,0 +1,47 @@
+{
+  "name": "tutien-home-visual-capture",
+  "description": "Capture the real 390x844 Godot Home after canonical data is online. This is capture-only until a user-approved baseline is committed.",
+  "target": {
+    "mode": "launch",
+    "project_path": "../..",
+    "headless": false,
+    "timeout_ms": 60000
+  },
+  "steps": [
+    {
+      "name": "Home HUD is rendered",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:HomeHUD",
+        "state": "visible",
+        "timeout_ms": 15000
+      }
+    },
+    {
+      "name": "Canonical bridge reaches ONLINE",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:BridgeStatus",
+        "property": "text",
+        "operator": "contains",
+        "expected_value": "ONLINE",
+        "timeout_ms": 20000,
+        "poll_interval_ms": 200
+      }
+    },
+    {
+      "name": "Let visual effects settle",
+      "action": "sleep",
+      "with": {
+        "duration_ms": 700
+      }
+    },
+    {
+      "name": "Capture Home 390x844",
+      "action": "screenshot",
+      "with": {
+        "output": "home-390x844.png"
+      }
+    }
+  ]
+}
