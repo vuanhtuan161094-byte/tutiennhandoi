@@ -9,7 +9,6 @@ const CYAN := Color("59d8ff")
 const MINT := Color("68e6b5")
 const TEXT := Color("edf7ff")
 const MUTED := Color("9eb3c9")
-const PANEL := Color(0.012, 0.045, 0.085, 0.82)
 
 var name_label: Label
 var life_label: Label
