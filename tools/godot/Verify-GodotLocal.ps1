@@ -11,6 +11,7 @@ $StagehandExe = Join-Path $ToolsRoot "stagehand\godot-stagehand.exe"
 $GdUnitRunner = Join-Path $GodotProject "addons\gdUnit4\runtest.cmd"
 $ArtifactsRoot = Join-Path $RepoRoot "artifacts\godot-tools"
 $SetupScript = Join-Path $PSScriptRoot "Setup-GodotTooling.ps1"
+$ApprovedBaseline = Join-Path $GodotProject "tests\visual-baselines\home-390x844.png"
 
 function Assert-Exit([string]$Label) {
     if ($LASTEXITCODE -ne 0) {
@@ -123,13 +124,21 @@ New-Item -ItemType Directory -Force -Path $structuralOut | Out-Null
 Assert-Exit "Stagehand runtime smoke"
 
 if (-not $SkipVisual) {
-    Write-Host "[7/7] Capturing real 390x844 Home screenshot ..."
-    $visualOut = Join-Path $ArtifactsRoot "stagehand-visual"
-    New-Item -ItemType Directory -Force -Path $visualOut | Out-Null
-    & $StagehandExe run (Join-Path $GodotProject "tests\stagehand\home_visual_capture.json") --out-dir $visualOut --godot-bin $Godot
-    Assert-Exit "Stagehand visual capture"
+    if (Test-Path $ApprovedBaseline) {
+        Write-Host "[7/7] Running Stagehand visual regression against approved baseline ..."
+        $visualOut = Join-Path $ArtifactsRoot "stagehand-visual-regression"
+        New-Item -ItemType Directory -Force -Path $visualOut | Out-Null
+        & $StagehandExe run (Join-Path $GodotProject "tests\stagehand\home_visual_regression.json") --out-dir $visualOut --godot-bin $Godot
+        Assert-Exit "Stagehand visual regression"
+    } else {
+        Write-Host "[7/7] No approved baseline yet; capturing deterministic 390x844 Home candidate ..."
+        $visualOut = Join-Path $ArtifactsRoot "stagehand-visual"
+        New-Item -ItemType Directory -Force -Path $visualOut | Out-Null
+        & $StagehandExe run (Join-Path $GodotProject "tests\stagehand\home_visual_capture.json") --out-dir $visualOut --godot-bin $Godot
+        Assert-Exit "Stagehand visual capture"
+    }
 } else {
-    Write-Host "[7/7] Visual capture skipped by request."
+    Write-Host "[7/7] Visual gate skipped by request."
 }
 
 Write-Host ""
@@ -139,5 +148,11 @@ Write-Host "================================================"
 Write-Host ""
 Write-Host "Artifacts: $ArtifactsRoot"
 if (-not $SkipVisual) {
-    Write-Host "Screenshot: $ArtifactsRoot\stagehand-visual\screenshots\home-390x844.png"
+    if (Test-Path $ApprovedBaseline) {
+        Write-Host "Visual baseline: $ApprovedBaseline"
+        Write-Host "Regression artifacts: $ArtifactsRoot\stagehand-visual-regression"
+    } else {
+        Write-Host "Candidate screenshot: $ArtifactsRoot\stagehand-visual\screenshots\home-390x844.png"
+        Write-Host "Baseline status: NOT APPROVED"
+    }
 }
