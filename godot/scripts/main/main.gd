@@ -29,7 +29,7 @@ var advance_button: Button
 var route_label: Label
 var nav_buttons: Dictionary = {}
 var _home: Dictionary = {}
-var backend_bridge: Node
+var backend_bridge
 
 func _ready() -> void:
 	_build_ui()
