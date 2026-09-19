@@ -98,6 +98,7 @@ func _build_top() -> void:
 	add_child(title)
 
 	bridge_label = _readable_label("ĐANG NỐI CANONICAL RUNTIME…", 7, MUTED)
+	bridge_label.name = "BridgeStatus"
 	_place(bridge_label, Vector2(15, 34), Vector2(210, 13))
 	add_child(bridge_label)
 
@@ -117,6 +118,7 @@ func _build_identity() -> void:
 	add_child(life_label)
 
 	realm_label = _readable_label("Đang đọc cảnh giới", 27, Color("fff4db"))
+	realm_label.name = "RealmLabel"
 	_place(realm_label, Vector2(15, 76), Vector2(305, 38))
 	add_child(realm_label)
 
@@ -180,9 +182,11 @@ func _build_progress() -> void:
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(title)
 	progress_text = _label("— / —", 10, TEXT)
+	progress_text.name = "CultivationText"
 	row.add_child(progress_text)
 
 	progress_bar = ProgressBar.new()
+	progress_bar.name = "CultivationProgress"
 	progress_bar.max_value = 1
 	progress_bar.value = 0
 	progress_bar.show_percentage = false
@@ -214,6 +218,7 @@ func _build_progress() -> void:
 
 func _build_primary() -> void:
 	primary_button = Button.new()
+	primary_button.name = "PrimaryCTA"
 	primary_button.visible = false
 	_place(primary_button, Vector2(31, 557), Vector2(328, 48))
 	primary_button.add_theme_font_size_override("font_size", 13)
@@ -232,6 +237,7 @@ func _build_quick_actions() -> void:
 	add_child(quick_actions)
 
 	retreat_button = _quick_button(ICON_RETREAT, "Bế Quan", GOLD)
+	retreat_button.name = "RetreatButton"
 	retreat_button.pressed.connect(func(): retreat_pressed.emit())
 	quick_actions.add_child(retreat_button)
 
