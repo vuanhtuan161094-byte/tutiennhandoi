@@ -20,11 +20,12 @@ func _ready() -> void:
 	_build()
 
 func set_route(route_id: StringName) -> void:
-	for id in _buttons:
-		var button: Button = _buttons[id]
-		var selected := id == route_id
-		button.add_theme_color_override("font_color", GOLD if selected else MUTED)
-		button.add_theme_color_override("icon_normal_color", GOLD if selected else MUTED)
+	for key in _buttons.keys():
+		var nav_id := StringName(str(key))
+		var button := _buttons[key] as Button
+		var is_selected: bool = nav_id == route_id
+		button.add_theme_color_override("font_color", GOLD if is_selected else MUTED)
+		button.add_theme_color_override("icon_normal_color", GOLD if is_selected else MUTED)
 
 func _build() -> void:
 	var veil := Panel.new()
