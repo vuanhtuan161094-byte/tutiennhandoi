@@ -1,0 +1,37 @@
+{
+  "schema": "tutien-ai-playtest.scenarios.v1",
+  "fixture": {
+    "seed": 20260919,
+    "dao": "sword"
+  },
+  "defaults": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "timeoutMs": 20000
+  },
+  "scenarios": [
+    {
+      "id": "combat-boss-info",
+      "tab": "hunt",
+      "expectedScreen": "hunt",
+      "realmOrder": 62,
+      "forceBoss": true,
+      "requiredSelectors": [
+        ".huntv2-screen",
+        ".huntv2-enemy-hud",
+        ".huntv2-enemy-info",
+        ".huntv2-monster-sheet"
+      ],
+      "interaction": {
+        "type": "click-action",
+        "selector": ".huntv2-enemy-info",
+        "waitForAnySelectors": [
+          ".huntv2-monster-sheet.open .huntv2-monster-intel",
+          ".huntv2-monster-sheet.open .huntv2-monster-skills"
+        ]
+      }
+    }
+  ]
+}
