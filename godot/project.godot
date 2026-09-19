@@ -17,7 +17,6 @@ config/features=PackedStringArray("4.7")
 [autoload]
 
 AppState="*res://scripts/core/app_state.gd"
-BackendBridge="*res://scripts/core/backend_bridge.gd"
 
 [display]
 
