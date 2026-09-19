@@ -25,6 +25,7 @@ var rate_label: Label
 var eta_label: Label
 var bridge_label: Label
 var advance_button: Button
+var retreat_button: Button
 var route_label: Label
 var retreat_popup: PopupPanel
 var nav_buttons: Dictionary = {}
@@ -222,9 +223,9 @@ func _build_actions() -> void:
 	row.add_theme_constant_override("separation", 6)
 	add_child(row)
 
-	var retreat := _action_button("◉", "Bế Quan", GOLD)
-	retreat.pressed.connect(_open_retreat_popup)
-	row.add_child(retreat)
+	retreat_button = _action_button("◉", "Bế Quan", GOLD)
+	retreat_button.pressed.connect(_open_retreat_popup)
+	row.add_child(retreat_button)
 
 	advance_button = _action_button("✦", "Tu Vi Đan", Color("bb77ff"))
 	advance_button.pressed.connect(_on_advance_pressed)
@@ -291,6 +292,7 @@ func _on_home_updated(home: Dictionary) -> void:
 	var cultivation: Dictionary = home.get("cultivation", {})
 	var spiritual_root: Dictionary = home.get("spiritualRoot", {})
 	var resources: Dictionary = home.get("resources", {})
+	var retreat: Dictionary = cultivation.get("retreat", {})
 
 	name_label.text = str(character.get("name", "Tu Sĩ"))
 	life_label.text = "Đời %d" % int(life.get("lifeNumber", 1))
@@ -325,6 +327,11 @@ func _on_home_updated(home: Dictionary) -> void:
 	else:
 		advance_button.text = "◆\nTu Vi Đan"
 
+	var retreat_enabled := bool(retreat.get("enabled", false))
+	retreat_button.disabled = not retreat_enabled
+	retreat_button.text = "◉\nBế Quan" if retreat_enabled else "◉\nBế Quan Khóa"
+	retreat_button.tooltip_text = "" if retreat_enabled else "Bế Quan mở từ Luyện Khí."
+
 	stone_label.text = _fmt_num(float(resources.get("spiritStone", 0)))
 	cp_label.text = _fmt_num(float(resources.get("reincarnationCp", 0)))
 
@@ -335,6 +342,9 @@ func _open_retreat_popup() -> void:
 
 	var cultivation: Dictionary = _home.get("cultivation", {})
 	var retreat: Dictionary = cultivation.get("retreat", {})
+	if not bool(retreat.get("enabled", false)):
+		status_label.text = "Bế Quan mở từ Luyện Khí"
+		return
 	var bank := maxf(0.0, float(retreat.get("bankHours", 0)))
 	var cap := maxf(0.0, float(retreat.get("capHours", 9)))
 	var daily := maxf(0.0, float(retreat.get("dailyAccrualHours", 3)))
