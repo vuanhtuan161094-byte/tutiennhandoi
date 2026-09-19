@@ -252,7 +252,7 @@ func _sheet_column(card: PanelContainer) -> VBoxContainer:
 func _close_button() -> Button:
 	var close := Button.new()
 	close.text = "Đóng"
-	close.custom_minimum_size = Vector2(0, 42)
+	close.custom_minimum_size = Vector2(0, 44)
 	close.add_theme_font_size_override("font_size", 10)
 	close.add_theme_color_override("font_color", TEXT)
 	close.add_theme_stylebox_override("normal", _flat(Color(0.025, 0.065, 0.080, 0.80), 14, Color(0.44, 0.68, 0.74, 0.20), 1))
