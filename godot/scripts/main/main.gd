@@ -20,16 +20,13 @@ var _home: Dictionary = {}
 var _vm: Dictionary = {}
 var _last_home_generated_at := 0
 var retreat_modal: Control
+var info_modal: Control
 
 var bridge_label: Label
 var stone_label: Label
 var cp_label: Label
 var life_label: Label
 var realm_label: Label
-var name_label: Label
-var root_label: Label
-var injury_label: Label
-var lifespan_label: Label
 var progress_bar: ProgressBar
 var progress_text: Label
 var rate_label: Label
@@ -37,6 +34,7 @@ var eta_label: Label
 var status_label: Label
 var primary_button: Button
 var retreat_button: Button
+var quick_actions_row: HBoxContainer
 var route_label: Label
 var nav_buttons: Dictionary = {}
 
@@ -107,40 +105,21 @@ func _build_identity() -> void:
 	add_child(life_label)
 
 	realm_label = _readable_label("Đang đọc cảnh giới", 28, Color("fff2d6"))
-	_place(realm_label, Vector2(15, 73), Vector2(250, 37))
+	_place(realm_label, Vector2(15, 73), Vector2(300, 38))
 	add_child(realm_label)
 
-	name_label = _readable_label("Đang tải nhân vật…", 11, TEXT)
-	_place(name_label, Vector2(17, 109), Vector2(220, 17))
-	add_child(name_label)
+	var hint := _readable_label("Chạm để xem hồ sơ hiện tại", 8, Color(0.78, 0.82, 0.80, 0.82))
+	_place(hint, Vector2(17, 112), Vector2(205, 15))
+	add_child(hint)
 
-	root_label = _readable_label("Linh Căn · —", 9, Color("c7d3ce"))
-	_place(root_label, Vector2(17, 126), Vector2(220, 15))
-	add_child(root_label)
-
-	var vitals := _panel(Color(0.015, 0.050, 0.070, 0.58), 12, Color(0.86, 0.72, 0.40, 0.18))
-	_place(vitals, Vector2(274, 61), Vector2(101, 72))
-	add_child(vitals)
-
-	var vm := MarginContainer.new()
-	vm.add_theme_constant_override("margin_left", 9)
-	vm.add_theme_constant_override("margin_right", 9)
-	vm.add_theme_constant_override("margin_top", 7)
-	vm.add_theme_constant_override("margin_bottom", 7)
-	vitals.add_child(vm)
-
-	var vcol := VBoxContainer.new()
-	vcol.add_theme_constant_override("separation", 4)
-	vm.add_child(vcol)
-
-	var injury_title := _label("THƯƠNG THẾ", 6, MUTED)
-	vcol.add_child(injury_title)
-	injury_label = _label("—", 11, TEXT)
-	vcol.add_child(injury_label)
-	var life_title := _label("THỌ NGUYÊN", 6, MUTED)
-	vcol.add_child(life_title)
-	lifespan_label = _label("—", 10, TEXT)
-	vcol.add_child(lifespan_label)
+	var tap := Button.new()
+	tap.text = ""
+	_place(tap, Vector2(10, 54), Vector2(310, 78))
+	tap.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
+	tap.add_theme_stylebox_override("hover", _flat(Color(0.95, 0.82, 0.50, 0.035), 12))
+	tap.tooltip_text = "Xem hồ sơ đời hiện tại"
+	tap.pressed.connect(_open_identity_info)
+	add_child(tap)
 
 func _build_hero() -> void:
 	var outer_aura := Panel.new()
@@ -170,7 +149,7 @@ func _build_hero() -> void:
 
 func _build_progress() -> void:
 	var box := _panel(Color(0.025, 0.095, 0.125, 0.91), 18, Color(0.90, 0.75, 0.42, 0.34))
-	_place(box, Vector2(24, 447), Vector2(342, 93))
+	_place(box, Vector2(24, 462), Vector2(342, 88))
 	add_child(box)
 
 	var margin := MarginContainer.new()
@@ -197,6 +176,7 @@ func _build_progress() -> void:
 	progress_bar.value = 0
 	progress_bar.show_percentage = false
 	progress_bar.custom_minimum_size = Vector2(0, 7)
+	progress_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	progress_bar.add_theme_stylebox_override("background", _flat(Color(0.0, 0.025, 0.04, 0.86), 4))
 	progress_bar.add_theme_stylebox_override("fill", _flat(Color("8cc7ef"), 4))
 	col.add_child(progress_bar)
@@ -213,10 +193,19 @@ func _build_progress() -> void:
 	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(status_label)
 
+	var tap := Button.new()
+	tap.text = ""
+	_place(tap, Vector2(24, 462), Vector2(342, 88))
+	tap.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
+	tap.add_theme_stylebox_override("hover", _flat(Color(0.80, 0.92, 1.0, 0.025), 18))
+	tap.tooltip_text = "Xem chi tiết Tu Luyện"
+	tap.pressed.connect(_open_cultivation_info)
+	add_child(tap)
+
 func _build_primary_action() -> void:
 	primary_button = Button.new()
-	primary_button.text = "☯   TĂNG TỐC TU LUYỆN   ›"
-	_place(primary_button, Vector2(24, 550), Vector2(342, 58))
+	primary_button.visible = false
+	_place(primary_button, Vector2(24, 559), Vector2(342, 54))
 	primary_button.add_theme_font_size_override("font_size", 14)
 	primary_button.add_theme_color_override("font_color", Color("fff0cf"))
 	primary_button.add_theme_color_override("font_hover_color", Color.WHITE)
@@ -227,26 +216,26 @@ func _build_primary_action() -> void:
 	add_child(primary_button)
 
 func _build_quick_actions() -> void:
-	var row := HBoxContainer.new()
-	_place(row, Vector2(26, 620), Vector2(338, 82))
-	row.add_theme_constant_override("separation", 4)
-	add_child(row)
+	quick_actions_row = HBoxContainer.new()
+	_place(quick_actions_row, Vector2(26, 566), Vector2(338, 76))
+	quick_actions_row.add_theme_constant_override("separation", 5)
+	add_child(quick_actions_row)
 
 	retreat_button = _round_action("◉", "Bế Quan", GOLD)
 	retreat_button.pressed.connect(_open_retreat_modal)
-	row.add_child(retreat_button)
+	quick_actions_row.add_child(retreat_button)
 
-	var pill := _round_action("◆", "Tu Vi Đan", Color("bd8cff"))
-	pill.pressed.connect(func(): backend_bridge.perform_action("useCultivationPill"))
-	row.add_child(pill)
+	var profile := _round_action("♙", "Nhân Vật", Color("e7d9b4"))
+	profile.pressed.connect(_open_identity_info)
+	quick_actions_row.add_child(profile)
 
 	var root := _round_action("◇", "Linh Căn", MINT)
 	root.pressed.connect(AppState.request_route.bind(&"roots"))
-	row.add_child(root)
+	quick_actions_row.add_child(root)
 
 	var fight := _round_action("⚔", "Chiến Đấu", CYAN)
 	fight.pressed.connect(AppState.request_route.bind(&"dungeons"))
-	row.add_child(fight)
+	quick_actions_row.add_child(fight)
 
 func _build_nav() -> void:
 	var nav := _panel(Color(0.008, 0.032, 0.045, 0.95), 18, Color(0.90, 0.74, 0.40, 0.20))
@@ -310,11 +299,6 @@ func _on_home_updated(home: Dictionary) -> void:
 
 	life_label.text = "ĐỜI %d" % int(identity.get("life_number", 1))
 	realm_label.text = str(identity.get("realm", "Phàm Nhân"))
-	name_label.text = str(identity.get("name", "Tu Sĩ"))
-	root_label.text = "Linh Căn · %s" % str(identity.get("root_name", "Phàm Căn"))
-
-	injury_label.text = "%.0f%%" % float(progression.get("injury_pct", 0))
-	lifespan_label.text = "%.1f năm" % float(progression.get("remaining_life_years", 0))
 
 	var tu_vi := float(progression.get("tu_vi", 0))
 	var required := maxf(1.0, float(progression.get("required_tu_vi", 1)))
@@ -328,16 +312,16 @@ func _on_home_updated(home: Dictionary) -> void:
 	var eta := float(progression.get("eta_seconds", 0))
 	eta_label.text = _advance_text(progression) if ready else "Còn %s" % _duration(eta)
 
+	primary_button.visible = ready and (transition == "tribulation" or transition == "ascend")
 	if ready and transition == "tribulation":
 		primary_button.text = "⚡   DẪN THIÊN KIẾP   ›"
 	elif ready and transition == "ascend":
 		primary_button.text = "✦   THĂNG CẢNH   ›"
-	else:
-		primary_button.text = "☯   TĂNG TỐC TU LUYỆN   ›"
+	quick_actions_row.position.y = 622.0 if primary_button.visible else 566.0
 
 	var retreat_enabled := bool(retreat.get("enabled", false))
+	retreat_button.visible = retreat_enabled
 	retreat_button.disabled = not retreat_enabled
-	retreat_button.text = "◉\nBế Quan" if retreat_enabled else "◉\nBế Quan Khóa"
 	retreat_button.tooltip_text = "" if retreat_enabled else "Bế Quan mở từ Luyện Khí."
 
 	stone_label.text = _fmt_num(float(resources.get("spirit_stone", 0)))
@@ -353,12 +337,115 @@ func _on_primary_pressed() -> void:
 		backend_bridge.perform_action("tribulationV140")
 	elif bool(progression.get("ready", false)) and transition == "ascend":
 		backend_bridge.perform_action("ascendRealmV140")
-	else:
-		var retreat: Dictionary = progression.get("retreat", {})
-		if bool(retreat.get("enabled", false)):
-			_open_retreat_modal()
-		else:
-			status_label.text = "Tự Tu đang tiến triển; Bế Quan mở từ Luyện Khí"
+
+func _open_identity_info() -> void:
+	var identity: Dictionary = _vm.get("identity", {})
+	var progression: Dictionary = _vm.get("progression", {})
+	var context: Dictionary = _vm.get("context", {})
+	var build: Dictionary = context.get("build", {})
+	var lines: Array[String] = []
+	lines.append("%s · Đời %d" % [str(identity.get("name", "Tu Sĩ")), int(identity.get("life_number", 1))])
+	lines.append("Cảnh giới: %s" % str(identity.get("realm", "Phàm Nhân")))
+	lines.append("Linh Căn: %s" % str(identity.get("root_name", "Phàm Căn")))
+	lines.append("Tuổi: %.1f / %.1f năm" % [float(progression.get("age_years", 0)), float(progression.get("lifespan_years", 0))])
+	lines.append("Thọ nguyên còn: %.1f năm" % float(progression.get("remaining_life_years", 0)))
+	lines.append("Thương Thế: %.0f%%" % float(progression.get("injury_pct", 0)))
+	var technique := str(context.get("active_technique", ""))
+	if not technique.is_empty():
+		lines.append("Công pháp: %s" % technique)
+	var identity_text := str(build.get("identity", ""))
+	if not identity_text.is_empty():
+		lines.append("Build: %s" % identity_text)
+	var bottleneck := str(build.get("bottleneckAxis", ""))
+	if not bottleneck.is_empty():
+		lines.append("Nút thắt hiện tại: %s" % bottleneck)
+	_open_info_modal(str(identity.get("realm", "Hồ Sơ")), lines)
+
+func _open_cultivation_info() -> void:
+	var progression: Dictionary = _vm.get("progression", {})
+	var context: Dictionary = _vm.get("context", {})
+	var retreat: Dictionary = progression.get("retreat", {})
+	var lines: Array[String] = []
+	lines.append("Tu Vi: %s / %s" % [_fmt_num(float(progression.get("tu_vi", 0))), _fmt_num(float(progression.get("required_tu_vi", 0)))])
+	lines.append("Tốc độ: +%s / 15s" % _fmt_num(float(progression.get("rate_per_15s", 0))))
+	lines.append("Dự kiến: %s" % _duration(float(progression.get("eta_seconds", 0))))
+	if bool(retreat.get("enabled", false)):
+		lines.append("Bế Quan: %.2f / %.0fh · 3h ≈ %.2f%%" % [float(retreat.get("bank_hours", 0)), float(retreat.get("cap_hours", 9)), float(retreat.get("reward_pct_3h", 0))])
+	var sources = progression.get("rate_sources", [])
+	if typeof(sources) == TYPE_ARRAY and not sources.is_empty():
+		lines.append("")
+		lines.append("Nguồn tốc độ:")
+		for source in sources:
+			if typeof(source) == TYPE_DICTIONARY:
+				var label := str(source.get("label", source.get("id", "")))
+				var value := float(source.get("value", 0))
+				if not label.is_empty():
+					lines.append("• %s: %s" % [label, _fmt_num(value)])
+	var hints = context.get("hints", [])
+	if typeof(hints) == TYPE_ARRAY and not hints.is_empty():
+		lines.append("")
+		lines.append("Gợi ý:")
+		for hint in hints.slice(0, 3):
+			lines.append("• %s" % str(hint))
+	_open_info_modal("Tu Luyện", lines)
+
+func _open_info_modal(title_text: String, lines: Array[String]) -> void:
+	_close_info_modal()
+	info_modal = Control.new()
+	info_modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	info_modal.mouse_filter = Control.MOUSE_FILTER_STOP
+	info_modal.z_index = 60
+	add_child(info_modal)
+
+	var dim := ColorRect.new()
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dim.color = Color(0.0, 0.02, 0.03, 0.64)
+	dim.mouse_filter = Control.MOUSE_FILTER_STOP
+	dim.gui_input.connect(func(event):
+		if event is InputEventMouseButton and event.pressed:
+			_close_info_modal()
+	)
+	info_modal.add_child(dim)
+
+	var card := _panel(Color(0.008, 0.030, 0.043, 0.97), 18, Color(0.90, 0.74, 0.40, 0.36))
+	_place(card, Vector2(42, 194), Vector2(306, 390))
+	info_modal.add_child(card)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_top", 16)
+	margin.add_theme_constant_override("margin_bottom", 14)
+	card.add_child(margin)
+
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 10)
+	margin.add_child(col)
+
+	var title := _label(title_text, 20, GOLD_HI)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	col.add_child(title)
+
+	var detail := RichTextLabel.new()
+	detail.fit_content = true
+	detail.scroll_active = false
+	detail.bbcode_enabled = false
+	detail.custom_minimum_size = Vector2(0, 270)
+	detail.add_theme_font_size_override("normal_font_size", 11)
+	detail.add_theme_color_override("default_color", TEXT)
+	detail.text = "\n".join(lines)
+	col.add_child(detail)
+
+	var close := Button.new()
+	close.text = "Đóng"
+	close.custom_minimum_size = Vector2(0, 38)
+	close.pressed.connect(_close_info_modal)
+	col.add_child(close)
+
+func _close_info_modal() -> void:
+	if info_modal != null and is_instance_valid(info_modal):
+		info_modal.queue_free()
+	info_modal = null
 
 func _open_retreat_modal() -> void:
 	var progression: Dictionary = _vm.get("progression", {})
