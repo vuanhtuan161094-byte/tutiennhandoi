@@ -18,7 +18,10 @@
       "expectedScreen": "cultivation",
       "realmOrder": 10,
       "forceBoss": false,
-      "requiredSelectors": ["#content", ".ui-home-hero"],
+      "requiredSelectors": [
+        "#content",
+        ".ui-home-hero"
+      ],
       "interaction": {
         "type": "click-route",
         "selector": "[data-home-target-side-rail=\"left\"] [data-home-target-route=\"roots\"]",
@@ -32,7 +35,9 @@
       "expectedScreen": "character",
       "realmOrder": 10,
       "forceBoss": false,
-      "requiredSelectors": ["#content"]
+      "requiredSelectors": [
+        "#content"
+      ]
     },
     {
       "id": "combat-action",
@@ -61,12 +66,36 @@
       }
     },
     {
+      "id": "combat-boss-info",
+      "tab": "hunt",
+      "expectedScreen": "hunt",
+      "realmOrder": 62,
+      "forceBoss": true,
+      "requiredSelectors": [
+        ".huntv2-screen",
+        ".huntv2-enemy-hud",
+        ".huntv2-enemy-info",
+        ".huntv2-monster-sheet"
+      ],
+      "interaction": {
+        "type": "click-action",
+        "selector": ".huntv2-enemy-info",
+        "waitForAnySelectors": [
+          ".huntv2-monster-sheet.open .huntv2-monster-intel",
+          ".huntv2-monster-sheet.open .huntv2-monster-skills"
+        ]
+      }
+    },
+    {
       "id": "save-restore-smoke",
       "tab": "cultivation",
       "expectedScreen": "cultivation",
       "realmOrder": 10,
       "forceBoss": false,
-      "requiredSelectors": ["#content", ".ui-home-hero"],
+      "requiredSelectors": [
+        "#content",
+        ".ui-home-hero"
+      ],
       "interaction": {
         "type": "reload"
       }
