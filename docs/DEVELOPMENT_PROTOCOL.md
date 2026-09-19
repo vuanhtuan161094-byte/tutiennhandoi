@@ -126,5 +126,9 @@ Rules:
 - adding/removing assets requires the import gate;
 - UI-visible Godot work requires actual 390×844 runtime evidence;
 - do not ask the user to discover obvious parser/import failures that a headless gate can catch;
-- when Stagehand visual automation is later installed and locked, its scenario/screenshot diff becomes the normal pre-review visual gate;
+- Stagehand v0.4.1 and GdUnit4 v6.2.1 are pinned by `tools/godot/TOOLING_LOCK.json`;
+- run `VERIFY_GODOT_LOCAL.cmd` as the normal Godot local gate;
+- Stagehand structural smoke is required after executable Godot changes;
+- UI-visible work uses deterministic Stagehand capture before baseline approval and screenshot diff after a user-approved baseline is committed;
+- baseline promotion is explicit via `APPROVE_GODOT_HOME_BASELINE.cmd`; never auto-refresh a golden baseline;
 - this lane supplements, not replaces, existing Game CI for web/backend surfaces.
