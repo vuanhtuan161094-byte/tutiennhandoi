@@ -36,6 +36,22 @@ func test_build_locks_retreat_when_canonical_reward_is_zero() -> void:
 	assert_bool(bool(vm["progression"]["retreat"]["enabled"])).is_false()
 
 
+func test_build_locks_retreat_when_reward_is_zero_even_if_flag_is_true() -> void:
+	var home := _valid_home()
+	home["cultivation"]["retreat"]["enabled"] = true
+	home["cultivation"]["retreat"]["rewardPct3h"] = 0.0
+	var vm := HOME_VIEW_MODEL.build(home)
+	assert_bool(bool(vm["progression"]["retreat"]["enabled"])).is_false()
+
+
+func test_build_does_not_infer_retreat_unlock_when_enabled_flag_is_missing() -> void:
+	var home := _valid_home()
+	home["cultivation"]["retreat"].erase("enabled")
+	home["cultivation"]["retreat"]["rewardPct3h"] = 2.0
+	var vm := HOME_VIEW_MODEL.build(home)
+	assert_bool(bool(vm["progression"]["retreat"]["enabled"])).is_false()
+
+
 func test_build_rejects_wrong_bridge_version() -> void:
 	var home := _valid_home()
 	home["bridgeVersion"] = "godot-bridge.v1"
