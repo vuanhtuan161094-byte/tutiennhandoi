@@ -31,9 +31,9 @@ var _home: Dictionary = {}
 func _ready() -> void:
 	_build_ui()
 	AppState.route_changed.connect(_on_route_changed)
-	BackendBridge.home_updated.connect(_on_home_updated)
-	BackendBridge.bridge_status_changed.connect(_on_bridge_status_changed)
-	BackendBridge.action_failed.connect(_on_action_failed)
+	backend_bridge.home_updated.connect(_on_home_updated)
+	backend_bridge.bridge_status_changed.connect(_on_bridge_status_changed)
+	backend_bridge.action_failed.connect(_on_action_failed)
 
 func _build_ui() -> void:
 	_build_background()
@@ -215,7 +215,7 @@ func _build_actions() -> void:
 	add_child(row)
 
 	var retreat := _action_button("◉", "Bế Quan", GOLD)
-	retreat.pressed.connect(func(): BackendBridge.perform_action("retreatV140", {"hours": 1}))
+	retreat.pressed.connect(func(): backend_bridge.perform_action("retreatV140", {"hours": 1}))
 	row.add_child(retreat)
 
 	advance_button = _action_button("✦", "Tu Vi Đan", Color("bb77ff"))
@@ -325,11 +325,11 @@ func _on_advance_pressed() -> void:
 	var ready := bool(cultivation.get("ready", false))
 	var transition := str(cultivation.get("transition", "auto"))
 	if ready and transition == "tribulation":
-		BackendBridge.perform_action("tribulationV140")
+		backend_bridge.perform_action("tribulationV140")
 	elif ready and transition == "ascend":
-		BackendBridge.perform_action("ascendRealmV140")
+		backend_bridge.perform_action("ascendRealmV140")
 	else:
-		BackendBridge.perform_action("useCultivationPill")
+		backend_bridge.perform_action("useCultivationPill")
 
 func _on_bridge_status_changed(online: bool, _message: String) -> void:
 	bridge_label.text = "CANONICAL V140 • ONLINE" if online else "CANONICAL V140 • ĐANG KẾT NỐI"
