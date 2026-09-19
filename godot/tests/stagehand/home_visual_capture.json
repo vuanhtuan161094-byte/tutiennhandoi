@@ -1,6 +1,6 @@
 {
   "name": "tutien-home-visual-capture",
-  "description": "Capture deterministic production Home components at 390x844. This is capture-only until a user-approved baseline is committed.",
+  "description": "Capture deterministic production Home components at 390x844 in the dense canonical-ready presentation state. Capture-only until explicit user approval.",
   "target": {
     "mode": "launch",
     "project_path": "../..",
@@ -41,6 +41,34 @@
         "property": "text",
         "operator": "contains",
         "expected": "ONLINE"
+      }
+    },
+    {
+      "name": "Cultivation bar is populated",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CultivationProgress",
+        "property": "value",
+        "operator": "greater_than",
+        "expected": 0
+      }
+    },
+    {
+      "name": "Advancement CTA is visible in dense fixture",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:PrimaryCTA",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Retreat orb is retained in Home action band",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:RetreatButton",
+        "state": "visible",
+        "timeout_ms": 5000
       }
     },
     {
