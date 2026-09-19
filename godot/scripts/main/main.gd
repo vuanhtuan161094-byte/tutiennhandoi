@@ -1,6 +1,6 @@
 extends Control
 
-const HOME_BG := preload("res://art/approved/home_bg_ink_mountain.webp")
+const HOME_BG := preload("res://art/approved/home_bg_blue_valley.webp")
 const HERO_IDLE := preload("res://art/approved/hero_idle.webp")
 const HERO_PORTRAIT := preload("res://art/approved/hero_portrait.webp")
 const BACKEND_BRIDGE_SCRIPT := preload("res://scripts/core/backend_bridge.gd")
@@ -75,8 +75,8 @@ func _build_world() -> void:
 	add_child(top_vignette)
 
 	var bottom_fade := ColorRect.new()
-	_place(bottom_fade, Vector2(0, 650), Vector2(390, 194))
-	bottom_fade.color = Color(0.015, 0.055, 0.075, 0.83)
+	_place(bottom_fade, Vector2(0, 700), Vector2(390, 144))
+	bottom_fade.color = Color(0.010, 0.035, 0.050, 0.42)
 	bottom_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bottom_fade)
 
@@ -123,44 +123,44 @@ func _build_identity() -> void:
 
 func _build_hero() -> void:
 	var outer_aura := Panel.new()
-	_place(outer_aura, Vector2(64, 155), Vector2(262, 262))
+	_place(outer_aura, Vector2(42, 145), Vector2(306, 306))
 	outer_aura.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	outer_aura.add_theme_stylebox_override("panel", _flat(Color.TRANSPARENT, 131, Color(0.88, 0.73, 0.36, 0.16), 1))
 	add_child(outer_aura)
 
 	var inner_aura := Panel.new()
-	_place(inner_aura, Vector2(86, 177), Vector2(218, 218))
+	_place(inner_aura, Vector2(70, 173), Vector2(250, 250))
 	inner_aura.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	inner_aura.add_theme_stylebox_override("panel", _flat(Color(0.20, 0.65, 0.75, 0.025), 109, Color(0.47, 0.78, 0.84, 0.18), 1))
 	add_child(inner_aura)
 
 	var hero := TextureRect.new()
 	hero.texture = HERO_IDLE
-	_place(hero, Vector2(18, 123), Vector2(354, 355))
+	_place(hero, Vector2(-12, 96), Vector2(438, 438))
 	hero.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	hero.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	hero.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(hero)
 
 	var spark := _readable_label("✦        ·        ✧        ·        ✦", 11, Color(0.72, 0.90, 0.94, 0.55))
-	_place(spark, Vector2(94, 425), Vector2(202, 18))
+	_place(spark, Vector2(94, 439), Vector2(202, 18))
 	spark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(spark)
 
 func _build_progress() -> void:
 	var box := _panel(Color(0.025, 0.095, 0.125, 0.91), 18, Color(0.90, 0.75, 0.42, 0.34))
-	_place(box, Vector2(24, 462), Vector2(342, 88))
+	_place(box, Vector2(28, 468), Vector2(334, 78))
 	add_child(box)
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 15)
 	margin.add_theme_constant_override("margin_right", 15)
-	margin.add_theme_constant_override("margin_top", 10)
-	margin.add_theme_constant_override("margin_bottom", 9)
+	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_bottom", 7)
 	box.add_child(margin)
 
 	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 4)
+	col.add_theme_constant_override("separation", 3)
 	margin.add_child(col)
 
 	var head := HBoxContainer.new()
@@ -189,13 +189,13 @@ func _build_progress() -> void:
 	eta_label = _label("Còn —", 9, MUTED)
 	foot.add_child(eta_label)
 
-	status_label = _label("Đang đồng bộ Tu Luyện…", 8, Color(0.86, 0.88, 0.82, 0.90))
+	status_label = _label("", 7, Color(0.86, 0.88, 0.82, 0.88))
 	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(status_label)
 
 	var tap := Button.new()
 	tap.text = ""
-	_place(tap, Vector2(24, 462), Vector2(342, 88))
+	_place(tap, Vector2(28, 468), Vector2(334, 78))
 	tap.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
 	tap.add_theme_stylebox_override("hover", _flat(Color(0.80, 0.92, 1.0, 0.025), 18))
 	tap.tooltip_text = "Xem chi tiết Tu Luyện"
@@ -205,7 +205,7 @@ func _build_progress() -> void:
 func _build_primary_action() -> void:
 	primary_button = Button.new()
 	primary_button.visible = false
-	_place(primary_button, Vector2(24, 559), Vector2(342, 54))
+	_place(primary_button, Vector2(28, 555), Vector2(334, 50))
 	primary_button.add_theme_font_size_override("font_size", 14)
 	primary_button.add_theme_color_override("font_color", Color("fff0cf"))
 	primary_button.add_theme_color_override("font_hover_color", Color.WHITE)
@@ -217,7 +217,7 @@ func _build_primary_action() -> void:
 
 func _build_quick_actions() -> void:
 	quick_actions_row = HBoxContainer.new()
-	_place(quick_actions_row, Vector2(26, 566), Vector2(338, 76))
+	_place(quick_actions_row, Vector2(24, 574), Vector2(342, 70))
 	quick_actions_row.add_theme_constant_override("separation", 5)
 	add_child(quick_actions_row)
 
@@ -238,28 +238,20 @@ func _build_quick_actions() -> void:
 	quick_actions_row.add_child(fight)
 
 func _build_nav() -> void:
-	var nav := _panel(Color(0.008, 0.032, 0.045, 0.95), 18, Color(0.90, 0.74, 0.40, 0.20))
-	_place(nav, Vector2(14, 750), Vector2(362, 80))
-	add_child(nav)
+	var veil := Panel.new()
+	_place(veil, Vector2(0, 754), Vector2(390, 90))
+	veil.add_theme_stylebox_override("panel", _flat(Color(0.004, 0.018, 0.028, 0.64), 0))
+	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(veil)
 
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 7)
-	margin.add_theme_constant_override("margin_right", 7)
-	margin.add_theme_constant_override("margin_top", 5)
-	margin.add_theme_constant_override("margin_bottom", 5)
-	nav.add_child(margin)
-
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 1)
-	margin.add_child(col)
-
-	route_label = _label("Động Phủ", 8, GOLD)
-	route_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	col.add_child(route_label)
+	route_label = _label("", 1, Color.TRANSPARENT)
+	route_label.visible = false
+	add_child(route_label)
 
 	var row := HBoxContainer.new()
-	row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	col.add_child(row)
+	_place(row, Vector2(18, 766), Vector2(354, 58))
+	row.add_theme_constant_override("separation", 0)
+	add_child(row)
 
 	for data in [
 		["⌂", "Động Phủ", &"home"], ["♙", "Nhân Vật", &"character"],
@@ -271,13 +263,12 @@ func _build_nav() -> void:
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.add_theme_font_size_override("font_size", 8)
 		button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
-		button.add_theme_stylebox_override("hover", _flat(Color(0.06, 0.12, 0.14, 0.72), 9))
+		button.add_theme_stylebox_override("hover", _flat(Color(0.08, 0.14, 0.16, 0.45), 14))
 		button.add_theme_color_override("font_color", GOLD if data[2] == &"home" else MUTED)
 		button.add_theme_color_override("font_hover_color", GOLD_HI)
 		button.pressed.connect(AppState.request_route.bind(data[2]))
 		nav_buttons[data[2]] = button
 		row.add_child(button)
-
 func _on_home_updated(home: Dictionary) -> void:
 	var generated_at := int(home.get("generatedAtUnixMs", 0))
 	if generated_at > 0 and generated_at < _last_home_generated_at:
@@ -317,7 +308,7 @@ func _on_home_updated(home: Dictionary) -> void:
 		primary_button.text = "⚡   DẪN THIÊN KIẾP   ›"
 	elif ready and transition == "ascend":
 		primary_button.text = "✦   THĂNG CẢNH   ›"
-	quick_actions_row.position.y = 622.0 if primary_button.visible else 566.0
+	quick_actions_row.position.y = 614.0 if primary_button.visible else 574.0
 
 	var retreat_enabled := bool(retreat.get("enabled", false))
 	retreat_button.visible = retreat_enabled
