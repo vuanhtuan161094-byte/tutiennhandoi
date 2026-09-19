@@ -449,6 +449,13 @@ export function renderHuntCombatV2(ctx){
   const farmIntel=production.farm||{};
   const bossRoleLabels={Sustain:'Hồi phục',Barrier:'Hộ thể',Enrage:'Đại sát',Setup:'Tụ thế',Burst:'Bộc phát',Break:'Phá thế',Execute:'Kết liễu',Control:'Khống chế'};
   const bossSkills=(m.bossMechanic?.skills||[]).slice(0,3);
+  const bossCounterHint=String(m.bossMechanic?.counterHint||'')
+    .replace('Cấm Hồi/Anti-Heal','Cấm Hồi')
+    .replace('Burst/Execute','Bộc Phát/Kết Liễu')
+    .replace('Phá Thế/Heavy','Phá Thế/Trọng Kích')
+    .replace('Burst/Finisher','Bộc Phát/Kết Liễu')
+    .replace('Barrier/Counter/Sustain','Hộ Thể/Phản Kích/Hồi Phục')
+    .replace('Control/Interrupt','Khống Chế/Ngắt Chiêu');
   const bossSkillRows=bossSkills.map((skill,index)=>`<div class="huntv2-monster-skill"><i>${index+1}</i><div><strong>${esc(skill.name||`Chiêu ${index+1}`)}</strong><span>${esc([bossRoleLabels[skill.role]||skill.role,skill.effect].filter(Boolean).join(' · '))}</span></div></div>`).join('');
   const farmRecommendationRows=(farmIntel.recommendations||[]).map(row=>`<div class="v110-farm-rec"><div><small>${esc(row.label)}</small><strong>${esc(row.zoneName||'Bí Cảnh')} · T${((Number(row.floor)||1)-1)%100+1}</strong><span>${esc(row.description||'')}</span></div><b>${row.id==='killsPerHour'?`${fmt(row.value,0)}/h`:row.id==='spiritStonesPerHour'?`${fmt(row.value,0)} LT/h`:`${fmt(row.value,2)} lượt/h`}</b></div>`).join('');
   const loot=(farmView.available
@@ -459,8 +466,7 @@ export function renderHuntCombatV2(ctx){
   const monster=`<div class="huntv2-monster-intel ${boss?'boss':''}">
     <header class="huntv2-monster-identity"><small>${boss?`THỦ LĨNH · TẦNG ${challengeFloor}`:'YÊU THÚ HIỆN TẠI'}</small><strong>${esc(m.name||challenge.name||'Yêu thú')}</strong><span>${esc(monsterMeta||'—')}</span></header>
     <div class="huntv2-monster-stats" aria-label="Chỉ số chính">${monsterStats}</div>
-    ${boss&&bossIntel.readiness?.label?`<div class="huntv2-monster-readiness tone-${esc(bossIntel.readiness.tone||'neutral')}"><span>Tình trạng</span><strong>${esc(bossIntel.readiness.label)}</strong></div>`:''}
-    ${boss&&m.bossMechanic?`<section class="huntv2-monster-mechanic"><small>DỊ TƯỢNG</small><strong>${esc(m.bossMechanic.name)}</strong><p>${esc(m.bossMechanic.description||'')}</p>${m.bossMechanic.counterHint?`<span><b>Đối sách</b> · ${esc(m.bossMechanic.counterHint)}</span>`:''}</section>`:''}
+    ${boss&&m.bossMechanic?`<section class="huntv2-monster-mechanic"><small>DỊ TƯỢNG</small><strong>${esc(m.bossMechanic.name)}</strong><p>${esc(m.bossMechanic.description||'')}</p>${bossCounterHint?`<span><b>Đối sách</b> · ${esc(bossCounterHint)}</span>`:''}</section>`:''}
     ${bossSkillRows?`<section class="huntv2-monster-skills"><small>KỸ NĂNG CHỦ CHỐT</small>${bossSkillRows}</section>`:''}
     <footer class="huntv2-monster-progression"><span>${boss?`Boss tầng ${challengeFloor}`:'Thông tin mục tiêu'}</span><b>${boss?'Thắng → mở tầng kế':'Theo dõi trực tiếp trên HUD'}</b></footer>
   </div>`;
