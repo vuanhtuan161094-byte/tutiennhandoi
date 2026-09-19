@@ -41,10 +41,27 @@ func _exit_tree() -> void:
 func _start_local_bridge() -> void:
 	if not OS.has_feature("editor"):
 		return
+	var node_executable := _resolve_node_executable()
+	if node_executable.is_empty():
+		_set_online(false, "Không tìm thấy Node.js")
+		return
 	var bridge_path := ProjectSettings.globalize_path("res://backend/bridge_server.mjs")
-	_bridge_pid = OS.create_process("node", [bridge_path, str(PORT)], false)
+	_bridge_pid = OS.create_process(node_executable, [bridge_path, str(PORT)], false)
 	if _bridge_pid <= 0:
 		_set_online(false, "Không khởi động được Node bridge")
+
+func _resolve_node_executable() -> String:
+	var output: Array = []
+	var finder := "where" if OS.get_name() == "Windows" else "which"
+	var exit_code := OS.execute(finder, ["node"], output, true)
+	if exit_code != 0 or output.is_empty():
+		return ""
+	for chunk in output:
+		for line in str(chunk).split("\n"):
+			var candidate := line.strip_edges()
+			if not candidate.is_empty():
+				return candidate
+	return ""
 
 func refresh_home() -> void:
 	if _busy:
