@@ -30,3 +30,5 @@ artifacts/local-ci/
 *.rar
 
 # Keep authored runtime under dist/ tracked intentionally.
+.tools/
+artifacts/godot-tools/
