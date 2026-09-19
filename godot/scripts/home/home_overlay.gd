@@ -3,10 +3,11 @@ extends Control
 signal retreat_hours_selected(hours: int)
 
 const GOLD := Color("e3bf70")
-const GOLD_HI := Color("f5ddb0")
-const CYAN := Color("8fd7f5")
-const TEXT := Color("f6f1e7")
-const MUTED := Color("aebbb8")
+const GOLD_HI := Color("fff0bd")
+const CYAN := Color("70d9ff")
+const MINT := Color("76e5bf")
+const TEXT := Color("f7f2e8")
+const MUTED := Color("b6c2c8")
 
 var _active: Control
 
@@ -49,7 +50,7 @@ func show_identity(vm: Dictionary) -> void:
 	if not bottleneck.is_empty():
 		lines.append("Nút thắt · %s" % _humanize_id(bottleneck))
 
-	_open_sheet(str(identity.get("realm", "Hồ Sơ")), "HỒ SƠ ĐỜI HIỆN TẠI", lines, 405.0)
+	_open_sheet(str(identity.get("realm", "Hồ Sơ")), "HỒ SƠ ĐỜI HIỆN TẠI", lines, 430.0)
 
 func show_cultivation(vm: Dictionary) -> void:
 	var progression: Dictionary = vm.get("progression", {})
@@ -95,7 +96,7 @@ func show_cultivation(vm: Dictionary) -> void:
 		for hint in hints.slice(0, 3):
 			lines.append("• %s" % str(hint))
 
-	_open_sheet("Tu Luyện", "CHI TIẾT TU LUYỆN", lines, 405.0)
+	_open_sheet("Tu Luyện", "CHI TIẾT TU LUYỆN", lines, 430.0)
 
 func show_retreat(vm: Dictionary) -> void:
 	var progression: Dictionary = vm.get("progression", {})
@@ -107,15 +108,14 @@ func show_retreat(vm: Dictionary) -> void:
 	var root := _make_overlay()
 	_active = root
 
-	var card := _sheet_panel(Vector2(28, 486), Vector2(334, 326))
-	root.add_child(card)
+	var card := _bottom_sheet(root, 326.0)
 	var col := _sheet_column(card)
 
 	var eyebrow := _label("BẾ QUAN", 9, GOLD)
 	eyebrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(eyebrow)
 
-	var title := _label("Chọn thời gian nhập định", 20, GOLD_HI)
+	var title := _label("Chọn thời gian nhập định", 19, GOLD_HI)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(title)
 
@@ -139,21 +139,20 @@ func show_retreat(vm: Dictionary) -> void:
 		if float(hour) > cap:
 			continue
 		var button := Button.new()
+		button.name = "Retreat_%dh" % hour
 		button.text = "%dh" % hour
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.custom_minimum_size = Vector2(0, 48)
+		button.custom_minimum_size = Vector2(0, 50)
 		button.disabled = bank < float(hour)
 		button.add_theme_font_size_override("font_size", 12)
 		button.add_theme_color_override("font_color", GOLD_HI if hour == 3 else TEXT)
-		button.add_theme_stylebox_override("normal", _flat(Color(0.03, 0.08, 0.095, 0.88), 12, Color(0.72, 0.62, 0.38, 0.24), 1))
-		button.add_theme_stylebox_override("hover", _flat(Color(0.08, 0.13, 0.14, 0.96), 12, GOLD, 1))
+		button.add_theme_stylebox_override("normal", _flat(Color(0.02, 0.06, 0.08, 0.92), 14, Color(0.72, 0.62, 0.38, 0.32), 1))
+		button.add_theme_stylebox_override("hover", _flat(Color(0.07, 0.12, 0.13, 0.98), 14, GOLD, 1))
+		button.add_theme_stylebox_override("disabled", _flat(Color(0.02, 0.035, 0.045, 0.82), 14, Color(0.30, 0.34, 0.35, 0.45), 1))
 		button.pressed.connect(_select_retreat_hour.bind(hour))
 		choices.add_child(button)
 
-	var close := Button.new()
-	close.text = "Đóng"
-	close.custom_minimum_size = Vector2(0, 40)
-	close.add_theme_stylebox_override("normal", _flat(Color(0.04, 0.065, 0.075, 0.72), 12))
+	var close := _close_button()
 	close.pressed.connect(close_all)
 	col.add_child(close)
 
@@ -166,38 +165,40 @@ func close_all() -> void:
 		_active.queue_free()
 	_active = null
 
-func _open_sheet(title_text: String, eyebrow_text: String, lines: Array, top: float) -> void:
+func _open_sheet(title_text: String, eyebrow_text: String, lines: Array, height: float) -> void:
 	close_all()
 	var root := _make_overlay()
 	_active = root
 
-	var card := _sheet_panel(Vector2(24, top), Vector2(342, 844.0 - top))
-	root.add_child(card)
+	var card := _bottom_sheet(root, height)
 	var col := _sheet_column(card)
 
 	var eyebrow := _label(eyebrow_text, 8, GOLD)
 	eyebrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(eyebrow)
 
-	var title := _label(title_text, 22, GOLD_HI)
+	var title := _label(title_text, 21, GOLD_HI)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(title)
+
+	var accent := ColorRect.new()
+	accent.custom_minimum_size = Vector2(0, 1)
+	accent.color = Color(MINT.r, MINT.g, MINT.b, 0.28)
+	accent.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	col.add_child(accent)
 
 	var detail := RichTextLabel.new()
 	detail.bbcode_enabled = false
 	detail.fit_content = false
 	detail.scroll_active = true
 	detail.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	detail.custom_minimum_size = Vector2(0, 250)
+	detail.custom_minimum_size = Vector2(0, 252)
 	detail.add_theme_font_size_override("normal_font_size", 11)
 	detail.add_theme_color_override("default_color", TEXT)
 	detail.text = "\n".join(PackedStringArray(lines))
 	col.add_child(detail)
 
-	var close := Button.new()
-	close.text = "Đóng"
-	close.custom_minimum_size = Vector2(0, 40)
-	close.add_theme_stylebox_override("normal", _flat(Color(0.04, 0.065, 0.075, 0.72), 12))
+	var close := _close_button()
 	close.pressed.connect(close_all)
 	col.add_child(close)
 
@@ -211,7 +212,7 @@ func _make_overlay() -> Control:
 
 	var dim := ColorRect.new()
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	dim.color = Color(0.0, 0.018, 0.026, 0.60)
+	dim.color = Color(0.0, 0.014, 0.024, 0.62)
 	dim.mouse_filter = Control.MOUSE_FILTER_STOP
 	dim.gui_input.connect(func(event):
 		if event is InputEventMouseButton and event.pressed:
@@ -220,26 +221,43 @@ func _make_overlay() -> Control:
 	root.add_child(dim)
 	return root
 
-func _sheet_panel(pos: Vector2, size_value: Vector2) -> PanelContainer:
+func _bottom_sheet(root: Control, height: float) -> PanelContainer:
 	var card := PanelContainer.new()
-	card.position = pos
-	card.size = size_value
+	card.anchor_left = 0.0
+	card.anchor_right = 1.0
+	card.anchor_top = 1.0
+	card.anchor_bottom = 1.0
+	card.offset_left = 18.0
+	card.offset_right = -18.0
+	card.offset_top = -height
+	card.offset_bottom = -12.0
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
-	card.add_theme_stylebox_override("panel", _flat(Color(0.007, 0.030, 0.043, 0.985), 22, Color(0.84, 0.70, 0.40, 0.38), 1))
+	card.add_theme_stylebox_override("panel", _flat(Color(0.006, 0.028, 0.043, 0.985), 24, Color(0.88, 0.72, 0.36, 0.44), 1))
+	root.add_child(card)
 	return card
 
 func _sheet_column(card: PanelContainer) -> VBoxContainer:
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 18)
 	margin.add_theme_constant_override("margin_right", 18)
-	margin.add_theme_constant_override("margin_top", 15)
-	margin.add_theme_constant_override("margin_bottom", 15)
+	margin.add_theme_constant_override("margin_top", 14)
+	margin.add_theme_constant_override("margin_bottom", 14)
 	card.add_child(margin)
 
 	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 10)
+	col.add_theme_constant_override("separation", 9)
 	margin.add_child(col)
 	return col
+
+func _close_button() -> Button:
+	var close := Button.new()
+	close.text = "Đóng"
+	close.custom_minimum_size = Vector2(0, 42)
+	close.add_theme_font_size_override("font_size", 10)
+	close.add_theme_color_override("font_color", TEXT)
+	close.add_theme_stylebox_override("normal", _flat(Color(0.025, 0.065, 0.080, 0.80), 14, Color(0.44, 0.68, 0.74, 0.20), 1))
+	close.add_theme_stylebox_override("hover", _flat(Color(0.05, 0.10, 0.12, 0.94), 14, CYAN, 1))
+	return close
 
 func _humanize_id(value: String) -> String:
 	return value.replace("_", " ").replace(".", " · ").capitalize()
@@ -268,6 +286,8 @@ func _label(value: String, size: int, color: Color) -> Label:
 	label.text = value
 	label.add_theme_font_size_override("font_size", size)
 	label.add_theme_color_override("font_color", color)
+	label.add_theme_constant_override("outline_size", 2)
+	label.add_theme_color_override("font_outline_color", Color(0.0, 0.01, 0.02, 0.88))
 	return label
 
 func _flat(fill: Color, radius: int, border: Color = Color.TRANSPARENT, border_width: int = 0) -> StyleBoxFlat:
