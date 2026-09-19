@@ -91,11 +91,17 @@ try{
   const created=await request('/new',{method:'POST',body:{seed:161094}});
   validateHome(created.home);
   const before=Number(created.home.cultivation.tuVi)||0;
+  const bankBefore=Number(created.home.cultivation?.retreat?.bankHours)||0;
+  assert(bankBefore>0,`Expected canonical retreat bank > 0, got ${bankBefore}`);
 
-  const action=await request('/action',{method:'POST',body:{action:'diagnosticCommit'}});
+  const action=await request('/action',{method:'POST',body:{action:'retreatV140',hours:1}});
   validateHome(action.home);
   const after=Number(action.home.cultivation.tuVi)||0;
-  assert(after>before,`Canonical cultivation commit did not increase Tu Vi: ${before} -> ${after}`);
+  const bankAfter=Number(action.home.cultivation?.retreat?.bankHours)||0;
+  assert(after>before,`Canonical retreat did not increase Tu Vi: ${before} -> ${after}`);
+  assert(bankAfter<bankBefore,`Canonical retreat bank did not decrease: ${bankBefore} -> ${bankAfter}`);
+  assert(Number(action.result?.hoursUsed)>0,'Canonical retreat result must report hoursUsed > 0');
+  assert(Number(action.result?.gained)>0,'Canonical retreat result must report gained > 0');
 
   await sleep(2300);
   await request('/diagnostic/shutdown',{method:'POST',body:{}});
@@ -117,6 +123,7 @@ try{
   console.log('GODOT PHASE 1 BRIDGE SMOKE: PASS');
   console.log(`Bridge: ${EXPECTED_VERSION}`);
   console.log(`Authority: ${EXPECTED_AUTHORITY}`);
+  console.log(`Retreat bank: ${bankBefore}h -> ${bankAfter}h`);
   console.log(`Tu Vi: ${before} -> ${after} -> restart ${restoredTuVi}`);
   console.log(`Realm: ${restored.life.realm} · Root: ${restored.spiritualRoot.name}`);
 }catch(error){
