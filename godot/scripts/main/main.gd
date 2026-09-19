@@ -377,7 +377,7 @@ func _fmt_num(value: float) -> String:
 	for i in range(raw.length() - 1, -1, -1):
 		if count > 0 and count % 3 == 0:
 			out = "." + out
-		out = raw[i] + out
+		out = raw.substr(i, 1) + out
 		count += 1
 	return sign_text + out
 
