@@ -147,10 +147,7 @@ func show_retreat(vm: Dictionary) -> void:
 		button.add_theme_color_override("font_color", GOLD_HI if hour == 3 else TEXT)
 		button.add_theme_stylebox_override("normal", _flat(Color(0.03, 0.08, 0.095, 0.88), 12, Color(0.72, 0.62, 0.38, 0.24), 1))
 		button.add_theme_stylebox_override("hover", _flat(Color(0.08, 0.13, 0.14, 0.96), 12, GOLD, 1))
-		button.pressed.connect(func(h := hour):
-			close_all()
-			retreat_hours_selected.emit(h)
-		)
+		button.pressed.connect(_select_retreat_hour.bind(hour))
 		choices.add_child(button)
 
 	var close := Button.new()
@@ -159,6 +156,10 @@ func show_retreat(vm: Dictionary) -> void:
 	close.add_theme_stylebox_override("normal", _flat(Color(0.04, 0.065, 0.075, 0.72), 12))
 	close.pressed.connect(close_all)
 	col.add_child(close)
+
+func _select_retreat_hour(hour: int) -> void:
+	close_all()
+	retreat_hours_selected.emit(hour)
 
 func close_all() -> void:
 	if _active != null and is_instance_valid(_active):
@@ -170,7 +171,7 @@ func _open_sheet(title_text: String, eyebrow_text: String, lines: Array, top: fl
 	var root := _make_overlay()
 	_active = root
 
-	var card := _sheet_panel(Vector2(24, top), Vector2(342, 844.0 - top + 18.0))
+	var card := _sheet_panel(Vector2(24, top), Vector2(342, 844.0 - top))
 	root.add_child(card)
 	var col := _sheet_column(card)
 
@@ -190,7 +191,7 @@ func _open_sheet(title_text: String, eyebrow_text: String, lines: Array, top: fl
 	detail.custom_minimum_size = Vector2(0, 250)
 	detail.add_theme_font_size_override("normal_font_size", 11)
 	detail.add_theme_color_override("default_color", TEXT)
-	detail.text = "\n".join(lines)
+	detail.text = "\n".join(PackedStringArray(lines))
 	col.add_child(detail)
 
 	var close := Button.new()
