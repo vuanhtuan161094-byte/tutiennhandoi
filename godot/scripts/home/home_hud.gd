@@ -507,7 +507,19 @@ func _add_action_cell(art_id: StringName, icon: Texture2D, caption: String, subt
 	return button
 
 func _add_action_orb_art(orb: Control, art_id: StringName, fallback_icon: Texture2D, accent: Color) -> void:
-	var production_icon := HOME_ART.production_texture(art_id)
+	var production_art := HOME_ART.production_texture(art_id)
+	if production_art != null:
+		# The approved production texture already contains both the orb frame and
+		# its semantic symbol. Do not double-frame or recolor it with fallback UI.
+		var art := TextureRect.new()
+		art.texture = production_art
+		art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		art.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		orb.add_child(art)
+		return
 
 	var outer_ring := Panel.new()
 	outer_ring.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -545,7 +557,7 @@ func _add_action_orb_art(orb: Control, art_id: StringName, fallback_icon: Textur
 	orb.add_child(inner_ring)
 
 	var icon_rect := TextureRect.new()
-	icon_rect.texture = production_icon if production_icon != null else fallback_icon
+	icon_rect.texture = fallback_icon
 	icon_rect.anchor_left = 0.5
 	icon_rect.anchor_right = 0.5
 	icon_rect.anchor_top = 0.5
@@ -579,8 +591,11 @@ func _resource_chip(caption: String, accent: Color, art_id: StringName) -> Panel
 		panel.add_theme_stylebox_override("panel", _flat(Color(0.008, 0.035, 0.055, 0.82), 14, Color(accent.r, accent.g, accent.b, 0.24), 1))
 
 	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 7)
-	margin.add_theme_constant_override("margin_right", 7)
+	# Production resource chips include an emblem on the left. Reserve that
+	# space so the live numeric/caption layer remains readable instead of
+	# sitting on top of the crystal/reincarnation symbol.
+	margin.add_theme_constant_override("margin_left", 28 if art_texture != null else 7)
+	margin.add_theme_constant_override("margin_right", 6 if art_texture != null else 7)
 	margin.add_theme_constant_override("margin_top", 4)
 	margin.add_theme_constant_override("margin_bottom", 4)
 	panel.add_child(margin)

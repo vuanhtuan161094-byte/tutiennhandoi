@@ -82,8 +82,10 @@ func _build_world() -> void:
 	if pedestal_art != null:
 		var pedestal_texture := TextureRect.new()
 		pedestal_texture.texture = pedestal_art
-		_anchor_center_x(pedestal_texture, -134.0, 134.0, 452.0, 510.0)
-		pedestal_texture.pivot_offset = Vector2(134.0, 29.0)
+		# Production pedestal includes its own vertical aura/mist, so give it a
+		# taller stage box behind the hero instead of crushing it into 58 px.
+		_anchor_center_x(pedestal_texture, -145.0, 145.0, 360.0, 530.0)
+		pedestal_texture.pivot_offset = Vector2(145.0, 85.0)
 		pedestal_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		pedestal_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		pedestal_texture.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR

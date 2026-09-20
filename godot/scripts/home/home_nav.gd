@@ -82,24 +82,25 @@ func _build() -> void:
 	margin.add_child(row)
 
 	var items := [
-		[ICON_HOME, "Động Phủ", &"home"],
-		[ICON_CHARACTER, "Nhân Vật", &"character"],
-		[ICON_ARTIFACT, "Pháp Bảo", &"artifacts"],
-		[ICON_PET, "Linh Thú", &"pets"],
-		[ICON_MAP, "Bản Đồ", &"world"],
-		[ICON_FACTION, "Tông Môn", &"faction"],
+		[&"nav_home", ICON_HOME, "Động Phủ", &"home"],
+		[&"nav_character", ICON_CHARACTER, "Nhân Vật", &"character"],
+		[&"nav_artifacts", ICON_ARTIFACT, "Pháp Bảo", &"artifacts"],
+		[&"nav_pets", ICON_PET, "Linh Thú", &"pets"],
+		[&"nav_world", ICON_MAP, "Bản Đồ", &"world"],
+		[&"nav_faction", ICON_FACTION, "Tông Môn", &"faction"],
 	]
 
 	for item in items:
-		var icon: Texture2D = item[0]
-		var caption: String = item[1]
-		var route_id: StringName = item[2]
-		var nav_item := _nav_item(icon, caption, route_id)
+		var art_id: StringName = item[0]
+		var icon: Texture2D = item[1]
+		var caption: String = item[2]
+		var route_id: StringName = item[3]
+		var nav_item := _nav_item(art_id, icon, caption, route_id)
 		_items[route_id] = nav_item
 		row.add_child(nav_item["root"])
 		_apply_state(nav_item, route_id == &"home")
 
-func _nav_item(icon: Texture2D, caption: String, route_id: StringName) -> Dictionary:
+func _nav_item(art_id: StringName, fallback_icon: Texture2D, caption: String, route_id: StringName) -> Dictionary:
 	var root := PanelContainer.new()
 	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.custom_minimum_size = Vector2(0, 72)
@@ -133,8 +134,9 @@ func _nav_item(icon: Texture2D, caption: String, route_id: StringName) -> Dictio
 	center.custom_minimum_size = Vector2(0, 38)
 	col.add_child(center)
 
+	var production_icon := HOME_ART.production_texture(art_id)
 	var icon_rect := TextureRect.new()
-	icon_rect.texture = icon
+	icon_rect.texture = production_icon if production_icon != null else fallback_icon
 	icon_rect.custom_minimum_size = Vector2(30, 30)
 	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -164,6 +166,7 @@ func _nav_item(icon: Texture2D, caption: String, route_id: StringName) -> Dictio
 		"icon": icon_rect,
 		"label": label,
 		"selected_glow": selected_glow,
+		"production_icon": production_icon != null,
 	}
 
 func _apply_state(item: Dictionary, selected: bool) -> void:
@@ -172,7 +175,11 @@ func _apply_state(item: Dictionary, selected: bool) -> void:
 	var label := item["label"] as Label
 	var selected_glow := item.get("selected_glow") as TextureRect
 	var accent := GOLD_HI if selected else MUTED
-	icon.modulate = GOLD if selected else MUTED
+	if bool(item.get("production_icon", false)):
+		# Preserve authored gold/cyan icon colors; only reduce inactive emphasis.
+		icon.modulate = Color.WHITE if selected else Color(0.66, 0.74, 0.80, 0.78)
+	else:
+		icon.modulate = GOLD if selected else MUTED
 	label.add_theme_color_override("font_color", accent)
 	if selected_glow != null:
 		selected_glow.visible = selected

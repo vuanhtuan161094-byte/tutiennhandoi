@@ -1,28 +1,197 @@
 {
-  "schema": "tutien.home-art.v1",
-  "lifecycle": "approved-existing",
-  "notes": "Canonical Godot Home uses approved scenic/hero/icon art. Aura, pedestal, CTA plates, resource chips, dock and selected glow remain code-driven presentation per GODOT_HOME_VISUAL_SOURCE_OF_TRUTH_20260919.md.",
+  "schema": "tutien.home-art.v2",
   "assets": {
     "background": {
-      "path": "res://art/approved/home_bg_blue_valley.webp"
+      "path": "res://art/approved/home/home_background.webp"
     },
-    "hero": {
-      "path": "res://art/approved/home_cultivator_centered.png"
+    "aura": {
+      "atlas": "res://art/approved/home/home_ui_core.webp",
+      "rect": [
+        10,
+        10,
+        506,
+        520
+      ]
     },
-    "portrait": {
-      "path": "res://art/approved/hero_portrait.webp"
+    "pedestal": {
+      "atlas": "res://art/approved/home/home_ui_core.webp",
+      "rect": [
+        526,
+        10,
+        500,
+        352
+      ]
+    },
+    "portrait_frame": {
+      "atlas": "res://art/approved/home/home_ui_core.webp",
+      "rect": [
+        1036,
+        10,
+        240,
+        237
+      ]
+    },
+    "cta_ascend": {
+      "atlas": "res://art/approved/home/home_ui_core.webp",
+      "rect": [
+        10,
+        540,
+        576,
+        207
+      ]
+    },
+    "cta_tribulation": {
+      "atlas": "res://art/approved/home/home_ui_core.webp",
+      "rect": [
+        596,
+        540,
+        576,
+        207
+      ]
+    },
+    "dock": {
+      "atlas": "res://art/approved/home/home_ui_core.webp",
+      "rect": [
+        10,
+        757,
+        600,
+        173
+      ]
+    },
+    "resource_reincarnation": {
+      "atlas": "res://art/approved/home/home_ui_core.webp",
+      "rect": [
+        620,
+        757,
+        330,
+        144
+      ]
+    },
+    "resource_stone": {
+      "atlas": "res://art/approved/home/home_ui_core.webp",
+      "rect": [
+        960,
+        757,
+        330,
+        141
+      ]
+    },
+    "selected_glow": {
+      "atlas": "res://art/approved/home/home_ui_core.webp",
+      "rect": [
+        1300,
+        757,
+        180,
+        117
+      ]
     },
     "orb_retreat": {
-      "path": "res://art/icons/retreat.svg"
+      "atlas": "res://art/approved/home/home_icons.webp",
+      "rect": [
+        10,
+        10,
+        252,
+        260
+      ]
     },
     "orb_character": {
-      "path": "res://art/icons/character.svg"
+      "atlas": "res://art/approved/home/home_icons.webp",
+      "rect": [
+        272,
+        10,
+        252,
+        260
+      ]
     },
     "orb_root": {
-      "path": "res://art/icons/root.svg"
+      "atlas": "res://art/approved/home/home_icons.webp",
+      "rect": [
+        534,
+        10,
+        252,
+        260
+      ]
     },
     "orb_combat": {
-      "path": "res://art/icons/combat.svg"
+      "atlas": "res://art/approved/home/home_icons.webp",
+      "rect": [
+        796,
+        10,
+        252,
+        260
+      ]
+    },
+    "nav_home": {
+      "atlas": "res://art/approved/home/home_icons.webp",
+      "rect": [
+        1058,
+        10,
+        150,
+        150
+      ]
+    },
+    "nav_character": {
+      "atlas": "res://art/approved/home/home_icons.webp",
+      "rect": [
+        10,
+        280,
+        149,
+        150
+      ]
+    },
+    "nav_artifacts": {
+      "atlas": "res://art/approved/home/home_icons.webp",
+      "rect": [
+        169,
+        280,
+        148,
+        150
+      ]
+    },
+    "nav_pets": {
+      "atlas": "res://art/approved/home/home_icons.webp",
+      "rect": [
+        327,
+        280,
+        150,
+        150
+      ]
+    },
+    "nav_world": {
+      "atlas": "res://art/approved/home/home_icons.webp",
+      "rect": [
+        487,
+        280,
+        150,
+        150
+      ]
+    },
+    "nav_faction": {
+      "atlas": "res://art/approved/home/home_icons.webp",
+      "rect": [
+        647,
+        280,
+        150,
+        150
+      ]
+    },
+    "hero": {
+      "atlas": "res://art/approved/home/home_character.webp",
+      "rect": [
+        10,
+        10,
+        460,
+        545
+      ]
+    },
+    "portrait": {
+      "atlas": "res://art/approved/home/home_character.webp",
+      "rect": [
+        480,
+        10,
+        220,
+        216
+      ]
     }
   }
 }
