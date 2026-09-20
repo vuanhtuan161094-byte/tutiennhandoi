@@ -15,7 +15,16 @@ $StagehandExe = Join-Path $ToolsRoot "stagehand\godot-stagehand.exe"
 $StagehandUrl = "https://github.com/$($ToolingLock.stagehand.repository)/releases/download/$StagehandVersion/$StagehandAsset"
 $StagehandSha256 = ([string]$ToolingLock.stagehand.windows_sha256).ToLowerInvariant()
 
-$GdUnitTag = [string]$ToolingLock.gdunit4.tag
+$GdUnitTagLock = ([string]$ToolingLock.gdunit4.tag).Trim()
+$GdUnitTag = $GdUnitTagLock.TrimStart("/")
+$GdUnitTag = $GdUnitTag -replace "^refs/tags/+", ""
+$GdUnitTag = $GdUnitTag -replace "^tags/+", ""
+$GdUnitTag = $GdUnitTag.TrimStart("/")
+if ([string]::IsNullOrWhiteSpace($GdUnitTag)) {
+    throw "Invalid GdUnit4 tag in TOOLING_LOCK.json: '$GdUnitTagLock'"
+}
+$GdUnitTagRef = "refs/tags/$GdUnitTag"
+
 $GdUnitCommit = [string]$ToolingLock.gdunit4.commit
 $GdUnitRepo = "https://github.com/$($ToolingLock.gdunit4.repository).git"
 $GdUnitSource = Join-Path $ToolsRoot "gdunit4-src"
@@ -82,8 +91,11 @@ if (-not (Test-Path (Join-Path $GdUnitSource ".git"))) {
     Assert-LastExitCode "git remote add"
 }
 
+if ($GdUnitTagLock -ne $GdUnitTag) {
+    Write-Host "[GdUnit4] Normalized lock tag '$GdUnitTagLock' -> '$GdUnitTag'."
+}
 Write-Host "[GdUnit4] Fetching $GdUnitTag ..."
-& $git.Source -C $GdUnitSource fetch --force --depth 1 origin "refs/tags/$GdUnitTag:refs/tags/$GdUnitTag"
+& $git.Source -C $GdUnitSource fetch --force --depth 1 origin "${GdUnitTagRef}:${GdUnitTagRef}"
 Assert-LastExitCode "git fetch GdUnit4"
 & $git.Source -C $GdUnitSource checkout --quiet --detach $GdUnitCommit
 Assert-LastExitCode "git checkout GdUnit4"
@@ -113,7 +125,9 @@ $manifest = [ordered]@{
         sha256 = $StagehandSha256
     }
     gdunit4 = [ordered]@{
-        tag = $GdUnitTag
+        # Keep the exact lock value in the install manifest so Verify-GodotLocal
+        # can compare installation provenance without normalization drift.
+        tag = $GdUnitTagLock
         commit = $GdUnitCommit
         path = $GdUnitTarget
     }
