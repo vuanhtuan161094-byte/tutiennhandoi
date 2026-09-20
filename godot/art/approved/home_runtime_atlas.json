@@ -1,0 +1,28 @@
+{
+  "schema": "tutien.home-art.v1",
+  "lifecycle": "approved-existing",
+  "notes": "Canonical Godot Home uses approved scenic/hero/icon art. Aura, pedestal, CTA plates, resource chips, dock and selected glow remain code-driven presentation per GODOT_HOME_VISUAL_SOURCE_OF_TRUTH_20260919.md.",
+  "assets": {
+    "background": {
+      "path": "res://art/approved/home_bg_blue_valley.webp"
+    },
+    "hero": {
+      "path": "res://art/approved/home_cultivator_centered.png"
+    },
+    "portrait": {
+      "path": "res://art/approved/hero_portrait.webp"
+    },
+    "orb_retreat": {
+      "path": "res://art/icons/retreat.svg"
+    },
+    "orb_character": {
+      "path": "res://art/icons/character.svg"
+    },
+    "orb_root": {
+      "path": "res://art/icons/root.svg"
+    },
+    "orb_combat": {
+      "path": "res://art/icons/combat.svg"
+    }
+  }
+}

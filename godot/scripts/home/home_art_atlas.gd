@@ -1,11 +1,11 @@
 extends RefCounted
 class_name HomeArtAtlas
 
-# Production Home art stays optional at source level: a missing binary payload
-# must never make the client fail to parse or boot. Once the approved atlas and
-# manifest land, presentation scripts resolve them automatically.
+# Approved Home art is resolved through one manifest. Entries may point directly
+# at approved resources or, later, at regions inside an atlas. Decorative
+# geometry that the canonical spec defines as code-driven is intentionally not
+# represented here and falls back to the existing Godot primitives.
 const MANIFEST_PATH := "res://art/approved/home_runtime_atlas.json"
-const DEFAULT_ATLAS_PATH := "res://art/approved/home_runtime_atlas.webp"
 
 const FALLBACK_PATHS := {
 	"background": "res://art/approved/home_bg_blue_valley.webp",
@@ -86,7 +86,9 @@ static func _texture_from_entry(entry_variant) -> Texture2D:
 	if rect.size() < 4:
 		return null
 
-	var atlas_path := str(entry.get("atlas", _manifest.get("atlas", DEFAULT_ATLAS_PATH)))
+	var atlas_path := str(entry.get("atlas", _manifest.get("atlas", "")))
+	if atlas_path.is_empty():
+		return null
 	var atlas_texture := _load_texture(atlas_path)
 	if atlas_texture == null:
 		return null

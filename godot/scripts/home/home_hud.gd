@@ -507,17 +507,7 @@ func _add_action_cell(art_id: StringName, icon: Texture2D, caption: String, subt
 	return button
 
 func _add_action_orb_art(orb: Control, art_id: StringName, fallback_icon: Texture2D, accent: Color) -> void:
-	var production_art := HOME_ART.production_texture(art_id)
-	if production_art != null:
-		var art := TextureRect.new()
-		art.texture = production_art
-		art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		art.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-		art.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		orb.add_child(art)
-		return
+	var production_icon := HOME_ART.production_texture(art_id)
 
 	var outer_ring := Panel.new()
 	outer_ring.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -555,7 +545,7 @@ func _add_action_orb_art(orb: Control, art_id: StringName, fallback_icon: Textur
 	orb.add_child(inner_ring)
 
 	var icon_rect := TextureRect.new()
-	icon_rect.texture = fallback_icon
+	icon_rect.texture = production_icon if production_icon != null else fallback_icon
 	icon_rect.anchor_left = 0.5
 	icon_rect.anchor_right = 0.5
 	icon_rect.anchor_top = 0.5
