@@ -189,12 +189,35 @@ Write-Host "[1/7] Importing project resources ..."
 & $Godot --headless --path $GodotProject --import
 Assert-Exit "Godot import"
 
-Write-Host "[2/7] Parse-checking project GDScript ..."
-$scripts = Get-ChildItem -Path (Join-Path $GodotProject "scripts") -Filter "*.gd" -File -Recurse
-foreach ($script in $scripts) {
-    $relative = $script.FullName.Substring($GodotProject.Length + 1).Replace("\", "/")
-    & $Godot --headless --path $GodotProject --check-only --script "res://$relative"
-    Assert-Exit "Parse check $relative"
+Write-Host "[2/7] Parse-checking project GDScript in project context ..."
+$parseLog = Join-Path $ArtifactsRoot "parse-check.log"
+$parseOutput = @(& $Godot --headless --editor --path $GodotProject --quit 2>&1)
+$parseExit = $LASTEXITCODE
+$parseOutput | Set-Content -Encoding UTF8 $parseLog
+foreach ($line in $parseOutput) {
+    Write-Host $line
+}
+if ($parseExit -ne 0) {
+    throw "Godot project-context parse check failed with exit code $parseExit. See $parseLog"
+}
+
+$parseFailurePatterns = @(
+    "SCRIPT ERROR: Parse Error:",
+    "SCRIPT ERROR: Compile Error:",
+    "ERROR: Failed to load script"
+)
+$parseFailures = @()
+foreach ($line in $parseOutput) {
+    $lineText = [string]$line
+    foreach ($pattern in $parseFailurePatterns) {
+        if ($lineText.Contains($pattern)) {
+            $parseFailures += $lineText
+            break
+        }
+    }
+}
+if ($parseFailures.Count -gt 0) {
+    throw "Godot project-context parse check reported script errors. See $parseLog"
 }
 
 Write-Host "[3/7] Running GdUnit4 tests ..."
