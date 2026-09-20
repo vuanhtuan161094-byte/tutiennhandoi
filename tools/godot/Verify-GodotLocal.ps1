@@ -44,35 +44,119 @@ function Test-PinnedTooling() {
     }
 }
 
-function Resolve-GodotBinary([string]$Explicit) {
-    if ($Explicit -and (Test-Path $Explicit)) {
-        return (Resolve-Path $Explicit).Path
+function Add-GodotCandidate([System.Collections.Generic.List[string]]$Candidates, [string]$Path) {
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return
     }
 
-    foreach ($name in @("godot.exe", "godot", "Godot_v4.7.2-stable_win64.exe")) {
+    try {
+        if (-not (Test-Path $Path -PathType Leaf)) {
+            return
+        }
+        $resolved = (Resolve-Path $Path).Path
+        if (-not $Candidates.Contains($resolved)) {
+            $Candidates.Add($resolved)
+        }
+    } catch {
+        return
+    }
+}
+
+function Add-GodotWithConsoleSibling([System.Collections.Generic.List[string]]$Candidates, [string]$Path) {
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return
+    }
+
+    # Official Windows archives ship a console sibling intended for CLI/headless
+    # automation. Prefer it when the discovered path points at the GUI binary.
+    if ($Path -match "(?i)\\.exe$" -and $Path -notmatch "(?i)_console\\.exe$") {
+        $consoleSibling = $Path -replace "(?i)\\.exe$", "_console.exe"
+        Add-GodotCandidate $Candidates $consoleSibling
+    }
+
+    Add-GodotCandidate $Candidates $Path
+}
+
+function Resolve-GodotBinary([string]$Explicit, [string]$ExpectedVersion) {
+    $candidates = New-Object "System.Collections.Generic.List[string]"
+
+    if ($Explicit) {
+        Add-GodotWithConsoleSibling $candidates $Explicit
+    }
+
+    foreach ($name in @(
+        "Godot_v4.7.2-stable_win64_console.exe",
+        "godot_console.exe",
+        "godot.exe",
+        "godot",
+        "Godot_v4.7.2-stable_win64.exe"
+    )) {
         $cmd = Get-Command $name -ErrorAction SilentlyContinue
-        if ($null -ne $cmd -and (Test-Path $cmd.Source)) {
-            return $cmd.Source
+        if ($null -ne $cmd -and $cmd.Source) {
+            Add-GodotWithConsoleSibling $candidates $cmd.Source
         }
     }
 
     $running = Get-Process -ErrorAction SilentlyContinue |
-        Where-Object { $_.ProcessName -like "Godot*" -and $_.Path } |
-        Select-Object -First 1
-    if ($null -ne $running -and (Test-Path $running.Path)) {
-        return $running.Path
+        Where-Object { $_.ProcessName -like "Godot*" -and $_.Path }
+    foreach ($process in $running) {
+        Add-GodotWithConsoleSibling $candidates $process.Path
     }
 
-    $downloads = Join-Path $env:USERPROFILE "Downloads"
-    if (Test-Path $downloads) {
-        $found = Get-ChildItem -Path $downloads -Filter "Godot_v4.7.2-stable_win64.exe" -File -Recurse -ErrorAction SilentlyContinue |
-            Select-Object -First 1
-        if ($null -ne $found) {
-            return $found.FullName
+    foreach ($root in @(
+        (Join-Path $env:USERPROFILE "Downloads"),
+        (Join-Path $env:USERPROFILE "Desktop"),
+        $RepoRoot
+    )) {
+        if (-not (Test-Path $root)) {
+            continue
+        }
+
+        foreach ($pattern in @(
+            "Godot_v4.7.2-stable_win64_console.exe",
+            "Godot_v4.7.2-stable_win64.exe"
+        )) {
+            $found = Get-ChildItem -Path $root -Filter $pattern -File -Recurse -ErrorAction SilentlyContinue
+            foreach ($file in $found) {
+                Add-GodotWithConsoleSibling $candidates $file.FullName
+            }
         }
     }
 
-    throw "Godot 4.7.2 executable not found. Set GODOT_BIN to the full Godot exe path and run again."
+    $failures = New-Object "System.Collections.Generic.List[string]"
+    $expectedPattern = "^" + [regex]::Escape($ExpectedVersion)
+
+    foreach ($candidate in $candidates) {
+        Write-Host "[Godot] Probing $candidate"
+        $global:LASTEXITCODE = 0
+        try {
+            $output = @(& $candidate --version 2>&1)
+            $exitCode = $LASTEXITCODE
+            $version = ""
+            if ($output.Count -gt 0 -and $null -ne $output[0]) {
+                $version = ([string]$output[0]).Trim()
+            }
+
+            if ($exitCode -eq 0 -and $version -match $expectedPattern) {
+                return [pscustomobject]@{
+                    Path = $candidate
+                    Version = $version
+                }
+            }
+
+            $failures.Add("$candidate => exit=$exitCode version='$version'")
+        } catch {
+            $failures.Add("$candidate => $($_.Exception.Message)")
+        }
+    }
+
+    $details = if ($failures.Count -gt 0) {
+        [Environment]::NewLine + "Candidates tried:" + [Environment]::NewLine + " - " + ($failures -join ([Environment]::NewLine + " - "))
+    } else {
+        ""
+    }
+
+    throw "No working Godot $ExpectedVersion CLI binary found. Prefer Godot_v$ExpectedVersion-stable_win64_console.exe or set GODOT_BIN to its full path.$details"
 }
 
 Write-Host "================================================"
@@ -91,13 +175,9 @@ if (-not (Test-PinnedTooling)) {
     throw "Installed Godot tooling does not match tools/godot/TOOLING_LOCK.json."
 }
 
-$Godot = Resolve-GodotBinary $GodotBin
-$version = (& $Godot --version | Select-Object -First 1).Trim()
-Assert-Exit "Godot --version"
-$expectedVersionPattern = "^" + [regex]::Escape($ExpectedEngineVersion)
-if ($version -notmatch $expectedVersionPattern) {
-    throw "Expected Godot $ExpectedEngineVersion, got '$version'"
-}
+$resolvedGodot = Resolve-GodotBinary $GodotBin $ExpectedEngineVersion
+$Godot = [string]$resolvedGodot.Path
+$version = [string]$resolvedGodot.Version
 Write-Host "[Godot] $version"
 Write-Host "[Godot] $Godot"
 
