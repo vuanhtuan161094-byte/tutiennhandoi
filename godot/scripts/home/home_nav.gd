@@ -18,7 +18,10 @@ const MUTED := Color("9fb0bd")
 var _items: Dictionary = {}
 
 func _ready() -> void:
-	mouse_filter = Control.MOUSE_FILTER_PASS
+	# HomeNav is a full-screen composition layer, but only its dock buttons
+	# should participate in hit-testing. PASS here blocks HomeHUD controls that
+	# sit underneath the transparent area above the dock.
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_build()
 
 func set_route(route_id: StringName) -> void:
