@@ -2,6 +2,8 @@ extends Control
 
 signal route_requested(route_id: StringName)
 
+const HOME_ART := preload("res://scripts/home/home_art_atlas.gd")
+
 const ICON_HOME := preload("res://art/icons/home.svg")
 const ICON_CHARACTER := preload("res://art/icons/character.svg")
 const ICON_ARTIFACT := preload("res://art/icons/artifact.svg")
@@ -36,8 +38,22 @@ func _build() -> void:
 	dock.offset_top = -92.0
 	dock.offset_bottom = -2.0
 	dock.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	dock.add_theme_stylebox_override("panel", _flat(Color(0.004, 0.018, 0.032, 0.94), 20, Color(0.44, 0.64, 0.78, 0.25), 1))
+	var dock_art_texture := HOME_ART.production_texture(&"dock")
+	if dock_art_texture != null:
+		dock.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	else:
+		dock.add_theme_stylebox_override("panel", _flat(Color(0.004, 0.018, 0.032, 0.94), 20, Color(0.44, 0.64, 0.78, 0.25), 1))
 	add_child(dock)
+
+	if dock_art_texture != null:
+		var dock_art := TextureRect.new()
+		dock_art.texture = dock_art_texture
+		dock_art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		dock_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		dock_art.stretch_mode = TextureRect.STRETCH_SCALE
+		dock_art.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		dock_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		dock.add_child(dock_art)
 
 	var top_glow := ColorRect.new()
 	top_glow.anchor_left = 0.08
@@ -85,6 +101,19 @@ func _nav_item(icon: Texture2D, caption: String, route_id: StringName) -> Dictio
 	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.custom_minimum_size = Vector2(0, 72)
 
+	var selected_glow: TextureRect = null
+	var selected_glow_texture := HOME_ART.production_texture(&"selected_glow")
+	if selected_glow_texture != null:
+		selected_glow = TextureRect.new()
+		selected_glow.texture = selected_glow_texture
+		selected_glow.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		selected_glow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		selected_glow.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		selected_glow.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		selected_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		selected_glow.visible = false
+		root.add_child(selected_glow)
+
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 2)
 	margin.add_theme_constant_override("margin_right", 2)
@@ -131,16 +160,20 @@ func _nav_item(icon: Texture2D, caption: String, route_id: StringName) -> Dictio
 		"button": button,
 		"icon": icon_rect,
 		"label": label,
+		"selected_glow": selected_glow,
 	}
 
 func _apply_state(item: Dictionary, selected: bool) -> void:
 	var root := item["root"] as PanelContainer
 	var icon := item["icon"] as TextureRect
 	var label := item["label"] as Label
+	var selected_glow := item.get("selected_glow") as TextureRect
 	var accent := GOLD_HI if selected else MUTED
 	icon.modulate = GOLD if selected else MUTED
 	label.add_theme_color_override("font_color", accent)
-	if selected:
+	if selected_glow != null:
+		selected_glow.visible = selected
+	if selected and selected_glow == null:
 		root.add_theme_stylebox_override("panel", _flat(Color(0.14, 0.095, 0.025, 0.44), 14, Color(0.94, 0.77, 0.38, 0.36), 1))
 	else:
 		root.add_theme_stylebox_override("panel", StyleBoxEmpty.new())

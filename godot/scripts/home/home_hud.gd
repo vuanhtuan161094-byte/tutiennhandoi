@@ -6,7 +6,7 @@ signal retreat_pressed
 signal route_requested(route_id: StringName)
 signal primary_action_requested(action_id: String)
 
-const HERO_PORTRAIT := preload("res://art/approved/hero_portrait.webp")
+const HOME_ART := preload("res://scripts/home/home_art_atlas.gd")
 const ICON_CHARACTER := preload("res://art/icons/character.svg")
 const ICON_ROOT := preload("res://art/icons/root.svg")
 const ICON_COMBAT := preload("res://art/icons/combat.svg")
@@ -41,6 +41,7 @@ var eta_label: Label
 var status_label: Label
 
 var primary_shell: PanelContainer
+var primary_art: TextureRect
 var primary_button: Button
 var primary_title_label: Label
 var primary_subtitle_label: Label
@@ -99,6 +100,8 @@ func bind(vm: Dictionary) -> void:
 		primary_title_label.text = "THĂNG CẢNH"
 		primary_subtitle_label.text = "Đủ điều kiện → %s" % str(progression.get("next_realm", ""))
 		primary_button.set_meta("action_id", "ascendRealmV140")
+	if show_primary:
+		_set_primary_art(&"cta_tribulation" if transition == "tribulation" else &"cta_ascend")
 	_update_action_band()
 
 	var retreat_enabled := bool(retreat.get("enabled", false))
@@ -156,12 +159,12 @@ func _build_top_shell() -> void:
 	resources.add_theme_constant_override("separation", 5)
 	row.add_child(resources)
 
-	var stone := _resource_chip("LINH THẠCH", CYAN)
+	var stone := _resource_chip("LINH THẠCH", CYAN, &"resource_stone")
 	stone.custom_minimum_size = Vector2(82, 42)
 	resources.add_child(stone)
 	stone_label = stone.find_child("Value", true, false) as Label
 
-	var cp := _resource_chip("LUÂN HỒI", GOLD)
+	var cp := _resource_chip("LUÂN HỒI", GOLD, &"resource_reincarnation")
 	cp.custom_minimum_size = Vector2(78, 42)
 	resources.add_child(cp)
 	cp_label = cp.find_child("Value", true, false) as Label
@@ -202,12 +205,23 @@ func _build_identity_clusters() -> void:
 	portrait_ring.add_child(portrait_margin)
 
 	var portrait := TextureRect.new()
-	portrait.texture = HERO_PORTRAIT
+	portrait.texture = HOME_ART.texture(&"portrait", "res://art/approved/hero_portrait.webp")
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	portrait_margin.add_child(portrait)
+
+	var portrait_frame_texture := HOME_ART.production_texture(&"portrait_frame")
+	if portrait_frame_texture != null:
+		var portrait_frame := TextureRect.new()
+		portrait_frame.texture = portrait_frame_texture
+		portrait_frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		portrait_frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		portrait_frame.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		portrait_frame.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		portrait_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		portrait_ring.add_child(portrait_frame)
 
 	var identity_col := VBoxContainer.new()
 	identity_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -354,11 +368,17 @@ func _build_primary() -> void:
 	primary_shell = PanelContainer.new()
 	primary_shell.visible = false
 	_anchor_bottom_wide(primary_shell, 58.0, 58.0, -269.0, -218.0)
-	primary_shell.add_theme_stylebox_override(
-		"panel",
-		_flat(Color(0.18, 0.115, 0.025, 0.94), 28, Color(1.0, 0.79, 0.32, 0.86), 2)
-	)
+	primary_shell.add_theme_stylebox_override("panel", _primary_style())
 	add_child(primary_shell)
+
+	primary_art = TextureRect.new()
+	primary_art.visible = false
+	primary_art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	primary_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	primary_art.stretch_mode = TextureRect.STRETCH_SCALE
+	primary_art.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	primary_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	primary_shell.add_child(primary_art)
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 12)
@@ -423,18 +443,18 @@ func _build_quick_actions() -> void:
 	_anchor_bottom_wide(quick_actions, 14.0, 14.0, -216.0, -98.0)
 	add_child(quick_actions)
 
-	retreat_button = _add_action_cell(ICON_RETREAT, "Bế Quan", "Tích lũy Tu Vi", GOLD, "RetreatButton")
+	retreat_button = _add_action_cell(&"orb_retreat", ICON_RETREAT, "Bế Quan", "Tích lũy Tu Vi", GOLD, "RetreatButton")
 	retreat_action_visual = retreat_button.get_meta("visual_root") as Control
 	retreat_subtitle_label = retreat_button.get_meta("subtitle_label") as Label
 	retreat_button.pressed.connect(func(): retreat_pressed.emit())
 
-	var character := _add_action_cell(ICON_CHARACTER, "Nhân Vật", "Hồ sơ đời", VIOLET, "CharacterAction")
+	var character := _add_action_cell(&"orb_character", ICON_CHARACTER, "Nhân Vật", "Hồ sơ đời", VIOLET, "CharacterAction")
 	character.pressed.connect(func(): identity_pressed.emit())
 
-	var root := _add_action_cell(ICON_ROOT, "Linh Căn", "Căn cơ", MINT, "RootAction")
+	var root := _add_action_cell(&"orb_root", ICON_ROOT, "Linh Căn", "Căn cơ", MINT, "RootAction")
 	root.pressed.connect(func(): route_requested.emit(&"roots"))
 
-	var combat := _add_action_cell(ICON_COMBAT, "Chiến Đấu", "Khiêu chiến", CYAN, "CombatAction")
+	var combat := _add_action_cell(&"orb_combat", ICON_COMBAT, "Chiến Đấu", "Khiêu chiến", CYAN, "CombatAction")
 	combat.pressed.connect(func(): route_requested.emit(&"dungeons"))
 
 func _update_action_band() -> void:
@@ -442,7 +462,7 @@ func _update_action_band() -> void:
 	# plaque occupies the band immediately above it and must not compress orbs.
 	_anchor_bottom_wide(quick_actions, 14.0, 14.0, -216.0, -98.0)
 
-func _add_action_cell(icon: Texture2D, caption: String, subtitle: String, accent: Color, button_name: String) -> Button:
+func _add_action_cell(art_id: StringName, icon: Texture2D, caption: String, subtitle: String, accent: Color, button_name: String) -> Button:
 	var cell := VBoxContainer.new()
 	cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	cell.add_theme_constant_override("separation", 1)
@@ -456,6 +476,48 @@ func _add_action_cell(icon: Texture2D, caption: String, subtitle: String, accent
 	orb.custom_minimum_size = Vector2(72, 72)
 	orb.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	center.add_child(orb)
+
+	_add_action_orb_art(orb, art_id, icon, accent)
+
+	var button := Button.new()
+	button.name = button_name
+	button.text = ""
+	button.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
+	button.add_theme_stylebox_override(
+		"hover",
+		_flat(Color(accent.r, accent.g, accent.b, 0.10), 36, Color(accent.r, accent.g, accent.b, 0.92), 2)
+	)
+	button.add_theme_stylebox_override("pressed", _flat(Color(accent.r, accent.g, accent.b, 0.16), 36, accent, 2))
+	button.add_theme_stylebox_override("disabled", StyleBoxEmpty.new())
+	orb.add_child(button)
+
+	var title := _readable_label(caption, 10, TEXT)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	cell.add_child(title)
+
+	var sub := _readable_label(subtitle, 7, MUTED)
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	cell.add_child(sub)
+
+	button.set_meta("visual_root", cell)
+	button.set_meta("subtitle_label", sub)
+	return button
+
+func _add_action_orb_art(orb: Control, art_id: StringName, fallback_icon: Texture2D, accent: Color) -> void:
+	var production_art := HOME_ART.production_texture(art_id)
+	if production_art != null:
+		var art := TextureRect.new()
+		art.texture = production_art
+		art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		art.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		orb.add_child(art)
+		return
 
 	var outer_ring := Panel.new()
 	outer_ring.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -493,7 +555,7 @@ func _add_action_cell(icon: Texture2D, caption: String, subtitle: String, accent
 	orb.add_child(inner_ring)
 
 	var icon_rect := TextureRect.new()
-	icon_rect.texture = icon
+	icon_rect.texture = fallback_icon
 	icon_rect.anchor_left = 0.5
 	icon_rect.anchor_right = 0.5
 	icon_rect.anchor_top = 0.5
@@ -509,36 +571,22 @@ func _add_action_cell(icon: Texture2D, caption: String, subtitle: String, accent
 	icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	orb.add_child(icon_rect)
 
-	var button := Button.new()
-	button.name = button_name
-	button.text = ""
-	button.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
-	button.add_theme_stylebox_override(
-		"hover",
-		_flat(Color(accent.r, accent.g, accent.b, 0.10), 36, Color(accent.r, accent.g, accent.b, 0.92), 2)
-	)
-	button.add_theme_stylebox_override("pressed", _flat(Color(accent.r, accent.g, accent.b, 0.16), 36, accent, 2))
-	button.add_theme_stylebox_override("disabled", StyleBoxEmpty.new())
-	orb.add_child(button)
 
-	var title := _readable_label(caption, 10, TEXT)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	cell.add_child(title)
-
-	var sub := _readable_label(subtitle, 7, MUTED)
-	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	sub.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	cell.add_child(sub)
-
-	button.set_meta("visual_root", cell)
-	button.set_meta("subtitle_label", sub)
-	return button
-
-func _resource_chip(caption: String, accent: Color) -> PanelContainer:
+func _resource_chip(caption: String, accent: Color, art_id: StringName) -> PanelContainer:
 	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", _flat(Color(0.008, 0.035, 0.055, 0.82), 14, Color(accent.r, accent.g, accent.b, 0.24), 1))
+	var art_texture := HOME_ART.production_texture(art_id)
+	if art_texture != null:
+		panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+		var art := TextureRect.new()
+		art.texture = art_texture
+		art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		art.stretch_mode = TextureRect.STRETCH_SCALE
+		art.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.add_child(art)
+	else:
+		panel.add_theme_stylebox_override("panel", _flat(Color(0.008, 0.035, 0.055, 0.82), 14, Color(accent.r, accent.g, accent.b, 0.24), 1))
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 7)
@@ -561,6 +609,20 @@ func _resource_chip(caption: String, accent: Color) -> PanelContainer:
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(value)
 	return panel
+
+func _set_primary_art(asset_id: StringName) -> void:
+	var art_texture := HOME_ART.production_texture(asset_id)
+	primary_art.texture = art_texture
+	primary_art.visible = art_texture != null
+	if art_texture != null:
+		primary_shell.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	else:
+		primary_shell.add_theme_stylebox_override("panel", _primary_style())
+
+
+func _primary_style() -> StyleBoxFlat:
+	return _flat(Color(0.18, 0.115, 0.025, 0.94), 28, Color(1.0, 0.79, 0.32, 0.86), 2)
+
 
 func _advance_text(progression: Dictionary) -> String:
 	var transition := str(progression.get("transition", "auto"))

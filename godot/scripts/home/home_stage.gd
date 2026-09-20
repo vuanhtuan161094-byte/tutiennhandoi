@@ -1,16 +1,15 @@
 extends Control
 
-const HOME_BG := preload("res://art/approved/home_bg_blue_valley.webp")
-const CULTIVATOR := preload("res://art/approved/home_cultivator_centered.png")
+const HOME_ART := preload("res://scripts/home/home_art_atlas.gd")
 const SPARK := preload("res://art/icons/spark.svg")
 
 const HERO_BASE_Y := 228.0
 
 var _time := 0.0
 var _hero: TextureRect
-var _aura_outer: Panel
-var _aura_inner: Panel
-var _pedestal: Panel
+var _aura_outer: Control
+var _aura_inner: Control
+var _pedestal: Control
 var _sparks: Array = []
 
 func _ready() -> void:
@@ -20,7 +19,7 @@ func _ready() -> void:
 
 func _build_world() -> void:
 	var bg := TextureRect.new()
-	bg.texture = HOME_BG
+	bg.texture = HOME_ART.texture(&"background", "res://art/approved/home_bg_blue_valley.webp")
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
@@ -52,35 +51,61 @@ func _build_world() -> void:
 	hero_light.add_theme_stylebox_override("panel", _flat(Color(0.42, 0.82, 0.94, 0.042), 112, Color(0.55, 0.88, 0.95, 0.08), 1))
 	add_child(hero_light)
 
-	_aura_outer = Panel.new()
-	_anchor_center_x(_aura_outer, -136.0, 136.0, 218.0, 490.0)
-	_aura_outer.pivot_offset = Vector2(136.0, 136.0)
-	_aura_outer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_aura_outer.add_theme_stylebox_override("panel", _flat(Color.TRANSPARENT, 136, Color(0.98, 0.77, 0.34, 0.38), 2))
-	add_child(_aura_outer)
+	var aura_art := HOME_ART.production_texture(&"aura")
+	if aura_art != null:
+		var aura_texture := TextureRect.new()
+		aura_texture.texture = aura_art
+		_anchor_center_x(aura_texture, -136.0, 136.0, 218.0, 490.0)
+		aura_texture.pivot_offset = Vector2(136.0, 136.0)
+		aura_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		aura_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		aura_texture.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		aura_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_aura_outer = aura_texture
+		add_child(aura_texture)
+	else:
+		_aura_outer = Panel.new()
+		_anchor_center_x(_aura_outer, -136.0, 136.0, 218.0, 490.0)
+		_aura_outer.pivot_offset = Vector2(136.0, 136.0)
+		_aura_outer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_aura_outer.add_theme_stylebox_override("panel", _flat(Color.TRANSPARENT, 136, Color(0.98, 0.77, 0.34, 0.38), 2))
+		add_child(_aura_outer)
 
-	_aura_inner = Panel.new()
-	_anchor_center_x(_aura_inner, -109.0, 109.0, 245.0, 463.0)
-	_aura_inner.pivot_offset = Vector2(109.0, 109.0)
-	_aura_inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_aura_inner.add_theme_stylebox_override("panel", _flat(Color(0.16, 0.68, 0.76, 0.018), 109, Color(0.48, 0.90, 0.96, 0.32), 1))
-	add_child(_aura_inner)
+		_aura_inner = Panel.new()
+		_anchor_center_x(_aura_inner, -109.0, 109.0, 245.0, 463.0)
+		_aura_inner.pivot_offset = Vector2(109.0, 109.0)
+		_aura_inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_aura_inner.add_theme_stylebox_override("panel", _flat(Color(0.16, 0.68, 0.76, 0.018), 109, Color(0.48, 0.90, 0.96, 0.32), 1))
+		add_child(_aura_inner)
 
-	_pedestal = Panel.new()
-	_anchor_center_x(_pedestal, -134.0, 134.0, 452.0, 510.0)
-	_pedestal.pivot_offset = Vector2(134.0, 29.0)
-	_pedestal.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_pedestal.add_theme_stylebox_override("panel", _flat(Color(0.12, 0.24, 0.23, 0.20), 29, Color(0.96, 0.79, 0.38, 0.32), 2))
-	add_child(_pedestal)
+	var pedestal_art := HOME_ART.production_texture(&"pedestal")
+	if pedestal_art != null:
+		var pedestal_texture := TextureRect.new()
+		pedestal_texture.texture = pedestal_art
+		_anchor_center_x(pedestal_texture, -134.0, 134.0, 452.0, 510.0)
+		pedestal_texture.pivot_offset = Vector2(134.0, 29.0)
+		pedestal_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		pedestal_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		pedestal_texture.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		pedestal_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_pedestal = pedestal_texture
+		add_child(pedestal_texture)
+	else:
+		_pedestal = Panel.new()
+		_anchor_center_x(_pedestal, -134.0, 134.0, 452.0, 510.0)
+		_pedestal.pivot_offset = Vector2(134.0, 29.0)
+		_pedestal.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_pedestal.add_theme_stylebox_override("panel", _flat(Color(0.12, 0.24, 0.23, 0.20), 29, Color(0.96, 0.79, 0.38, 0.32), 2))
+		add_child(_pedestal)
 
-	var pedestal_core := Panel.new()
-	_anchor_center_x(pedestal_core, -93.0, 93.0, 466.0, 496.0)
-	pedestal_core.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	pedestal_core.add_theme_stylebox_override("panel", _flat(Color(0.48, 0.82, 0.72, 0.08), 15, Color(0.56, 0.92, 0.79, 0.22), 1))
-	add_child(pedestal_core)
+		var pedestal_core := Panel.new()
+		_anchor_center_x(pedestal_core, -93.0, 93.0, 466.0, 496.0)
+		pedestal_core.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		pedestal_core.add_theme_stylebox_override("panel", _flat(Color(0.48, 0.82, 0.72, 0.08), 15, Color(0.56, 0.92, 0.79, 0.22), 1))
+		add_child(pedestal_core)
 
 	_hero = TextureRect.new()
-	_hero.texture = CULTIVATOR
+	_hero.texture = HOME_ART.texture(&"hero", "res://art/approved/home_cultivator_centered.png")
 	_anchor_center_x(_hero, -112.0, 112.0, HERO_BASE_Y, 490.0)
 	_hero.pivot_offset = Vector2(112.0, 262.0)
 	_hero.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
