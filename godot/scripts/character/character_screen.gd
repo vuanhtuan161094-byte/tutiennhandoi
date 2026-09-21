@@ -274,14 +274,22 @@ func _stat_cell(parent: Control, node_name: String, caption: String, index: int)
 
 func _on_slot_pressed(slot_id: String, data: Dictionary) -> void:
 	if data.is_empty() or not bool(data.get("filled", false)):
-		_status.text = "%s đang trống · mở Trang Bị để chọn" % str(data.get("label", slot_id))
-		detail_requested.emit(&"equipment")
-		return
-	_status.text = "%s · %s · +%d" % [str(data.get("label", slot_id)), str(data.get("name", "Trang bị")), int(data.get("enhancement", 0))]
-	detail_requested.emit(&"equipment")
+		_status.text = "%s đang trống · chọn trang bị phù hợp" % str(data.get("label", slot_id))
+	else:
+		_status.text = "%s · %s · +%d" % [
+			str(data.get("label", slot_id)),
+			str(data.get("name", "Trang bị")),
+			int(data.get("enhancement", 0)),
+		]
+	open_equipment_for_slot(slot_id)
 
 func _emit_detail(detail_id: StringName) -> void:
 	detail_requested.emit(detail_id)
+
+func open_equipment_for_slot(slot_id: String) -> void:
+	if _detail_sheet == null or _vm.is_empty():
+		return
+	_detail_sheet.show_equipment_for_slot(slot_id, _vm)
 
 func open_detail(detail_id: StringName) -> void:
 	if _detail_sheet == null or _vm.is_empty():
