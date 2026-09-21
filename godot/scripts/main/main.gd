@@ -6,16 +6,21 @@ const HOME_STAGE_SCRIPT := preload("res://scripts/home/home_stage.gd")
 const HOME_HUD_SCRIPT := preload("res://scripts/home/home_hud.gd")
 const HOME_OVERLAY_SCRIPT := preload("res://scripts/home/home_overlay.gd")
 const HOME_NAV_SCRIPT := preload("res://scripts/home/home_nav.gd")
+const CHARACTER_VIEW_MODEL := preload("res://scripts/models/character_view_model.gd")
+const CHARACTER_SCREEN_SCRIPT := preload("res://scripts/character/character_screen.gd")
 
 var backend_bridge
 var stage
 var hud
 var overlay
 var nav
+var character_screen
 
 var _home: Dictionary = {}
+var _character_vm: Dictionary = {}
 var _vm: Dictionary = {}
 var _last_home_generated_at := 0
+var _last_character_generated_at := 0
 
 func _ready() -> void:
 	_build_home()
@@ -32,6 +37,12 @@ func _build_home() -> void:
 	hud.name = "HomeHUD"
 	hud.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(hud)
+
+	character_screen = CHARACTER_SCREEN_SCRIPT.new()
+	character_screen.name = "CharacterScreen"
+	character_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	character_screen.visible = false
+	add_child(character_screen)
 
 	nav = HOME_NAV_SCRIPT.new()
 	nav.name = "HomeNav"
@@ -51,12 +62,14 @@ func _connect_ui() -> void:
 	hud.primary_action_requested.connect(_on_primary_action)
 	nav.route_requested.connect(_on_route_requested)
 	overlay.retreat_hours_selected.connect(_on_retreat_hours_selected)
+	character_screen.detail_requested.connect(_on_character_detail_requested)
 	AppState.route_changed.connect(_on_route_changed)
 
 func _start_backend() -> void:
 	backend_bridge = BACKEND_BRIDGE_SCRIPT.new()
 	backend_bridge.name = "BackendBridge"
 	backend_bridge.home_updated.connect(_on_home_updated)
+	backend_bridge.character_updated.connect(_on_character_updated)
 	backend_bridge.bridge_status_changed.connect(_on_bridge_status_changed)
 	backend_bridge.action_failed.connect(_on_action_failed)
 	backend_bridge.action_completed.connect(_on_action_completed)
@@ -77,11 +90,25 @@ func _on_home_updated(home: Dictionary) -> void:
 	_vm = vm
 	hud.bind(vm)
 
+func _on_character_updated(character_view: Dictionary) -> void:
+	var generated_at := int(character_view.get("generatedAtUnixMs", 0))
+	if generated_at > 0 and generated_at < _last_character_generated_at:
+		return
+	var vm := CHARACTER_VIEW_MODEL.build(character_view)
+	if vm.get("ok", false) != true:
+		_on_action_failed(str(vm.get("error", "Character DTO không hợp lệ")))
+		return
+	_last_character_generated_at = maxi(_last_character_generated_at, generated_at)
+	_character_vm = vm
+	character_screen.bind(vm)
+
 func _on_bridge_status_changed(online: bool, message: String) -> void:
 	hud.set_bridge_status(online, message)
+	character_screen.set_bridge_status(online, message)
 
 func _on_action_failed(message: String) -> void:
 	hud.set_status_message(message)
+	character_screen.set_status_message(message)
 
 func _on_action_completed(action_id: String, result: Dictionary) -> void:
 	if action_id == "retreatV140":
@@ -121,8 +148,29 @@ func _on_route_requested(route_id: StringName) -> void:
 
 func _on_route_changed(route_id: StringName) -> void:
 	nav.set_route(route_id)
-	if route_id != &"home":
+	var character_active := route_id == &"character"
+	character_screen.visible = character_active
+	stage.visible = not character_active
+	hud.visible = not character_active
+	overlay.visible = not character_active
+	if character_active:
+		character_screen.set_status_message("Đang tải Character canonical…")
+		backend_bridge.refresh_character()
+	elif route_id != &"home":
 		hud.set_status_message("%s sẽ được port ở vertical slice tiếp theo" % _route_label(route_id))
+
+func _on_character_detail_requested(detail_id: StringName) -> void:
+	match detail_id:
+		&"equipment":
+			character_screen.set_status_message("Trang Bị · 10 ô canonical V165")
+		&"stats":
+			character_screen.set_status_message("Thuộc Tính · chỉ số chiến đấu canonical V168")
+		&"profile":
+			character_screen.set_status_message("Hồ Sơ · Linh Căn / Thể Chất / Công Pháp")
+		&"potential":
+			character_screen.set_status_message("Tăng Điểm · mutation authority sẽ được nối ở slice kế tiếp")
+		_:
+			character_screen.set_status_message(String(detail_id))
 
 func _route_label(route_id: StringName) -> String:
 	var labels := {
