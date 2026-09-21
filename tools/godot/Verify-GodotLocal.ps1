@@ -165,7 +165,7 @@ Write-Host "================================================"
 Write-Host ""
 
 if (-not (Test-PinnedTooling)) {
-    Write-Host "[0/7] Tooling missing or does not match TOOLING_LOCK; bootstrapping pinned versions ..."
+    Write-Host "[0/8] Tooling missing or does not match TOOLING_LOCK; bootstrapping pinned versions ..."
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $SetupScript
     if ($LASTEXITCODE -ne 0) {
         throw "Godot tooling bootstrap failed."
@@ -185,11 +185,11 @@ Remove-Item -Recurse -Force $ArtifactsRoot -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $ArtifactsRoot | Out-Null
 
 Write-Host ""
-Write-Host "[1/7] Importing project resources ..."
+Write-Host "[1/8] Importing project resources ..."
 & $Godot --headless --path $GodotProject --import
 Assert-Exit "Godot import"
 
-Write-Host "[2/7] Parse-checking project GDScript in project context ..."
+Write-Host "[2/8] Parse-checking project GDScript in project context ..."
 $parseLog = Join-Path $ArtifactsRoot "parse-check.log"
 $parseOutput = @(& $Godot --headless --editor --path $GodotProject --quit 2>&1)
 $parseExit = $LASTEXITCODE
@@ -220,7 +220,7 @@ if ($parseFailures.Count -gt 0) {
     throw "Godot project-context parse check reported script errors. See $parseLog"
 }
 
-Write-Host "[3/7] Running GdUnit4 tests ..."
+Write-Host "[3/8] Running GdUnit4 tests ..."
 Push-Location $GodotProject
 try {
     & $GdUnitRunner --godot_binary $Godot -a "res://tests" --continue
@@ -229,7 +229,7 @@ try {
     Pop-Location
 }
 
-Write-Host "[4/7] Running canonical bridge smoke ..."
+Write-Host "[4/8] Running canonical bridge smoke ..."
 $node = Get-Command node.exe -ErrorAction SilentlyContinue
 if ($null -eq $node) {
     $node = Get-Command node -ErrorAction SilentlyContinue
@@ -245,11 +245,20 @@ try {
     Pop-Location
 }
 
-Write-Host "[5/7] Running bounded Godot smoke ..."
+Write-Host "[5/8] Running isolated P2 QA fixture smoke ..."
+Push-Location $GodotProject
+try {
+    & $node.Source "backend\bridge_p2_fixture_smoke.mjs"
+    Assert-Exit "P2 QA fixture smoke"
+} finally {
+    Pop-Location
+}
+
+Write-Host "[6/8] Running bounded Godot smoke ..."
 & $Godot --headless --path $GodotProject --quit-after 300
 Assert-Exit "Godot bounded smoke"
 
-Write-Host "[6/7] Running Stagehand structural scenario ..."
+Write-Host "[7/8] Running Stagehand structural scenario ..."
 $structuralOut = Join-Path $ArtifactsRoot "stagehand-runtime"
 New-Item -ItemType Directory -Force -Path $structuralOut | Out-Null
 & $StagehandExe run (Join-Path $GodotProject "tests\stagehand\home_runtime_smoke.json") --out-dir $structuralOut --godot-bin $Godot
@@ -257,7 +266,7 @@ Assert-Exit "Stagehand runtime smoke"
 
 if (-not $SkipVisual) {
     if (Test-Path $ApprovedBaseline) {
-        Write-Host "[7/7] Running Stagehand visual regression against approved baseline ..."
+        Write-Host "[8/8] Running Stagehand visual regression against approved baseline ..."
         $visualOut = Join-Path $ArtifactsRoot "stagehand-visual-regression"
         New-Item -ItemType Directory -Force -Path $visualOut | Out-Null
         & $StagehandExe run (Join-Path $GodotProject "tests\stagehand\home_visual_regression.json") --out-dir $visualOut --godot-bin $Godot
