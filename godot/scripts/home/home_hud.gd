@@ -98,7 +98,16 @@ func bind(vm: Dictionary) -> void:
 	var tu_vi := maxf(0.0, float(progression.get("tu_vi", 0)))
 	var required := maxf(1.0, float(progression.get("required_tu_vi", 1)))
 	var rate_per_15s := maxf(0.0, float(progression.get("rate_per_15s", 0)))
-	_bind_cultivation_sample(tu_vi, required, rate_per_15s, bool(progression.get("ready", false)))
+	var commit_interval := maxf(0.001, float(progression.get("commit_interval_seconds", 15.0)))
+	var commit_phase := clampf(float(progression.get("commit_phase_seconds", 0.0)), 0.0, commit_interval)
+	_bind_cultivation_sample(
+		tu_vi,
+		required,
+		rate_per_15s,
+		bool(progression.get("ready", false)),
+		commit_phase,
+		commit_interval
+	)
 
 	var ready := bool(progression.get("ready", false))
 	var transition := str(progression.get("transition", "auto"))
@@ -159,22 +168,40 @@ func _process(delta: float) -> void:
 	display_tu_vi = minf(quantum_ceiling, display_tu_vi + display_rate_per_second * maxf(0.0, delta))
 	_render_cultivation_display()
 
-func _bind_cultivation_sample(tu_vi: float, required: float, rate_per_15s: float, ready: bool) -> void:
-	var reset_display := not _has_cultivation_sample 		or not is_equal_approx(required, _display_required_tu_vi) 		or tu_vi < _canonical_tu_vi - 0.001
+func _bind_cultivation_sample(
+	tu_vi: float,
+	required: float,
+	rate_per_15s: float,
+	ready: bool,
+	commit_phase: float = 0.0,
+	commit_interval: float = 15.0
+) -> void:
+	var reset_display := (
+		not _has_cultivation_sample
+		or not is_equal_approx(required, _display_required_tu_vi)
+		or tu_vi < _canonical_tu_vi - 0.001
+	)
 
 	_display_required_tu_vi = maxf(1.0, required)
 	_rate_per_15s = maxf(0.0, rate_per_15s)
-	display_rate_per_second = cultivation_rate_per_second(_rate_per_15s)
+	display_rate_per_second = cultivation_rate_per_second(_rate_per_15s, commit_interval)
 	_cultivation_ready = ready
 
+	var phase_estimate := minf(
+		_display_required_tu_vi,
+		tu_vi + display_rate_per_second * clampf(commit_phase, 0.0, maxf(0.001, commit_interval))
+	)
+
 	if reset_display:
-		display_tu_vi = tu_vi
+		display_tu_vi = phase_estimate
 	elif tu_vi > _canonical_tu_vi + 0.001:
 		# Canonical V140 committed the quantum. Reconcile forward only; the
 		# interpolation should never make the player see Tu Vi tick backward.
-		display_tu_vi = maxf(display_tu_vi, tu_vi)
+		display_tu_vi = maxf(display_tu_vi, phase_estimate)
 	else:
-		display_tu_vi = maxf(display_tu_vi, tu_vi)
+		# Polls expose the canonical carry phase, so reconnect/load starts in the
+		# correct place inside the 15-second quantum instead of from zero.
+		display_tu_vi = maxf(display_tu_vi, phase_estimate)
 
 	_canonical_tu_vi = tu_vi
 	_has_cultivation_sample = true
@@ -202,8 +229,8 @@ func _render_cultivation_display() -> void:
 	else:
 		rate_label.text = "+0 Tu Vi / 15s"
 
-static func cultivation_rate_per_second(rate_per_15s: float) -> float:
-	return maxf(0.0, rate_per_15s) / 15.0
+static func cultivation_rate_per_second(rate_per_15s: float, commit_seconds: float = 15.0) -> float:
+	return maxf(0.0, rate_per_15s) / maxf(0.001, commit_seconds)
 
 func _build_top_shell() -> void:
 	var shell := MarginContainer.new()
@@ -427,6 +454,7 @@ func _build_progress() -> void:
 	var foot := HBoxContainer.new()
 	col.add_child(foot)
 	rate_label = _label("+— Tu Vi / 15s", 9, MINT)
+	rate_label.name = "CultivationRate"
 	rate_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	foot.add_child(rate_label)
 	eta_label = _label("ETA · —", 9, MUTED)
