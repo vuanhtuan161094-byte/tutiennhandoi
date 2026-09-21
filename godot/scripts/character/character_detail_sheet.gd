@@ -406,7 +406,7 @@ func _render_equipment() -> void:
 			item,
 			item_id,
 			enhancement,
-			max_enhancement,
+			maxi(1, int(item.get("maxEnhancementLevel", max_enhancement))),
 			forging_essence,
 			protection_talismans
 		)
