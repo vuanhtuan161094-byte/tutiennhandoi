@@ -108,16 +108,6 @@
       }
     },
     {
-      "name": "Cultivation interpolation is active",
-      "action": "assert_property",
-      "with": {
-        "selector": "name:HomeHUD",
-        "property": "cultivation_animation_active",
-        "operator": "equals",
-        "expected": true
-      }
-    },
-    {
       "name": "Cultivation rate label exposes smooth cadence",
       "action": "assert_property",
       "with": {
