@@ -53,6 +53,12 @@ static func build(home: Dictionary) -> Dictionary:
 			"progress_pct": progress_pct,
 			"base_rate_per_15s": maxf(0.0, float(cultivation.get("baseTuViPer15s", cultivation.get("finalTuViPer15s", 0)))),
 			"rate_per_15s": maxf(0.0, float(cultivation.get("finalTuViPer15s", 0))),
+			"commit_interval_seconds": maxf(0.001, float(cultivation.get("commitIntervalSeconds", 15.0))),
+			"commit_phase_seconds": clampf(
+				float(cultivation.get("commitPhaseSeconds", 0.0)),
+				0.0,
+				maxf(0.001, float(cultivation.get("commitIntervalSeconds", 15.0)))
+			),
 			"rate_sources": cultivation.get("sources", []),
 			"eta_seconds": maxf(0.0, float(cultivation.get("etaRealSeconds", 0))),
 			"injury_pct": clampf(float(cultivation.get("injury", 0)), 0.0, 100.0),
