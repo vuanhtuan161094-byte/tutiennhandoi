@@ -15,7 +15,7 @@ const layoutEditorCode=stripComments(layoutEditor);
 const harness=read('modules/dev-test-harness-v1.js');
 const entry=read('standalone-entry.js');
 const index=read('index.html');
-const devLauncher=read('CHOI_UI_DEV.cmd');
+const devLauncher=read('tools/web/CHOI_UI_DEV.cmd');
 
 assert.match(bridge,/const devMode = params\.get\('dev'\) === '1'/,'combat bridge must identify DEV mode');
 assert.match(bridge,/const toolsOptIn = params\.get\('tools'\) === '1' \|\| params\.get\('devtools'\) === '1'/,'external DEV tools must require explicit opt-in');
