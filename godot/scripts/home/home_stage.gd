@@ -28,6 +28,17 @@ func play_meditation_surge(duration: float = 1.25) -> void:
 	if is_instance_valid(_hero) and _hero.has_method("play_surge"):
 		_hero.play_surge(duration)
 
+func play_breakthrough_burst(major: bool = false) -> void:
+	play_meditation_surge(2.1 if major else 1.55)
+
+func play_ling_quang_burst(multiplier: int) -> void:
+	if multiplier >= 5:
+		play_meditation_surge(1.65)
+	elif multiplier >= 3:
+		play_meditation_surge(1.25)
+	elif multiplier >= 2:
+		play_meditation_surge(0.85)
+
 func _build_world() -> void:
 	var bg := TextureRect.new()
 	bg.texture = HOME_ART.texture(&"background", "res://art/approved/home_bg_blue_valley.webp")
