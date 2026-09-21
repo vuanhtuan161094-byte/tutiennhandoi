@@ -24,20 +24,26 @@ func bind(vm: Dictionary) -> void:
 		play_meditation_surge()
 	_was_cultivation_ready = ready
 
-func play_meditation_surge(duration: float = 1.25) -> void:
+func play_meditation_surge(duration: float = 1.25, intensity: float = 1.0) -> void:
 	if is_instance_valid(_hero) and _hero.has_method("play_surge"):
-		_hero.play_surge(duration)
+		_hero.play_surge(duration, intensity)
 
 func play_breakthrough_burst(major: bool = false) -> void:
-	play_meditation_surge(2.1 if major else 1.55)
+	play_meditation_surge(2.1 if major else 1.55, 1.35 if major else 1.0)
 
 func play_ling_quang_burst(multiplier: int) -> void:
-	if multiplier >= 5:
-		play_meditation_surge(1.65)
+	if multiplier >= 9:
+		play_meditation_surge(2.0, 1.55)
+	elif multiplier >= 7:
+		play_meditation_surge(1.75, 1.40)
+	elif multiplier >= 5:
+		play_meditation_surge(1.55, 1.25)
+	elif multiplier >= 4:
+		play_meditation_surge(1.35, 1.10)
 	elif multiplier >= 3:
-		play_meditation_surge(1.25)
+		play_meditation_surge(1.15, 0.90)
 	elif multiplier >= 2:
-		play_meditation_surge(0.85)
+		play_meditation_surge(0.85, 0.65)
 
 func _build_world() -> void:
 	var bg := TextureRect.new()
