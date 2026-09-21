@@ -129,6 +129,8 @@ class GodotCanonicalRuntime {
         progressPct:Math.max(0,Math.min(100,Number(cultivation.progressPct)||0)),
         baseTuViPer15s:Math.max(0,Number(cultivation.baseTuViPer15s)||0),
         finalTuViPer15s:Math.max(0,Number(cultivation.finalTuViPer15s)||0),
+        commitIntervalSeconds:LIVE_COMMIT_REAL_SECONDS,
+        commitPhaseSeconds:Math.max(0,Math.min(LIVE_COMMIT_REAL_SECONDS,Number(this.carry)||0)),
         sources:Array.isArray(cultivation.sources)?cultivation.sources.map(x=>({
           id:String(x?.id||''),
           label:String(x?.label||x?.name||x?.id||''),
