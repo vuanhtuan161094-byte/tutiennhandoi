@@ -276,6 +276,49 @@ class GodotCanonicalRuntime {
         useProtection:Boolean(payload.useProtection)
       });
     }
+    else if(id==='transferEquipmentEnhancement'){
+      const fromItemId=String(payload.fromItemId||'').trim();
+      const toItemId=String(payload.toItemId||'').trim();
+      if(!fromItemId||!toItemId)throw new Error('Thiếu trang bị nguồn/đích để chuyển cường hóa.');
+      result=this.api.perform({type:'transferEquipmentEnhancement',fromItemId,toItemId});
+    }
+    else if(id==='craftEquipmentV142'){
+      const slot=String(payload.slot||'').trim();
+      const rankIndex=Math.max(0,Math.floor(Number(payload.rankIndex)||0));
+      if(!slot)throw new Error('Thiếu ô trang bị để Luyện.');
+      result=this.api.perform({type:'craftEquipmentV142',slot,rankIndex});
+    }
+    else if(id==='refineEquipmentFragmentsV142'){
+      const fromRank=Math.max(0,Math.floor(Number(payload.fromRank)||0));
+      const batches=Math.max(1,Math.min(999,Math.floor(Number(payload.batches)||1)));
+      result=this.api.perform({type:'refineEquipmentFragmentsV142',fromRank,batches});
+    }
+    else if(id==='mergeEquipmentV142'){
+      const mainItemId=String(payload.mainItemId||'').trim();
+      const fodderItemAId=String(payload.fodderItemAId||'').trim();
+      const fodderItemBId=String(payload.fodderItemBId||'').trim();
+      if(!mainItemId||!fodderItemAId||!fodderItemBId)throw new Error('Hợp thành cần đủ 3 trang bị.');
+      result=this.api.perform({type:'mergeEquipmentV142',mainItemId,fodderItemAId,fodderItemBId});
+    }
+    else if(id==='engraveEquipmentSetV142'){
+      const itemId=String(payload.itemId||'').trim();
+      const setId=String(payload.setId||'').trim();
+      if(!itemId||!setId)throw new Error('Thiếu trang bị hoặc Set để Khắc.');
+      result=this.api.perform({type:'engraveEquipmentSetV142',itemId,setId});
+    }
+    else if(id==='reforgeEquipmentAffixV115'){
+      const itemId=String(payload.itemId||'').trim();
+      const index=Math.max(0,Math.floor(Number(payload.index)||0));
+      const targetFamily=String(payload.targetFamily||'').trim();
+      if(!itemId)throw new Error('Thiếu trang bị để Tái Luyện Affix.');
+      result=this.api.perform({type:'reforgeEquipmentAffixV115',itemId,index,...(targetFamily?{targetFamily}:{})});
+    }
+    else if(id==='refineEquipmentAffixV115'){
+      const itemId=String(payload.itemId||'').trim();
+      const index=Math.max(0,Math.floor(Number(payload.index)||0));
+      if(!itemId)throw new Error('Thiếu trang bị để Tinh Luyện Affix.');
+      result=this.api.perform({type:'refineEquipmentAffixV115',itemId,index});
+    }
     else if(id==='nourishBloodline'){
       result=this.api.perform({type:'nourishBloodline',points:Math.max(1,Math.min(100,Number(payload.points)||10))});
     }
