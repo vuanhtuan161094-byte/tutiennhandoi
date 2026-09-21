@@ -22,7 +22,10 @@ func test_all_ten_character_equipment_slot_assets_resolve() -> void:
 		assert_bool(ResourceLoader.load(path) is Texture2D).is_true()
 
 func test_character_standing_hero_has_approved_runtime_source() -> void:
-	var has_atlas := ResourceLoader.exists("res://art/approved/character/standing_idle_atlas.webp")
+	var has_atlas := (
+		ResourceLoader.exists("res://art/approved/character/standing_idle_atlas.webp")
+		or ResourceLoader.exists("res://art/approved/character/standing_idle/standing_idle_atlas.webp")
+	)
 	var has_approved_master := ResourceLoader.exists("res://art/approved/home/home_hero_standing.webp")
 	assert_bool(has_atlas or has_approved_master).is_true()
 
