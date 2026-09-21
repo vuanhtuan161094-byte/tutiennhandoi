@@ -69,7 +69,8 @@ function validateHome(home){
   assert(home?.authority?.cultivation===EXPECTED_AUTHORITY,'Cultivation authority mismatch');
   for(const path of [
     ['life','lifeNumber'],['life','realm'],['cultivation','tuVi'],
-    ['cultivation','requiredTuVi'],['cultivation','finalTuViPer15s'],
+    ['cultivation','liveTuVi'],['cultivation','requiredTuVi'],
+    ['cultivation','finalTuViPer15s'],['cultivation','finalTuViPerSecond'],
     ['resources','spiritStone'],['resources','reincarnationCp'],
     ['spiritualRoot','name'],
   ]){
@@ -110,6 +111,17 @@ try{
   validateCharacter(character);
   assert(created.home.life.realm==='Phàm Nhân',`Expected fresh realm Phàm Nhân, got ${created.home.life.realm}`);
   assert(Number(created.home.cultivation?.retreat?.rewardPct3h)===0,'Phàm Nhân retreat reward must be 0 by canonical V140 balance');
+  assert(Number(created.home.cultivation.finalTuViPerSecond)>0,'Backend must expose positive per-second cultivation rate');
+
+  const canonicalBeforeSecond=Number(created.home.cultivation.tuVi)||0;
+  const liveBeforeSecond=Number(created.home.cultivation.liveTuVi)||0;
+  await sleep(1200);
+  const liveSecond=await request('/home');
+  validateHome(liveSecond);
+  const canonicalAfterSecond=Number(liveSecond.cultivation.tuVi)||0;
+  const liveAfterSecond=Number(liveSecond.cultivation.liveTuVi)||0;
+  assert(canonicalAfterSecond===canonicalBeforeSecond,'Canonical V140 settlement should not change before its 15s quantum');
+  assert(liveAfterSecond>liveBeforeSecond,`Backend live Tu Vi must advance each second: ${liveBeforeSecond} -> ${liveAfterSecond}`);
 
   const filled=await request('/action',{method:'POST',body:{action:'diagnosticCommit',seconds:300}});
   validateHome(filled.home);
