@@ -173,6 +173,18 @@ func _on_home_character_section_requested(section_id: StringName) -> void:
 	AppState.request_route(&"character")
 
 func _on_route_changed(route_id: StringName) -> void:
+	if route_id not in [&"home", &"character"]:
+		# Never leave Home visible while a non-existent destination looks selected.
+		# Until a Godot screen exists, Home remains the truthful active surface.
+		nav.set_route(&"home")
+		character_screen.visible = false
+		character_screen.hide_detail()
+		stage.visible = true
+		hud.visible = true
+		overlay.visible = true
+		hud.set_status_message("%s chưa có màn Godot" % _route_label(route_id))
+		return
+
 	nav.set_route(route_id)
 	var character_active := route_id == &"character"
 	character_screen.visible = character_active
@@ -184,8 +196,6 @@ func _on_route_changed(route_id: StringName) -> void:
 		backend_bridge.refresh_character()
 	else:
 		character_screen.hide_detail()
-		if route_id != &"home":
-			hud.set_status_message("%s sẽ được port ở vertical slice tiếp theo" % _route_label(route_id))
 
 func _on_character_detail_requested(detail_id: StringName) -> void:
 	match detail_id:
