@@ -8,9 +8,9 @@ class_name HomeArtAtlas
 const MANIFEST_PATH := "res://art/approved/home_runtime_atlas.json"
 
 const FALLBACK_PATHS := {
-	"background": "res://art/approved/home_bg_blue_valley.webp",
-	"hero": "res://art/approved/home_cultivator_centered.png",
-	"portrait": "res://art/approved/hero_portrait.webp",
+	"background": "res://art/approved/home/home_background.webp",
+	"hero": "res://art/approved/home/home_hero_standing.webp",
+	"portrait": "res://art/approved/home/home_portrait_standing.webp",
 	"orb_retreat": "res://art/icons/retreat.svg",
 	"orb_character": "res://art/icons/character.svg",
 	"orb_root": "res://art/icons/root.svg",

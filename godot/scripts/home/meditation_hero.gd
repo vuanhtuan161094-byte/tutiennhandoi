@@ -1,7 +1,7 @@
 extends Control
 
 const HOME_ART := preload("res://scripts/home/home_art_atlas.gd")
-const FALLBACK_PATH := "res://art/approved/home_cultivator_centered.png"
+const FALLBACK_PATH := "res://art/approved/home/home_hero_standing.webp"
 
 var runtime_animation_ready := false
 var animation_mode := "meditation_idle"

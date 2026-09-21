@@ -47,7 +47,7 @@ func play_ling_quang_burst(multiplier: int) -> void:
 
 func _build_world() -> void:
 	var bg := TextureRect.new()
-	bg.texture = HOME_ART.texture(&"background", "res://art/approved/home_bg_blue_valley.webp")
+	bg.texture = HOME_ART.texture(&"background", "res://art/approved/home/home_background.webp")
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED

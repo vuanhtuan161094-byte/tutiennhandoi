@@ -81,13 +81,9 @@ Use a full-bleed immortal mountain/cave world with:
 - darker lower foreground to support action/nav readability;
 - central open light pocket behind the cultivator.
 
-Current approved asset preference:
+Current production source:
 
-- `godot/art/approved/home_bg_blue_valley.webp`
-
-Fallback:
-
-- `godot/art/approved/home_bg_ink_mountain.webp`
+- `godot/art/approved/home/home_background.webp` via `home_runtime_atlas.json`
 
 The background must stay visible. HUD opacity must not cover more than roughly one third of the scenic surface with dark plates at once.
 
@@ -102,11 +98,11 @@ The background must stay visible. HUD opacity must not cover more than roughly o
 
 Current approved asset:
 
-- `godot/art/approved/home_cultivator_centered.png`
+- `godot/art/approved/home/home_hero_standing.webp`
 
 Portrait asset for identity medallion:
 
-- `godot/art/approved/hero_portrait.webp`
+- `godot/art/approved/home/home_portrait_standing.webp`
 
 ### Hero target
 
@@ -320,12 +316,7 @@ Order left → right:
 3. **Linh Căn**
 4. **Chiến Đấu**
 
-Existing production icons:
-
-- `retreat.svg`
-- `character.svg`
-- `root.svg`
-- `combat.svg`
+Production action art resolves from `godot/art/approved/home/home_icons.webp` via `home_runtime_atlas.json`. The small SVG icons remain fallback-only.
 
 ### Style
 
@@ -533,13 +524,14 @@ Do not move Home layout logic into `main.gd`.
 
 ## 19. Production asset policy
 
-Prefer existing approved assets before generating replacements:
+Production Home art is centralized by `godot/art/approved/home_runtime_atlas.json`:
 
-- background: `home_bg_blue_valley.webp`
-- alternate background: `home_bg_ink_mountain.webp`
-- center cultivator: `home_cultivator_centered.png`
-- portrait: `hero_portrait.webp`
-- nav/action SVG icons in `godot/art/icons/`
+- background: `home/home_background.webp`
+- hero: `home/home_hero_standing.webp`
+- portrait: `home/home_portrait_standing.webp`
+- UI core: `home/home_ui_core.webp`
+- nav/action atlas: `home/home_icons.webp`
+- SVG icons under `godot/art/icons/` are fallback-only.
 
 The user reference image is a **visual composition/art-direction authority**, not a license to crop UI graphics out of the screenshot.
 
