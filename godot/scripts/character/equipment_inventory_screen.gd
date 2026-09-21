@@ -420,7 +420,7 @@ func _add_item_card(parent: GridContainer, item: Dictionary) -> void:
 
 	if set_id != "":
 		var set_label := Label.new()
-		set_label.text = _compact_set_name(str(item.get("setName", "")))
+		set_label.text = "%s · %s" % [_set_badge(set_id), _compact_set_name(str(item.get("setName", "")))]
 		set_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		set_label.add_theme_font_size_override("font_size", 7)
 		set_label.add_theme_color_override("font_color", accent)
@@ -823,6 +823,7 @@ func _render_detail() -> void:
 			var formatted := str(affix.get("formatted", affix.get("name", "Affix")))
 			var roll := float(affix.get("rollPct", 0))
 			_add_small_text(_detail_body, "◆ %s · %.0f%%" % [formatted, roll], _affix_color(roll))
+			_add_affix_actions(item, affix)
 	elif typeof(item.get("affixes", [])) == TYPE_ARRAY:
 		var affix_lines: Array = item.get("affixes", [])
 		if not affix_lines.is_empty():
@@ -833,6 +834,9 @@ func _render_detail() -> void:
 	var source := str(item.get("source", ""))
 	if source != "":
 		_add_small_text(_detail_body, "Nguồn: " + source, MUTED)
+
+	_add_set_engrave_controls(item)
+	_add_transfer_controls(item)
 
 	var actions := HBoxContainer.new()
 	actions.add_theme_constant_override("separation", 6)
@@ -845,6 +849,121 @@ func _render_detail() -> void:
 		actions.add_child(equip)
 
 	_add_enhance_action(actions, item)
+
+func _add_affix_actions(item: Dictionary, affix: Dictionary) -> void:
+	var item_id := str(item.get("id", ""))
+	if item_id.is_empty():
+		return
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 5)
+	_detail_body.add_child(row)
+
+	var reforge_cost = affix.get("reforgeCost", {})
+	if typeof(reforge_cost) == TYPE_DICTIONARY:
+		var reforge := _action_button(
+			"InventoryAffixReforge_%s_%s" % [_safe_node_name(item_id), str(affix.get("index", 0))],
+			"TÁI LUYỆN",
+			_affix_cost_available(reforge_cost)
+		)
+		reforge.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		reforge.pressed.connect(_emit_equipment_command.bind("reforgeEquipmentAffixV115", {
+			"itemId": item_id,
+			"index": int(affix.get("index", 0)),
+		}))
+		row.add_child(reforge)
+
+	var refine_cost = affix.get("refineCost", {})
+	if typeof(refine_cost) == TYPE_DICTIONARY and not bool(affix.get("maxRoll", false)):
+		var refine := _action_button(
+			"InventoryAffixRefine_%s_%s" % [_safe_node_name(item_id), str(affix.get("index", 0))],
+			"TINH +1%",
+			_affix_cost_available(refine_cost)
+		)
+		refine.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		refine.pressed.connect(_emit_equipment_command.bind("refineEquipmentAffixV115", {
+			"itemId": item_id,
+			"index": int(affix.get("index", 0)),
+		}))
+		row.add_child(refine)
+
+func _affix_cost_available(cost: Dictionary) -> bool:
+	var resources: Dictionary = _vm.get("equipment", {}).get("system", {}).get("resources", {})
+	var stones := maxi(0, int(resources.get("spiritStones", 0)))
+	var essence := maxi(0, int(resources.get("forgingEssence", 0)))
+	return (
+		stones >= maxi(0, int(cost.get("spiritStones", 0)))
+		and essence >= maxi(0, int(cost.get("equipmentEssence", 0)))
+	)
+
+func _add_set_engrave_controls(item: Dictionary) -> void:
+	var slot_id := str(item.get("slot", ""))
+	var category := "attire" if slot_id in ATTIRE_SLOTS else "jewelry" if slot_id in JEWELRY_SLOTS else ""
+	if category == "":
+		return
+	var v142: Dictionary = _vm.get("equipment", {}).get("system", {}).get("v142", {})
+	var rows = v142.get("setRows", [])
+	if typeof(rows) != TYPE_ARRAY:
+		return
+
+	var eligible: Array = []
+	for row_variant in rows:
+		if typeof(row_variant) != TYPE_DICTIONARY:
+			continue
+		var set_row: Dictionary = row_variant
+		if str(set_row.get("category", "")) != category:
+			continue
+		if int(set_row.get("fragmentBalance", 0)) <= 0 and str(set_row.get("setId", "")) != str(item.get("setId", "")):
+			continue
+		eligible.append(set_row)
+	if eligible.is_empty():
+		return
+
+	_add_section_label_to(_detail_body, "KHẮC SET")
+	if str(item.get("setId", "")) != "":
+		_add_small_text(_detail_body, "Khắc Set khác sẽ thay Set hiện tại của món.", MUTED)
+	for set_variant in eligible:
+		var set_row: Dictionary = set_variant
+		var set_id := str(set_row.get("setId", ""))
+		var current := set_id == str(item.get("setId", ""))
+		var balance := maxi(0, int(set_row.get("fragmentBalance", 0)))
+		var cost := maxi(1, int(set_row.get("engraveCost", 1)))
+		var button := _action_button(
+			"InventoryEngrave_%s" % _safe_node_name(set_id),
+			("%s · ĐANG KHẮC" % _set_badge(set_id)) if current else ("%s · %s/%s Tàn Ấn" % [_set_badge(set_id), _fmt_num(balance), _fmt_num(cost)]),
+			not current and balance >= cost
+		)
+		button.pressed.connect(_emit_equipment_command.bind("engraveEquipmentSetV142", {
+			"itemId": str(item.get("id", "")),
+			"setId": set_id,
+		}))
+		_detail_body.add_child(button)
+
+func _add_transfer_controls(item: Dictionary) -> void:
+	var targets = item.get("transferEligibleTargetIds", [])
+	if typeof(targets) != TYPE_ARRAY or targets.is_empty():
+		return
+	var resources: Dictionary = _vm.get("equipment", {}).get("system", {}).get("resources", {})
+	var gems := maxi(0, int(resources.get("transferGems", 0)))
+	_add_section_label_to(_detail_body, "CHUYỂN CƯỜNG HÓA")
+	_add_small_text(_detail_body, "Tốn 1 Ngọc Chuyển. Món nguồn về +0; món đích nhận nguyên cấp +.", MUTED)
+	for target_id_variant in targets:
+		var target_id := str(target_id_variant)
+		var target := _find_item(target_id)
+		if target.is_empty():
+			continue
+		var button := _action_button(
+			"InventoryTransfer_%s" % _safe_node_name(target_id),
+			"CHUYỂN +%d → %s" % [
+				int(item.get("enhancementLevel", 0)),
+				str(target.get("name", "Trang bị đích")),
+			],
+			gems > 0
+		)
+		button.pressed.connect(_emit_equipment_command.bind("transferEquipmentEnhancement", {
+			"fromItemId": str(item.get("id", "")),
+			"toItemId": target_id,
+		}))
+		_detail_body.add_child(button)
 
 func _add_enhance_action(parent: HBoxContainer, item: Dictionary) -> void:
 	var level := maxi(0, int(item.get("enhancementLevel", 0)))
@@ -1147,6 +1266,29 @@ func _set_accent(set_id: String) -> Color:
 	if id.contains("tran_thu"):
 		return Color("a9d6c2")
 	return CYAN
+
+func _set_badge(set_id: String) -> String:
+	var id := set_id.to_lower()
+	if id.contains(".metal"):
+		return "KIM"
+	if id.contains(".wood"):
+		return "MỘC"
+	if id.contains(".water"):
+		return "THỦY"
+	if id.contains(".fire"):
+		return "HỎA"
+	if id.contains(".earth"):
+		return "THỔ"
+	if id.contains("huyen_nguyen"):
+		return "HUYỀN"
+	if id.contains("pha_gioi"):
+		return "PHÁ"
+	if id.contains("hu_khong"):
+		return "HƯ"
+	if id.contains("tran_thu"):
+		return "TRẤN"
+	return "SET"
+
 
 func _compact_set_name(value: String) -> String:
 	if value.length() <= 24:
