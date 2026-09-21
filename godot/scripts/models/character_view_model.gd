@@ -124,6 +124,7 @@ static func build(payload: Dictionary) -> Dictionary:
 			"allocations": _dict_copy(potential.get("allocations", {})),
 			"definitions": _array_copy(potential.get("definitions", [])),
 		},
+		"inventory_resources": _array_copy(payload.get("inventoryResources", [])),
 		"equipment": {
 			"slots": slots,
 			"inventory": _array_copy(inventory),
