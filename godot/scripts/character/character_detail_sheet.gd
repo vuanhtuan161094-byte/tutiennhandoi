@@ -3,6 +3,7 @@ extends Control
 signal close_requested
 signal equip_requested(item_id: String)
 signal profile_action_requested(action_id: String, payload: Dictionary)
+signal potential_action_requested(stat_id: String, points: int)
 
 const GOLD := Color("e8c76d")
 const GOLD_HI := Color("fff0b8")
@@ -157,6 +158,10 @@ func _render() -> void:
 			_title.text = "Hồ Sơ Tu Hành"
 			_subtitle.text = "Căn nguyên và tiến trình nhân vật hiện tại"
 			_render_profile()
+		"potential":
+			_title.text = "Tăng Điểm"
+			_subtitle.text = "Tiềm Năng đời hiện tại"
+			_render_potential()
 		_:
 			_title.text = "Nhân Vật"
 			_subtitle.text = ""
@@ -166,6 +171,89 @@ func _clear_body() -> void:
 	for child in _body.get_children():
 		_body.remove_child(child)
 		child.queue_free()
+
+func _render_potential() -> void:
+	var potential: Dictionary = _vm.get("potential", {})
+	var stats: Dictionary = _vm.get("stats", {})
+	var allocations: Dictionary = potential.get("allocations", {})
+	var definitions: Array = potential.get("definitions", [])
+	var unspent := maxi(0, int(potential.get("unspent", 0)))
+
+	var summary := _card()
+	_add_card_title(summary, "ĐIỂM TIỀM NĂNG", _fmt_num(float(unspent)))
+	_add_body_text(summary, "Mỗi điểm chỉ phân vào một trong ba trục cốt lõi của đời hiện tại.", MUTED, 9)
+	_add_pair(summary, "Công Lực", "1 điểm → +1")
+	_add_pair(summary, "Thể Phách", "1 điểm → +1 · Khí Huyết chuẩn +20")
+	_add_pair(summary, "Phòng Ngự", "1 điểm → +3")
+
+	_add_section_label("PHÂN BỔ")
+	_potential_stat_card("power", "Công Lực", float(stats.get("power", 0)), int(allocations.get("power", 0)), _potential_effect("power", definitions), unspent)
+	_potential_stat_card("body", "Thể Phách", float(stats.get("body", 0)), int(allocations.get("body", 0)), _potential_effect("body", definitions), unspent)
+	_potential_stat_card("defense", "Phòng Ngự", float(stats.get("defense", 0)), int(allocations.get("defense", 0)), _potential_effect("defense", definitions), unspent)
+
+func _potential_stat_card(stat_id: String, label: String, current_value: float, allocated: int, effect: String, unspent: int) -> void:
+	var card := _card()
+	_add_card_title(card, label, "Đã cộng +%d" % maxi(0, allocated))
+	_add_body_text(card, _fmt_num(current_value), GOLD_HI, 18)
+	_add_body_text(card, effect, MUTED, 9)
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	card.add_child(row)
+
+	for spec in [
+		[1, "+1"],
+		[5, "+5"],
+		[10, "+10"],
+		[100, "+100"],
+		[-1, "TOÀN BỘ"],
+	]:
+		var requested := int(spec[0])
+		var points := unspent if requested < 0 else requested
+		var button := Button.new()
+		button.name = "Potential_%s_%s" % [stat_id, "all" if requested < 0 else str(requested)]
+		button.text = str(spec[1])
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.custom_minimum_size = Vector2(0, 34)
+		button.disabled = points <= 0 or unspent < points
+		button.add_theme_font_size_override("font_size", 8)
+		button.add_theme_color_override("font_color", GOLD_HI if not button.disabled else MUTED)
+		button.add_theme_stylebox_override("normal", _box(
+			Color(0.07, 0.085, 0.055, 0.96) if requested < 0 else Color(0.025, 0.06, 0.072, 0.94),
+			10,
+			Color(0.92, 0.74, 0.30, 0.58) if requested < 0 else Color(0.36, 0.67, 0.72, 0.30),
+			1
+		))
+		button.add_theme_stylebox_override("disabled", _box(Color(0.02, 0.035, 0.045, 0.72), 10, Color(0.30, 0.38, 0.40, 0.16), 1))
+		button.pressed.connect(_emit_potential.bind(stat_id, points))
+		row.add_child(button)
+
+func _potential_effect(stat_id: String, definitions: Array) -> String:
+	for definition_variant in definitions:
+		if typeof(definition_variant) != TYPE_DICTIONARY:
+			continue
+		var definition: Dictionary = definition_variant
+		if str(definition.get("id", "")) != stat_id:
+			continue
+		var per_point = definition.get("perPoint", [])
+		if typeof(per_point) == TYPE_ARRAY and not per_point.is_empty():
+			return " · ".join(Array(per_point).map(func(value): return str(value)))
+		var description := str(definition.get("description", ""))
+		if description != "":
+			return description
+	match stat_id:
+		"power":
+			return "Mỗi điểm: Công Lực +1"
+		"body":
+			return "Mỗi điểm: Thể Phách +1 · Khí Huyết chuẩn +20"
+		"defense":
+			return "Mỗi điểm: Phòng Ngự +3"
+	return ""
+
+func _emit_potential(stat_id: String, points: int) -> void:
+	if points <= 0:
+		return
+	potential_action_requested.emit(stat_id, points)
 
 func _render_equipment() -> void:
 	var equipment: Dictionary = _vm.get("equipment", {})
