@@ -1,12 +1,11 @@
 ﻿extends Control
 
 const HOME_ART := preload("res://scripts/home/home_art_atlas.gd")
+const MEDITATION_HERO_SCRIPT := preload("res://scripts/home/meditation_hero.gd")
 const SPARK := preload("res://art/icons/spark.svg")
 
-const HERO_BASE_Y := 198.0
-
 var _time := 0.0
-var _hero: TextureRect
+var _hero
 var _aura_outer: Control
 var _aura_inner: Control
 var _pedestal: Control
@@ -106,14 +105,9 @@ func _build_world() -> void:
 		pedestal_core.add_theme_stylebox_override("panel", _flat(Color(0.48, 0.82, 0.72, 0.08), 15, Color(0.56, 0.92, 0.79, 0.22), 1))
 		add_child(pedestal_core)
 
-	_hero = TextureRect.new()
-	_hero.texture = HOME_ART.texture(&"hero", "res://art/approved/home_cultivator_centered.png")
-	_anchor_center_x(_hero, -118.0, 118.0, HERO_BASE_Y, 512.0)
-	_hero.pivot_offset = Vector2(118.0, 157.0)
-	_hero.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_hero.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_hero.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-	_hero.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hero = MEDITATION_HERO_SCRIPT.new()
+	_hero.name = "HomeMeditationHero"
+	_anchor_center_x(_hero, -118.0, 118.0, 198.0, 512.0)
 	add_child(_hero)
 
 	var spark_specs := [
@@ -145,10 +139,6 @@ func _build_world() -> void:
 
 func _process(delta: float) -> void:
 	_time += delta
-	if is_instance_valid(_hero):
-		_hero.position.y = HERO_BASE_Y + sin(_time * 1.28) * 2.0
-		var breath := 1.0 + sin(_time * 1.28) * 0.004
-		_hero.scale = Vector2(breath, breath)
 	if is_instance_valid(_aura_outer):
 		var pulse := 1.0 + sin(_time * 0.68) * 0.016
 		_aura_outer.scale = Vector2.ONE * pulse
