@@ -13,6 +13,7 @@ if /I "%~1"=="--post-update" goto :post_update
 if /I "%~1"=="--qa-bootstrap" goto :qa_bootstrap
 if /I "%~1"=="--qa-post-update" goto :qa_post_update
 if /I "%~1"=="--qa" goto :qa_entry
+goto :normal_entry
 
 :qa_entry
 set "ROOT=%~dp0"
@@ -28,6 +29,7 @@ set "BOOT_RC=%ERRORLEVEL%"
 del /q "%TEMP_LAUNCHER%" >nul 2>&1
 exit /b %BOOT_RC%
 
+:normal_entry
 set "ROOT=%~dp0"
 set "TEMP_LAUNCHER=%TEMP%\tutien_choi_game_%RANDOM%_%RANDOM%.cmd"
 copy /y "%~f0" "%TEMP_LAUNCHER%" >nul
