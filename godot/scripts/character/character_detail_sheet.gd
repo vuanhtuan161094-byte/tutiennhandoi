@@ -38,6 +38,7 @@ const ELEMENT_LABELS := {
 var _vm: Dictionary = {}
 var _mode := ""
 var _profile_tab := "origin"
+var _equipment_focus_slot := ""
 
 var _title: Label
 var _subtitle: Label
@@ -55,6 +56,15 @@ func show_detail(mode: String, vm: Dictionary) -> void:
 	_mode = mode
 	_vm = vm.duplicate(true)
 	_profile_tab = "origin"
+	_equipment_focus_slot = ""
+	visible = true
+	_render()
+
+func show_equipment_for_slot(slot_id: String, vm: Dictionary) -> void:
+	_mode = "equipment"
+	_vm = vm.duplicate(true)
+	_profile_tab = "origin"
+	_equipment_focus_slot = slot_id
 	visible = true
 	_render()
 
@@ -149,7 +159,11 @@ func _render() -> void:
 	match _mode:
 		"equipment":
 			_title.text = "Trang Bị"
-			_subtitle.text = "10 vị trí · Cường Hóa · Bộ Trang Bị"
+			_subtitle.text = (
+				"%s · chọn / cường hóa" % str(SLOT_LABELS.get(_equipment_focus_slot, _equipment_focus_slot))
+				if _equipment_focus_slot != ""
+				else "10 vị trí · so sánh · cường hóa"
+			)
 			_render_equipment()
 		"stats":
 			_title.text = "Thuộc Tính"
@@ -307,6 +321,7 @@ func _render_equipment() -> void:
 
 	_add_section_label("10 VỊ TRÍ")
 	var grid := GridContainer.new()
+	grid.name = "EquipmentSlotGrid"
 	grid.columns = 2
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	grid.add_theme_constant_override("h_separation", 7)
@@ -335,8 +350,18 @@ func _render_equipment() -> void:
 		if equipped_id != "":
 			equipped_ids[equipped_id] = true
 
+	var ordered_inventory := inventory.duplicate(true)
+	if _equipment_focus_slot != "":
+		ordered_inventory.sort_custom(func(a, b):
+			var a_match := typeof(a) == TYPE_DICTIONARY and str(a.get("slot", "")) == _equipment_focus_slot
+			var b_match := typeof(b) == TYPE_DICTIONARY and str(b.get("slot", "")) == _equipment_focus_slot
+			if a_match != b_match:
+				return a_match
+			return int(a.get("itemLevel", 0)) > int(b.get("itemLevel", 0))
+		)
+
 	var shown := 0
-	for item_variant in inventory:
+	for item_variant in ordered_inventory:
 		if typeof(item_variant) != TYPE_DICTIONARY:
 			continue
 		if shown >= 36:
