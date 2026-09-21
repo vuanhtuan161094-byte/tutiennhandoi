@@ -108,7 +108,7 @@
       }
     },
     {
-      "name": "Cultivation rate label exposes smooth cadence",
+      "name": "Cultivation rate label uses player-facing per-second cadence",
       "action": "assert_property",
       "with": {
         "selector": "name:CultivationRate",
