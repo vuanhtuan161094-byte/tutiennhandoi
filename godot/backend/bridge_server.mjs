@@ -228,6 +228,12 @@ class GodotCanonicalRuntime {
     else if(id==='advancePhysique'){
       result=this.api.perform({type:'advancePhysique'});
     }
+    else if(id==='spendPotential'){
+      const statId=String(payload.statId||'').trim();
+      if(!['power','body','defense'].includes(statId))throw new Error('Thuộc tính Tiềm Năng không hợp lệ.');
+      const points=Math.max(1,Math.floor(Number(payload.points)||1));
+      result=this.api.spendPotential(statId,points);
+    }
     else if(id==='diagnosticCommit'&&DIAGNOSTIC_MODE){
       const seconds=Math.max(LIVE_COMMIT_REAL_SECONDS,Math.min(3600,Number(payload.seconds)||LIVE_COMMIT_REAL_SECONDS));
       result=this.session.advanceRealtimeCultivationV140(seconds);
