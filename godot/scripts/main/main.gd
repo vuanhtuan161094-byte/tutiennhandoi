@@ -158,7 +158,7 @@ func _on_route_changed(route_id: StringName) -> void:
 	hud.visible = not character_active
 	overlay.visible = not character_active
 	if character_active:
-		character_screen.set_status_message("Đang tải Character canonical…")
+		character_screen.set_status_message("Đang tải nhân vật…")
 		backend_bridge.refresh_character()
 	elif route_id != &"home":
 		hud.set_status_message("%s sẽ được port ở vertical slice tiếp theo" % _route_label(route_id))
