@@ -1,4 +1,4 @@
-{
+﻿{
   "schema": "tutien.home-art.v2",
   "assets": {
     "background": {
@@ -176,22 +176,10 @@
       ]
     },
     "hero": {
-      "atlas": "res://art/approved/home/home_character.webp",
-      "rect": [
-        10,
-        10,
-        460,
-        545
-      ]
+      "path": "res://art/approved/home/home_hero_standing.webp"
     },
     "portrait": {
-      "atlas": "res://art/approved/home/home_character.webp",
-      "rect": [
-        480,
-        10,
-        220,
-        216
-      ]
+      "path": "res://art/approved/home/home_portrait_standing.webp"
     }
   }
 }
