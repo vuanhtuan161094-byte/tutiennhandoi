@@ -58,6 +58,8 @@ set "GODOT_BIN="
 set "NODE_BIN="
 set "BRIDGE_PATH=%PROJECT%\backend\bridge_server.mjs"
 set "BRIDGE_PID_FILE=%PROJECT%\.runtime\bridge.pid"
+set "BRIDGE_STDOUT=%PROJECT%\.runtime\bridge.stdout.log"
+set "BRIDGE_STDERR=%PROJECT%\.runtime\bridge.stderr.log"
 set "BRIDGE_OWNED=0"
 
 echo [GAME] Tim Godot 4.7.2...
@@ -121,7 +123,11 @@ echo [BRIDGE] Khoi dong canonical backend...
 set "NODE_BIN_ENV=%NODE_BIN%"
 set "BRIDGE_PATH_ENV=%BRIDGE_PATH%"
 set "BRIDGE_PID_ENV=%BRIDGE_PID_FILE%"
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$p=Start-Process -FilePath $env:NODE_BIN_ENV -ArgumentList @($env:BRIDGE_PATH_ENV,'4192') -WindowStyle Hidden -PassThru; Set-Content -LiteralPath $env:BRIDGE_PID_ENV -Value $p.Id"
+set "BRIDGE_STDOUT_ENV=%BRIDGE_STDOUT%"
+set "BRIDGE_STDERR_ENV=%BRIDGE_STDERR%"
+del /q "%BRIDGE_STDOUT%" >nul 2>&1
+del /q "%BRIDGE_STDERR%" >nul 2>&1
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$argLine='"' + $env:BRIDGE_PATH_ENV + '" 4192'; $p=Start-Process -FilePath $env:NODE_BIN_ENV -ArgumentList $argLine -WorkingDirectory (Split-Path -Parent $env:BRIDGE_PATH_ENV) -RedirectStandardOutput $env:BRIDGE_STDOUT_ENV -RedirectStandardError $env:BRIDGE_STDERR_ENV -WindowStyle Hidden -PassThru; Set-Content -LiteralPath $env:BRIDGE_PID_ENV -Value $p.Id"
 if errorlevel 1 goto :bridge_fail
 set "BRIDGE_OWNED=1"
 
@@ -157,6 +163,16 @@ echo.
 echo [ERROR] Backend bridge khong khoi dong duoc.
 echo Node: %NODE_BIN%
 echo Script: %BRIDGE_PATH%
+echo.
+if exist "%BRIDGE_STDERR%" (
+  echo -------- bridge stderr --------
+  type "%BRIDGE_STDERR%"
+)
+if exist "%BRIDGE_STDOUT%" (
+  echo -------- bridge stdout --------
+  type "%BRIDGE_STDOUT%"
+)
+echo -------------------------------
 if exist "%BRIDGE_PID_FILE%" (
   for /f "usebackq delims=" %%P in ("%BRIDGE_PID_FILE%") do taskkill /PID %%P /T /F >nul 2>&1
   del /q "%BRIDGE_PID_FILE%" >nul 2>&1
