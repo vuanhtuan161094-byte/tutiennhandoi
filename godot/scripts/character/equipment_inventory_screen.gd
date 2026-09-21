@@ -191,7 +191,7 @@ func _build() -> void:
 		["attire", "Y TRANG"],
 		["jewelry", "TRANG SỨC"],
 		["sets", "SET"],
-		["materials", "VẬT LIỆU"],
+		["materials", "VẬT PHẨM"],
 		["forge", "LUYỆN"],
 	]:
 		var tab_id := str(spec[0])
@@ -514,6 +514,43 @@ func _render_materials() -> void:
 			_add_title_pair(card, str(row.get("rankName", "Bậc")), "×%s" % _fmt_num(balance), CYAN)
 			_add_small_text(card, "Luyện 1 món: %s mảnh · Tinh luyện bậc sau theo tỷ lệ 3:1." % _fmt_num(float(row.get("craftCost", 50))), MUTED)
 
+	var resource_rows = _vm.get("inventory_resources", [])
+	var hidden_resource_ids := {
+		"resource.forging_essence": true,
+		"resource.enhancement_protection_talisman": true,
+		"resource.enhancement_transfer_gem": true,
+	}
+	var v128 = system.get("v128Resources", {})
+	if typeof(v128) == TYPE_DICTIONARY:
+		for legacy_key in ["daoFragments", "gemBlanks"]:
+			var legacy = v128.get(legacy_key, {})
+			if typeof(legacy) == TYPE_DICTIONARY:
+				var legacy_id := str(legacy.get("id", ""))
+				if legacy_id != "":
+					hidden_resource_ids[legacy_id] = true
+	var other_resources: Array = []
+	if typeof(resource_rows) == TYPE_ARRAY:
+		for resource_variant in resource_rows:
+			if typeof(resource_variant) != TYPE_DICTIONARY:
+				continue
+			var resource: Dictionary = resource_variant
+			if bool(hidden_resource_ids.get(str(resource.get("id", "")), false)):
+				continue
+			if float(resource.get("quantity", 0)) <= 0:
+				continue
+			other_resources.append(resource)
+	if not other_resources.is_empty():
+		_add_section_label("VẬT PHẨM KHÁC")
+		var resource_grid := GridContainer.new()
+		resource_grid.name = "InventoryResourceGrid"
+		resource_grid.columns = 2
+		resource_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		resource_grid.add_theme_constant_override("h_separation", 6)
+		resource_grid.add_theme_constant_override("v_separation", 6)
+		_body.add_child(resource_grid)
+		for resource_variant in other_resources:
+			_add_resource_card(resource_grid, resource_variant)
+
 	var set_rows = v142.get("setRows", [])
 	if typeof(set_rows) == TYPE_ARRAY:
 		var shown_sets := false
@@ -751,6 +788,34 @@ func _confirm_merge() -> void:
 	})
 	_merge_main_id = ""
 	_merge_fodder_ids.clear()
+
+
+func _add_resource_card(parent: GridContainer, resource: Dictionary) -> void:
+	var wrapper := PanelContainer.new()
+	wrapper.custom_minimum_size = Vector2(0, 58)
+	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var style := _box(Color(0.012, 0.040, 0.055, 0.90), 11, Color(0.35, 0.58, 0.64, 0.20), 1)
+	style.content_margin_left = 8
+	style.content_margin_right = 8
+	style.content_margin_top = 6
+	style.content_margin_bottom = 6
+	wrapper.add_theme_stylebox_override("panel", style)
+	parent.add_child(wrapper)
+
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 1)
+	wrapper.add_child(col)
+	var name_label := Label.new()
+	name_label.text = str(resource.get("name", resource.get("id", "Vật phẩm")))
+	name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	name_label.add_theme_font_size_override("font_size", 8)
+	name_label.add_theme_color_override("font_color", TEXT)
+	col.add_child(name_label)
+	var qty := Label.new()
+	qty.text = "×%s" % _fmt_num(float(resource.get("quantity", 0)))
+	qty.add_theme_font_size_override("font_size", 10)
+	qty.add_theme_color_override("font_color", GOLD_HI)
+	col.add_child(qty)
 
 
 func _select_item(item_id: String) -> void:
