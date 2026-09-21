@@ -97,6 +97,17 @@ class GodotCanonicalRuntime {
     const dashboard=this.game.dashboard?.()||{};
     const life=overview.life||canonicalOverview.life||{};
     const cultivation=patch.character||overview.cultivation||canonicalOverview.cultivation||{};
+    const cultivationCommitSeconds=Math.max(0.001,Number(LIVE_COMMIT_REAL_SECONDS)||15);
+    const cultivationPhaseSeconds=Math.max(0,Math.min(cultivationCommitSeconds,Number(this.carry)||0));
+    const cultivationCanonicalTuVi=Math.max(0,Number(cultivation.tuVi)||0);
+    const cultivationRequiredTuVi=Math.max(0,Number(cultivation.requiredTuVi)||0);
+    const cultivationBasePer15=Math.max(0,Number(cultivation.baseTuViPer15s)||0);
+    const cultivationFinalPer15=Math.max(0,Number(cultivation.finalTuViPer15s)||0);
+    const cultivationBasePerSecond=cultivationBasePer15/cultivationCommitSeconds;
+    const cultivationFinalPerSecond=cultivationFinalPer15/cultivationCommitSeconds;
+    const cultivationLiveTuVi=cultivationRequiredTuVi>0
+      ? Math.min(cultivationRequiredTuVi,cultivationCanonicalTuVi+cultivationFinalPerSecond*cultivationPhaseSeconds)
+      : cultivationCanonicalTuVi;
     const character=this.api.getCharacter();
     const root=this.api.getSpiritualRootV145();
     const stones=(patch.inventory||[]).find(x=>x.id==='resource.spirit_stone')?.quantity??0;
@@ -124,13 +135,16 @@ class GodotCanonicalRuntime {
         alive:life.alive!==false
       },
       cultivation:{
-        tuVi:Math.max(0,Number(cultivation.tuVi)||0),
-        requiredTuVi:Math.max(0,Number(cultivation.requiredTuVi)||0),
+        tuVi:cultivationCanonicalTuVi,
+        liveTuVi:cultivationLiveTuVi,
+        requiredTuVi:cultivationRequiredTuVi,
         progressPct:Math.max(0,Math.min(100,Number(cultivation.progressPct)||0)),
-        baseTuViPer15s:Math.max(0,Number(cultivation.baseTuViPer15s)||0),
-        finalTuViPer15s:Math.max(0,Number(cultivation.finalTuViPer15s)||0),
-        commitIntervalSeconds:LIVE_COMMIT_REAL_SECONDS,
-        commitPhaseSeconds:Math.max(0,Math.min(LIVE_COMMIT_REAL_SECONDS,Number(this.carry)||0)),
+        baseTuViPer15s:cultivationBasePer15,
+        finalTuViPer15s:cultivationFinalPer15,
+        baseTuViPerSecond:cultivationBasePerSecond,
+        finalTuViPerSecond:cultivationFinalPerSecond,
+        commitIntervalSeconds:cultivationCommitSeconds,
+        commitPhaseSeconds:cultivationPhaseSeconds,
         sources:Array.isArray(cultivation.sources)?cultivation.sources.map(x=>({
           id:String(x?.id||''),
           label:String(x?.label||x?.name||x?.id||''),
