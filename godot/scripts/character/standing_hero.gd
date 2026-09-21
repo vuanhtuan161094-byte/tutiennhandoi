@@ -1,9 +1,10 @@
 extends TextureRect
 
 const IDLE_ATLAS_PATH := "res://art/approved/character/standing_idle_atlas.webp"
+const IDLE_ATLAS_PACK_PATH := "res://art/approved/character/standing_idle/standing_idle_atlas.webp"
 const FALLBACK_PATH := "res://art/approved/home/home_hero_standing.webp"
-const FRAME_SIZE := Vector2(200.0, 300.0)
 const COLUMNS := 6
+const ROWS := 5
 const FRAME_COUNT := 30
 const FPS := 12.0
 
@@ -14,6 +15,7 @@ var source_pose := "standing"
 var current_frame := 0
 
 var _atlas_region: AtlasTexture
+var _frame_size := Vector2(200.0, 300.0)
 var _time := 0.0
 var _base_position := Vector2.ZERO
 var _base_scale := Vector2.ONE
@@ -32,17 +34,29 @@ func has_runtime_animation() -> bool:
 	return runtime_animation_ready
 
 func _load_visual() -> void:
-	if ResourceLoader.exists(IDLE_ATLAS_PATH):
-		var atlas_texture := ResourceLoader.load(IDLE_ATLAS_PATH) as Texture2D
+	var atlas_path := ""
+	for candidate in [IDLE_ATLAS_PATH, IDLE_ATLAS_PACK_PATH]:
+		if ResourceLoader.exists(candidate):
+			atlas_path = candidate
+			break
+
+	if atlas_path != "":
+		var atlas_texture := ResourceLoader.load(atlas_path) as Texture2D
 		if atlas_texture != null:
-			_atlas_region = AtlasTexture.new()
-			_atlas_region.atlas = atlas_texture
-			texture = _atlas_region
-			animation_source = "atlas_30f"
-			runtime_animation_ready = true
-			_set_frame(0)
-			set_process(true)
-			return
+			var atlas_size := atlas_texture.get_size()
+			if atlas_size.x >= COLUMNS and atlas_size.y >= ROWS:
+				_frame_size = Vector2(
+					floor(atlas_size.x / float(COLUMNS)),
+					floor(atlas_size.y / float(ROWS))
+				)
+				_atlas_region = AtlasTexture.new()
+				_atlas_region.atlas = atlas_texture
+				texture = _atlas_region
+				animation_source = "atlas_30f"
+				runtime_animation_ready = true
+				_set_frame(0)
+				set_process(true)
+				return
 
 	if ResourceLoader.exists(FALLBACK_PATH):
 		texture = ResourceLoader.load(FALLBACK_PATH) as Texture2D
@@ -85,10 +99,10 @@ func _set_frame(frame_index: int) -> void:
 	var column := current_frame % COLUMNS
 	var row := floori(float(current_frame) / float(COLUMNS))
 	_atlas_region.region = Rect2(
-		float(column) * FRAME_SIZE.x,
-		float(row) * FRAME_SIZE.y,
-		FRAME_SIZE.x,
-		FRAME_SIZE.y
+		float(column) * _frame_size.x,
+		float(row) * _frame_size.y,
+		_frame_size.x,
+		_frame_size.y
 	)
 
 func _standing_idle_material() -> ShaderMaterial:
