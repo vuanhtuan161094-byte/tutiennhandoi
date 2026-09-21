@@ -21,6 +21,9 @@ func test_build_maps_v165_v168_character_contract() -> void:
 	assert_int(int(vm["equipment"]["inventory"].size())).is_equal(2)
 	assert_str(str(vm["profile"]["origin_details"]["bloodline"]["name"])).is_equal("Thanh Mộc Huyết")
 	assert_str(str(vm["profile"]["known_skills"][0]["name"])).is_equal("Thanh Mộc Kiếm Khí")
+	assert_int(int(vm["potential"]["unspent"])).is_equal(123)
+	assert_int(int(vm["potential"]["allocations"]["power"])).is_equal(1)
+	assert_int(int(vm["potential"]["definitions"].size())).is_equal(3)
 
 func test_build_preserves_all_ten_canonical_slot_ids() -> void:
 	var vm := CHARACTER_VIEW_MODEL.build(_valid_character())
@@ -53,7 +56,15 @@ func _valid_character() -> Dictionary:
 			"root": "Phàm Căn",
 			"coreStats": {"power": 1371.0, "body": 860.0, "defense": 540.0},
 			"combatStats": {"attack": 1371.0, "defense": 540.0, "maxHp": 8600.0, "maxSpirit": 120.0},
-			"potential": {"unspent": 3, "allocations": {"power": 1, "body": 1, "defense": 1}},
+			"potential": {
+				"unspent": 123,
+				"allocations": {"power": 1, "body": 1, "defense": 1},
+				"definitions": [
+					{"id": "power", "name": "Công Lực", "perPoint": ["Công Lực +1"]},
+					{"id": "body", "name": "Thể Phách", "perPoint": ["Thể Phách +1", "Sinh Mệnh chuẩn +20"]},
+					{"id": "defense", "name": "Phòng Ngự", "perPoint": ["Phòng Ngự +3"]},
+				],
+			},
 			"activeTechniqueName": "Thanh Mộc Dẫn Khí Quyết",
 			"originDetails": {
 				"bloodline": {"name": "Thanh Mộc Huyết", "grade": "Phàm", "purity": 25},
