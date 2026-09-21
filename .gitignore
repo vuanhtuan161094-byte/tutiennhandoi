@@ -43,3 +43,6 @@ artifacts/godot-tools/
 payload/
 HOME_PRODUCTION_PACK_GODOT_RESUME_20260921/
 KHOI_PHUC_LOCAL_1_LAN.cmd
+
+# Godot local bridge saves / QA fixture state
+godot/.runtime/
