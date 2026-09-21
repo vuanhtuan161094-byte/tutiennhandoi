@@ -37,6 +37,8 @@ static func build(payload: Dictionary) -> Dictionary:
 	var equipment_system: Dictionary = payload.get("equipmentSystem", {})
 	var equipment_variant = payload.get("equipment", [])
 	var equipment: Array = equipment_variant if typeof(equipment_variant) == TYPE_ARRAY else []
+	var inventory_variant = payload.get("equipmentInventory", [])
+	var inventory: Array = inventory_variant if typeof(inventory_variant) == TYPE_ARRAY else []
 	var core: Dictionary = character.get("coreStats", {})
 	var combat: Dictionary = character.get("combatStats", {})
 	var potential: Dictionary = character.get("potential", {})
@@ -73,6 +75,11 @@ static func build(payload: Dictionary) -> Dictionary:
 			"enhancement": clampi(int(item.get("enhancementLevel", 0)), 0, 15),
 			"set_id": str(item.get("setId", "")),
 			"rank_name": str(item.get("equipmentRankName", item.get("grade", ""))),
+			"item_level": int(item.get("itemLevel", 0)),
+			"set_name": str(item.get("setName", "")),
+			"source": str(item.get("source", "")),
+			"stats": _dict_copy(item.get("effectiveStats", item.get("stats", {}))),
+			"affixes": _array_copy(item.get("affixes", [])),
 		})
 
 	var root_name := str(root_grade.get("name", character.get("root", "Phàm Căn")))
@@ -100,9 +107,25 @@ static func build(payload: Dictionary) -> Dictionary:
 			"defense": float(core.get("defense", combat.get("defense", 0))),
 			"combat": combat.duplicate(true),
 		},
-		"potential": {"unspent": maxi(0, int(potential.get("unspent", 0)))},
+		"profile": {
+			"birth": _dict_copy(character.get("birth", {})),
+			"root": _dict_copy(root),
+			"root_tags": _array_copy(character.get("rootTags", [])),
+			"origin_details": _dict_copy(character.get("originDetails", {})),
+			"origin_progression": _dict_copy(character.get("originProgression", {})),
+			"bloodlines": _array_copy(character.get("bloodlines", [])),
+			"physiques": _array_copy(character.get("physiques", [])),
+			"known_skills": _array_copy(character.get("knownSkills", [])),
+		},
+		"potential": {
+			"unspent": maxi(0, int(potential.get("unspent", 0))),
+			"allocations": _dict_copy(potential.get("allocations", {})),
+			"definitions": _array_copy(potential.get("definitions", [])),
+		},
 		"equipment": {
 			"slots": slots,
+			"inventory": _array_copy(inventory),
+			"system": equipment_system.duplicate(true),
 			"equipped_count": slots.filter(func(slot): return bool(slot.get("filled", false))).size(),
 			"canonical_slot_count": 10,
 			"max_enhancement": 15,
@@ -142,4 +165,12 @@ static func _validate(payload: Dictionary) -> String:
 			return "Thiếu DTO: %s" % key
 	if typeof(payload.get("equipment", null)) != TYPE_ARRAY:
 		return "Thiếu DTO: equipment"
+	if typeof(payload.get("equipmentInventory", null)) != TYPE_ARRAY:
+		return "Thiếu DTO: equipmentInventory"
 	return ""
+
+static func _dict_copy(value) -> Dictionary:
+	return value.duplicate(true) if typeof(value) == TYPE_DICTIONARY else {}
+
+static func _array_copy(value) -> Array:
+	return value.duplicate(true) if typeof(value) == TYPE_ARRAY else []
