@@ -214,7 +214,10 @@ def _chroma_key(
     feather = max(0.001, feather)
     despill = max(0.0, min(1.0, despill))
 
-    pixels = list(rgba.getdata())
+    if hasattr(rgba, "get_flattened_data"):
+        pixels = list(rgba.get_flattened_data())
+    else:
+        pixels = list(rgba.getdata())
     out: list[tuple[int, int, int, int]] = []
     for r, g, b, original_alpha in pixels:
         distance = math.sqrt((r - kr) ** 2 + (g - kg) ** 2 + (b - kb) ** 2)
