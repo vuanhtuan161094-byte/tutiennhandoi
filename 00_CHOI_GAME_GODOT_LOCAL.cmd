@@ -40,14 +40,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$ErrorActionPreference='Stop';" ^
   "$root=(git rev-parse --show-toplevel).Trim();" ^
   "$self=$env:TUTIEN_SYNC_SELF;" ^
-  "$items=@(git -c core.quotepath=false ls-files --others --exclude-standard);" ^
+  "$tracked=New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::Ordinal);" ^
+  "@(git -c core.quotepath=false ls-tree -r --name-only origin/main) | ForEach-Object { [void]$tracked.Add([string]$_) };" ^
+  "$items=@(git -c core.quotepath=false ls-files --others --exclude-standard) | Where-Object { $_ -and $_ -ne $self -and $_ -notlike '.local-sync-backup/*' };" ^
   "$stamp=Get-Date -Format 'yyyyMMdd-HHmmss';" ^
   "$backup=Join-Path $root ('.local-sync-backup\'+$stamp);" ^
   "$moved=0;" ^
   "foreach($p in $items){" ^
-  " if([string]::IsNullOrWhiteSpace($p) -or $p -eq $self){continue};" ^
-  " git cat-file -e ('origin/main:'+$p) 2>$null;" ^
-  " if($LASTEXITCODE -eq 0){" ^
+  " if($tracked.Contains([string]$p)){" ^
   "   $src=Join-Path $root $p;" ^
   "   $dst=Join-Path $backup $p;" ^
   "   [void][System.IO.Directory]::CreateDirectory((Split-Path $dst -Parent));" ^
