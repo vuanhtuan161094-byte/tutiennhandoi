@@ -548,14 +548,6 @@ func _add_note(value: String) -> void:
 	var card := _card()
 	_add_body_text(card, value, MUTED, 9)
 
-func _emit_equip(item_id: String) -> void:
-	equip_requested.emit(item_id)
-
-func _emit_enhance(item_id: String, use_protection: bool) -> void:
-	if item_id.is_empty():
-		return
-	enhance_requested.emit(item_id, use_protection)
-
 func _emit_profile_action(action_id: String, payload: Dictionary) -> void:
 	profile_action_requested.emit(action_id, payload)
 
