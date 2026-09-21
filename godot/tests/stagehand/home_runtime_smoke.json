@@ -114,6 +114,114 @@
       }
     },
     {
+      "name": "Close current-life sheet",
+      "action": "click",
+      "with": {
+        "selector": "name:HomeSheetClose"
+      }
+    },
+    {
+      "name": "Unported Phap Bao nav is disabled",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:Nav_artifacts",
+        "property": "disabled",
+        "operator": "equals",
+        "expected": true
+      }
+    },
+    {
+      "name": "Unported Linh Thu nav is disabled",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:Nav_pets",
+        "property": "disabled",
+        "operator": "equals",
+        "expected": true
+      }
+    },
+    {
+      "name": "Unported World nav is disabled",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:Nav_world",
+        "property": "disabled",
+        "operator": "equals",
+        "expected": true
+      }
+    },
+    {
+      "name": "Unported Faction nav is disabled",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:Nav_faction",
+        "property": "disabled",
+        "operator": "equals",
+        "expected": true
+      }
+    },
+    {
+      "name": "Unported Combat quick action is disabled",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CombatAction",
+        "property": "disabled",
+        "operator": "equals",
+        "expected": true
+      }
+    },
+    {
+      "name": "Home Character quick action opens Character",
+      "action": "click",
+      "with": {
+        "selector": "name:CharacterAction"
+      }
+    },
+    {
+      "name": "Character screen opens from Home action",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:CharacterScreen",
+        "state": "visible",
+        "timeout_ms": 15000
+      }
+    },
+    {
+      "name": "Return Home using dock",
+      "action": "click",
+      "with": {
+        "selector": "name:Nav_home"
+      }
+    },
+    {
+      "name": "Home stage returns",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:HomeStage",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Linh Can shortcut opens Character profile",
+      "action": "click",
+      "with": {
+        "selector": "name:RootAction"
+      }
+    },
+    {
+      "name": "Profile sheet appears from Linh Can shortcut",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:CharacterDetailTitle",
+        "property": "text",
+        "operator": "contains",
+        "expected_value": "Hồ Sơ",
+        "timeout_ms": 15000,
+        "poll_interval_ms": 200
+      }
+    },
+    {
       "name": "Scene tree remains inspectable",
       "action": "tree",
       "with": {
