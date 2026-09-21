@@ -196,11 +196,16 @@ func _on_action_completed(action_id: String, result: Dictionary) -> void:
 		backend_bridge.refresh_character()
 	elif action_id == "enhanceEquipment":
 		var success := bool(result.get("success", false))
-		var after_level := int(result.get("afterLevel", result.get("level", 0)))
-		character_screen.set_status_message(
-			"Cường hóa thành công · +%d" % after_level if success
-			else "Cường hóa chưa thành công"
-		)
+		var before_level := int(result.get("beforeLevel", 0))
+		var after_level := int(result.get("afterLevel", before_level))
+		if success:
+			character_screen.set_status_message("Cường hóa thành công · +%d" % after_level)
+		elif bool(result.get("downgraded", false)):
+			character_screen.set_status_message("Cường hóa thất bại · +%d → +%d" % [before_level, after_level])
+		elif bool(result.get("protectionUsed", false)):
+			character_screen.set_status_message("Cường hóa thất bại · Bùa giữ +%d" % before_level)
+		else:
+			character_screen.set_status_message("Cường hóa thất bại · giữ +%d" % before_level)
 		backend_bridge.refresh_character()
 	elif action_id in ["nourishBloodline", "advanceBloodline", "advancePhysique"]:
 		character_screen.set_status_message("Hồ sơ tu hành đã cập nhật")
