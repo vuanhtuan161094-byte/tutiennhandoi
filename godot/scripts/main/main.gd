@@ -75,6 +75,7 @@ func _connect_ui() -> void:
 	character_screen.equipment_action_requested.connect(_on_character_equipment_action_requested)
 	character_screen.equipment_detail_requested.connect(_on_character_equipment_detail_requested)
 	character_screen.equipment_enhance_requested.connect(_on_character_equipment_enhance_requested)
+	character_screen.equipment_system_action_requested.connect(_on_character_equipment_system_action_requested)
 	character_screen.profile_action_requested.connect(_on_character_profile_action_requested)
 	character_screen.potential_action_requested.connect(_on_character_potential_action_requested)
 	AppState.route_changed.connect(_on_route_changed)
@@ -208,6 +209,26 @@ func _on_action_completed(action_id: String, result: Dictionary) -> void:
 		else:
 			character_screen.set_status_message("Cường hóa thất bại · giữ +%d" % before_level)
 		backend_bridge.refresh_character()
+	elif action_id in [
+		"transferEquipmentEnhancement",
+		"craftEquipmentV142",
+		"refineEquipmentFragmentsV142",
+		"mergeEquipmentV142",
+		"engraveEquipmentSetV142",
+		"reforgeEquipmentAffixV115",
+		"refineEquipmentAffixV115",
+	]:
+		var equipment_messages := {
+			"transferEquipmentEnhancement": "Đã chuyển Cường Hóa",
+			"craftEquipmentV142": "Đã luyện trang bị",
+			"refineEquipmentFragmentsV142": "Đã tinh luyện Mảnh Trang Bị",
+			"mergeEquipmentV142": "Đã hợp thành trang bị",
+			"engraveEquipmentSetV142": "Đã Khắc Bộ",
+			"reforgeEquipmentAffixV115": "Đã Tái Luyện Affix",
+			"refineEquipmentAffixV115": "Đã Tinh Luyện Affix",
+		}
+		character_screen.set_status_message(str(equipment_messages.get(action_id, "Trang bị đã cập nhật")))
+		backend_bridge.refresh_character()
 	elif action_id in ["nourishBloodline", "advanceBloodline", "advancePhysique"]:
 		character_screen.set_status_message("Hồ sơ tu hành đã cập nhật")
 		backend_bridge.refresh_character()
@@ -301,6 +322,11 @@ func _on_character_equipment_enhance_requested(item_id: String, use_protection: 
 		"itemId": item_id,
 		"useProtection": use_protection,
 	})
+
+func _on_character_equipment_system_action_requested(action_id: String, payload: Dictionary) -> void:
+	if action_id.is_empty():
+		return
+	backend_bridge.perform_action(action_id, payload)
 
 func _on_character_profile_action_requested(action_id: String, payload: Dictionary) -> void:
 	if action_id.is_empty():
