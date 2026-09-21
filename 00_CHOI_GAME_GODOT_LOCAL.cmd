@@ -73,7 +73,7 @@ echo       !GODOT_VERSION!
 
 echo [3/3] Mo game...
 echo       !GODOT_BIN!
-start "Tu Tien Nhan Doi - Godot" "!GODOT_BIN!" --path "%PROJECT%" --editor
+start "Tu Tien Nhan Doi - Godot" "!GODOT_BIN!" --path "%PROJECT%"
 if errorlevel 1 goto :launchfail
 
 echo.
@@ -82,7 +82,7 @@ echo   DA DONG BO + MO GODOT
 echo ================================================
 echo.
 echo Tu gio de choi/test local, chi can dung file nay.
-echo Trong Godot: bam F6/F5 de chay game.
+echo Game se mo truc tiep. Khong can bam F5.
 timeout /t 2 /nobreak >nul
 exit /b 0
 
