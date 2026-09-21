@@ -12,16 +12,6 @@ const MUTED := Color("9cabb5")
 const PANEL := Color(0.008, 0.025, 0.040, 0.97)
 const CARD := Color(0.014, 0.045, 0.063, 0.92)
 
-const STAT_LABELS := {
-	"attack": "Công Lực", "maxHp": "Khí Huyết", "defense": "Phòng Ngự", "maxSpirit": "Chân Nguyên",
-	"critChancePct": "Bạo Kích", "heartChancePct": "Hội Tâm", "critDamagePct": "Bạo Thương",
-	"armorPenPct": "Xuyên Phòng", "dodgeChancePct": "Né Tránh", "mobility": "Thân Pháp",
-	"accuracy": "Chính Xác", "controlPower": "Khống Chế", "resolve": "Định Lực",
-	"controlDurationReductionPct": "Kháng Khống Chế", "damageReductionPct": "Giảm Thương",
-	"spiritEfficiencyPct": "Hiệu Suất Chân Nguyên", "actionSpeed": "Tốc Độ Hành Động",
-	"breakEffectPct": "Phá Thế",
-}
-
 const ELEMENT_LABELS := {
 	"Metal": "Kim", "Wood": "Mộc", "Water": "Thủy", "Fire": "Hỏa", "Earth": "Thổ",
 	"metal": "Kim", "wood": "Mộc", "water": "Thủy", "fire": "Hỏa", "earth": "Thổ",
@@ -546,37 +536,6 @@ func _add_pair(card: VBoxContainer, key: String, value: String) -> void:
 	v.add_theme_color_override("font_color", TEXT)
 	row.add_child(v)
 
-func _add_stats_line(card: VBoxContainer, stats_variant) -> void:
-	if typeof(stats_variant) != TYPE_DICTIONARY:
-		return
-	var stats: Dictionary = stats_variant
-	var parts: Array[String] = []
-	for key in ["attack", "maxHp", "defense", "maxSpirit", "accuracy", "resolve"]:
-		if stats.has(key) and absf(float(stats.get(key, 0))) > 0.0001:
-			parts.append("%s +%s" % [str(STAT_LABELS.get(key, key)), _fmt_num(float(stats.get(key, 0)))])
-		if parts.size() >= 3:
-			break
-	if not parts.is_empty():
-		_add_body_text(card, " · ".join(parts), CYAN, 8)
-
-func _add_affix_lines(card: VBoxContainer, affixes_variant) -> void:
-	if typeof(affixes_variant) != TYPE_ARRAY:
-		return
-	var affixes: Array = affixes_variant
-	var shown := 0
-	for affix_variant in affixes:
-		if shown >= 3:
-			break
-		var line := ""
-		if typeof(affix_variant) == TYPE_DICTIONARY:
-			var affix: Dictionary = affix_variant
-			line = str(affix.get("summary", affix.get("description", affix.get("name", affix.get("id", "")))))
-		else:
-			line = str(affix_variant)
-		if line != "":
-			_add_body_text(card, "◆ " + line, Color(0.72, 0.88, 0.91, 0.92), 8)
-			shown += 1
-
 func _add_section_label(value: String) -> void:
 	var label := Label.new()
 	label.text = value
@@ -649,9 +608,6 @@ func _fmt_num(value: float) -> String:
 		out = raw.substr(i, 1) + out
 		count += 1
 	return out
-
-func _safe_node_name(value: String) -> String:
-	return value.replace(".", "_").replace("-", "_").replace("/", "_")
 
 func _anchor(control: Control, left: float, top: float, right: float, bottom: float) -> void:
 	control.anchor_left = 0.0
