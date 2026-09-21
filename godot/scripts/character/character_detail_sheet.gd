@@ -2,6 +2,7 @@ extends Control
 
 signal close_requested
 signal equip_requested(item_id: String)
+signal enhance_requested(item_id: String, use_protection: bool)
 signal profile_action_requested(action_id: String, payload: Dictionary)
 signal potential_action_requested(stat_id: String, points: int)
 
