@@ -12,13 +12,13 @@ Do **not** reconstruct gameplay rules from old chat history. Current `main` is s
 
 ## 2. CI / QA operating mode — IMPORTANT
 
-GitHub-hosted Actions quota reached 2,000 / 2,000 minutes for the current billing cycle and resets on **2026-10-01**.
+GitHub Actions push automation is disabled in the repository because account Actions artifact/storage capacity is currently constrained.
 
-Until then:
+Current rule:
 
-- Do **not** intentionally trigger GitHub-hosted Actions.
-- Repository commits for this work should use `[skip actions] [skip ci]` while hosted Actions are blocked.
+- Do **not** intentionally turn push-triggered Actions back on.
 - Use the repository Local CI instead: `TEST_GAME_LOCAL.cmd`.
+- Use manual Game CI only when the user explicitly wants it and storage is available.
 - Local CI modes include Fast, Browser, Visual, Full, and Full Clean.
 - The user has already run **Mode 5 — FULL CLEAN — PASS** on the clean current-main checkout after Local CI was introduced.
 - Runtime/browser/visual proof should therefore be produced locally during this period.

@@ -1,84 +1,81 @@
 # PROJECT STRUCTURE — CURRENT MAIN
 
-This document describes the live `main` tree only. Git history is the archive for removed snapshots, migration notes and obsolete patch machinery.
+This document describes the live repository. Git history is the archive for removed snapshots, migration notes and obsolete patch machinery.
 
 ## Root — operational only
 
-Keep only launch/runtime entrypoints and current routing documents in root.
+Current launch/update/test entrypoints:
 
-- `CHOI_WEB_GAME.cmd` — Windows launcher.
-- `CHOI_UI_DEV.cmd` — UI development launcher.
-- `START_WEBGAME_WINDOWS.bat` — Windows compatibility launcher.
-- `START_WEBGAME_LAN.sh` — LAN launcher.
-- `START_GAME_ANDROID.sh`, `STOP_GAME_ANDROID.sh` — Android/Termux launchers.
-- `index.html`, `app.js`, `standalone-entry.js`, `standalone-runtime.js` — web/standalone entry layer.
-- `styles.css`, `combat-v2.css` — main CSS bundles.
-- `manifest.webmanifest`, `pwa-register.js`, `pwa-sw.js` — PWA layer.
-- `CURRENT_CHECKPOINT.md` — single current project checkpoint.
-- `CHAT_MOI_START_HERE.md` — minimal new-chat router.
+- `00_CHOI_GAME_GODOT_LOCAL.cmd` — safe sync + open Godot.
+- `CAP_NHAT_GAME_LOCAL.cmd` — update local checkout from `origin/main` only.
+- `VERIFY_GODOT_LOCAL.cmd` — mandatory Godot local gate.
+- `SETUP_GODOT_TOOLING.cmd` — optional tooling bootstrap.
+- `APPROVE_GODOT_HOME_BASELINE.cmd` — explicit visual-baseline promotion only.
+- `TEST_GAME_LOCAL.cmd` — web/runtime Local CI.
+- `CHOI_WEB_GAME.cmd`, `CHOI_UI_DEV.cmd` and platform shell launchers — retained while the web implementation remains canonical authority/reference for unported surfaces.
 
-Do not keep historical closure reports, duplicate checkpoints, generated source manifests or backup copies of application source in root.
+Web entry/runtime remains in `index.html`, `app.js`, `standalone-entry.js`, `standalone-runtime.js`, root CSS, `modules/`, `dist/`, `assets/`, `vendor/` and `web/`.
 
-## Runtime source
+Do not keep duplicate checkpoints, one-off layout studios, historical reports, backup copies or retired migration launchers in root.
+
+## Godot
+
+- `godot/project.godot` — Godot 4.7.2 project.
+- `godot/backend/` — localhost bridge to canonical JS gameplay authority.
+- `godot/scripts/models/` — DTO/ViewModel boundary.
+- `godot/scripts/home/` and `godot/scripts/character/` — current presentation slices.
+- `godot/art/approved/` — production-bound approved art only.
+- `godot/tests/` — GdUnit4, Stagehand and visual harness contracts.
+
+Godot presentation must not duplicate locked JS gameplay/save authority unless an explicit parity-proven runtime-port slice is opened.
+
+## Runtime authority
 
 ### `dist/core/`
-Gameplay engines and runtime logic. Version suffixes on existing files are legacy naming, not proof of authority. Determine current authority from live imports/consumers plus regression tests.
+Gameplay engines and runtime logic. Version suffixes are historical naming; authority is determined by live imports, checkpoint contracts and regression tests.
 
 ### `dist/content/`
 Authored gameplay content and registries.
 
 ### `modules/`
-Frontend presentation/runtime modules.
-
-### `assets/`
-Game artwork and runtime assets.
-
-### `vendor/`
-Vendored third-party runtime dependencies.
-
-### `web/`
-Static/LAN server delivery.
+Web presentation/runtime modules. Keep while still imported by the live web client or protected by frontend contracts.
 
 ## QA
 
-### `qa/tests/`
-Production contract, balance, integration and regression tests. Historical version numbers in test filenames are acceptable when the tests still protect a live contract.
-
-### `qa/runners/`
-Fast and closure runners used by CI.
-
-### `qa/simulations/`
-Simulation code retained only when it still supports a live system or active balance decision.
-
-### `qa/tools/`
-Only reusable current diagnostics belong here. One-off migration/patch scripts must be deleted after their migration is complete.
+- `qa/tests/` — live regression/authority contracts.
+- `qa/runners/` — Fast/Canonical runners.
+- `qa/local/` — current local CI and proof validation.
+- `qa/playtest/` — deterministic browser journeys.
+- `qa/visual/` — on-demand deep visual diagnostics.
+- `qa/simulations/` — reusable simulation code only; generated historical reports do not belong in source control.
+- `qa/tools/` — reusable diagnostics only.
 
 ## Documentation
 
-- `docs/DEVELOPMENT_PROTOCOL.md` — single-main development rules.
-- `docs/PROJECT_STRUCTURE.md` — this live structure map.
-- `docs/systems/INDEX.md` — minimal subsystem routing.
-- `docs/versions/V161.md` — current active version status.
-- `docs/guides/` — current install/use guides.
-- `docs/ui/` — current UI reference material.
-- `docs/simulations/` — retained simulation outputs only when still relevant.
-- `docs/CULTIVATION_V140_BALANCE.csv` — retained while live cultivation code/tests still consume or protect this balance contract.
+Keep current contracts and closure evidence only:
+
+- `CURRENT_CHECKPOINT.md`
+- `AGENTS.md`
+- `docs/DEVELOPMENT_PROTOCOL.md`
+- `docs/systems/INDEX.md`
+- `docs/versions/`
+- active `docs/ui/` contracts/source-of-truth/closure notes
+- current guides and balance contracts
+
+Git history replaces obsolete implementation reports and migration snapshots.
 
 ## CI
 
-The active workflow is `.github/workflows/qa.yml`.
-
-- normal executable push to `main` -> Fast QA;
-- docs-only push -> no QA run;
-- commit message containing `[closure]` -> Fast QA then Canonical QA;
-- manual dispatch -> Fast QA then Canonical QA.
+- `.github/workflows/ci.yml` — manual Game CI only.
+- `.github/workflows/runner-diagnostics.yml` — manual runner diagnostics.
+- Normal development uses Local CI to avoid automatic Actions artifact/storage growth.
 
 ## Hygiene rules
 
 1. `main` is the only normal working branch.
 2. Git history replaces backup/legacy source snapshots.
-3. Before creating a new source file, check whether the live authority can be safely extended.
-4. Before deleting or consolidating a runtime file, prove references/consumers and keep regression coverage green.
-5. Do not rename version-suffixed live authorities solely for aesthetics; rename only as a tested structural migration.
-6. Removed gameplay must be purged through state -> engine -> API -> frontend -> content -> QA, not merely hidden from UI.
-7. New tasks should read only the current checkpoint, active version spec, optional system router and exact source/tests needed.
+3. Before deleting runtime code, prove consumers and preserve regression coverage.
+4. Do not delete compatibility state merely because its player-facing lane is retired.
+5. Remove one-off tools after their job is replaced by a maintained integrated tool.
+6. Production art must have one clear runtime source; obsolete duplicate/fallback binaries should not accumulate.
+7. New tasks read the current checkpoint plus only the exact active contracts/source needed.

@@ -8,7 +8,7 @@ Status: CANONICAL EXECUTION WORKFLOW
 A UI slice is complete only when:
 
 1. the candidate runs from current `main`;
-2. Game CI is green on the exact candidate SHA;
+2. the currently enabled verification gate is green for the exact/clean candidate;
 3. runtime screenshots come from the real game;
 4. the user visually reviews and explicitly approves the result;
 5. `[closure]` Canonical QA passes;
@@ -84,13 +84,14 @@ Status becomes `CANDIDATE`.
 
 ### Gate 5 — Automated proof
 
-Run targeted tests only when useful, then rely on unified **Game CI**:
-- Backend Fast;
-- Frontend Fast;
-- real-browser Runtime Smoke;
-- exact-SHA runtime screenshots/report artifact.
+Run targeted tests only when useful, then use the active verification lane.
 
-The Runtime Smoke artifact is the normal visual proof. It already checks the real production URL, missing images, horizontal overflow, runtime/browser errors and representative interaction journeys.
+Current default:
+- `TEST_GAME_LOCAL.cmd` Mode 5 — FULL CLEAN for web/runtime candidates;
+- `VERIFY_GODOT_LOCAL.cmd` for Godot candidates;
+- manual Game CI only when explicitly desired and Actions storage is available.
+
+The real-runtime screenshot/report produced by the active lane is the visual proof. It must come from the actual production candidate rather than a reconstructed mock.
 
 Deep `qa/visual/` showcase capture is **on demand only**. Do not automatically capture all skills, all shake phases, all viewports, or every transient state after each UI commit.
 
@@ -108,9 +109,9 @@ If rejected, patch and repeat Gate 5/6. Only explicit approval moves the slice t
 ### Gate 7 — Closure
 
 Only after `APPROVED`:
-1. create `[closure]` commit;
-2. Game CI Fast + Runtime Smoke run normally;
-3. Canonical Closure QA runs automatically for the closure commit;
+1. freeze the approved candidate;
+2. rerun the clean local verification lane;
+3. run Canonical backend/frontend closure runners locally, or manual `mode=closure` Game CI when explicitly selected;
 4. confirm performance hard locks remain unchanged;
 5. update `CURRENT_CHECKPOINT.md`;
 6. mark the slice `LOCKED`.
