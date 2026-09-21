@@ -4,7 +4,7 @@ Godot 4.7.2 is the active presentation migration target.
 
 ## Run
 
-1. Update the repository with `CAP_NHAT_GAME_LOCAL.cmd` or use `00_CHOI_GAME_GODOT_LOCAL.cmd`.
+1. Update the repository with `CAP_NHAT_GAME_LOCAL.cmd` or use `CHOI_GAME.cmd`.
 2. Open `godot/project.godot` in Godot 4.7.2.
 3. Run the project at the canonical portrait viewport 390×844.
 
@@ -33,7 +33,7 @@ See `godot/docs/BACKEND_BRIDGE.md`.
 
 Run:
 
-`VERIFY_GODOT_LOCAL.cmd`
+`KIEM_TRA_GAME.cmd`
 
 Required order is import → parse → GdUnit4 → bridge smoke → bounded runtime smoke → Stagehand structural smoke → visual capture/diff.
 
