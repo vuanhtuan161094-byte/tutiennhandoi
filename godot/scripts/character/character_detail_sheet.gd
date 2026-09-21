@@ -180,6 +180,26 @@ func _render_equipment() -> void:
 	_add_pair(summary, "Khí Luyện Tinh Hoa", _fmt_num(float(resources.get("forgingEssence", 0))))
 	_add_pair(summary, "Bùa Chống Tụt", _fmt_num(float(resources.get("protectionTalismans", 0))))
 
+	var sets_variant = system.get("sets", [])
+	if typeof(sets_variant) == TYPE_ARRAY:
+		var active_sets: Array = sets_variant.filter(func(entry): return typeof(entry) == TYPE_DICTIONARY and int(entry.get("equippedPieces", 0)) > 0)
+		if not active_sets.is_empty():
+			_add_section_label("BỘ ĐANG KÍCH HOẠT")
+			for set_variant in active_sets:
+				var set_data: Dictionary = set_variant
+				var set_card := _card()
+				_add_card_title(set_card, str(set_data.get("setName", "Bộ Trang Bị")), "%d/%d" % [
+					int(set_data.get("equippedPieces", 0)),
+					int(set_data.get("maxPieces", 0)),
+				])
+				var thresholds = set_data.get("thresholds", [])
+				if typeof(thresholds) == TYPE_ARRAY:
+					for threshold_variant in thresholds:
+						if typeof(threshold_variant) == TYPE_DICTIONARY:
+							var threshold: Dictionary = threshold_variant
+							var state := "Đã kích" if bool(threshold.get("active", false)) else "Chưa kích"
+							_add_pair(set_card, "%d món · %s" % [int(threshold.get("pieces", 0)), str(threshold.get("name", "Hiệu ứng"))], state)
+
 	_add_section_label("10 VỊ TRÍ TRANG BỊ")
 	for slot_variant in slots:
 		if typeof(slot_variant) != TYPE_DICTIONARY:
