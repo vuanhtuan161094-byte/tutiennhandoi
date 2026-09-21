@@ -102,6 +102,7 @@ func _build_shell() -> void:
 	header.add_child(_title)
 
 	_subtitle = Label.new()
+	_subtitle.name = "CharacterDetailSubtitle"
 	_subtitle.add_theme_font_size_override("font_size", 9)
 	_subtitle.add_theme_color_override("font_color", MUTED)
 	_anchor(_subtitle, 8, 29, 300, 50)
