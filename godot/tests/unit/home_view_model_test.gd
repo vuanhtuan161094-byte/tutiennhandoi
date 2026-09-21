@@ -11,6 +11,8 @@ func test_build_maps_canonical_home_into_presentation_model() -> void:
 	assert_str(str(vm["identity"]["realm"])).is_equal("Luyện Khí tầng một")
 	assert_int(int(vm["identity"]["life_number"])).is_equal(2)
 	assert_float(float(vm["progression"]["tu_vi"])).is_equal(705.0)
+	assert_float(float(vm["progression"]["live_tu_vi"])).is_equal(705.8)
+	assert_float(float(vm["progression"]["rate_per_second"])).is_equal(0.8)
 	assert_float(float(vm["progression"]["required_tu_vi"])).is_equal(1371.0)
 	assert_float(float(vm["progression"]["remaining_life_years"])).is_equal(82.0)
 	assert_bool(bool(vm["progression"]["retreat"]["enabled"])).is_true()
@@ -88,7 +90,12 @@ func _valid_home() -> Dictionary:
 			"requiredTuVi": 1371.0,
 			"progressPct": 51.42,
 			"baseTuViPer15s": 10.0,
-			"finalTuViPer15s": 13.0,
+			"finalTuViPer15s": 12.0,
+			"baseTuViPerSecond": 0.6666667,
+			"finalTuViPerSecond": 0.8,
+			"liveTuVi": 705.8,
+			"commitIntervalSeconds": 15.0,
+			"commitPhaseSeconds": 1.0,
 			"sources": [
 				{"id": "base", "label": "Cơ sở", "kind": "flat", "value": 10.0},
 				{"id": "root", "label": "Linh Căn", "kind": "flat", "value": 3.0},
