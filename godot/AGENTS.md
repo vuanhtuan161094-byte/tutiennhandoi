@@ -87,11 +87,11 @@ For UI-visible work:
 
 Pinned toolchain:
 - Stagehand `v0.4.1`, addon vendored under `godot/addons/stagehand`;
-- GdUnit4 `v6.2.1`, installed locally by `SETUP_GODOT_TOOLING.cmd`;
+- GdUnit4 `v6.2.1`, installed locally by `powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot/Setup-GodotTooling.ps1`;
 - exact versions/checksums live in `tools/godot/TOOLING_LOCK.json`.
 
 For any executable Godot change, use:
-- `VERIFY_GODOT_LOCAL.cmd` as the normal local gate;
+- `KIEM_TRA_GAME.cmd` as the normal local gate;
 - `/skills/godot-stagehand/SKILL.md` for Stagehand scenario / selector / screenshot work.
 
 The gate performs:
@@ -105,7 +105,7 @@ The gate performs:
 
 Visual rule:
 - before a user-approved baseline exists, verification captures a deterministic 390x844 candidate only;
-- only explicit user approval may promote that candidate with `APPROVE_GODOT_HOME_BASELINE.cmd`;
+- only explicit user approval may promote that candidate with `powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot/Approve-HomeBaseline.ps1 -ConfirmApproved`;
 - once a committed baseline exists, verification runs Stagehand screenshot diff automatically;
 - never refresh a golden baseline merely to make a failing diff green.
 
