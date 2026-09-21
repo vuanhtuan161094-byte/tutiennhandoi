@@ -23,6 +23,7 @@ static func build(home: Dictionary) -> Dictionary:
 	var home_context: Dictionary = home.get("homeContext", {})
 
 	var tu_vi := maxf(0.0, float(cultivation.get("tuVi", 0)))
+	var live_tu_vi := maxf(tu_vi, float(cultivation.get("liveTuVi", tu_vi)))
 	var required := maxf(0.0, float(cultivation.get("requiredTuVi", 0)))
 	var progress_pct := clampf(float(cultivation.get("progressPct", 0)), 0.0, 100.0)
 	if required > 0.0 and progress_pct <= 0.0 and tu_vi > 0.0:
@@ -49,10 +50,13 @@ static func build(home: Dictionary) -> Dictionary:
 		},
 		"progression": {
 			"tu_vi": tu_vi,
+			"live_tu_vi": minf(required, live_tu_vi) if required > 0.0 else live_tu_vi,
 			"required_tu_vi": required,
 			"progress_pct": progress_pct,
 			"base_rate_per_15s": maxf(0.0, float(cultivation.get("baseTuViPer15s", cultivation.get("finalTuViPer15s", 0)))),
 			"rate_per_15s": maxf(0.0, float(cultivation.get("finalTuViPer15s", 0))),
+			"base_rate_per_second": maxf(0.0, float(cultivation.get("baseTuViPerSecond", 0))),
+			"rate_per_second": maxf(0.0, float(cultivation.get("finalTuViPerSecond", 0))),
 			"commit_interval_seconds": maxf(0.001, float(cultivation.get("commitIntervalSeconds", 15.0))),
 			"commit_phase_seconds": clampf(
 				float(cultivation.get("commitPhaseSeconds", 0.0)),
