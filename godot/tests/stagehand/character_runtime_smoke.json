@@ -141,59 +141,77 @@
       }
     },
     {
-      "name": "Open equipment detail",
+      "name": "Open inventory",
       "action": "click",
       "with": {
         "selector": "name:CharacterAction_equipment"
       }
     },
     {
-      "name": "Equipment sheet appears",
+      "name": "Inventory screen appears",
       "action": "wait_for_node",
       "with": {
-        "selector": "name:CharacterDetailSheet",
+        "selector": "name:EquipmentInventoryScreen",
         "state": "visible",
         "timeout_ms": 5000
       }
     },
     {
-      "name": "Equipment title is canonical",
+      "name": "Inventory title is canonical",
       "action": "assert_property",
       "with": {
-        "selector": "name:CharacterDetailTitle",
+        "selector": "name:InventoryTitle",
         "property": "text",
         "operator": "contains",
-        "expected": "Trang Bị"
+        "expected": "Kho Đồ"
       }
     },
     {
-      "name": "Equipment slot grid is compact",
+      "name": "Inventory resource strip exists",
       "action": "wait_for_node",
       "with": {
-        "selector": "name:EquipmentSlotGrid",
+        "selector": "name:InventoryResources",
         "state": "visible",
         "timeout_ms": 5000
       }
     },
     {
-      "name": "Close equipment detail",
-      "action": "click",
+      "name": "Inventory set tab exists",
+      "action": "wait_for_node",
       "with": {
-        "selector": "name:CharacterDetailClose"
+        "selector": "name:InventoryTab_sets",
+        "state": "visible",
+        "timeout_ms": 5000
       }
     },
     {
-      "name": "Weapon slot opens focused equipment flow",
+      "name": "Inventory materials tab exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:InventoryTab_materials",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Close inventory",
+      "action": "click",
+      "with": {
+        "selector": "name:InventoryClose"
+      }
+    },
+    {
+      "name": "Weapon slot opens focused inventory flow",
       "action": "click",
       "with": {
         "selector": "name:CharacterSlot_weapon"
       }
     },
     {
-      "name": "Focused equipment subtitle names slot",
+      "name": "Focused inventory subtitle names slot",
       "action": "wait_for_property",
       "with": {
-        "selector": "name:CharacterDetailSubtitle",
+        "selector": "name:InventorySubtitle",
         "property": "text",
         "operator": "contains",
         "expected_value": "Đạo Binh",
@@ -202,10 +220,10 @@
       }
     },
     {
-      "name": "Close focused equipment flow",
+      "name": "Close focused inventory flow",
       "action": "click",
       "with": {
-        "selector": "name:CharacterDetailClose"
+        "selector": "name:InventoryClose"
       }
     },
     {
