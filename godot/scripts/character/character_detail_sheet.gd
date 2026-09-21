@@ -11,6 +11,7 @@ const TEXT := Color("f4f0e6")
 const MUTED := Color("9cabb5")
 const PANEL := Color(0.008, 0.025, 0.040, 0.97)
 const CARD := Color(0.014, 0.045, 0.063, 0.92)
+const SAFE_SIDE_INSET := 8.0
 
 const ELEMENT_LABELS := {
 	"Metal": "Kim", "Wood": "Mộc", "Water": "Thủy", "Fire": "Hỏa", "Earth": "Thổ",
@@ -61,7 +62,7 @@ func _build_shell() -> void:
 
 	var panel := Panel.new()
 	panel.name = "DetailPanel"
-	_anchor(panel, 7, 38, 383, 746)
+	_anchor(panel, SAFE_SIDE_INSET, 38, 390.0 - SAFE_SIDE_INSET, 746)
 	panel.add_theme_stylebox_override("panel", _box(PANEL, 18, Color(0.75, 0.64, 0.31, 0.48), 1))
 	add_child(panel)
 
