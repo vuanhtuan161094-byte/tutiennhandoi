@@ -71,7 +71,10 @@ func show_equipment_for_slot(slot_id: String, vm: Dictionary) -> void:
 func refresh(vm: Dictionary) -> void:
 	_vm = vm.duplicate(true)
 	if visible:
-		_render()
+		var previous_scroll := _scroll.scroll_vertical if _scroll != null else 0
+		_render(false)
+		if _scroll != null:
+			_scroll.set_deferred("scroll_vertical", previous_scroll)
 
 func close() -> void:
 	visible = false
@@ -153,11 +156,12 @@ func _build_shell() -> void:
 	_body.add_theme_constant_override("separation", 8)
 	_scroll.add_child(_body)
 
-func _render() -> void:
+func _render(reset_scroll: bool = true) -> void:
 	_clear_body()
 	_profile_tabs.visible = _mode == "profile"
 	_scroll.offset_top = 108 if _profile_tabs.visible else 70
-	_scroll.scroll_vertical = 0
+	if reset_scroll:
+		_scroll.scroll_vertical = 0
 
 	match _mode:
 		"equipment":
