@@ -97,6 +97,24 @@ if not defined GODOT_BIN (
   exit /b 1
 )
 
+echo [GODOT] Import resources...
+"%GODOT_BIN%" --headless --path "%PROJECT%" --import
+if errorlevel 1 (
+  echo.
+  echo [ERROR] Godot import that bai. Game chua duoc mo.
+  pause
+  exit /b 1
+)
+
+echo [GODOT] Parse project...
+"%GODOT_BIN%" --headless --editor --path "%PROJECT%" --quit
+if errorlevel 1 (
+  echo.
+  echo [ERROR] Godot project parse that bai. Game chua duoc mo.
+  pause
+  exit /b 1
+)
+
 echo [BRIDGE] Tim Node.js...
 for /f "delims=" %%P in ('where node 2^>nul') do (
   if not defined NODE_BIN set "NODE_BIN=%%P"
