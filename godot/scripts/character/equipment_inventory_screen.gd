@@ -1014,7 +1014,7 @@ func _add_transfer_controls(item: Dictionary) -> void:
 	for target_id_variant in targets:
 		var target_id := str(target_id_variant)
 		var target := _find_item(target_id)
-		if target.is_empty():
+		if target.is_empty() or not bool(target.get("isV142", false)):
 			continue
 		var button := _action_button(
 			"InventoryTransfer_%s" % _safe_node_name(target_id),
