@@ -22,7 +22,7 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - Godot owns presentation/transport only unless a future parity-proven runtime-port slice is explicitly opened.
 - Canonical bridge: `godot-bridge.v2`; Godot launches it on localhost port **4192**.
 - Active Godot presentation:
-  - Home hero rule: **Home = seated meditation; Character = standing**. Home now uses a video-derived transparent 12-frame meditation atlas (`home_meditation_idle_atlas.webp`, 4×3, 192×288/frame, 6 fps ping-pong); Character standing presentation remains separate.
+  - Home hero rule: **Home = seated meditation; Character = standing**. Home now uses two small transparent video-derived seated frames (`home_meditation_idle_01.webp` and `home_meditation_idle_04.webp`) to avoid connector truncation; Character standing presentation remains separate.
   - Home / Tu Luyện production-art composition and procedural meditation motion;
   - Character screen, standing-idle presentation, profile/stats/potential flows;
   - rebuilt full-screen **Kho Đồ / Trang Bị V142** with Set, Vật Phẩm and Luyện flows.
