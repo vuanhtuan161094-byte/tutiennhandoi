@@ -109,6 +109,89 @@
         "state": "visible",
         "timeout_ms": 5000
       }
+    },
+    {
+      "name": "Open equipment detail",
+      "action": "click",
+      "with": {
+        "selector": "name:CharacterAction_equipment"
+      }
+    },
+    {
+      "name": "Equipment sheet appears",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:CharacterDetailSheet",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Equipment title is canonical",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CharacterDetailTitle",
+        "property": "text",
+        "operator": "contains",
+        "expected": "Trang Bị"
+      }
+    },
+    {
+      "name": "Close equipment detail",
+      "action": "click",
+      "with": {
+        "selector": "name:CharacterDetailClose"
+      }
+    },
+    {
+      "name": "Open stats detail",
+      "action": "click",
+      "with": {
+        "selector": "name:CharacterAction_stats"
+      }
+    },
+    {
+      "name": "Stats title is canonical",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CharacterDetailTitle",
+        "property": "text",
+        "operator": "contains",
+        "expected": "Thuộc Tính"
+      }
+    },
+    {
+      "name": "Close stats detail",
+      "action": "click",
+      "with": {
+        "selector": "name:CharacterDetailClose"
+      }
+    },
+    {
+      "name": "Open profile detail",
+      "action": "click",
+      "with": {
+        "selector": "name:CharacterAction_profile"
+      }
+    },
+    {
+      "name": "Profile title is canonical",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CharacterDetailTitle",
+        "property": "text",
+        "operator": "contains",
+        "expected": "Hồ Sơ"
+      }
+    },
+    {
+      "name": "Profile bloodline tab exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:ProfileTab_blood",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
     }
   ]
 }
