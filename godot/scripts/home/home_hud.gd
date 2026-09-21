@@ -181,10 +181,11 @@ func show_ling_quang(multiplier: int) -> void:
 	var event := ling_quang_event_copy(multiplier)
 	if event.is_empty():
 		return
+	var accent: Color = event.get("accent", MINT)
 	_play_cultivation_event(
 		str(event.get("title", "")),
 		str(event.get("subtitle", "")),
-		event.get("accent", MINT) as Color,
+		accent,
 		float(event.get("hold", 1.15))
 	)
 
@@ -628,7 +629,7 @@ func _build_primary() -> void:
 	labels.add_theme_constant_override("separation", -1)
 	row.add_child(labels)
 
-	primary_title_label = _readable_label("THĂNG CẢNH", 13, GOLD_HI)
+	primary_title_label = _readable_label("ĐỘT PHÁ", 13, GOLD_HI)
 	primary_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	labels.add_child(primary_title_label)
 
