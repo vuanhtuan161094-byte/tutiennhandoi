@@ -17,7 +17,7 @@ GitHub Actions push automation is disabled in the repository because account Act
 Current rule:
 
 - Do **not** intentionally turn push-triggered Actions back on.
-- Use the repository Local CI instead: `TEST_GAME_LOCAL.cmd`.
+- Use the repository Local CI instead: `tools/web/TEST_GAME_LOCAL.cmd`.
 - Use manual Game CI only when the user explicitly wants it and storage is available.
 - Local CI modes include Fast, Browser, Visual, Full, and Full Clean.
 - The user has already run **Mode 5 — FULL CLEAN — PASS** on the clean current-main checkout after Local CI was introduced.
@@ -248,7 +248,7 @@ Check:
 - telegraph/full-chaos state;
 - Boss phase/Phá Thế/status readability.
 
-For a closure candidate, run `TEST_GAME_LOCAL.cmd` **Mode 5 — FULL CLEAN** on a clean checkout and preserve the local artifact/report.
+For a closure candidate, run `tools/web/TEST_GAME_LOCAL.cmd` **Mode 5 — FULL CLEAN** on a clean checkout and preserve the local artifact/report.
 
 ### Step 7 — VFX / visual polish last
 
