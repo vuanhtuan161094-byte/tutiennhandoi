@@ -177,7 +177,9 @@ class GodotCanonicalRuntime {
     this.qaFixtureSeq+=1;
     if(fixture==='clear'){
       this.qaFixture='';
-      return {fixture:'clear',canonical:true};
+      this.newGame(161094);
+      this.qaFixture='';
+      return {fixture:'clear',canonical:true,reset:true};
     }
     this.qaFixture=fixture;
     if(fixture==='inventory')return this.seedQaInventory();
