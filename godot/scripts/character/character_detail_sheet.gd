@@ -2,6 +2,7 @@ extends Control
 
 signal close_requested
 signal equip_requested(item_id: String)
+signal profile_action_requested(action_id: String, payload: Dictionary)
 
 const GOLD := Color("e8c76d")
 const GOLD_HI := Color("fff0b8")
@@ -402,6 +403,26 @@ func _render_profile_blood() -> void:
 	_add_pair(card, "Nuôi Độ Thuần", "Sẵn sàng" if bool(blood.get("canPurify", false)) else "Chưa đủ điều kiện")
 	_add_pair(card, "Thăng Huyết Mạch", "Sẵn sàng" if bool(blood.get("canAdvance", false)) else "Chưa đủ điều kiện")
 
+	if bool(blood.get("available", false)):
+		var purify := _action_button("BloodlinePurify", "NUÔI ĐỘ THUẦN +10", bool(blood.get("canPurify", false)))
+		purify.pressed.connect(_emit_profile_action.bind("nourishBloodline", {"points": 10}))
+		card.add_child(purify)
+
+		var advance := _action_button("BloodlineAdvance", "THĂNG HUYẾT MẠCH", bool(blood.get("canAdvance", false)))
+		advance.pressed.connect(_emit_profile_action.bind("advanceBloodline", {"useProtection": false}))
+		card.add_child(advance)
+
+		var protection_cost := maxi(0, int(blood.get("protectionCost", 0)))
+		if protection_cost > 0:
+			var protection_have := maxi(0, int(resources.get("protection", 0)))
+			var protected := _action_button(
+				"BloodlineAdvanceProtected",
+				"BẢO HỘ + THĂNG · %d" % protection_cost,
+				bool(blood.get("canAdvance", false)) and protection_have >= protection_cost
+			)
+			protected.pressed.connect(_emit_profile_action.bind("advanceBloodline", {"useProtection": true}))
+			card.add_child(protected)
+
 	var catalog: Array = profile.get("bloodlines", [])
 	if not catalog.is_empty():
 		var owned := _card()
@@ -427,6 +448,10 @@ func _render_profile_physique() -> void:
 	_add_pair(card, "Thể Phách Tinh Hoa", _fmt_num(float(resources.get("bodyEssence", 0))))
 	_add_pair(card, "Chi phí", _fmt_num(float(physique.get("cost", 0))))
 	_add_pair(card, "Tiến Thể Chất", "Sẵn sàng" if bool(physique.get("canAdvance", false)) else "Chưa đủ điều kiện")
+	if bool(physique.get("available", false)):
+		var advance := _action_button("PhysiqueAdvance", "TIẾN THỂ CHẤT", bool(physique.get("canAdvance", false)))
+		advance.pressed.connect(_emit_profile_action.bind("advancePhysique", {}))
+		card.add_child(advance)
 
 	var names: Array = profile.get("physiques", [])
 	if not names.is_empty():
@@ -575,6 +600,21 @@ func _add_note(value: String) -> void:
 
 func _emit_equip(item_id: String) -> void:
 	equip_requested.emit(item_id)
+
+func _emit_profile_action(action_id: String, payload: Dictionary) -> void:
+	profile_action_requested.emit(action_id, payload)
+
+func _action_button(node_name: String, caption: String, enabled: bool) -> Button:
+	var button := Button.new()
+	button.name = node_name
+	button.text = caption
+	button.disabled = not enabled
+	button.custom_minimum_size = Vector2(0, 36)
+	button.add_theme_font_size_override("font_size", 10)
+	button.add_theme_color_override("font_color", GOLD_HI if enabled else MUTED)
+	button.add_theme_stylebox_override("normal", _box(Color(0.05, 0.08, 0.07, 0.94), 12, Color(0.91, 0.73, 0.28, 0.52), 1))
+	button.add_theme_stylebox_override("disabled", _box(Color(0.02, 0.04, 0.05, 0.76), 12, Color(0.35, 0.42, 0.44, 0.18), 1))
+	return button
 
 func _origin_name(data: Dictionary, fallback: String) -> String:
 	if str(data.get("band", "")) == "NONE":
