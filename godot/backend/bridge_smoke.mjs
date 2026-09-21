@@ -71,6 +71,7 @@ function validateHome(home){
     ['life','lifeNumber'],['life','realm'],['cultivation','tuVi'],
     ['cultivation','liveTuVi'],['cultivation','requiredTuVi'],
     ['cultivation','finalTuViPer15s'],['cultivation','finalTuViPerSecond'],
+    ['cultivation','reincarnationR3'],
     ['resources','spiritStone'],['resources','reincarnationCp'],
     ['spiritualRoot','name'],
   ]){
@@ -113,6 +114,8 @@ try{
   assert(Number(created.home.cultivation?.retreat?.rewardPct3h)===0,'Phàm Nhân retreat reward must be 0 by canonical V140 balance');
   assert(Number(created.home.cultivation.finalTuViPerSecond)>0,'Backend must expose positive per-second cultivation rate');
   assert(Number.isInteger(Number(created.home.cultivation.finalTuViPerSecond)),'Per-second cultivation display rate must be rounded upward to an integer');
+  assert(Number(created.home.cultivation.reincarnationR3?.lastLingGuangMultiplier)>=1,'Home bridge must expose Ling Quang multiplier runtime');
+  assert(Number(created.home.cultivation.reincarnationR3?.lastLingGuangTick)>=0,'Home bridge must expose Ling Quang proc identity');
 
   const canonicalBeforeSecond=Number(created.home.cultivation.tuVi)||0;
   const liveBeforeSecond=Number(created.home.cultivation.liveTuVi)||0;
