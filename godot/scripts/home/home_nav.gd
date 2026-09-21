@@ -14,6 +14,7 @@ const ICON_FACTION := preload("res://art/icons/faction.svg")
 const GOLD := Color("e3bf70")
 const GOLD_HI := Color("fff0bd")
 const MUTED := Color("9fb0bd")
+const SAFE_SIDE_INSET := 8.0
 
 var _items: Dictionary = {}
 var _enabled_routes := {
@@ -85,8 +86,8 @@ func _build() -> void:
 
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 8)
-	margin.add_theme_constant_override("margin_right", 8)
+	margin.add_theme_constant_override("margin_left", 6)
+	margin.add_theme_constant_override("margin_right", 6)
 	margin.add_theme_constant_override("margin_top", 8)
 	margin.add_theme_constant_override("margin_bottom", 7)
 	dock.add_child(margin)
