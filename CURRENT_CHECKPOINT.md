@@ -37,17 +37,17 @@ Read this first. Do not reconstruct project state from old chats or memory witho
   - `res://art/approved/equipment/atlases/jewelry_sets_v1.webp`.
 - The two approved binary atlases are **not yet committed from the connector session**. `tools/slice_equipment_assets.py` now accepts the two approved source sheets explicitly and deterministically produces all 46 individual assets plus both runtime atlases without redrawing.
 - Item rarity/frame animation and enhancement VFX are intentionally deferred; the user wants those designed separately after the base assets/inventory are integrated.
-- Current Godot work is a **STATIC CANDIDATE**, not runtime-closed. No Godot PASS may be claimed until `VERIFY_GODOT_LOCAL.cmd` succeeds and actual 390×844 runtime evidence is reviewed.
+- Current Godot work is a **STATIC CANDIDATE**, not runtime-closed. No Godot PASS may be claimed until `KIEM_TRA_GAME.cmd` succeeds and actual 390×844 runtime evidence is reviewed.
 - GitHub Actions push automation is **disabled/manual-only** to avoid further Actions artifact/storage consumption. Normal verification is local:
-  - web/runtime: `TEST_GAME_LOCAL.cmd` (Mode 5 — FULL CLEAN for clean candidate proof);
-  - Godot: `VERIFY_GODOT_LOCAL.cmd`.
+  - web/runtime: `tools/web/TEST_GAME_LOCAL.cmd` (Mode 5 — FULL CLEAN for clean candidate proof);
+  - Godot: `KIEM_TRA_GAME.cmd`.
 - Repository hygiene pass on **2026-09-21** removed obsolete standalone Combat Layout Studio files, stale migration/tooling snapshots, old generated reports and duplicate Godot Home art fallbacks. Git history is the archive.
 
 ### Immediate next action
 
 1. Sync local checkout from `main`.
 2. Put/use the two approved equipment source sheets locally and run `tools/slice_equipment_assets.py --attire <sheet> --jewelry <sheet>` if the atlases are not already present.
-3. Run `VERIFY_GODOT_LOCAL.cmd`.
+3. Run `KIEM_TRA_GAME.cmd`.
 4. Fix only proven import/parse/runtime/390×844 defects.
 5. After base Kho Đồ art is visually stable, design rarity-frame and enhancement animation assets/VFX.
 6. Do **not** jump to Pháp Bảo until the user changes priority or the current item/Kho Đồ slice is visually satisfactory.
