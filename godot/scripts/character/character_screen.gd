@@ -28,6 +28,8 @@ var _stat_defense: Label
 var _potential_button: Button
 var _status: Label
 var _hero
+var _hero_glow: Panel
+var _visual_time := 0.0
 var _detail_sheet
 var _slot_components: Dictionary = {}
 var _vm: Dictionary = {}
@@ -36,6 +38,16 @@ func _ready() -> void:
 	name = "CharacterScreen"
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	_build()
+	set_process(true)
+
+func _process(delta: float) -> void:
+	if not visible:
+		return
+	_visual_time += delta
+	if is_instance_valid(_hero_glow):
+		var pulse := 0.92 + sin(_visual_time * 0.72) * 0.05
+		_hero_glow.scale = Vector2.ONE * pulse
+		_hero_glow.modulate.a = 0.72 + sin(_visual_time * 0.72 + 0.8) * 0.10
 
 func bind(vm: Dictionary) -> void:
 	_vm = vm
@@ -136,11 +148,12 @@ func _build() -> void:
 	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(stage)
 
-	var glow := Panel.new()
-	_anchor(glow, 92, 60, 298, 394)
-	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	glow.add_theme_stylebox_override("panel", _flat(Color(0.23, 0.68, 0.76, 0.035), 98, Color(0.95, 0.75, 0.31, 0.22), 2))
-	stage.add_child(glow)
+	_hero_glow = Panel.new()
+	_anchor(_hero_glow, 92, 60, 298, 394)
+	_hero_glow.pivot_offset = Vector2(103, 167)
+	_hero_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hero_glow.add_theme_stylebox_override("panel", _flat(Color(0.23, 0.68, 0.76, 0.035), 98, Color(0.95, 0.75, 0.31, 0.22), 2))
+	stage.add_child(_hero_glow)
 
 	_hero = STANDING_HERO_SCRIPT.new()
 	_hero.name = "CharacterHero"
@@ -200,6 +213,8 @@ func _build() -> void:
 	_potential_button.add_theme_color_override("font_color", TEXT)
 	_potential_button.add_theme_stylebox_override("normal", _flat(Color(0.05, 0.08, 0.08, 0.90), 14, Color(0.94, 0.74, 0.29, 0.52), 1))
 	_potential_button.add_theme_stylebox_override("hover", _flat(Color(0.10, 0.10, 0.07, 0.96), 14, Color(1.0, 0.84, 0.42, 0.76), 2))
+	_potential_button.add_theme_stylebox_override("pressed", _flat(Color(0.16, 0.12, 0.045, 0.98), 14, GOLD_HI, 2))
+	_potential_button.focus_mode = Control.FOCUS_NONE
 	_anchor(_potential_button, 72, 576, 318, 620)
 	_potential_button.pressed.connect(_emit_detail.bind(&"potential"))
 	add_child(_potential_button)
@@ -214,6 +229,8 @@ func _build() -> void:
 		button.add_theme_color_override("font_color", TEXT)
 		button.add_theme_stylebox_override("normal", _flat(Color(0.01, 0.04, 0.06, 0.84), 14, Color(0.38, 0.70, 0.78, 0.22), 1))
 		button.add_theme_stylebox_override("hover", _flat(Color(0.04, 0.08, 0.10, 0.94), 14, Color(0.55, 0.88, 0.91, 0.42), 1))
+		button.add_theme_stylebox_override("pressed", _flat(Color(0.06, 0.11, 0.13, 0.98), 14, CYAN, 2))
+		button.focus_mode = Control.FOCUS_NONE
 		_anchor(button, 20 + i * 119, 630, 132 + i * 119, 680)
 		button.pressed.connect(_emit_detail.bind(action[1]))
 		add_child(button)
