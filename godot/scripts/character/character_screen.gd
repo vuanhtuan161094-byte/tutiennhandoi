@@ -19,6 +19,8 @@ const CYAN := Color("84e7ec")
 const TEXT := Color("f4f0e5")
 const MUTED := Color("aab9c3")
 const DARK := Color(0.015, 0.035, 0.055, 0.86)
+const EQUIPMENT_SLOT_LEFT_X := 10.0
+const EQUIPMENT_SLOT_RIGHT_X := 316.0
 
 var _name_label: Label
 var _realm_label: Label
@@ -169,8 +171,8 @@ func _build() -> void:
 	stage.add_child(_hero)
 
 	var slot_specs := [
-		["weapon", "Đạo Binh", 2, 30], ["head", "Đạo Quan", 2, 100], ["gloves", "Hộ Uyển", 2, 170], ["bracelet", "Linh Trạc", 2, 240], ["necklace", "Ngọc Bội", 2, 310],
-		["robe", "Pháp Bào", 324, 30], ["belt", "Huyền Đái", 324, 100], ["boots", "Vân Ngoa", 324, 170], ["ring", "Đạo Giới", 324, 240], ["talisman", "Hộ Phù", 324, 310],
+		["weapon", "Đạo Binh", EQUIPMENT_SLOT_LEFT_X, 30], ["head", "Đạo Quan", EQUIPMENT_SLOT_LEFT_X, 100], ["gloves", "Hộ Uyển", EQUIPMENT_SLOT_LEFT_X, 170], ["bracelet", "Linh Trạc", EQUIPMENT_SLOT_LEFT_X, 240], ["necklace", "Ngọc Bội", EQUIPMENT_SLOT_LEFT_X, 310],
+		["robe", "Pháp Bào", EQUIPMENT_SLOT_RIGHT_X, 30], ["belt", "Huyền Đái", EQUIPMENT_SLOT_RIGHT_X, 100], ["boots", "Vân Ngoa", EQUIPMENT_SLOT_RIGHT_X, 170], ["ring", "Đạo Giới", EQUIPMENT_SLOT_RIGHT_X, 240], ["talisman", "Hộ Phù", EQUIPMENT_SLOT_RIGHT_X, 310],
 	]
 	for spec in slot_specs:
 		_add_slot(stage, str(spec[0]), str(spec[1]), float(spec[2]), float(spec[3]))
