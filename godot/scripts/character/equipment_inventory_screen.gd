@@ -4,6 +4,7 @@ signal close_requested
 signal equip_requested(item_id: String)
 signal equipment_detail_requested(item_id: String)
 signal enhance_requested(item_id: String, use_protection: bool)
+signal equipment_command_requested(action_id: String, payload: Dictionary)
 
 const GOLD := Color("e8c76d")
 const GOLD_HI := Color("fff0b8")
