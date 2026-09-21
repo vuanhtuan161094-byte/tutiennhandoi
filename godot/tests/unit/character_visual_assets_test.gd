@@ -36,5 +36,5 @@ func test_character_hero_contract_is_standing_idle() -> void:
 	assert_str(str(hero.animation_mode)).is_equal("standing_idle")
 	assert_str(str(hero.animation_profile)).is_equal("character_standing_v1")
 	assert_bool(hero.runtime_animation_ready).is_true()
-	assert_str(str(hero.animation_source)).is_not_equal("none")
+	assert_bool(str(hero.animation_source) != "none").is_true()
 	hero.free()
