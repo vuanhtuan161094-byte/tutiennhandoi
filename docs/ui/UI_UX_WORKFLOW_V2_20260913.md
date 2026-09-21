@@ -87,8 +87,8 @@ Status becomes `CANDIDATE`.
 Run targeted tests only when useful, then use the active verification lane.
 
 Current default:
-- `TEST_GAME_LOCAL.cmd` Mode 5 — FULL CLEAN for web/runtime candidates;
-- `VERIFY_GODOT_LOCAL.cmd` for Godot candidates;
+- `tools/web/TEST_GAME_LOCAL.cmd` Mode 5 — FULL CLEAN for web/runtime candidates;
+- `KIEM_TRA_GAME.cmd` for Godot candidates;
 - manual Game CI only when explicitly desired and Actions storage is available.
 
 The real-runtime screenshot/report produced by the active lane is the visual proof. It must come from the actual production candidate rather than a reconstructed mock.
