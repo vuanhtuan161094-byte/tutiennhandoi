@@ -64,6 +64,7 @@ func _connect_ui() -> void:
 	overlay.retreat_hours_selected.connect(_on_retreat_hours_selected)
 	character_screen.detail_requested.connect(_on_character_detail_requested)
 	character_screen.equipment_action_requested.connect(_on_character_equipment_action_requested)
+	character_screen.profile_action_requested.connect(_on_character_profile_action_requested)
 	AppState.route_changed.connect(_on_route_changed)
 
 func _start_backend() -> void:
@@ -122,6 +123,9 @@ func _on_action_completed(action_id: String, result: Dictionary) -> void:
 	elif action_id == "equipItem":
 		character_screen.set_status_message("Đã cập nhật trang bị")
 		backend_bridge.refresh_character()
+	elif action_id in ["nourishBloodline", "advanceBloodline", "advancePhysique"]:
+		character_screen.set_status_message("Hồ sơ tu hành đã cập nhật")
+		backend_bridge.refresh_character()
 
 func _open_identity() -> void:
 	if _vm.is_empty():
@@ -178,6 +182,11 @@ func _on_character_equipment_action_requested(item_id: String) -> void:
 	if item_id.is_empty():
 		return
 	backend_bridge.perform_action("equipItem", {"itemId": item_id})
+
+func _on_character_profile_action_requested(action_id: String, payload: Dictionary) -> void:
+	if action_id.is_empty():
+		return
+	backend_bridge.perform_action(action_id, payload)
 
 func _route_label(route_id: StringName) -> String:
 	var labels := {
