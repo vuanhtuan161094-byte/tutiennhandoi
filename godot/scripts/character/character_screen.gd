@@ -3,6 +3,7 @@ extends Control
 signal detail_requested(detail_id: StringName)
 signal equipment_action_requested(item_id: String)
 signal profile_action_requested(action_id: String, payload: Dictionary)
+signal potential_action_requested(stat_id: String, points: int)
 
 const STANDING_HERO_SCRIPT := preload("res://scripts/character/standing_hero.gd")
 const EQUIPMENT_SLOT_SCRIPT := preload("res://scripts/character/character_equipment_slot.gd")
@@ -230,6 +231,7 @@ func _build() -> void:
 	_detail_sheet.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_detail_sheet.equip_requested.connect(_on_detail_equip_requested)
 	_detail_sheet.profile_action_requested.connect(_on_detail_profile_action_requested)
+	_detail_sheet.potential_action_requested.connect(_on_detail_potential_action_requested)
 	add_child(_detail_sheet)
 
 func _add_slot(stage: Control, slot_id: String, slot_label: String, x: float, y: float) -> void:
@@ -289,6 +291,8 @@ func open_detail(detail_id: StringName) -> void:
 			_detail_sheet.show_detail("stats", _vm)
 		&"profile":
 			_detail_sheet.show_detail("profile", _vm)
+		&"potential":
+			_detail_sheet.show_detail("potential", _vm)
 		_:
 			set_status_message(String(detail_id))
 
@@ -307,6 +311,12 @@ func _on_detail_profile_action_requested(action_id: String, payload: Dictionary)
 		return
 	_status.text = "Đang cập nhật hồ sơ…"
 	profile_action_requested.emit(action_id, payload)
+
+func _on_detail_potential_action_requested(stat_id: String, points: int) -> void:
+	if stat_id.is_empty() or points <= 0:
+		return
+	_status.text = "Đang phân bổ %d điểm…" % points
+	potential_action_requested.emit(stat_id, points)
 
 func _fmt_num(value: float) -> String:
 	var raw := str(int(round(value)))
