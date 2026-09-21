@@ -10,6 +10,7 @@ const PORT=4219;
 const BASE=`http://127.0.0.1:${PORT}`;
 const EXPECTED_VERSION='godot-bridge.v2';
 const EXPECTED_HOME='godot-home-bridge.v1';
+const EXPECTED_CHARACTER='godot-character-bridge.v1';
 const EXPECTED_AUTHORITY='character-cultivation.v140';
 
 function assert(condition,message){
@@ -77,6 +78,18 @@ function validateHome(home){
     assert(value!==undefined&&value!==null,`Missing Home field: ${path.join('.')}`);
   }
 }
+function validateCharacter(view){
+  assert(view?.ok===true,'Character DTO must be ok');
+  assert(view?.schema===EXPECTED_CHARACTER,`Unexpected Character schema: ${view?.schema}`);
+  assert(view?.bridgeVersion===EXPECTED_VERSION,`Unexpected Character bridge version: ${view?.bridgeVersion}`);
+  assert(view?.authority?.equipment==='equipment.v142','Character equipment authority mismatch');
+  assert(view?.authority?.stats==='combat-stat.v168','Character stat authority mismatch');
+  assert(view?.character&&typeof view.character==='object','Character DTO missing character');
+  assert(view?.equipmentSystem&&typeof view.equipmentSystem==='object','Character DTO missing equipmentSystem');
+  assert(Array.isArray(view?.equipment),'Character DTO equipment must be an array');
+  const slotCount=Number(view.equipmentSystem?.canonicalSlotCount)||Number(view.equipmentSystem?.slots?.length)||0;
+  assert(slotCount===10,`Expected 10 canonical equipment slots, got ${slotCount}`);
+}
 
 const temp=await mkdtemp(join(tmpdir(),'tutien-godot-bridge-'));
 const savePath=join(temp,'bridge-save.json');
@@ -90,6 +103,8 @@ try{
 
   const created=await request('/new',{method:'POST',body:{seed:161094}});
   validateHome(created.home);
+  const character=await request('/character');
+  validateCharacter(character);
   assert(created.home.life.realm==='Phàm Nhân',`Expected fresh realm Phàm Nhân, got ${created.home.life.realm}`);
   assert(Number(created.home.cultivation?.retreat?.rewardPct3h)===0,'Phàm Nhân retreat reward must be 0 by canonical V140 balance');
 
@@ -129,6 +144,7 @@ try{
   await waitHealth();
   const restored=await request('/home');
   validateHome(restored);
+  validateCharacter(await request('/character'));
   const restoredTuVi=Number(restored.cultivation.tuVi)||0;
   assert(restoredTuVi>=after,`Persisted Tu Vi regressed after restart: ${after} -> ${restoredTuVi}`);
 
