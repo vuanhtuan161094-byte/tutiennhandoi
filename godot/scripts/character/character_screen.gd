@@ -2,6 +2,7 @@ extends Control
 
 signal detail_requested(detail_id: StringName)
 signal equipment_action_requested(item_id: String)
+signal profile_action_requested(action_id: String, payload: Dictionary)
 
 const STANDING_HERO_SCRIPT := preload("res://scripts/character/standing_hero.gd")
 const EQUIPMENT_SLOT_SCRIPT := preload("res://scripts/character/character_equipment_slot.gd")
@@ -228,6 +229,7 @@ func _build() -> void:
 	_detail_sheet.name = "CharacterDetailSheet"
 	_detail_sheet.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_detail_sheet.equip_requested.connect(_on_detail_equip_requested)
+	_detail_sheet.profile_action_requested.connect(_on_detail_profile_action_requested)
 	add_child(_detail_sheet)
 
 func _add_slot(stage: Control, slot_id: String, slot_label: String, x: float, y: float) -> void:
@@ -299,6 +301,12 @@ func _on_detail_equip_requested(item_id: String) -> void:
 		return
 	_status.text = "Đang trang bị…"
 	equipment_action_requested.emit(item_id)
+
+func _on_detail_profile_action_requested(action_id: String, payload: Dictionary) -> void:
+	if action_id.is_empty():
+		return
+	_status.text = "Đang cập nhật hồ sơ…"
+	profile_action_requested.emit(action_id, payload)
 
 func _fmt_num(value: float) -> String:
 	var raw := str(int(round(value)))
