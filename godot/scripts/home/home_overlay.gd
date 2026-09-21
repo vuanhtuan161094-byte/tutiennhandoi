@@ -63,7 +63,7 @@ func show_cultivation(vm: Dictionary) -> void:
 		_fmt_num(float(progression.get("required_tu_vi", 0)))
 	])
 	var rate_per_15s := maxf(0.0, float(progression.get("rate_per_15s", 0)))
-	var per_second := rate_per_15s / 15.0
+	var per_second := maxf(0.0, float(progression.get("rate_per_second", rate_per_15s / 15.0)))
 	var rounded_per_second := int(round(per_second))
 	var per_second_prefix := "+ " if is_equal_approx(per_second, float(rounded_per_second)) else "≈ + "
 	lines.append("Tốc độ hiển thị · %s%d Tu Vi / giây" % [per_second_prefix, rounded_per_second])
