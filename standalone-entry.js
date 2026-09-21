@@ -31,7 +31,7 @@ function showFatalBootError(error,stage='bootstrap'){
   if(content){
     const message=String(error?.message||error||'Không rõ lỗi');
     const stack=String(error?.stack||'').split('\n').slice(0,8).join('\n');
-    content.innerHTML=`<div class="card bad" style="margin:16px"><h2>Game không khởi động được</h2><p><b>${escBoot(stage)}</b>: ${escBoot(message)}</p>${stack?`<pre style="white-space:pre-wrap;font-size:11px;opacity:.8">${escBoot(stack)}</pre>`:''}<p class="muted small">Đóng cửa sổ server, mở lại <code>CHOI_WEB_GAME.cmd</code>. Nếu vẫn lỗi, chụp màn hình khối này gửi ChatGPT.</p></div>`;
+    content.innerHTML=`<div class="card bad" style="margin:16px"><h2>Game không khởi động được</h2><p><b>${escBoot(stage)}</b>: ${escBoot(message)}</p>${stack?`<pre style="white-space:pre-wrap;font-size:11px;opacity:.8">${escBoot(stack)}</pre>`:''}<p class="muted small">Đóng cửa sổ server, mở lại <code>tools\\web\\CHOI_WEB_GAME.cmd</code>. Nếu vẫn lỗi, chụp màn hình khối này gửi ChatGPT.</p></div>`;
   }
 }
 
