@@ -65,7 +65,8 @@ Do not show legacy Đạo Văn fragments or Gem blanks in the V142 inventory sur
 2. `Y TRANG` — 6 attire slots
 3. `TRANG SỨC` — 4 jewelry slots
 4. `SET`
-5. `VẬT LIỆU`
+5. `VẬT PHẨM`
+6. `LUYỆN`
 
 No dashboard-like duplicate summary cards.
 
@@ -174,13 +175,13 @@ V142 inventory materials:
 - Tàn Ấn by Set;
 - Affix materials only when their live V142 action is exposed.
 
-Generic resources belonging to Alchemy / Artifact / Pet / Collection stay on their owning screens rather than turning Kho Đồ into a universal database.
+Kho Đồ also lists canonical generic inventory resources by backend-provided name/quantity. Equipment core resources are not duplicated in this list, and legacy Đạo Văn/Gem resources remain hidden. Pháp Bảo and Linh Thú stay on their owning progression screens rather than becoming generic bag rows.
 
 ## Progression separation
 
 Kho Đồ owns browsing, compare, equip and quick enhance.
 
-Deep crafting remains a focused item-production flow:
+The `LUYỆN` tab is the focused item-production flow:
 
 - Luyện Trang Bị from Mảnh;
 - 3:1 Mảnh refinement;
@@ -189,7 +190,7 @@ Deep crafting remains a focused item-production flow:
 - Affix Tái Luyện / Tinh Luyện;
 - enhancement transfer.
 
-These actions must continue to call locked canonical backend commands. UI must not duplicate their rules.
+These actions must continue to call locked canonical backend commands. UI must not duplicate their rules. Merge selection is explicit: one retained main item plus two fodders; equipped, locked and Set items are protected from being selected as fodder by the Godot surface.
 
 ## Deletion / retirement rules
 
