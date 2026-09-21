@@ -6,13 +6,13 @@ This document describes the live repository. Git history is the archive for remo
 
 Current launch/update/test entrypoints:
 
-- `00_CHOI_GAME_GODOT_LOCAL.cmd` — safe sync + open Godot.
+- `CHOI_GAME.cmd` — safe sync + open Godot.
 - `CAP_NHAT_GAME_LOCAL.cmd` — update local checkout from `origin/main` only.
-- `VERIFY_GODOT_LOCAL.cmd` — mandatory Godot local gate.
-- `SETUP_GODOT_TOOLING.cmd` — optional tooling bootstrap.
-- `APPROVE_GODOT_HOME_BASELINE.cmd` — explicit visual-baseline promotion only.
-- `TEST_GAME_LOCAL.cmd` — web/runtime Local CI.
-- `CHOI_WEB_GAME.cmd`, `CHOI_UI_DEV.cmd` and platform shell launchers — retained while the web implementation remains canonical authority/reference for unported surfaces.
+- `KIEM_TRA_GAME.cmd` — mandatory Godot local gate.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot/Setup-GodotTooling.ps1` — optional tooling bootstrap.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot/Approve-HomeBaseline.ps1 -ConfirmApproved` — explicit visual-baseline promotion only.
+- `tools/web/TEST_GAME_LOCAL.cmd` — web/runtime Local CI.
+- Web-only launch/test helpers live under `tools/web/` so the repository root stays player-oriented.
 
 Web entry/runtime remains in `index.html`, `app.js`, `standalone-entry.js`, `standalone-runtime.js`, root CSS, `modules/`, `dist/`, `assets/`, `vendor/` and `web/`.
 
