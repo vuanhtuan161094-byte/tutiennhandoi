@@ -203,6 +203,7 @@ class GodotCanonicalRuntime {
       character:patch.character||{},
       spiritualRoot:patch.spiritualRoot||{},
       equipment:Array.isArray(patch.equipment)?patch.equipment:[],
+      equipmentInventory:this.api.getEquipmentInventoryV129(''),
       equipmentSystem:patch.equipmentSystem||{},
     };
   }
@@ -213,6 +214,11 @@ class GodotCanonicalRuntime {
     else if(id==='useCultivationPill')result=this.api.useCultivationPill();
     else if(id==='ascendRealmV140')result=this.api.ascendRealm();
     else if(id==='tribulationV140')result=this.api.perform({type:'tribulation',intensity:1});
+    else if(id==='equipItem'){
+      const itemId=String(payload.itemId||'').trim();
+      if(!itemId)throw new Error('Thiếu itemId trang bị.');
+      result=this.api.perform({type:'equip',itemId});
+    }
     else if(id==='diagnosticCommit'&&DIAGNOSTIC_MODE){
       const seconds=Math.max(LIVE_COMMIT_REAL_SECONDS,Math.min(3600,Number(payload.seconds)||LIVE_COMMIT_REAL_SECONDS));
       result=this.session.advanceRealtimeCultivationV140(seconds);
