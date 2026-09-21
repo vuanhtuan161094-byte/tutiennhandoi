@@ -272,14 +272,14 @@ if (-not $SkipVisual) {
         & $StagehandExe run (Join-Path $GodotProject "tests\stagehand\home_visual_regression.json") --out-dir $visualOut --godot-bin $Godot
         Assert-Exit "Stagehand visual regression"
     } else {
-        Write-Host "[7/7] No approved baseline yet; capturing deterministic 390x844 Home candidate ..."
+        Write-Host "[8/8] No approved baseline yet; capturing deterministic 390x844 Home candidate ..."
         $visualOut = Join-Path $ArtifactsRoot "stagehand-visual"
         New-Item -ItemType Directory -Force -Path $visualOut | Out-Null
         & $StagehandExe run (Join-Path $GodotProject "tests\stagehand\home_visual_capture.json") --out-dir $visualOut --godot-bin $Godot
         Assert-Exit "Stagehand visual capture"
     }
 } else {
-    Write-Host "[7/7] Visual gate skipped by request."
+    Write-Host "[8/8] Visual gate skipped by request."
 }
 
 Write-Host ""
