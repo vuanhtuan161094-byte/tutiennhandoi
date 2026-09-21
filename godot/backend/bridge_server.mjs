@@ -14,6 +14,7 @@ import { createInitialLifeMeta } from '../../dist/core/life.js';
 import { buildWebClientViewPatch } from '../../dist/core/client-shell.js';
 import { createWebClientSave, parseWebClientSave } from '../../dist/core/web-save.js';
 import { LIVE_COMMIT_REAL_SECONDS } from '../../dist/core/realtime-balance.js';
+import { equipmentSetDefinitionV142 } from '../../dist/core/equipment-v142.js';
 
 const HERE=dirname(fileURLToPath(import.meta.url));
 const BRIDGE_VERSION='godot-bridge.v2';
@@ -213,6 +214,27 @@ class GodotCanonicalRuntime {
     const now=Date.now();
     this.api.syncForgingV12328(now);
     const patch=buildWebClientViewPatch(this.api,'character',now,'');
+    const equipmentSystem=patch.equipmentSystem||{};
+    const v142=equipmentSystem.v142||{};
+    const v142SetRows=Array.isArray(v142.setRows)?v142.setRows.map(row=>{
+      const definition=equipmentSetDefinitionV142(row?.setId);
+      const bonuses=Array.isArray(definition?.bonuses)?definition.bonuses:[];
+      return {
+        ...row,
+        thresholds:Array.isArray(row?.thresholds)?row.thresholds.map(threshold=>{
+          const bonus=bonuses.find(candidate=>Number(candidate?.pieces)===Number(threshold?.pieces));
+          return {
+            ...threshold,
+            statMultipliers:bonus?.statMultipliers?{...bonus.statMultipliers}:{},
+            flatStats:bonus?.flatStats?{...bonus.flatStats}:{},
+          };
+        }):[],
+      };
+    }):[];
+    const godotEquipmentSystem={
+      ...equipmentSystem,
+      v142:{...v142,setRows:v142SetRows},
+    };
     return {
       ok:true,
       schema:'godot-character-bridge.v1',
@@ -230,7 +252,7 @@ class GodotCanonicalRuntime {
       equipment:Array.isArray(patch.equipment)?patch.equipment:[],
       equipmentInventory:this.api.getEquipmentInventoryV129(String(selectedItemId||'')),
       equipmentSelection:{selectedItemId:String(selectedItemId||'')},
-      equipmentSystem:patch.equipmentSystem||{},
+      equipmentSystem:godotEquipmentSystem,
     };
   }
   action(id,payload={}){
