@@ -13,6 +13,7 @@ const TEXT := Color("f4f0e6")
 const MUTED := Color("9cabb5")
 const PANEL := Color(0.007, 0.022, 0.035, 0.985)
 const CARD := Color(0.014, 0.045, 0.063, 0.94)
+const SAFE_SIDE_INSET := 8.0
 const POSITIVE := Color("9de6b4")
 const NEGATIVE := Color("ffb19d")
 const EQUIPMENT_ASSET_REGISTRY := preload("res://scripts/character/equipment_asset_registry.gd")
@@ -131,7 +132,7 @@ func _build() -> void:
 
 	var panel := Panel.new()
 	panel.name = "InventoryPanel"
-	_anchor(panel, 4, 4, 386, 748)
+	_anchor(panel, SAFE_SIDE_INSET, 4, 390.0 - SAFE_SIDE_INSET, 748)
 	panel.add_theme_stylebox_override("panel", _box(PANEL, 18, Color(0.74, 0.63, 0.31, 0.44), 1))
 	add_child(panel)
 
@@ -237,7 +238,7 @@ func _build() -> void:
 	_detail_layer = Panel.new()
 	_detail_layer.name = "InventoryItemDetail"
 	_detail_layer.visible = false
-	_anchor(_detail_layer, 6, 344, 376, 738)
+	_anchor(_detail_layer, 6, 344, 368, 738)
 	_detail_layer.add_theme_stylebox_override("panel", _box(Color(0.006, 0.024, 0.036, 0.995), 18, Color(0.92, 0.75, 0.35, 0.56), 1))
 	panel.add_child(_detail_layer)
 
@@ -249,12 +250,12 @@ func _build() -> void:
 	detail_close.add_theme_color_override("font_color", TEXT)
 	detail_close.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
 	detail_close.add_theme_stylebox_override("pressed", _box(Color(0.08, 0.07, 0.035, 0.74), 16, GOLD, 1))
-	_anchor(detail_close, 326, 8, 360, 42)
+	_anchor(detail_close, 318, 8, 352, 42)
 	detail_close.pressed.connect(_hide_detail)
 	_detail_layer.add_child(detail_close)
 
 	var detail_scroll := ScrollContainer.new()
-	_anchor(detail_scroll, 12, 12, 322, 382)
+	_anchor(detail_scroll, 12, 12, 314, 382)
 	_detail_layer.add_child(detail_scroll)
 
 	_detail_body = VBoxContainer.new()
