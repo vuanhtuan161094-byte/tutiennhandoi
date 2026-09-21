@@ -134,6 +134,8 @@ func _build_shell() -> void:
 		button.name = "ProfileTab_%s" % str(spec[0])
 		button.text = str(spec[1])
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.custom_minimum_size = Vector2(0, 36)
+		button.focus_mode = Control.FOCUS_NONE
 		button.add_theme_font_size_override("font_size", 9)
 		button.pressed.connect(_set_profile_tab.bind(str(spec[0])))
 		_profile_tabs.add_child(button)
@@ -231,6 +233,7 @@ func _potential_stat_card(stat_id: String, label: String, current_value: float, 
 		button.text = str(spec[1])
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.custom_minimum_size = Vector2(0, 34)
+		button.focus_mode = Control.FOCUS_NONE
 		button.disabled = points <= 0 or unspent < points
 		button.add_theme_font_size_override("font_size", 8)
 		button.add_theme_color_override("font_color", GOLD_HI if not button.disabled else MUTED)
@@ -556,9 +559,18 @@ func _compact_action_button(node_name: String, caption: String, enabled: bool) -
 	button.custom_minimum_size = Vector2(0, 30)
 	button.add_theme_font_size_override("font_size", 9)
 	button.add_theme_color_override("font_color", GOLD_HI if enabled else MUTED)
+	button.focus_mode = Control.FOCUS_NONE
 	button.add_theme_stylebox_override(
 		"normal",
 		_box(Color(0.045, 0.070, 0.065, 0.95), 10, Color(0.88, 0.71, 0.29, 0.42), 1)
+	)
+	button.add_theme_stylebox_override(
+		"hover",
+		_box(Color(0.075, 0.095, 0.075, 0.98), 10, Color(1.0, 0.82, 0.38, 0.68), 1)
+	)
+	button.add_theme_stylebox_override(
+		"pressed",
+		_box(Color(0.11, 0.10, 0.055, 0.99), 10, GOLD_HI, 2)
 	)
 	button.add_theme_stylebox_override(
 		"disabled",
@@ -920,7 +932,10 @@ func _action_button(node_name: String, caption: String, enabled: bool) -> Button
 	button.custom_minimum_size = Vector2(0, 36)
 	button.add_theme_font_size_override("font_size", 10)
 	button.add_theme_color_override("font_color", GOLD_HI if enabled else MUTED)
+	button.focus_mode = Control.FOCUS_NONE
 	button.add_theme_stylebox_override("normal", _box(Color(0.05, 0.08, 0.07, 0.94), 12, Color(0.91, 0.73, 0.28, 0.52), 1))
+	button.add_theme_stylebox_override("hover", _box(Color(0.08, 0.10, 0.07, 0.98), 12, Color(1.0, 0.84, 0.43, 0.72), 1))
+	button.add_theme_stylebox_override("pressed", _box(Color(0.12, 0.105, 0.055, 0.99), 12, GOLD_HI, 2))
 	button.add_theme_stylebox_override("disabled", _box(Color(0.02, 0.04, 0.05, 0.76), 12, Color(0.35, 0.42, 0.44, 0.18), 1))
 	return button
 
