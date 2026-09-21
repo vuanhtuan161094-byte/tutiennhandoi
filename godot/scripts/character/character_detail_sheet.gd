@@ -592,11 +592,6 @@ func _add_note(value: String) -> void:
 func _emit_equip(item_id: String) -> void:
 	equip_requested.emit(item_id)
 
-func _emit_equipment_detail(item_id: String) -> void:
-	if item_id.is_empty():
-		return
-	equipment_detail_requested.emit(item_id)
-
 func _emit_enhance(item_id: String, use_protection: bool) -> void:
 	if item_id.is_empty():
 		return
