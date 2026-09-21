@@ -51,10 +51,10 @@ func _build() -> void:
 	dock.anchor_right = 1.0
 	dock.anchor_top = 1.0
 	dock.anchor_bottom = 1.0
-	dock.offset_left = 2.0
-	dock.offset_right = -2.0
+	dock.offset_left = SAFE_SIDE_INSET
+	dock.offset_right = -SAFE_SIDE_INSET
 	dock.offset_top = -92.0
-	dock.offset_bottom = -2.0
+	dock.offset_bottom = -4.0
 	dock.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var dock_art_texture := HOME_ART.production_texture(&"dock")
 	if dock_art_texture != null:
