@@ -405,8 +405,8 @@ def _res_to_path(godot_root: Path, res_dir: str) -> Path:
     normalized = res_dir.strip()
     if not normalized.startswith("res://"):
         raise ValueError("--install-res-dir must start with res://")
-    relative = normalized[len("res://") :].strip("/").replace("/", str(Path("/")))
-    return godot_root / Path(relative)
+    parts = [part for part in normalized[len("res://") :].strip("/").split("/") if part]
+    return godot_root.joinpath(*parts)
 
 
 def _path_to_res(godot_root: Path, path: Path) -> str:
@@ -430,12 +430,13 @@ def _save_preview(frames: list[ProcessedFrame], output: Path, fps: float) -> Non
     first, rest = images[0], images[1:]
     first.save(
         output,
+        "WEBP",
         save_all=True,
         append_images=rest,
         duration=durations,
         loop=0,
-        disposal=2,
-        transparency=0,
+        lossless=True,
+        method=4,
     )
 
 
@@ -505,7 +506,7 @@ def _process_sampled_frames(
     atlas, frame_meta, grid = _build_atlas(deduped, config.columns)
     atlas_path = output_dir / "atlas.webp"
     atlas.save(atlas_path, "WEBP", lossless=True, method=6)
-    preview_path = output_dir / "preview.gif"
+    preview_path = output_dir / "preview.webp"
     _save_preview(deduped, preview_path, config.fps)
     contact_path = output_dir / "contact_sheet.webp"
     _save_contact_sheet(deduped, contact_path)
@@ -555,7 +556,6 @@ def _process_sampled_frames(
         runtime_json = runtime_dir / f"{config.animation_name}.json"
         runtime_tres = runtime_dir / f"{config.animation_name}.tres"
         shutil.copy2(atlas_path, runtime_atlas)
-        shutil.copy2(metadata_path, runtime_json)
         atlas_res_path = _path_to_res(godot_root, runtime_atlas)
         _write_spriteframes_tres(
             runtime_tres,
@@ -577,6 +577,8 @@ def _process_sampled_frames(
 
     metadata["installedGodot"] = installed
     metadata_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
+    if installed:
+        shutil.copy2(metadata_path, Path(installed["metadata"]))
     return metadata
 
 
@@ -627,7 +629,7 @@ def _self_test() -> None:
         assert 3 <= meta["uniqueFrameCount"] <= 5
         assert (output / "atlas.webp").is_file()
         assert (output / "animation.json").is_file()
-        assert (output / "preview.gif").is_file()
+        assert (output / "preview.webp").is_file()
         assert (output / "contact_sheet.webp").is_file()
         spriteframes = godot_root / "art" / "candidate" / "self_test" / "self_test_idle.tres"
         assert spriteframes.is_file()
