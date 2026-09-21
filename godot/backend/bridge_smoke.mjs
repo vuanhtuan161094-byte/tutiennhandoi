@@ -112,6 +112,7 @@ try{
   assert(created.home.life.realm==='Phàm Nhân',`Expected fresh realm Phàm Nhân, got ${created.home.life.realm}`);
   assert(Number(created.home.cultivation?.retreat?.rewardPct3h)===0,'Phàm Nhân retreat reward must be 0 by canonical V140 balance');
   assert(Number(created.home.cultivation.finalTuViPerSecond)>0,'Backend must expose positive per-second cultivation rate');
+  assert(Number.isInteger(Number(created.home.cultivation.finalTuViPerSecond)),'Per-second cultivation display rate must be rounded upward to an integer');
 
   const canonicalBeforeSecond=Number(created.home.cultivation.tuVi)||0;
   const liveBeforeSecond=Number(created.home.cultivation.liveTuVi)||0;
