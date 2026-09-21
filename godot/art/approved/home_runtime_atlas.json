@@ -1,4 +1,4 @@
-﻿{
+{
   "schema": "tutien.home-art.v2",
   "assets": {
     "background": {
@@ -177,6 +177,9 @@
     },
     "hero": {
       "path": "res://art/approved/home/home_hero_standing.webp"
+    },
+    "hero_meditation_idle_atlas": {
+      "path": "res://art/approved/home/home_meditation_idle_atlas.webp"
     },
     "portrait": {
       "path": "res://art/approved/home/home_portrait_standing.webp"

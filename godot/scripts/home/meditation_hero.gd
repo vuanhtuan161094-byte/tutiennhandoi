@@ -1,15 +1,26 @@
 extends Control
 
 const HOME_ART := preload("res://scripts/home/home_art_atlas.gd")
-const FALLBACK_PATH := "res://art/approved/home/home_hero_standing.webp"
+const MEDITATION_ATLAS_FALLBACK_PATH := "res://art/approved/home/home_meditation_idle_atlas.webp"
+const STANDING_EMERGENCY_FALLBACK_PATH := "res://art/approved/home/home_hero_standing.webp"
+
+const FRAME_SIZE := Vector2i(192, 288)
+const FRAME_COLUMNS := 4
+const FRAME_COUNT := 12
+const FRAME_FPS := 6.0
 
 var runtime_animation_ready := false
 var animation_mode := "meditation_idle"
 var accent_mode := "none"
-var animation_source := "procedural"
+var animation_source := "video_atlas"
 var source_pose := "meditation"
 
 var _body: TextureRect
+var _atlas_texture: Texture2D
+var _frame_texture: AtlasTexture
+var _frame_index := 0
+var _frame_direction := 1
+var _frame_elapsed := 0.0
 var _time := 0.0
 var _base_position := Vector2.ZERO
 var _base_scale := Vector2.ONE
@@ -49,7 +60,21 @@ func _build_body() -> void:
 	_body.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_body.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_body.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_body.texture = HOME_ART.texture(&"hero", FALLBACK_PATH)
+
+	_atlas_texture = HOME_ART.texture(&"hero_meditation_idle_atlas", MEDITATION_ATLAS_FALLBACK_PATH)
+	if _atlas_texture != null:
+		_frame_texture = AtlasTexture.new()
+		_frame_texture.atlas = _atlas_texture
+		_apply_frame_region()
+		_body.texture = _frame_texture
+		animation_source = "video_atlas"
+	else:
+		if ResourceLoader.exists(STANDING_EMERGENCY_FALLBACK_PATH):
+			_body.texture = ResourceLoader.load(STANDING_EMERGENCY_FALLBACK_PATH) as Texture2D
+		else:
+			_body.texture = null
+		animation_source = "procedural_fallback"
+
 	_body.material = _meditation_material()
 	add_child(_body)
 
@@ -61,8 +86,15 @@ func _process(delta: float) -> void:
 		return
 
 	_time += delta
-	var breath := sin(_time * 1.08)
-	var sway := sin(_time * 0.54 + 0.8)
+	if _frame_texture != null:
+		_frame_elapsed += delta
+		var frame_interval: float = 1.0 / FRAME_FPS
+		while _frame_elapsed >= frame_interval:
+			_frame_elapsed -= frame_interval
+			_step_video_frame()
+
+	var breath: float = sin(_time * 1.08)
+	var sway: float = sin(_time * 0.54 + 0.8)
 	var surge_strength := 0.0
 
 	if _surge_remaining > 0.0:
@@ -74,16 +106,38 @@ func _process(delta: float) -> void:
 	else:
 		accent_mode = "none"
 
-	position = _base_position + Vector2(sway * 0.65, breath * (1.25 + surge_strength * 1.1))
-	rotation = deg_to_rad(sway * (0.07 + surge_strength * 0.05))
+	position = _base_position + Vector2(sway * 0.32, breath * (0.55 + surge_strength * 0.85))
+	rotation = deg_to_rad(sway * 0.035)
 	scale = Vector2(
-		_base_scale.x * (1.0 + breath * 0.0025 + surge_strength * 0.004),
-		_base_scale.y * (1.0 + breath * 0.0040 + surge_strength * 0.006)
+		_base_scale.x * (1.0 + surge_strength * 0.003),
+		_base_scale.y * (1.0 + surge_strength * 0.004)
 	)
 
 	if _body.material is ShaderMaterial:
 		var mat := _body.material as ShaderMaterial
 		mat.set_shader_parameter("surge", surge_strength)
+
+func _step_video_frame() -> void:
+	_frame_index += _frame_direction
+	if _frame_index >= FRAME_COUNT - 1:
+		_frame_index = FRAME_COUNT - 1
+		_frame_direction = -1
+	elif _frame_index <= 0:
+		_frame_index = 0
+		_frame_direction = 1
+	_apply_frame_region()
+
+func _apply_frame_region() -> void:
+	if _frame_texture == null:
+		return
+	var col: int = _frame_index % FRAME_COLUMNS
+	var row: int = floori(float(_frame_index) / float(FRAME_COLUMNS))
+	_frame_texture.region = Rect2(
+		float(col * FRAME_SIZE.x),
+		float(row * FRAME_SIZE.y),
+		float(FRAME_SIZE.x),
+		float(FRAME_SIZE.y)
+	)
 
 func _meditation_material() -> ShaderMaterial:
 	var shader := Shader.new()
@@ -93,25 +147,9 @@ shader_type canvas_item;
 uniform float surge : hint_range(0.0, 1.6) = 0.0;
 
 void fragment() {
-	vec2 uv = UV;
-
-	float breath = sin(TIME * 1.08);
-	float slow = sin(TIME * 0.54 + 0.8);
-	float silk_wave = sin(TIME * 0.72 + uv.y * 9.0 + uv.x * 3.4);
-	float hair_wave = sin(TIME * 0.61 + uv.y * 7.0 - uv.x * 4.2);
-
-	float torso = smoothstep(0.16, 0.34, uv.y) * (1.0 - smoothstep(0.56, 0.72, uv.y));
-	float lower_silk = smoothstep(0.48, 0.96, uv.y);
-	float side_hair = smoothstep(0.18, 0.68, uv.y) * smoothstep(0.12, 0.34, abs(uv.x - 0.5));
-
-	uv.y += breath * 0.0016 * torso;
-	uv.x += silk_wave * (0.0018 + surge * 0.0018) * lower_silk;
-	uv.x += hair_wave * (0.0011 + surge * 0.0010) * side_hair;
-	uv.x += slow * 0.00055 * torso;
-
-	vec4 tex = texture(TEXTURE, uv);
-	float qi = 1.0 + 0.016 * sin(TIME * 0.88 + uv.y * 5.2);
-	float focus = 1.0 + surge * 0.075 * smoothstep(0.25, 0.68, 1.0 - distance(uv, vec2(0.5, 0.55)));
+	vec4 tex = texture(TEXTURE, UV);
+	float qi = 1.0 + 0.010 * sin(TIME * 0.88 + UV.y * 5.2);
+	float focus = 1.0 + surge * 0.085 * smoothstep(0.74, 0.05, distance(UV, vec2(0.5, 0.58)));
 	tex.rgb *= qi * focus;
 	COLOR = tex;
 }
