@@ -5,6 +5,7 @@ const FALLBACK_PATH := "res://art/approved/home_cultivator_centered.png"
 
 var runtime_animation_ready := false
 var animation_mode := "meditation_idle"
+var accent_mode := "none"
 var animation_source := "procedural"
 var source_pose := "meditation"
 
@@ -23,14 +24,14 @@ func _ready() -> void:
 	_build_body()
 
 func play_idle() -> void:
-	animation_mode = "meditation_idle"
+	accent_mode = "none"
 	_surge_remaining = 0.0
 	_surge_duration = 0.0
 	if _body != null and _body.material is ShaderMaterial:
 		(_body.material as ShaderMaterial).set_shader_parameter("surge", 0.0)
 
 func play_surge(duration: float = 1.25) -> void:
-	animation_mode = "meditation_surge"
+	accent_mode = "meditation_surge"
 	_surge_duration = maxf(0.25, duration)
 	_surge_remaining = _surge_duration
 
@@ -66,9 +67,9 @@ func _process(delta: float) -> void:
 		var progress := 1.0 - (_surge_remaining / maxf(_surge_duration, 0.001))
 		surge_strength = sin(progress * PI) * sin(progress * PI)
 		if _surge_remaining <= 0.0:
-			animation_mode = "meditation_idle"
+			accent_mode = "none"
 	else:
-		animation_mode = "meditation_idle"
+		accent_mode = "none"
 
 	position = _base_position + Vector2(sway * 0.65, breath * (1.25 + surge_strength * 1.1))
 	rotation = deg_to_rad(sway * (0.07 + surge_strength * 0.05))
