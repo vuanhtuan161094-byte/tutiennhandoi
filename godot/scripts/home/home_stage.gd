@@ -10,11 +10,23 @@ var _aura_outer: Control
 var _aura_inner: Control
 var _pedestal: Control
 var _sparks: Array = []
+var _was_cultivation_ready := false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_process(true)
 	_build_world()
+
+func bind(vm: Dictionary) -> void:
+	var progression: Dictionary = vm.get("progression", {})
+	var ready := bool(progression.get("ready", false))
+	if ready and not _was_cultivation_ready:
+		play_meditation_surge()
+	_was_cultivation_ready = ready
+
+func play_meditation_surge(duration: float = 1.25) -> void:
+	if is_instance_valid(_hero) and _hero.has_method("play_surge"):
+		_hero.play_surge(duration)
 
 func _build_world() -> void:
 	var bg := TextureRect.new()
