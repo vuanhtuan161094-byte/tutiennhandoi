@@ -108,11 +108,18 @@ func bind(vm: Dictionary) -> void:
 		_set_primary_art(&"cta_tribulation" if transition == "tribulation" else &"cta_ascend")
 	_update_action_band()
 
-	var retreat_enabled := bool(retreat.get("enabled", false))
+	var retreat_system_enabled := bool(retreat.get("enabled", false))
+	var retreat_bank := maxf(0.0, float(retreat.get("bank_hours", 0)))
+	var retreat_usable := retreat_system_enabled and retreat_bank >= 1.0
 	retreat_button.visible = true
-	retreat_button.disabled = not retreat_enabled
-	retreat_action_visual.modulate = Color.WHITE if retreat_enabled else Color(0.56, 0.60, 0.64, 0.72)
-	retreat_subtitle_label.text = "Tích lũy Tu Vi" if retreat_enabled else "Chưa mở"
+	retreat_button.disabled = not retreat_usable
+	retreat_action_visual.modulate = Color.WHITE if retreat_usable else Color(0.56, 0.60, 0.64, 0.72)
+	if not retreat_system_enabled:
+		retreat_subtitle_label.text = "Chưa mở"
+	elif retreat_bank < 1.0:
+		retreat_subtitle_label.text = "Cần đủ 1h"
+	else:
+		retreat_subtitle_label.text = "%.1fh sẵn sàng" % retreat_bank
 
 	stone_label.text = _fmt_num(float(resources.get("spirit_stone", 0)))
 	cp_label.text = _fmt_num(float(resources.get("reincarnation_cp", 0)))
