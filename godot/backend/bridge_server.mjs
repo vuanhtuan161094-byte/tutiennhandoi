@@ -208,7 +208,7 @@ class GodotCanonicalRuntime {
       }
     };
   }
-  characterView(){
+  characterView(selectedItemId=''){
     this.flushRealtime();
     const now=Date.now();
     this.api.syncForgingV12328(now);
@@ -228,7 +228,8 @@ class GodotCanonicalRuntime {
       character:patch.character||{},
       spiritualRoot:patch.spiritualRoot||{},
       equipment:Array.isArray(patch.equipment)?patch.equipment:[],
-      equipmentInventory:this.api.getEquipmentInventoryV129(''),
+      equipmentInventory:this.api.getEquipmentInventoryV129(String(selectedItemId||'')),
+      equipmentSelection:{selectedItemId:String(selectedItemId||'')},
       equipmentSystem:patch.equipmentSystem||{},
     };
   }
@@ -319,7 +320,10 @@ const server=createServer(async(req,res)=>{
   try{
     if(req.method==='GET'&&url.pathname==='/health')return send(res,200,{ok:true,schema:'godot-bridge-health.v1',bridgeVersion:BRIDGE_VERSION,port:PORT,authority:'canonical-dist'});
     if(req.method==='GET'&&url.pathname==='/home')return send(res,200,runtime.homeView());
-    if(req.method==='GET'&&url.pathname==='/character')return send(res,200,runtime.characterView());
+    if(req.method==='GET'&&url.pathname==='/character'){
+      const selectedItemId=String(url.searchParams.get('selectedItemId')||'').trim();
+      return send(res,200,runtime.characterView(selectedItemId));
+    }
     if(DIAGNOSTIC_MODE&&req.method==='POST'&&url.pathname==='/diagnostic/shutdown'){
       send(res,200,{ok:true,bridgeVersion:BRIDGE_VERSION,shuttingDown:true});
       setTimeout(()=>void shutdown('diagnostic'),20);
