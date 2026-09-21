@@ -91,6 +91,9 @@ func refresh(vm: Dictionary) -> void:
 	_scroll.set_deferred("scroll_vertical", scroll_pos)
 	if _selected_item_id != "":
 		_render_detail()
+		var selected := _find_item(_selected_item_id)
+		if not selected.is_empty() and not _has_heavy_detail(selected):
+			equipment_detail_requested.emit(_selected_item_id)
 
 func close() -> void:
 	visible = false
