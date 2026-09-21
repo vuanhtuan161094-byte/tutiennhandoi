@@ -2,6 +2,7 @@ extends Control
 
 signal detail_requested(detail_id: StringName)
 signal equipment_action_requested(item_id: String)
+signal equipment_detail_requested(item_id: String)
 signal equipment_enhance_requested(item_id: String, use_protection: bool)
 signal profile_action_requested(action_id: String, payload: Dictionary)
 signal potential_action_requested(stat_id: String, points: int)
@@ -248,6 +249,7 @@ func _build() -> void:
 	_detail_sheet.name = "CharacterDetailSheet"
 	_detail_sheet.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_detail_sheet.equip_requested.connect(_on_detail_equip_requested)
+	_detail_sheet.equipment_detail_requested.connect(_on_detail_equipment_detail_requested)
 	_detail_sheet.enhance_requested.connect(_on_detail_enhance_requested)
 	_detail_sheet.profile_action_requested.connect(_on_detail_profile_action_requested)
 	_detail_sheet.potential_action_requested.connect(_on_detail_potential_action_requested)
@@ -332,6 +334,12 @@ func _on_detail_equip_requested(item_id: String) -> void:
 		return
 	_status.text = "Đang trang bị…"
 	equipment_action_requested.emit(item_id)
+
+func _on_detail_equipment_detail_requested(item_id: String) -> void:
+	if item_id.is_empty():
+		return
+	_status.text = "Đang so sánh trang bị…"
+	equipment_detail_requested.emit(item_id)
 
 func _on_detail_enhance_requested(item_id: String, use_protection: bool) -> void:
 	if item_id.is_empty():
