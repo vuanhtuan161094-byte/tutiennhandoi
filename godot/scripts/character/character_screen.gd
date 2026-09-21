@@ -1,9 +1,11 @@
 extends Control
 
 signal detail_requested(detail_id: StringName)
+signal equipment_action_requested(item_id: String)
 
 const STANDING_HERO_SCRIPT := preload("res://scripts/character/standing_hero.gd")
 const EQUIPMENT_SLOT_SCRIPT := preload("res://scripts/character/character_equipment_slot.gd")
+const CHARACTER_DETAIL_SHEET_SCRIPT := preload("res://scripts/character/character_detail_sheet.gd")
 const BACKGROUND_PATH := "res://art/approved/home/home_background.webp"
 
 const GOLD_HI := Color("fff1bf")
@@ -23,6 +25,7 @@ var _stat_defense: Label
 var _potential_button: Button
 var _status: Label
 var _hero
+var _detail_sheet
 var _slot_components: Dictionary = {}
 var _vm: Dictionary = {}
 
@@ -60,6 +63,8 @@ func bind(vm: Dictionary) -> void:
 	var equipped_count := int(equipment.get("equipped_count", 0))
 	var slot_count := int(equipment.get("canonical_slot_count", 10))
 	_status.text = "Chạm ô trang bị để mở Hành Trang" if equipped_count <= 0 else "%d/%d trang bị đang mặc" % [equipped_count, slot_count]
+	if _detail_sheet != null and _detail_sheet.visible:
+		_detail_sheet.refresh(vm)
 
 func set_bridge_status(online: bool, message: String) -> void:
 	if not visible:
@@ -219,6 +224,12 @@ func _build() -> void:
 	_anchor(_status, 16, 686, 374, 714)
 	add_child(_status)
 
+	_detail_sheet = CHARACTER_DETAIL_SHEET_SCRIPT.new()
+	_detail_sheet.name = "CharacterDetailSheet"
+	_detail_sheet.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_detail_sheet.equip_requested.connect(_on_detail_equip_requested)
+	add_child(_detail_sheet)
+
 func _add_slot(stage: Control, slot_id: String, slot_label: String, x: float, y: float) -> void:
 	var slot = EQUIPMENT_SLOT_SCRIPT.new()
 	slot.name = "CharacterSlot_%s" % slot_id
@@ -264,6 +275,25 @@ func _on_slot_pressed(slot_id: String, data: Dictionary) -> void:
 
 func _emit_detail(detail_id: StringName) -> void:
 	detail_requested.emit(detail_id)
+
+func open_detail(detail_id: StringName) -> void:
+	if _detail_sheet == null or _vm.is_empty():
+		return
+	match detail_id:
+		&"equipment":
+			_detail_sheet.show_detail("equipment", _vm)
+		&"stats":
+			_detail_sheet.show_detail("stats", _vm)
+		&"profile":
+			_detail_sheet.show_detail("profile", _vm)
+		_:
+			set_status_message(String(detail_id))
+
+func _on_detail_equip_requested(item_id: String) -> void:
+	if item_id.is_empty():
+		return
+	_status.text = "Đang trang bị…"
+	equipment_action_requested.emit(item_id)
 
 func _fmt_num(value: float) -> String:
 	var raw := str(int(round(value)))
