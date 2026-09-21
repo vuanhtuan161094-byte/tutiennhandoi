@@ -54,13 +54,23 @@
       }
     },
     {
-      "name": "Standing hero is not static",
+      "name": "Standing hero uses standing pose",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CharacterHero",
+        "property": "source_pose",
+        "operator": "equals",
+        "expected": "standing"
+      }
+    },
+    {
+      "name": "Standing hero uses standing idle state",
       "action": "assert_property",
       "with": {
         "selector": "name:CharacterHero",
         "property": "animation_mode",
-        "operator": "not_equals",
-        "expected": "static"
+        "operator": "equals",
+        "expected": "standing_idle"
       }
     },
     {
