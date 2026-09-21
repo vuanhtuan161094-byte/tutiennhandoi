@@ -54,6 +54,19 @@ var combat_button: Button
 var combat_action_visual: Control
 var combat_subtitle_label: Label
 
+# Presentation-only interpolation. The canonical runtime still commits Tu Vi in
+# V140 quanta; Home only visualizes the current 15-second quantum continuously.
+var display_tu_vi := 0.0
+var display_rate_per_second := 0.0
+var cultivation_animation_active := false
+
+var _canonical_tu_vi := 0.0
+var _display_required_tu_vi := 1.0
+var _rate_per_15s := 0.0
+var _cultivation_ready := false
+var _bridge_online := false
+var _has_cultivation_sample := false
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	_build_top_shell()
@@ -61,6 +74,7 @@ func _ready() -> void:
 	_build_progress()
 	_build_primary()
 	_build_quick_actions()
+	set_process(true)
 
 func bind(vm: Dictionary) -> void:
 	var identity: Dictionary = vm.get("identity", {})
@@ -81,12 +95,10 @@ func bind(vm: Dictionary) -> void:
 	if injury_badge.visible:
 		injury_badge.text = "Thương Thế %.0f%%" % injury
 
-	var tu_vi := float(progression.get("tu_vi", 0))
+	var tu_vi := maxf(0.0, float(progression.get("tu_vi", 0)))
 	var required := maxf(1.0, float(progression.get("required_tu_vi", 1)))
-	progress_bar.max_value = required
-	progress_bar.value = tu_vi
-	progress_text.text = "Tu Vi · %s / %s" % [_fmt_num(tu_vi), _fmt_num(required)]
-	rate_label.text = "+%s Tu Vi / 15s" % _fmt_num(float(progression.get("rate_per_15s", 0)))
+	var rate_per_15s := maxf(0.0, float(progression.get("rate_per_15s", 0)))
+	_bind_cultivation_sample(tu_vi, required, rate_per_15s, bool(progression.get("ready", false)))
 
 	var ready := bool(progression.get("ready", false))
 	var transition := str(progression.get("transition", "auto"))
@@ -128,12 +140,70 @@ func bind(vm: Dictionary) -> void:
 		status_label.text = ""
 
 func set_bridge_status(online: bool, message: String) -> void:
+	_bridge_online = online
 	bridge_label.text = "ONLINE" if online else _friendly_bridge_message(message)
 	bridge_label.visible = not online
 	bridge_label.add_theme_color_override("font_color", MUTED)
+	cultivation_animation_active = _bridge_online and not _cultivation_ready and display_rate_per_second > 0.0
 
 func set_status_message(message: String) -> void:
 	status_label.text = message
+
+func _process(delta: float) -> void:
+	if not cultivation_animation_active or not _has_cultivation_sample:
+		return
+
+	# Never invent more than the next canonical 15-second commit. If the bridge
+	# is delayed/offline the visual counter stops at that boundary.
+	var quantum_ceiling := minf(_display_required_tu_vi, _canonical_tu_vi + _rate_per_15s)
+	display_tu_vi = minf(quantum_ceiling, display_tu_vi + display_rate_per_second * maxf(0.0, delta))
+	_render_cultivation_display()
+
+func _bind_cultivation_sample(tu_vi: float, required: float, rate_per_15s: float, ready: bool) -> void:
+	var reset_display := not _has_cultivation_sample 		or not is_equal_approx(required, _display_required_tu_vi) 		or tu_vi < _canonical_tu_vi - 0.001
+
+	_display_required_tu_vi = maxf(1.0, required)
+	_rate_per_15s = maxf(0.0, rate_per_15s)
+	display_rate_per_second = cultivation_rate_per_second(_rate_per_15s)
+	_cultivation_ready = ready
+
+	if reset_display:
+		display_tu_vi = tu_vi
+	elif tu_vi > _canonical_tu_vi + 0.001:
+		# Canonical V140 committed the quantum. Reconcile forward only; the
+		# interpolation should never make the player see Tu Vi tick backward.
+		display_tu_vi = maxf(display_tu_vi, tu_vi)
+	else:
+		display_tu_vi = maxf(display_tu_vi, tu_vi)
+
+	_canonical_tu_vi = tu_vi
+	_has_cultivation_sample = true
+
+	if ready:
+		display_tu_vi = minf(_display_required_tu_vi, maxf(display_tu_vi, tu_vi))
+
+	cultivation_animation_active = _bridge_online and not ready and display_rate_per_second > 0.0
+	_render_cultivation_display()
+
+func _render_cultivation_display() -> void:
+	if progress_bar == null or progress_text == null or rate_label == null:
+		return
+	progress_bar.max_value = _display_required_tu_vi
+	progress_bar.value = clampf(display_tu_vi, 0.0, _display_required_tu_vi)
+	progress_text.text = "Tu Vi · %s / %s" % [
+		_fmt_num(display_tu_vi),
+		_fmt_num(_display_required_tu_vi),
+	]
+	if display_rate_per_second > 0.0:
+		rate_label.text = "+%s/s · +%s/15s" % [
+			_fmt_rate(display_rate_per_second),
+			_fmt_num(_rate_per_15s),
+		]
+	else:
+		rate_label.text = "+0 Tu Vi / 15s"
+
+static func cultivation_rate_per_second(rate_per_15s: float) -> float:
+	return maxf(0.0, rate_per_15s) / 15.0
 
 func _build_top_shell() -> void:
 	var shell := MarginContainer.new()
@@ -717,6 +787,11 @@ func _fmt_decimal(value: float) -> String:
 	if is_equal_approx(value, round(value)):
 		return str(int(round(value)))
 	return "%.1f" % value
+
+func _fmt_rate(value: float) -> String:
+	if is_equal_approx(value, round(value)):
+		return str(int(round(value)))
+	return "%.2f" % value
 
 func _label(value: String, size: int, color: Color) -> Label:
 	var label := Label.new()
