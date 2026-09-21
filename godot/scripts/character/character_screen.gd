@@ -80,7 +80,7 @@ func bind(vm: Dictionary) -> void:
 				_bind_slot(slot_variant)
 	var equipped_count := int(equipment.get("equipped_count", 0))
 	var slot_count := int(equipment.get("canonical_slot_count", 10))
-	_status.text = "Chạm ô trang bị để mở Hành Trang" if equipped_count <= 0 else "%d/%d trang bị đang mặc" % [equipped_count, slot_count]
+	_status.text = "Chạm ô trang bị để mở Kho Đồ" if equipped_count <= 0 else "%d/%d trang bị đang mặc" % [equipped_count, slot_count]
 	if _detail_sheet != null and _detail_sheet.visible:
 		_detail_sheet.refresh(vm)
 	if _equipment_inventory != null and _equipment_inventory.visible:
@@ -224,7 +224,7 @@ func _build() -> void:
 	_potential_button.pressed.connect(_emit_detail.bind(&"potential"))
 	add_child(_potential_button)
 
-	var actions := [["Trang Bị", &"equipment"], ["Thuộc Tính", &"stats"], ["Hồ Sơ", &"profile"]]
+	var actions := [["Kho Đồ", &"equipment"], ["Thuộc Tính", &"stats"], ["Hồ Sơ", &"profile"]]
 	for i in range(actions.size()):
 		var action = actions[i]
 		var button := Button.new()
