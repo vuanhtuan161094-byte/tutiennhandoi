@@ -75,6 +75,7 @@ var _scroll: ScrollContainer
 var _tabs: Dictionary = {}
 var _detail_layer: Panel
 var _detail_body: VBoxContainer
+var _status: Label
 
 func _ready() -> void:
 	name = "EquipmentInventoryScreen"
@@ -107,6 +108,11 @@ func refresh(vm: Dictionary) -> void:
 		var selected := _find_item(_selected_item_id)
 		if not selected.is_empty() and not _has_heavy_detail(selected):
 			equipment_detail_requested.emit(_selected_item_id)
+
+func set_status_message(message: String) -> void:
+	if message != "" and _status != null:
+		_status.text = message
+
 
 func close() -> void:
 	visible = false
@@ -208,13 +214,23 @@ func _build() -> void:
 
 	_scroll = ScrollContainer.new()
 	_scroll.name = "InventoryScroll"
-	_anchor(_scroll, 10, 162, 372, 734)
+	_anchor(_scroll, 10, 162, 372, 704)
 	panel.add_child(_scroll)
 
 	_body = VBoxContainer.new()
 	_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_body.add_theme_constant_override("separation", 8)
 	_scroll.add_child(_body)
+
+	_status = Label.new()
+	_status.name = "InventoryStatus"
+	_status.text = "Chạm một món để xem chi tiết."
+	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_status.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_status.add_theme_font_size_override("font_size", 8)
+	_status.add_theme_color_override("font_color", MUTED)
+	_anchor(_status, 10, 708, 372, 732)
+	panel.add_child(_status)
 
 	_detail_layer = Panel.new()
 	_detail_layer.name = "InventoryItemDetail"
@@ -1192,15 +1208,18 @@ func _hide_detail() -> void:
 func _emit_equipment_command(action_id: String, payload: Dictionary) -> void:
 	if action_id.is_empty():
 		return
+	set_status_message("Đang xử lý trang bị…")
 	equipment_command_requested.emit(action_id, payload)
 
 
 func _emit_equip(item_id: String) -> void:
 	if item_id != "":
+		set_status_message("Đang trang bị…")
 		equip_requested.emit(item_id)
 
 func _emit_enhance(item_id: String, use_protection: bool) -> void:
 	if item_id != "":
+		set_status_message("Đang cường hóa…")
 		enhance_requested.emit(item_id, use_protection)
 
 func _panel_card(accent: Color = CYAN) -> VBoxContainer:
