@@ -73,6 +73,7 @@ func _connect_ui() -> void:
 	overlay.retreat_hours_selected.connect(_on_retreat_hours_selected)
 	character_screen.detail_requested.connect(_on_character_detail_requested)
 	character_screen.equipment_action_requested.connect(_on_character_equipment_action_requested)
+	character_screen.equipment_enhance_requested.connect(_on_character_equipment_enhance_requested)
 	character_screen.profile_action_requested.connect(_on_character_profile_action_requested)
 	character_screen.potential_action_requested.connect(_on_character_potential_action_requested)
 	AppState.route_changed.connect(_on_route_changed)
@@ -193,6 +194,14 @@ func _on_action_completed(action_id: String, result: Dictionary) -> void:
 	elif action_id == "equipItem":
 		character_screen.set_status_message("Đã cập nhật trang bị")
 		backend_bridge.refresh_character()
+	elif action_id == "enhanceEquipment":
+		var success := bool(result.get("success", false))
+		var after_level := int(result.get("afterLevel", result.get("level", 0)))
+		character_screen.set_status_message(
+			"Cường hóa thành công · +%d" % after_level if success
+			else "Cường hóa chưa thành công"
+		)
+		backend_bridge.refresh_character()
 	elif action_id in ["nourishBloodline", "advanceBloodline", "advancePhysique"]:
 		character_screen.set_status_message("Hồ sơ tu hành đã cập nhật")
 		backend_bridge.refresh_character()
@@ -273,6 +282,14 @@ func _on_character_equipment_action_requested(item_id: String) -> void:
 	if item_id.is_empty():
 		return
 	backend_bridge.perform_action("equipItem", {"itemId": item_id})
+
+func _on_character_equipment_enhance_requested(item_id: String, use_protection: bool) -> void:
+	if item_id.is_empty():
+		return
+	backend_bridge.perform_action("enhanceEquipment", {
+		"itemId": item_id,
+		"useProtection": use_protection,
+	})
 
 func _on_character_profile_action_requested(action_id: String, payload: Dictionary) -> void:
 	if action_id.is_empty():
