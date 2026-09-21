@@ -37,11 +37,18 @@ Rules:
 ## 4. Testing pyramid
 
 - G0: targeted test when changing a narrow mechanic/contract;
-- G1: **Game CI Fast** after executable/source changes;
-- G2: real-browser **Runtime Smoke** in the same Game CI job;
-- G3: **Canonical Closure QA** only for approved `[closure]` or manual closure mode.
+- G1: Fast QA after executable/source changes;
+- G2: real-browser Runtime Smoke;
+- G3: Canonical Closure QA only for an approved closure candidate.
 
-For UI-visible work, the Runtime Smoke artifact is the normal visual-smoke evidence because it comes from the real game at the primary 390×844 viewport.
+Current default is local:
+- `TEST_GAME_LOCAL.cmd` for web/runtime;
+- Mode 5 — FULL CLEAN for clean exact-candidate proof;
+- `VERIFY_GODOT_LOCAL.cmd` for Godot.
+
+Manual GitHub Actions remains available as an optional exact-SHA gate when account storage is available.
+
+For UI-visible work, evidence must come from the real game at the primary 390×844 viewport.
 
 Extra screenshots are risk-driven, not automatic:
 - add compact/tall viewport proof only for responsive/layout-sensitive changes;
@@ -52,16 +59,19 @@ Extra screenshots are risk-driven, not automatic:
 
 ### `.github/workflows/ci.yml`
 
-Normal push to `main`:
+GitHub Actions is manual-only in the current repository mode. It does not run on every push.
+
+Manual `mode=fast`:
 1. Backend Fast QA;
 2. Frontend Fast QA;
 3. validate runtime-smoke contracts;
 4. boot canonical server;
 5. run deterministic real-browser journeys;
-6. upload exact-SHA runtime report/screenshots.
+6. upload short-retention exact-SHA evidence.
 
-Closure:
-- a commit message containing `[closure]`, or manual dispatch with `mode=closure`, runs Canonical backend/frontend QA after Fast + Runtime Smoke pass.
+Manual `mode=closure` adds Canonical backend/frontend QA after Fast + Runtime Smoke.
+
+Normal development should use the local gates above unless the user explicitly chooses Actions.
 
 The workflow deliberately keeps browser smoke and visual smoke together so the runner is checked out, configured and booted only once.
 

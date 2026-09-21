@@ -8,18 +8,25 @@ For any production/runtime/UI/asset change:
 
 1. read the current checkpoint and development protocol before editing;
 2. patch the smallest coherent change on current `main`;
-3. verify the **exact candidate SHA** with the unified **Game CI** workflow;
-4. Game CI must pass Fast QA and the real-browser Runtime Smoke;
-5. inspect the runtime evidence when the change is UI-visible or the smoke fails;
-6. do not report `done`, `complete`, `healthy`, or equivalent while a required exact-SHA gate is red;
+3. verify the candidate with the **currently enabled project gate**;
+4. when GitHub Actions push automation is disabled or unavailable, use clean local evidence instead of forcing Actions;
+5. inspect runtime evidence when the change is UI-visible or a smoke gate fails;
+6. do not report `done`, `complete`, `healthy`, or equivalent while a required gate is red;
 7. if a required gate fails, classify it and patch the smallest responsible layer;
 8. do **not** stop and wait for the user to say `continue` during normal fix iterations;
 9. UI/UX closure still requires explicit user visual approval of actual runtime screenshots;
-10. Canonical Closure QA runs only for an approved `[closure]` candidate or manual closure dispatch.
+10. closure uses Canonical QA only after an approved candidate.
 
-**No exact-SHA evidence = no completion claim.**
+**No exact candidate evidence = no completion claim.**
 
-The runtime screenshots produced by Game CI are the normal visual-smoke evidence. Deep multi-state/multi-viewport capture tools under `qa/visual/` are diagnostic/on-demand tools, not a mandatory per-push gate.
+Current operating mode:
+- GitHub Actions is **manual-only** to avoid automatic artifact/storage consumption.
+- Web/runtime candidates use `TEST_GAME_LOCAL.cmd`; closure evidence starts from Mode 5 — FULL CLEAN on a clean checkout.
+- Godot candidates use `VERIFY_GODOT_LOCAL.cmd`.
+- Canonical closure can be run locally with the backend/frontend closure runners when needed.
+- Manual GitHub Actions may be used only when explicitly desired and account storage is available.
+
+Deep multi-state/multi-viewport capture tools under `qa/visual/` remain diagnostic/on-demand tools, not a mandatory per-push gate.
 
 ## 1. Source of truth
 
@@ -70,11 +77,16 @@ When another chat/agent is active:
 
 The repository has one normal CI workflow and one diagnostic workflow:
 
+### Local verification — current default
+- `TEST_GAME_LOCAL.cmd` covers Fast, Browser, Visual and Full local web/runtime proof.
+- Mode 5 — FULL CLEAN is the default exact-clean candidate gate while Actions push automation is disabled.
+- `VERIFY_GODOT_LOCAL.cmd` is the mandatory Godot import/parse/unit/bridge/runtime/Stagehand gate.
+
 ### `.github/workflows/ci.yml`
-- every push to `main` -> Fast backend + Fast frontend + real-browser Runtime Smoke at the primary 390×844 viewport;
-- Runtime Smoke covers representative production journeys and exports exact-SHA screenshots/report artifacts;
-- `[closure]` commit or manual `mode=closure` -> Canonical backend + frontend QA after Fast/Smoke pass;
-- the normal CI intentionally does **not** run the deep Combat visual showcase.
+- manual dispatch only;
+- `mode=fast` -> Fast backend + Fast frontend + representative Runtime Smoke;
+- `mode=closure` -> the same Fast/Smoke gate followed by Canonical backend + frontend QA;
+- artifact retention is intentionally short to limit Actions storage use.
 
 ### `.github/workflows/runner-diagnostics.yml`
 - manual only;
