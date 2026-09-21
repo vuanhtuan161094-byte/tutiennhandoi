@@ -160,8 +160,10 @@ func _on_route_changed(route_id: StringName) -> void:
 	if character_active:
 		character_screen.set_status_message("Đang tải nhân vật…")
 		backend_bridge.refresh_character()
-	elif route_id != &"home":
-		hud.set_status_message("%s sẽ được port ở vertical slice tiếp theo" % _route_label(route_id))
+	else:
+		character_screen.hide_detail()
+		if route_id != &"home":
+			hud.set_status_message("%s sẽ được port ở vertical slice tiếp theo" % _route_label(route_id))
 
 func _on_character_detail_requested(detail_id: StringName) -> void:
 	match detail_id:
