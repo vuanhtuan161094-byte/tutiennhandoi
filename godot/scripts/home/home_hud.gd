@@ -4,6 +4,7 @@ signal identity_pressed
 signal cultivation_pressed
 signal retreat_pressed
 signal route_requested(route_id: StringName)
+signal character_section_requested(section_id: StringName)
 signal primary_action_requested(action_id: String)
 
 const HOME_ART := preload("res://scripts/home/home_art_atlas.gd")
@@ -49,6 +50,9 @@ var quick_actions: HBoxContainer
 var retreat_button: Button
 var retreat_action_visual: Control
 var retreat_subtitle_label: Label
+var combat_button: Button
+var combat_action_visual: Control
+var combat_subtitle_label: Label
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
@@ -277,7 +281,7 @@ func _build_identity_clusters() -> void:
 	root_tap.text = ""
 	root_tap.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
 	root_tap.add_theme_stylebox_override("hover", _flat(Color(0.30, 0.85, 0.70, 0.045), 15, Color(0.40, 0.90, 0.72, 0.22), 1))
-	root_tap.pressed.connect(func(): route_requested.emit(&"roots"))
+	root_tap.pressed.connect(func(): character_section_requested.emit(&"profile"))
 	right.add_child(root_tap)
 
 	var root_col := VBoxContainer.new()
@@ -448,14 +452,23 @@ func _build_quick_actions() -> void:
 	retreat_subtitle_label = retreat_button.get_meta("subtitle_label") as Label
 	retreat_button.pressed.connect(func(): retreat_pressed.emit())
 
-	var character := _add_action_cell(&"orb_character", ICON_CHARACTER, "Nhân Vật", "Hồ sơ đời", VIOLET, "CharacterAction")
-	character.pressed.connect(func(): identity_pressed.emit())
+	var character := _add_action_cell(&"orb_character", ICON_CHARACTER, "Nhân Vật", "Trang bị · Thuộc tính", VIOLET, "CharacterAction")
+	character.pressed.connect(func(): route_requested.emit(&"character"))
 
-	var root := _add_action_cell(&"orb_root", ICON_ROOT, "Linh Căn", "Căn cơ", MINT, "RootAction")
-	root.pressed.connect(func(): route_requested.emit(&"roots"))
+	var root := _add_action_cell(&"orb_root", ICON_ROOT, "Linh Căn", "Căn nguyên", MINT, "RootAction")
+	root.pressed.connect(func(): character_section_requested.emit(&"profile"))
 
-	var combat := _add_action_cell(&"orb_combat", ICON_COMBAT, "Chiến Đấu", "Khiêu chiến", CYAN, "CombatAction")
-	combat.pressed.connect(func(): route_requested.emit(&"dungeons"))
+	combat_button = _add_action_cell(&"orb_combat", ICON_COMBAT, "Chiến Đấu", "Chưa mở", CYAN, "CombatAction")
+	combat_action_visual = combat_button.get_meta("visual_root") as Control
+	combat_subtitle_label = combat_button.get_meta("subtitle_label") as Label
+	_set_action_enabled(combat_button, combat_action_visual, combat_subtitle_label, false, "Chưa mở")
+
+func _set_action_enabled(button: Button, visual: Control, subtitle: Label, enabled: bool, disabled_text: String = "Chưa mở") -> void:
+	button.disabled = not enabled
+	if visual != null:
+		visual.modulate = Color.WHITE if enabled else Color(0.50, 0.56, 0.62, 0.58)
+	if subtitle != null and not enabled:
+		subtitle.text = disabled_text
 
 func _update_action_band() -> void:
 	# The target reserves a stable four-orb band. The conditional advancement
