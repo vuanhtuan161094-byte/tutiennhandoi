@@ -244,6 +244,15 @@ class GodotCanonicalRuntime {
       if(!itemId)throw new Error('Thiếu itemId trang bị.');
       result=this.api.perform({type:'equip',itemId});
     }
+    else if(id==='enhanceEquipment'){
+      const itemId=String(payload.itemId||'').trim();
+      if(!itemId)throw new Error('Thiếu itemId trang bị.');
+      result=this.api.perform({
+        type:'enhanceEquipment',
+        itemId,
+        useProtection:Boolean(payload.useProtection)
+      });
+    }
     else if(id==='nourishBloodline'){
       result=this.api.perform({type:'nourishBloodline',points:Math.max(1,Math.min(100,Number(payload.points)||10))});
     }
