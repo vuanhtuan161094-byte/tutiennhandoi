@@ -15,3 +15,10 @@ func test_rate_uses_canonical_commit_interval() -> void:
 func test_home_rate_label_is_integer_only() -> void:
 	assert_str(HOME_HUD.cultivation_rate_label(100.0)).is_equal("+7 Tu Vi/s")
 	assert_str(HOME_HUD.cultivation_rate_label(90.0)).is_equal("+6 Tu Vi/s")
+
+func test_ling_quang_event_copy_has_distinct_rarity_tiers() -> void:
+	assert_str(str(HOME_HUD.ling_quang_event_copy(2)["title"])).is_equal("LINH QUANG ×2")
+	assert_str(str(HOME_HUD.ling_quang_event_copy(3)["title"])).is_equal("LINH QUANG ×3")
+	assert_str(str(HOME_HUD.ling_quang_event_copy(4)["title"])).is_equal("LINH QUANG ×4")
+	assert_str(str(HOME_HUD.ling_quang_event_copy(6)["title"])).is_equal("ĐẠI LINH QUANG ×6")
+	assert_str(str(HOME_HUD.ling_quang_event_copy(10)["title"])).is_equal("THIÊN ĐỊA CỘNG MINH ×10")
