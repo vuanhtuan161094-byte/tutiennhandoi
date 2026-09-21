@@ -59,6 +59,10 @@ var _vm: Dictionary = {}
 var _focus_slot := ""
 var _filter := "all"
 var _selected_item_id := ""
+var _forge_slot := "weapon"
+var _merge_group_key := ""
+var _merge_main_id := ""
+var _merge_fodder_ids: Array[String] = []
 
 var _title: Label
 var _subtitle: Label
@@ -83,6 +87,10 @@ func show_inventory(vm: Dictionary, focus_slot: String = "") -> void:
 	_focus_slot = focus_slot
 	_filter = "all"
 	_selected_item_id = ""
+	_forge_slot = focus_slot if focus_slot != "" else "weapon"
+	_merge_group_key = ""
+	_merge_main_id = ""
+	_merge_fodder_ids.clear()
 	visible = true
 	_detail_layer.visible = false
 	_render()
@@ -184,6 +192,7 @@ func _build() -> void:
 		["jewelry", "TRANG SỨC"],
 		["sets", "SET"],
 		["materials", "VẬT LIỆU"],
+		["forge", "LUYỆN"],
 	]:
 		var tab_id := str(spec[0])
 		var button := Button.new()
@@ -287,6 +296,8 @@ func _render(reset_scroll: bool = true) -> void:
 			_render_sets()
 		"materials":
 			_render_materials()
+		"forge":
+			_render_forge()
 		_:
 			_render_items()
 
@@ -521,6 +532,227 @@ func _render_materials() -> void:
 			_add_title_pair(card, _compact_set_name(str(row.get("setName", "Tàn Ấn"))), "×%s" % _fmt_num(balance), accent)
 			_add_small_text(card, "Dùng để Khắc Bộ lên trang bị V142 phù hợp.", MUTED)
 
+func _render_forge() -> void:
+	var equipment: Dictionary = _vm.get("equipment", {})
+	var inventory: Array = equipment.get("inventory", [])
+	var system: Dictionary = equipment.get("system", {})
+	var v142: Dictionary = system.get("v142", {})
+	var fragment_rows = v142.get("fragmentRows", [])
+
+	var forge := _panel_card(GOLD)
+	_add_title_pair(forge, "LUYỆN TRANG BỊ", str(SLOT_LABELS.get(_forge_slot, _forge_slot)), GOLD)
+	_add_small_text(forge, "Chọn ô trang bị, sau đó dùng Mảnh đúng Bậc để luyện món mới.", MUTED)
+
+	var slot_grid := GridContainer.new()
+	slot_grid.name = "InventoryForgeSlotGrid"
+	slot_grid.columns = 5
+	slot_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slot_grid.add_theme_constant_override("h_separation", 3)
+	slot_grid.add_theme_constant_override("v_separation", 3)
+	for slot_id in ATTIRE_SLOTS + JEWELRY_SLOTS:
+		var selected := slot_id == _forge_slot
+		var button := Button.new()
+		button.name = "ForgeSlot_%s" % slot_id
+		button.text = _slot_short_label(slot_id)
+		button.custom_minimum_size = Vector2(0, 30)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.focus_mode = Control.FOCUS_NONE
+		button.add_theme_font_size_override("font_size", 7)
+		button.add_theme_color_override("font_color", GOLD_HI if selected else MUTED)
+		button.add_theme_stylebox_override("normal", _box(
+			Color(0.08, 0.075, 0.035, 0.94) if selected else Color(0.015, 0.045, 0.058, 0.90),
+			9,
+			GOLD if selected else Color(0.35, 0.58, 0.64, 0.20),
+			1
+		))
+		button.pressed.connect(_select_forge_slot.bind(slot_id))
+		slot_grid.add_child(button)
+	forge.add_child(slot_grid)
+
+	var shown_fragments := 0
+	if typeof(fragment_rows) == TYPE_ARRAY:
+		for row_variant in fragment_rows:
+			if typeof(row_variant) != TYPE_DICTIONARY:
+				continue
+			var row: Dictionary = row_variant
+			var balance := maxi(0, int(row.get("balance", 0)))
+			if balance <= 0:
+				continue
+			var card := _panel_card(CYAN)
+			_add_title_pair(card, str(row.get("rankName", "Bậc")), "×%s Mảnh" % _fmt_num(balance), CYAN)
+			var actions := HBoxContainer.new()
+			actions.add_theme_constant_override("separation", 5)
+			card.add_child(actions)
+
+			var craft_cost := maxi(1, int(row.get("craftCost", 50)))
+			var craft := _action_button(
+				"ForgeCraft_%s_%s" % [str(row.get("rankIndex", 0)), _forge_slot],
+				"LUYỆN · %s" % _fmt_num(craft_cost),
+				balance >= craft_cost
+			)
+			craft.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			craft.pressed.connect(_emit_equipment_command.bind("craftEquipmentV142", {
+				"slot": _forge_slot,
+				"rankIndex": int(row.get("rankIndex", 0)),
+			}))
+			actions.add_child(craft)
+
+			var refine_enabled := bool(row.get("refinable", false))
+			var refine := _action_button(
+				"ForgeRefine_%s" % str(row.get("rankIndex", 0)),
+				"TINH 3:1",
+				refine_enabled
+			)
+			refine.custom_minimum_size.x = 82
+			refine.pressed.connect(_emit_equipment_command.bind("refineEquipmentFragmentsV142", {
+				"fromRank": int(row.get("rankIndex", 0)),
+				"batches": 1,
+			}))
+			actions.add_child(refine)
+			shown_fragments += 1
+
+	if shown_fragments == 0:
+		_add_small_text(forge, "Chưa có Mảnh Trang Bị để luyện.", MUTED)
+
+	_add_section_label("HỢP THÀNH 3 → 1")
+	var groups := _merge_groups(inventory)
+	if groups.is_empty():
+		_add_empty("Chưa có nhóm 3 món V142 cùng ô và cùng Bậc để Hợp Thành.")
+		return
+
+	for key in groups.keys():
+		var group: Array = groups[key]
+		var first: Dictionary = group[0]
+		var card := _panel_card(_set_accent(str(first.get("setId", ""))))
+		_add_title_pair(card, "%s · %s" % [
+			str(first.get("slotLabel", SLOT_LABELS.get(str(first.get("slot", "")), "Trang bị"))),
+			str(first.get("rankName", "Bậc")),
+		], "%d món" % group.size(), CYAN)
+		var pick := _action_button(
+			"MergeGroup_%s" % _safe_node_name(str(key)),
+			"CHỌN 3 MÓN",
+			true
+		)
+		pick.pressed.connect(_select_merge_group.bind(str(key)))
+		card.add_child(pick)
+
+	if _merge_group_key != "" and groups.has(_merge_group_key):
+		_render_merge_picker(groups[_merge_group_key])
+
+func _merge_groups(inventory: Array) -> Dictionary:
+	var groups := {}
+	for item_variant in inventory:
+		if typeof(item_variant) != TYPE_DICTIONARY:
+			continue
+		var item: Dictionary = item_variant
+		if not bool(item.get("isV142", false)):
+			continue
+		var key := "%s|%d" % [str(item.get("slot", "")), int(item.get("rankIndex", -1))]
+		if not groups.has(key):
+			groups[key] = []
+		groups[key].append(item)
+	var eligible := {}
+	for key in groups.keys():
+		var group: Array = groups[key]
+		if group.size() >= 3:
+			eligible[key] = group
+	return eligible
+
+func _render_merge_picker(group: Array) -> void:
+	var card := _panel_card(GOLD)
+	_add_title_pair(card, "CHỌN PHÔI", "1 giữ · 2 hy sinh", GOLD)
+	_add_small_text(card, "Món chính giữ Set, Affix và cấp Cường Hóa. Món đang mặc/khóa/Set không được dùng làm phôi phụ.", MUTED)
+
+	for item_variant in group:
+		if typeof(item_variant) != TYPE_DICTIONARY:
+			continue
+		var item: Dictionary = item_variant
+		var item_id := str(item.get("id", ""))
+		var is_main := item_id == _merge_main_id
+		var is_fodder := _merge_fodder_ids.has(item_id)
+		var protected_fodder := bool(item.get("equipped", false)) or bool(item.get("locked", false)) or str(item.get("setId", "")) != ""
+		var caption := ""
+		if is_main:
+			caption = "GIỮ · " + _merge_item_label(item)
+		elif is_fodder:
+			caption = "HY SINH · " + _merge_item_label(item)
+		elif _merge_main_id == "":
+			caption = "CHỌN GIỮ · " + _merge_item_label(item)
+		else:
+			caption = "CHỌN PHỤ · " + _merge_item_label(item)
+		var enabled := is_main or is_fodder or _merge_main_id == "" or not protected_fodder
+		var button := _action_button("MergePick_%s" % _safe_node_name(item_id), caption, enabled)
+		button.pressed.connect(_toggle_merge_item.bind(item_id))
+		card.add_child(button)
+
+	var footer := HBoxContainer.new()
+	footer.add_theme_constant_override("separation", 5)
+	card.add_child(footer)
+	var reset := _action_button("MergeReset", "LÀM LẠI", true)
+	reset.pressed.connect(_reset_merge_selection)
+	footer.add_child(reset)
+	var confirm := _action_button(
+		"MergeConfirm",
+		"HỢP THÀNH",
+		_merge_main_id != "" and _merge_fodder_ids.size() == 2
+	)
+	confirm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	confirm.pressed.connect(_confirm_merge)
+	footer.add_child(confirm)
+
+func _merge_item_label(item: Dictionary) -> String:
+	var suffix := " +%d" % int(item.get("enhancementLevel", 0))
+	if str(item.get("setId", "")) != "":
+		suffix += " · SET"
+	if bool(item.get("equipped", false)):
+		suffix += " · ĐANG MẶC"
+	if bool(item.get("locked", false)):
+		suffix += " · KHÓA"
+	return str(item.get("name", "Trang bị")) + suffix
+
+func _select_forge_slot(slot_id: String) -> void:
+	_forge_slot = slot_id
+	_render()
+
+func _select_merge_group(key: String) -> void:
+	_merge_group_key = key
+	_merge_main_id = ""
+	_merge_fodder_ids.clear()
+	_render(false)
+
+func _toggle_merge_item(item_id: String) -> void:
+	if item_id == "":
+		return
+	if _merge_main_id == "":
+		_merge_main_id = item_id
+		_render(false)
+		return
+	if item_id == _merge_main_id:
+		_reset_merge_selection()
+		return
+	if _merge_fodder_ids.has(item_id):
+		_merge_fodder_ids.erase(item_id)
+	elif _merge_fodder_ids.size() < 2:
+		_merge_fodder_ids.append(item_id)
+	_render(false)
+
+func _reset_merge_selection() -> void:
+	_merge_main_id = ""
+	_merge_fodder_ids.clear()
+	_render(false)
+
+func _confirm_merge() -> void:
+	if _merge_main_id == "" or _merge_fodder_ids.size() != 2:
+		return
+	_emit_equipment_command("mergeEquipmentV142", {
+		"mainItemId": _merge_main_id,
+		"fodderItemAId": _merge_fodder_ids[0],
+		"fodderItemBId": _merge_fodder_ids[1],
+	})
+	_merge_main_id = ""
+	_merge_fodder_ids.clear()
+
+
 func _select_item(item_id: String) -> void:
 	if item_id.is_empty():
 		return
@@ -742,6 +974,14 @@ func _find_item(item_id: String) -> Dictionary:
 func _has_heavy_detail(item: Dictionary) -> bool:
 	return item.has("effectiveStats") or item.has("nextEnhanceChancePct") or item.has("affixDetails")
 
+func _slot_short_label(slot_id: String) -> String:
+	var labels := {
+		"weapon": "BINH", "head": "QUAN", "robe": "BÀO", "belt": "ĐÁI", "gloves": "UYỂN",
+		"boots": "NGOA", "necklace": "BỘI", "ring": "GIỚI", "bracelet": "TRẠC", "talisman": "PHÙ",
+	}
+	return str(labels.get(slot_id, slot_id.to_upper()))
+
+
 func _set_filter(filter_id: String) -> void:
 	_filter = filter_id
 	_selected_item_id = ""
@@ -764,6 +1004,12 @@ func _update_tab_styles() -> void:
 func _hide_detail() -> void:
 	_selected_item_id = ""
 	_detail_layer.visible = false
+
+func _emit_equipment_command(action_id: String, payload: Dictionary) -> void:
+	if action_id.is_empty():
+		return
+	equipment_command_requested.emit(action_id, payload)
+
 
 func _emit_equip(item_id: String) -> void:
 	if item_id != "":
