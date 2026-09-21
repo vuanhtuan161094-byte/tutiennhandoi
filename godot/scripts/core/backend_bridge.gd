@@ -1,6 +1,7 @@
 extends Node
 
 signal home_updated(home: Dictionary)
+signal character_updated(character_view: Dictionary)
 signal bridge_status_changed(online: bool, message: String)
 signal action_failed(message: String)
 signal action_completed(action_id: String, result: Dictionary)
@@ -9,15 +10,18 @@ const PORT := 4192
 const BASE_URL := "http://127.0.0.1:4192"
 const POLL_SECONDS := 1.0
 const EXPECTED_HOME_SCHEMA := "godot-home-bridge.v1"
+const EXPECTED_CHARACTER_SCHEMA := "godot-character-bridge.v1"
 const EXPECTED_BRIDGE_VERSION := "godot-bridge.v2"
 
 var _poll_http: HTTPRequest
+var _character_http: HTTPRequest
 var _action_http: HTTPRequest
 var _timer: Timer
 var _bridge_pid: int = -1
 var _online := false
 var _status_message := ""
 var _poll_inflight := false
+var _character_inflight := false
 var _action_inflight := false
 var _pending_action_id := ""
 
@@ -26,6 +30,11 @@ func _ready() -> void:
 	_poll_http.name = "PollHttp"
 	add_child(_poll_http)
 	_poll_http.request_completed.connect(_on_poll_completed)
+
+	_character_http = HTTPRequest.new()
+	_character_http.name = "CharacterHttp"
+	add_child(_character_http)
+	_character_http.request_completed.connect(_on_character_completed)
 
 	_action_http = HTTPRequest.new()
 	_action_http.name = "ActionHttp"
@@ -80,6 +89,15 @@ func refresh_home() -> void:
 		_poll_inflight = false
 		_set_online(false, "Bridge chưa sẵn sàng")
 
+func refresh_character() -> void:
+	if _character_inflight:
+		return
+	_character_inflight = true
+	var err := _character_http.request(BASE_URL + "/character")
+	if err != OK:
+		_character_inflight = false
+		_set_online(false, "Không tải được Character DTO")
+
 func perform_action(action_id: String, payload: Dictionary = {}) -> void:
 	if _action_inflight:
 		action_failed.emit("Đang xử lý hành động trước")
@@ -109,6 +127,16 @@ func _on_poll_completed(_result: int, response_code: int, _headers: PackedString
 		return
 	_set_online(true, "Canonical backend connected")
 	home_updated.emit(data)
+
+func _on_character_completed(_result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	_character_inflight = false
+	var data := _decode_response(response_code, body)
+	if data.is_empty():
+		return
+	if not _validate_character(data):
+		return
+	_set_online(true, "Canonical backend connected")
+	character_updated.emit(data)
 
 func _on_action_completed(_result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	_action_inflight = false
@@ -154,6 +182,22 @@ func _validate_home(home: Dictionary) -> bool:
 	var authority = home.get("authority", {})
 	if typeof(authority) != TYPE_DICTIONARY or str(authority.get("cultivation", "")) != "character-cultivation.v140":
 		_set_online(false, "Sai cultivation authority")
+		return false
+	return true
+
+func _validate_character(view: Dictionary) -> bool:
+	if str(view.get("schema", "")) != EXPECTED_CHARACTER_SCHEMA:
+		_set_online(false, "Sai Character schema")
+		return false
+	if str(view.get("bridgeVersion", "")) != EXPECTED_BRIDGE_VERSION:
+		_set_online(false, "Bridge version không khớp")
+		return false
+	var authority = view.get("authority", {})
+	if typeof(authority) != TYPE_DICTIONARY:
+		_set_online(false, "Character thiếu authority")
+		return false
+	if str(authority.get("equipment", "")) != "equipment.v142" or str(authority.get("stats", "")) != "combat-stat.v168":
+		_set_online(false, "Character authority không khớp V165/V168")
 		return false
 	return true
 
