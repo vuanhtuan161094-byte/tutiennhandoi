@@ -22,11 +22,11 @@ Exact lock data:
 
 ## One-time setup
 
-Normally no manual setup is needed because VERIFY_GODOT_LOCAL.cmd bootstraps missing tools.
+Normally no manual setup is needed because KIEM_TRA_GAME.cmd bootstraps missing tools.
 
 Optional explicit setup:
 
-`SETUP_GODOT_TOOLING.cmd`
+`powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot/Setup-GodotTooling.ps1`
 
 Local downloads/caches are stored under `.tools/` and are ignored by Git.
 
@@ -34,7 +34,7 @@ Local downloads/caches are stored under `.tools/` and are ignored by Git.
 
 Run:
 
-`VERIFY_GODOT_LOCAL.cmd`
+`KIEM_TRA_GAME.cmd`
 
 The gate performs, in order:
 
@@ -76,13 +76,13 @@ This split prevents realtime cultivation values or animation timing from creatin
 A visual baseline is never created automatically.
 
 Before baseline approval:
-1. run VERIFY_GODOT_LOCAL.cmd;
+1. run KIEM_TRA_GAME.cmd;
 2. inspect artifacts/godot-tools/stagehand-visual/screenshots/home-390x844.png;
 3. obtain explicit user approval of that exact screenshot.
 
 Only then run:
 
-`APPROVE_GODOT_HOME_BASELINE.cmd`
+`powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot/Approve-HomeBaseline.ps1 -ConfirmApproved`
 
 The command copies the approved candidate to:
 
@@ -90,7 +90,7 @@ The command copies the approved candidate to:
 
 Review the PNG in Git before committing it.
 
-After that file is committed, VERIFY_GODOT_LOCAL.cmd automatically uses:
+After that file is committed, KIEM_TRA_GAME.cmd automatically uses:
 - home_visual_regression.json
 - threshold 0.005
 - pixel_sensitivity 0.03
