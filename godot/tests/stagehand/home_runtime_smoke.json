@@ -98,6 +98,15 @@
       }
     },
     {
+      "name": "Cultivation event layer exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:CultivationEvent",
+        "state": "exists",
+        "timeout_ms": 5000
+      }
+    },
+    {
       "name": "Cultivation display has per-second rate",
       "action": "assert_property",
       "with": {
