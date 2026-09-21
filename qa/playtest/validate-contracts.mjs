@@ -7,7 +7,7 @@ const exists = async path => { try { await access(path); return true; } catch { 
 const agentContract = await readFile('AGENTS.md', 'utf8');
 for (const clause of [
   '## 0. NON-NEGOTIABLE WORKFLOW LOCK',
-  'No exact-SHA evidence = no completion claim.',
+  'No exact candidate evidence = no completion claim.',
   'Game CI',
   'Runtime Smoke',
   'explicit user visual approval',
@@ -29,12 +29,15 @@ for (const clause of [
   'node qa/runners/v140-backend-gates.js closure',
   'node qa/runners/v140-frontend-gates.js closure',
   'runtime-smoke-${{ github.sha }}',
-  "contains(github.event.head_commit.message, '[closure]')",
+  'workflow_dispatch:',
+  "inputs.mode == 'closure'",
 ]) {
   if (!workflow.includes(clause)) fail(`Game CI missing required clause: ${clause}`);
 }
+if (/^\s*push\s*:/m.test(workflow)) fail('Game CI must remain manual-only while Actions storage is constrained');
+if (!/retention-days:\s*1/.test(workflow)) fail('Manual runtime-smoke artifacts must use one-day retention');
 if (workflow.includes('capture-combat-runtime.mjs') || workflow.includes('capture-runtime-ui.mjs')) {
-  fail('Normal Game CI must not run the heavyweight visual showcase');
+  fail('Manual Game CI must not run the heavyweight visual showcase');
 }
 
 const scenarios = await readJson('qa/playtest/scenarios.json');

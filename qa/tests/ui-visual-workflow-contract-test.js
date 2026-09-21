@@ -19,7 +19,9 @@ assert.match(workflow,/node qa\/runners\/v140-frontend-gates\.js fast/,'Game CI 
 assert.match(workflow,/node qa\/runners\/v140-backend-gates\.js closure/,'Game CI must retain canonical backend closure QA');
 assert.match(workflow,/node qa\/runners\/v140-frontend-gates\.js closure/,'Game CI must retain canonical frontend closure QA');
 assert.match(workflow,/runtime-smoke-\$\{\{ github\.sha \}\}/,'runtime evidence artifact must be tied to exact SHA');
-assert.match(workflow,/retention-days:\s*7/,'runtime smoke artifacts should remain short-lived');
+assert.match(workflow,/retention-days:\s*1/,'runtime smoke artifacts must use one-day retention while Actions storage is constrained');
+assert.doesNotMatch(workflow,/^\s*push\s*:/m,'Game CI must remain manual-only; normal development uses Local CI');
+assert.match(workflow,/workflow_dispatch:/,'manual Game CI dispatch must remain available');
 assert.doesNotMatch(workflow,/capture-combat-runtime\.mjs/,'deep Combat visual matrix must not run in normal Game CI');
 assert.doesNotMatch(workflow,/capture-runtime-ui\.mjs/,'separate heavyweight visual capture must not run in normal Game CI');
 
