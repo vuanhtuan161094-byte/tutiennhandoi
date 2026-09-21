@@ -153,7 +153,7 @@ class GodotCanonicalRuntime {
           selfTicks:Math.max(0,Math.floor(Number(cultivationR3.selfTicks)||0)),
           lastLingGuangMultiplier:Math.max(1,Math.min(10,Number(cultivationR3.lastLingGuangMultiplier)||1)),
           lastLingGuangTick:Math.max(0,Math.floor(Number(cultivationR3.lastLingGuangTick)||0)),
-          tribulationTemperStacks:Math.max(0,Math.min(5,Math.floor(Number(cultivationR3.tribulationTemperStacks)||0))
+          tribulationTemperStacks:Math.max(0,Math.min(5,Math.floor(Number(cultivationR3.tribulationTemperStacks)||0)))
         },
         sources:Array.isArray(cultivation.sources)?cultivation.sources.map(x=>({
           id:String(x?.id||''),
