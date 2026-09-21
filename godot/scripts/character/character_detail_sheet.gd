@@ -146,11 +146,11 @@ func _render() -> void:
 	match _mode:
 		"equipment":
 			_title.text = "Trang Bị"
-			_subtitle.text = "10 ô canonical · Rank / Cường Hóa / Set"
+			_subtitle.text = "10 vị trí · Cường Hóa · Bộ Trang Bị"
 			_render_equipment()
 		"stats":
 			_title.text = "Thuộc Tính"
-			_subtitle.text = "Chỉ số chiến đấu trực tiếp từ V168"
+			_subtitle.text = "Chỉ số chiến đấu chi tiết"
 			_render_stats()
 		"profile":
 			_title.text = "Hồ Sơ Tu Hành"
@@ -420,7 +420,7 @@ func _render_profile_skills() -> void:
 	var skills: Array = profile.get("known_skills", [])
 	var card := _card()
 	_add_card_title(card, "KỸ NĂNG ĐÃ LĨNH NGỘ", "%d" % skills.size())
-	_add_body_text(card, "Danh sách này lấy trực tiếp từ Character canonical; chưa tạo một lớp Công Pháp giả riêng.", MUTED, 8)
+	_add_body_text(card, "Kỹ năng chiến đấu đã lĩnh ngộ trong đời hiện tại.", MUTED, 8)
 
 	if skills.is_empty():
 		_add_note("Chưa lĩnh ngộ kỹ năng chiến đấu.")
