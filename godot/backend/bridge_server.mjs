@@ -253,6 +253,7 @@ class GodotCanonicalRuntime {
       equipmentInventory:this.api.getEquipmentInventoryV129(String(selectedItemId||'')),
       equipmentSelection:{selectedItemId:String(selectedItemId||'')},
       equipmentSystem:godotEquipmentSystem,
+      inventoryResources:Array.isArray(this.api.getInventory?.())?this.api.getInventory():[],
     };
   }
   action(id,payload={}){
