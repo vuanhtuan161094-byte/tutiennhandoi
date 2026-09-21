@@ -192,6 +192,75 @@
         "state": "visible",
         "timeout_ms": 5000
       }
+    },
+    {
+      "name": "Close profile detail",
+      "action": "click",
+      "with": {
+        "selector": "name:CharacterDetailClose"
+      }
+    },
+    {
+      "name": "Open potential allocation",
+      "action": "click",
+      "with": {
+        "selector": "name:CharacterPotentialCTA"
+      }
+    },
+    {
+      "name": "Potential title appears",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CharacterDetailTitle",
+        "property": "text",
+        "operator": "contains",
+        "expected": "Tăng Điểm"
+      }
+    },
+    {
+      "name": "Potential +1 exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:Potential_power_1",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Potential +5 exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:Potential_power_5",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Potential +10 exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:Potential_power_10",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Potential +100 exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:Potential_power_100",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Potential all exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:Potential_power_all",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
     }
   ]
 }
