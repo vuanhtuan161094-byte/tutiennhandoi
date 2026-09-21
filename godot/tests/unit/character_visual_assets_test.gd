@@ -31,6 +31,10 @@ func test_character_standing_hero_has_approved_runtime_source() -> void:
 
 func test_character_hero_contract_is_standing_idle() -> void:
 	var hero = STANDING_HERO.new()
+	hero._load_visual()
 	assert_str(str(hero.source_pose)).is_equal("standing")
 	assert_str(str(hero.animation_mode)).is_equal("standing_idle")
+	assert_str(str(hero.animation_profile)).is_equal("character_standing_v1")
+	assert_bool(hero.runtime_animation_ready).is_true()
+	assert_str(str(hero.animation_source)).is_not_equal("none")
 	hero.free()
