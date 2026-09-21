@@ -121,13 +121,15 @@ if not errorlevel 1 goto :bridge_ready
 
 echo [BRIDGE] Khoi dong canonical backend...
 set "NODE_BIN_ENV=%NODE_BIN%"
-set "BRIDGE_PATH_ENV=%BRIDGE_PATH%"
+set "BRIDGE_DIR_ENV=%PROJECT%\backend"
 set "BRIDGE_PID_ENV=%BRIDGE_PID_FILE%"
 set "BRIDGE_STDOUT_ENV=%BRIDGE_STDOUT%"
 set "BRIDGE_STDERR_ENV=%BRIDGE_STDERR%"
 del /q "%BRIDGE_STDOUT%" >nul 2>&1
 del /q "%BRIDGE_STDERR%" >nul 2>&1
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$argLine='"' + $env:BRIDGE_PATH_ENV + '" 4192'; $p=Start-Process -FilePath $env:NODE_BIN_ENV -ArgumentList $argLine -WorkingDirectory (Split-Path -Parent $env:BRIDGE_PATH_ENV) -RedirectStandardOutput $env:BRIDGE_STDOUT_ENV -RedirectStandardError $env:BRIDGE_STDERR_ENV -WindowStyle Hidden -PassThru; Set-Content -LiteralPath $env:BRIDGE_PID_ENV -Value $p.Id"
+rem IMPORTANT: run a RELATIVE script name from backend working directory.
+rem This avoids Windows/PowerShell splitting the repository path at spaces.
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$p=Start-Process -FilePath $env:NODE_BIN_ENV -ArgumentList @('bridge_server.mjs','4192') -WorkingDirectory $env:BRIDGE_DIR_ENV -RedirectStandardOutput $env:BRIDGE_STDOUT_ENV -RedirectStandardError $env:BRIDGE_STDERR_ENV -WindowStyle Hidden -PassThru; Set-Content -LiteralPath $env:BRIDGE_PID_ENV -Value $p.Id"
 if errorlevel 1 goto :bridge_fail
 set "BRIDGE_OWNED=1"
 
