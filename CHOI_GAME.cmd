@@ -1,8 +1,33 @@
 @echo off
 chcp 65001 >nul
 setlocal EnableExtensions EnableDelayedExpansion
-cd /d "%~dp0"
-title Tu Tien Nhan Doi
+
+rem ============================================================
+rem SELF-UPDATE-SAFE BOOTSTRAP
+rem Never run git update from the root CHOI_GAME.cmd itself.
+rem cmd.exe reads batch files incrementally; replacing a running
+rem batch file can move the read cursor into the middle of a line.
+rem ============================================================
+if /I "%~1"=="--bootstrap" goto :bootstrap
+if /I "%~1"=="--post-update" goto :post_update
+
+set "ROOT=%~dp0"
+set "TEMP_LAUNCHER=%TEMP%\tutien_choi_game_%RANDOM%_%RANDOM%.cmd"
+copy /y "%~f0" "%TEMP_LAUNCHER%" >nul
+if errorlevel 1 (
+  echo [ERROR] Khong tao duoc launcher tam.
+  pause
+  exit /b 1
+)
+call "%TEMP_LAUNCHER%" --bootstrap "%ROOT%"
+set "BOOT_RC=%ERRORLEVEL%"
+del /q "%TEMP_LAUNCHER%" >nul 2>&1
+exit /b %BOOT_RC%
+
+:bootstrap
+set "ROOT=%~2"
+cd /d "%ROOT%"
+title Tu Tien Nhan Doi - Update
 
 cls
 echo ================================================
@@ -11,13 +36,22 @@ echo   1 click = cap nhat main + bridge + mo Godot
 echo ================================================
 echo.
 
-call "%~dp0CAP_NHAT_GAME_LOCAL.cmd" --no-pause
+call "%ROOT%CAP_NHAT_GAME_LOCAL.cmd" --no-pause
 if errorlevel 1 (
   echo.
   echo [STOP] Khong cap nhat duoc game. Godot chua duoc mo.
   pause
   exit /b 1
 )
+
+rem Root CHOI_GAME.cmd may have changed during update.
+rem Start the freshly updated copy; do not continue old logic.
+call "%ROOT%CHOI_GAME.cmd" --post-update
+exit /b %ERRORLEVEL%
+
+:post_update
+cd /d "%~dp0"
+title Tu Tien Nhan Doi
 
 set "PROJECT=%CD%\godot"
 set "GODOT_BIN="
