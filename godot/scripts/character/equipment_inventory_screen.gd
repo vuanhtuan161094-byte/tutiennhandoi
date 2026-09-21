@@ -15,6 +15,7 @@ const PANEL := Color(0.007, 0.022, 0.035, 0.985)
 const CARD := Color(0.014, 0.045, 0.063, 0.94)
 const POSITIVE := Color("9de6b4")
 const NEGATIVE := Color("ffb19d")
+const EQUIPMENT_ASSET_REGISTRY := preload("res://scripts/character/equipment_asset_registry.gd")
 
 const ATTIRE_SLOTS := ["weapon", "head", "robe", "belt", "gloves", "boots"]
 const JEWELRY_SLOTS := ["necklace", "ring", "bracelet", "talisman"]
@@ -63,6 +64,7 @@ var _forge_slot := "weapon"
 var _merge_group_key := ""
 var _merge_main_id := ""
 var _merge_fodder_ids: Array[String] = []
+var _asset_registry = EQUIPMENT_ASSET_REGISTRY.new()
 
 var _title: Label
 var _subtitle: Label
@@ -404,9 +406,14 @@ func _add_item_card(parent: GridContainer, item: Dictionary) -> void:
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var icon_path := str(SLOT_ICON_PATHS.get(str(item.get("slot", "")), ""))
-	if icon_path != "" and ResourceLoader.exists(icon_path):
-		icon.texture = ResourceLoader.load(icon_path) as Texture2D
+	var slot_id := str(item.get("slot", ""))
+	var set_texture := _asset_registry.texture_for(set_id, slot_id)
+	if set_texture != null:
+		icon.texture = set_texture
+	else:
+		var icon_path := str(SLOT_ICON_PATHS.get(slot_id, ""))
+		if icon_path != "" and ResourceLoader.exists(icon_path):
+			icon.texture = ResourceLoader.load(icon_path) as Texture2D
 	top.add_child(icon)
 
 	var meta := VBoxContainer.new()
