@@ -1,0 +1,1 @@
+@echo off\r\ncd /d "%~dp0"\r\ncall CHOI_WEB_GAME.cmd\r\n
