@@ -194,6 +194,15 @@
       }
     },
     {
+      "name": "Inventory forge tab exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:InventoryTab_forge",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
       "name": "Close inventory",
       "action": "click",
       "with": {
