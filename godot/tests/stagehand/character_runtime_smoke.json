@@ -1,14 +1,114 @@
 {
   "name": "tutien-character-runtime-smoke",
   "description": "Launch the real Godot client, route from Home into Character and prove canonical Character transport + 10-slot presentation exists.",
-  "target": {"mode": "launch", "project_path": "../..", "headless": true, "timeout_ms": 60000},
+  "target": {
+    "mode": "launch",
+    "project_path": "../..",
+    "headless": true,
+    "timeout_ms": 60000
+  },
   "steps": [
-    {"name":"Home route starts","action":"wait_for_node","with":{"selector":"name:Nav_character","state":"exists","timeout_ms":15000}},
-    {"name":"Open Character","action":"click","with":{"selector":"name:Nav_character"}},
-    {"name":"Character screen appears","action":"wait_for_node","with":{"selector":"name:CharacterScreen","state":"visible","timeout_ms":15000}},
-    {"name":"Character identity is populated","action":"assert_property","with":{"selector":"name:CharacterName","property":"text","operator":"not_equals","expected":""}},
-    {"name":"Weapon slot exists","action":"wait_for_node","with":{"selector":"name:CharacterSlot_weapon","state":"visible","timeout_ms":5000}},
-    {"name":"Talisman slot exists","action":"wait_for_node","with":{"selector":"name:CharacterSlot_talisman","state":"visible","timeout_ms":5000}},
-    {"name":"Potential CTA exists","action":"wait_for_node","with":{"selector":"name:CharacterPotentialCTA","state":"visible","timeout_ms":5000}}
+    {
+      "name": "Home route starts",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:Nav_character",
+        "state": "exists",
+        "timeout_ms": 15000
+      }
+    },
+    {
+      "name": "Open Character",
+      "action": "click",
+      "with": {
+        "selector": "name:Nav_character"
+      }
+    },
+    {
+      "name": "Character screen appears",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:CharacterScreen",
+        "state": "visible",
+        "timeout_ms": 15000
+      }
+    },
+    {
+      "name": "Character identity is populated",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CharacterName",
+        "property": "text",
+        "operator": "not_equals",
+        "expected": ""
+      }
+    },
+    {
+      "name": "Standing hero is animated",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CharacterHero",
+        "property": "runtime_animation_ready",
+        "operator": "equals",
+        "expected": true
+      }
+    },
+    {
+      "name": "Standing hero is not static",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CharacterHero",
+        "property": "animation_mode",
+        "operator": "not_equals",
+        "expected": "static"
+      }
+    },
+    {
+      "name": "Weapon slot exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:CharacterSlot_weapon",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Weapon slot has production icon",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CharacterSlot_weapon",
+        "property": "icon_ready",
+        "operator": "equals",
+        "expected": true
+      }
+    },
+    {
+      "name": "Talisman slot has production icon",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CharacterSlot_talisman",
+        "property": "icon_ready",
+        "operator": "equals",
+        "expected": true
+      }
+    },
+    {
+      "name": "Talisman slot exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:CharacterSlot_talisman",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Potential CTA exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:CharacterPotentialCTA",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    }
   ]
 }
