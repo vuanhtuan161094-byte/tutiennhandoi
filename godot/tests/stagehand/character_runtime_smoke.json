@@ -147,7 +147,42 @@
       }
     },
     {
+      "name": "Equipment slot grid is compact",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:EquipmentSlotGrid",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
       "name": "Close equipment detail",
+      "action": "click",
+      "with": {
+        "selector": "name:CharacterDetailClose"
+      }
+    },
+    {
+      "name": "Weapon slot opens focused equipment flow",
+      "action": "click",
+      "with": {
+        "selector": "name:CharacterSlot_weapon"
+      }
+    },
+    {
+      "name": "Focused equipment subtitle names slot",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:CharacterDetailSubtitle",
+        "property": "text",
+        "operator": "contains",
+        "expected_value": "Đạo Binh",
+        "timeout_ms": 5000,
+        "poll_interval_ms": 100
+      }
+    },
+    {
+      "name": "Close focused equipment flow",
       "action": "click",
       "with": {
         "selector": "name:CharacterDetailClose"
