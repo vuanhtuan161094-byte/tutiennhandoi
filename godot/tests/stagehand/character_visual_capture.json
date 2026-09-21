@@ -1,0 +1,12 @@
+{
+  "name": "tutien-character-visual-capture",
+  "description": "Capture the actual Character runtime candidate at 390x844 after canonical Character data and standing animation settle.",
+  "target": {"mode": "launch", "project_path": "../..", "headless": false, "timeout_ms": 60000},
+  "steps": [
+    {"name":"Character navigation is available","action":"wait_for_node","with":{"selector":"name:Nav_character","state":"visible","timeout_ms":15000}},
+    {"name":"Open Character","action":"click","with":{"selector":"name:Nav_character"}},
+    {"name":"Character screen is visible","action":"wait_for_node","with":{"selector":"name:CharacterScreen","state":"visible","timeout_ms":15000}},
+    {"name":"Let standing animation and data settle","action":"sleep","with":{"duration_ms":850}},
+    {"name":"Capture Character 390x844","action":"screenshot","with":{"output":"character-390x844.png"}}
+  ]
+}
