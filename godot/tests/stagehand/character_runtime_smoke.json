@@ -54,6 +54,26 @@
       }
     },
     {
+      "name": "Standing hero selected a production animation source",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CharacterHero",
+        "property": "animation_source",
+        "operator": "not_equals",
+        "expected": "none"
+      }
+    },
+    {
+      "name": "Standing hero uses Character production animation profile",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CharacterHero",
+        "property": "animation_profile",
+        "operator": "equals",
+        "expected": "character_standing_v1"
+      }
+    },
+    {
       "name": "Standing hero uses standing pose",
       "action": "assert_property",
       "with": {
