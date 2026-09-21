@@ -96,17 +96,17 @@ func bind(vm: Dictionary) -> void:
 		injury_badge.text = "Thương Thế %.0f%%" % injury
 
 	var tu_vi := maxf(0.0, float(progression.get("tu_vi", 0)))
+	var live_tu_vi := maxf(tu_vi, float(progression.get("live_tu_vi", tu_vi)))
 	var required := maxf(1.0, float(progression.get("required_tu_vi", 1)))
 	var rate_per_15s := maxf(0.0, float(progression.get("rate_per_15s", 0)))
-	var commit_interval := maxf(0.001, float(progression.get("commit_interval_seconds", 15.0)))
-	var commit_phase := clampf(float(progression.get("commit_phase_seconds", 0.0)), 0.0, commit_interval)
+	var rate_per_second := maxf(0.0, float(progression.get("rate_per_second", 0)))
 	_bind_cultivation_sample(
 		tu_vi,
+		live_tu_vi,
 		required,
 		rate_per_15s,
-		bool(progression.get("ready", false)),
-		commit_phase,
-		commit_interval
+		rate_per_second,
+		bool(progression.get("ready", false))
 	)
 
 	var ready := bool(progression.get("ready", false))
@@ -170,11 +170,11 @@ func _process(delta: float) -> void:
 
 func _bind_cultivation_sample(
 	tu_vi: float,
+	live_tu_vi: float,
 	required: float,
 	rate_per_15s: float,
-	ready: bool,
-	commit_phase: float = 0.0,
-	commit_interval: float = 15.0
+	rate_per_second: float,
+	ready: bool
 ) -> void:
 	var reset_display := (
 		not _has_cultivation_sample
@@ -184,24 +184,20 @@ func _bind_cultivation_sample(
 
 	_display_required_tu_vi = maxf(1.0, required)
 	_rate_per_15s = maxf(0.0, rate_per_15s)
-	display_rate_per_second = cultivation_rate_per_second(_rate_per_15s, commit_interval)
+	display_rate_per_second = maxf(0.0, rate_per_second)
 	_cultivation_ready = ready
-
-	var phase_estimate := minf(
-		_display_required_tu_vi,
-		tu_vi + display_rate_per_second * clampf(commit_phase, 0.0, maxf(0.001, commit_interval))
-	)
+	var backend_live := minf(_display_required_tu_vi, maxf(tu_vi, live_tu_vi))
 
 	if reset_display:
-		display_tu_vi = phase_estimate
+		display_tu_vi = backend_live
 	elif tu_vi > _canonical_tu_vi + 0.001:
 		# Canonical V140 committed the quantum. Reconcile forward only; the
 		# interpolation should never make the player see Tu Vi tick backward.
-		display_tu_vi = maxf(display_tu_vi, phase_estimate)
+		display_tu_vi = maxf(display_tu_vi, backend_live)
 	else:
-		# Polls expose the canonical carry phase, so reconnect/load starts in the
-		# correct place inside the 15-second quantum instead of from zero.
-		display_tu_vi = maxf(display_tu_vi, phase_estimate)
+		# Backend owns the exact second-rate and current commit phase. Godot only
+		# smooths between the one-second bridge samples.
+		display_tu_vi = maxf(display_tu_vi, backend_live)
 
 	_canonical_tu_vi = tu_vi
 	_has_cultivation_sample = true
@@ -222,7 +218,7 @@ func _render_cultivation_display() -> void:
 		_fmt_num(_display_required_tu_vi),
 	]
 	if display_rate_per_second > 0.0:
-		rate_label.text = cultivation_rate_label(_rate_per_15s)
+		rate_label.text = cultivation_rate_label_from_per_second(display_rate_per_second)
 	else:
 		rate_label.text = "+0 Tu Vi/s"
 
@@ -230,9 +226,12 @@ static func cultivation_rate_per_second(rate_per_15s: float, commit_seconds: flo
 	return maxf(0.0, rate_per_15s) / maxf(0.001, commit_seconds)
 
 static func cultivation_rate_label(rate_per_15s: float, commit_seconds: float = 15.0) -> String:
-	var per_second := cultivation_rate_per_second(rate_per_15s, commit_seconds)
-	var rounded := int(round(per_second))
-	var prefix := "+ " if is_equal_approx(per_second, float(rounded)) else "≈ + "
+	return cultivation_rate_label_from_per_second(cultivation_rate_per_second(rate_per_15s, commit_seconds))
+
+static func cultivation_rate_label_from_per_second(per_second: float) -> String:
+	var safe_rate := maxf(0.0, per_second)
+	var rounded := int(round(safe_rate))
+	var prefix := "+ " if is_equal_approx(safe_rate, float(rounded)) else "≈ + "
 	return "%s%d Tu Vi/s" % [prefix, rounded]
 
 func _build_top_shell() -> void:
