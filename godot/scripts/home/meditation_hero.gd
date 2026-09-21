@@ -1,14 +1,15 @@
 extends Control
 
-const HOME_ART := preload("res://scripts/home/home_art_atlas.gd")
 const MEDITATION_FRAME_01_PATH := "res://art/approved/home/home_meditation_idle_01.webp"
 const MEDITATION_FRAME_04_PATH := "res://art/approved/home/home_meditation_idle_04.webp"
+const MEDITATION_FRAME_01: Texture2D = preload(MEDITATION_FRAME_01_PATH)
+const MEDITATION_FRAME_04: Texture2D = preload(MEDITATION_FRAME_04_PATH)
 const FRAME_INTERVAL := 0.34
 
 var runtime_animation_ready := false
 var animation_mode := "meditation_idle"
 var accent_mode := "none"
-var animation_source := "video_frames"
+var animation_source := "video_frames_preloaded"
 var source_pose := "meditation"
 
 var _body: TextureRect
@@ -54,20 +55,16 @@ func _build_body() -> void:
 	_body.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_body.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_body.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_body.material = _meditation_material()
 
-	var frame_01 := HOME_ART.texture(&"hero_meditation_idle_01", MEDITATION_FRAME_01_PATH)
-	var frame_04 := HOME_ART.texture(&"hero_meditation_idle_04", MEDITATION_FRAME_04_PATH)
-	if frame_01 != null:
-		_frames.append(frame_01)
-	if frame_04 != null:
-		_frames.append(frame_04)
-
-	if not _frames.is_empty():
-		_body.texture = _frames[0]
+	_frames = [MEDITATION_FRAME_01, MEDITATION_FRAME_04]
+	_body.texture = _frames[0]
 	add_child(_body)
 
-	# Home must never silently fall back to the standing Character art.
-	runtime_animation_ready = _frames.size() >= 2
+	# Production Home is seated-only. The textures above are parse-time
+	# dependencies, so a missing/import-broken frame fails before runtime
+	# instead of silently caching null and showing an empty hero stage.
+	runtime_animation_ready = _frames.size() == 2 and _frames[0] != null and _frames[1] != null
 	set_process(runtime_animation_ready)
 
 func _process(delta: float) -> void:
