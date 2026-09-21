@@ -44,6 +44,7 @@ Read this first. Do not reconstruct project state from old chats or memory witho
   - web/runtime: `tools/web/TEST_GAME_LOCAL.cmd` (Mode 5 — FULL CLEAN for clean candidate proof);
   - Godot: `KIEM_TRA_GAME.cmd`.
 - Repository hygiene pass on **2026-09-21** removed obsolete standalone Combat Layout Studio files, stale migration/tooling snapshots, old generated reports and duplicate Godot Home art fallbacks. Git history is the archive.
+- Video animation asset tool added: `tools/video_to_godot_animation.py` + `TAO_ANIMATION_TU_VIDEO.cmd`. It converts video to sampled/chroma-keyed stable frames, deduplicates consecutive near-identical frames with duration preservation, builds lossless WebP atlas/metadata/preview, and can emit a Godot `SpriteFrames .tres` into an explicit `res://art/candidate/**` path. Default output remains `assets/_pipeline/video_animation/**`; it does not auto-promote assets to `approved/`. Synthetic self-test and a small FFmpeg MP4 end-to-end run passed during tool authoring.
 
 ### Immediate next action
 
