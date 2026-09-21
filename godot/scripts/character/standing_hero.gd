@@ -2,7 +2,7 @@ extends TextureRect
 
 const IDLE_ATLAS_PATH := "res://art/approved/character/standing_idle_atlas.webp"
 const IDLE_ATLAS_PACK_PATH := "res://art/approved/character/standing_idle/standing_idle_atlas.webp"
-const FALLBACK_PATH := "res://art/approved/home/home_hero_standing.webp"
+const APPROVED_MASTER_PATH := "res://art/approved/home/home_hero_standing.webp"
 const COLUMNS := 6
 const ROWS := 5
 const FRAME_COUNT := 30
@@ -11,6 +11,7 @@ const FPS := 12.0
 var runtime_animation_ready := false
 var animation_mode := "standing_idle"
 var animation_source := "none"
+var animation_profile := "character_standing_v1"
 var source_pose := "standing"
 var current_frame := 0
 
@@ -40,6 +41,9 @@ func _load_visual() -> void:
 			atlas_path = candidate
 			break
 
+	# A hand-authored atlas remains the highest-fidelity source when one is
+	# approved later. Character is not blocked on it: the approved standing
+	# master has its own production procedural idle below.
 	if atlas_path != "":
 		var atlas_texture := ResourceLoader.load(atlas_path) as Texture2D
 		if atlas_texture != null:
@@ -58,13 +62,14 @@ func _load_visual() -> void:
 				set_process(true)
 				return
 
-	if ResourceLoader.exists(FALLBACK_PATH):
-		texture = ResourceLoader.load(FALLBACK_PATH) as Texture2D
-		animation_source = "procedural"
-		runtime_animation_ready = true
-		material = _standing_idle_material()
-		set_process(true)
-		return
+	if ResourceLoader.exists(APPROVED_MASTER_PATH):
+		texture = ResourceLoader.load(APPROVED_MASTER_PATH) as Texture2D
+		animation_source = "procedural_approved_master"
+		runtime_animation_ready = texture != null
+		if runtime_animation_ready:
+			material = _standing_idle_material()
+			set_process(true)
+			return
 
 	animation_source = "none"
 	runtime_animation_ready = false
@@ -81,17 +86,24 @@ func _process(delta: float) -> void:
 			_set_frame(next_frame)
 		return
 
-	# Standing showcase motion: a slow weight shift plus breathing. Hair and silk
-	# motion stays local to the shader so the face and feet do not visibly swim.
-	var breath := sin(_time * 1.06)
-	var weight_shift := sin(_time * 0.48 + 0.7)
-	var micro := sin(_time * 0.23 + 1.9)
+	# Production standing idle for the approved master:
+	# - body breathing,
+	# - slow center-of-gravity shift,
+	# - tiny counter-motion so the pose does not feel like a floating card.
+	# Hair / sleeves / lower silk remain shader-local to keep face and feet stable.
+	var breath := sin(_time * 1.08)
+	var weight_shift := sin(_time * 0.47 + 0.72)
+	var counter_motion := sin(_time * 0.94 + 1.34)
+	var micro := sin(_time * 0.21 + 1.90)
 
-	position = _base_position + Vector2(weight_shift * 1.45 + micro * 0.35, breath * 1.25)
-	rotation = deg_to_rad(weight_shift * 0.16)
+	position = _base_position + Vector2(
+		weight_shift * 1.20 + counter_motion * 0.20 + micro * 0.16,
+		breath * 0.92
+	)
+	rotation = deg_to_rad(weight_shift * 0.12 + counter_motion * 0.025)
 	scale = Vector2(
-		_base_scale.x * (1.0 + breath * 0.0028),
-		_base_scale.y * (1.0 + breath * 0.0048)
+		_base_scale.x * (1.0 + breath * 0.0018 + counter_motion * 0.0006),
+		_base_scale.y * (1.0 + breath * 0.0038)
 	)
 
 func _set_frame(frame_index: int) -> void:
@@ -112,26 +124,41 @@ shader_type canvas_item;
 
 void fragment() {
 	vec2 uv = UV;
+	float lateral = abs(uv.x - 0.5);
 
+	// Keep the face/central silhouette stable. Motion concentrates on long hair,
+	// sleeves and lower robe where subtle secondary motion reads naturally.
 	float hair_mask =
-		smoothstep(0.06, 0.24, uv.y)
-		* (1.0 - smoothstep(0.72, 0.90, uv.y))
-		* smoothstep(0.13, 0.32, abs(uv.x - 0.5));
-	float silk_mask = smoothstep(0.43, 0.96, uv.y);
+		smoothstep(0.07, 0.20, uv.y)
+		* (1.0 - smoothstep(0.66, 0.84, uv.y))
+		* smoothstep(0.15, 0.29, lateral);
+	float sleeve_mask =
+		smoothstep(0.29, 0.43, uv.y)
+		* (1.0 - smoothstep(0.73, 0.88, uv.y))
+		* smoothstep(0.12, 0.27, lateral);
+	float silk_mask =
+		smoothstep(0.49, 0.94, uv.y)
+		* smoothstep(0.09, 0.22, lateral);
 	float torso_mask =
-		smoothstep(0.18, 0.31, uv.y)
-		* (1.0 - smoothstep(0.51, 0.66, uv.y));
+		smoothstep(0.23, 0.31, uv.y)
+		* (1.0 - smoothstep(0.50, 0.61, uv.y))
+		* (1.0 - smoothstep(0.19, 0.30, lateral));
 
-	float hair_wave = sin(TIME * 0.63 + uv.y * 8.0 - uv.x * 4.5);
-	float silk_wave = sin(TIME * 0.78 + uv.y * 9.8 + uv.x * 3.0);
-	float breath = sin(TIME * 1.06);
+	float hair_wave = sin(TIME * 0.63 + uv.y * 8.2 - uv.x * 4.6);
+	float sleeve_wave = sin(TIME * 0.76 + uv.y * 7.4 + uv.x * 4.1 + 0.8);
+	float silk_wave = sin(TIME * 0.82 + uv.y * 10.0 + uv.x * 3.2 + 1.4);
+	float breath = sin(TIME * 1.08);
 
-	uv.x += hair_wave * 0.00145 * hair_mask;
-	uv.x += silk_wave * 0.00225 * silk_mask;
-	uv.y += breath * 0.00115 * torso_mask;
+	uv.x += hair_wave * 0.00155 * hair_mask;
+	uv.x += sleeve_wave * 0.00115 * sleeve_mask;
+	uv.x += silk_wave * 0.00235 * silk_mask;
+	uv.y += breath * 0.00095 * torso_mask;
 
-	vec4 tex = texture(TEXTURE, uv);
-	float shimmer = 1.0 + 0.012 * sin(TIME * 0.92 + uv.y * 5.5);
+	vec4 tex = texture(TEXTURE, clamp(uv, vec2(0.001), vec2(0.999)));
+	float shimmer =
+		1.0
+		+ 0.010 * sin(TIME * 0.90 + uv.y * 5.2)
+		+ 0.004 * sin(TIME * 0.37 + uv.x * 6.0);
 	tex.rgb *= shimmer;
 	COLOR = tex;
 }
