@@ -164,6 +164,7 @@ func _render() -> void:
 
 func _clear_body() -> void:
 	for child in _body.get_children():
+		_body.remove_child(child)
 		child.queue_free()
 
 func _render_equipment() -> void:
@@ -268,6 +269,7 @@ func _render_equipment() -> void:
 			_add_body_text(card, " · ".join(meta), MUTED, 8)
 
 		_add_stats_line(card, item.get("effectiveStats", item.get("stats", {})))
+		_add_affix_lines(card, item.get("affixes", []))
 
 		if not is_equipped and item_id != "":
 			var equip_button := Button.new()
@@ -585,6 +587,24 @@ func _add_stats_line(card: VBoxContainer, stats_variant) -> void:
 			break
 	if not parts.is_empty():
 		_add_body_text(card, " · ".join(parts), CYAN, 8)
+
+func _add_affix_lines(card: VBoxContainer, affixes_variant) -> void:
+	if typeof(affixes_variant) != TYPE_ARRAY:
+		return
+	var affixes: Array = affixes_variant
+	var shown := 0
+	for affix_variant in affixes:
+		if shown >= 3:
+			break
+		var line := ""
+		if typeof(affix_variant) == TYPE_DICTIONARY:
+			var affix: Dictionary = affix_variant
+			line = str(affix.get("summary", affix.get("description", affix.get("name", affix.get("id", "")))))
+		else:
+			line = str(affix_variant)
+		if line != "":
+			_add_body_text(card, "◆ " + line, Color(0.72, 0.88, 0.91, 0.92), 8)
+			shown += 1
 
 func _add_section_label(value: String) -> void:
 	var label := Label.new()
