@@ -7,13 +7,50 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 
 - Repository: `vuanhtuan161094-byte/tutiennhandoi`
 - Branch: `main` only.
-- Non-UI workflow rule remains: `search → narrow source → audit → minimal patch → targeted proof → Fast QA → [closure] → Canonical QA → checkpoint`.
+- Workflow rule: `search → narrow source → audit → minimal patch → targeted proof → active local gate → user visual approval when applicable → Canonical QA → checkpoint`.
 - **UI/UX workflow is governed by `docs/ui/UI_UX_WORKFLOW_V2_20260913.md`: source snapshot → real runtime baseline → UX audit → narrow brief → candidate patch → targeted/Fast QA → real runtime after-screenshot → user visual approval → [closure] → Canonical QA → checkpoint.**
 - Do not open a version only for numbering continuity.
 - Do not reopen locked runtime systems without a proven regression.
 - **All selected non-UI runtime/authority work is CLOSED / LOCKED through V179.**
 - **V180 is NOT OPEN.** The attempted final cross-system audit did not justify another numbered patch because the existing player-journey gate plus Canonical closure already cover the selected non-UI objective.
-- **UI/UX presentation phase is OPEN. Home / Tu Luyện, App Shell / HUD, and Character / Equipment are CLOSED / LOCKED under Workflow V2. Combat Readability is the next active UI slice.**
+- **Historical web UI closures remain LOCKED, but active implementation work has moved to the Godot presentation client. Godot Home, Character and Kho Đồ / Equipment are the current working surfaces.**
+
+## Godot migration — ACTIVE
+
+- Engine target: **Godot 4.7.2 stable**, primary viewport **390×844**.
+- Canonical JavaScript runtime/save/gameplay authorities through **V179 remain CLOSED / LOCKED** and are still the gameplay oracle.
+- Godot owns presentation/transport only unless a future parity-proven runtime-port slice is explicitly opened.
+- Canonical bridge: `godot-bridge.v2`; Godot launches it on localhost port **4192**.
+- Active Godot presentation:
+  - Home / Tu Luyện production-art composition and procedural meditation motion;
+  - Character screen, standing-idle presentation, profile/stats/potential flows;
+  - rebuilt full-screen **Kho Đồ / Trang Bị V142** with Set, Vật Phẩm and Luyện flows.
+- Character equipment inventory no longer lives inside `CharacterDetailSheet`; Character routes into the dedicated `equipment_inventory_screen.gd`.
+- V142 equipment player-facing rules remain: **Bậc + Cường Hóa (+15 max) + Affix + Set**. Legacy Đạo Văn/Gem lanes stay compatibility-only and are hidden from the new Godot inventory.
+- Kho Đồ canonical actions are bridged to existing runtime authority: equip, enhance, enhancement transfer, fragment craft/refine, 3→1 merge, Set engraving, Affix reforge/refine.
+- Set art direction approved by the user on **2026-09-21**:
+  - 5 attire sets × 6 slots = **30** assets;
+  - 4 jewelry sets × 4 slots = **16** assets;
+  - exactly **46** approved item-art cells.
+- Runtime Set-art registry exists at `godot/scripts/character/equipment_asset_registry.gd` and expects:
+  - `res://art/approved/equipment/atlases/attire_sets_v1.webp`;
+  - `res://art/approved/equipment/atlases/jewelry_sets_v1.webp`.
+- The two approved binary atlases are **not yet committed from the connector session**. `tools/slice_equipment_assets.py` now accepts the two approved source sheets explicitly and deterministically produces all 46 individual assets plus both runtime atlases without redrawing.
+- Item rarity/frame animation and enhancement VFX are intentionally deferred; the user wants those designed separately after the base assets/inventory are integrated.
+- Current Godot work is a **STATIC CANDIDATE**, not runtime-closed. No Godot PASS may be claimed until `VERIFY_GODOT_LOCAL.cmd` succeeds and actual 390×844 runtime evidence is reviewed.
+- GitHub Actions push automation is **disabled/manual-only** to avoid further Actions artifact/storage consumption. Normal verification is local:
+  - web/runtime: `TEST_GAME_LOCAL.cmd` (Mode 5 — FULL CLEAN for clean candidate proof);
+  - Godot: `VERIFY_GODOT_LOCAL.cmd`.
+- Repository hygiene pass on **2026-09-21** removed obsolete standalone Combat Layout Studio files, stale migration/tooling snapshots, old generated reports and duplicate Godot Home art fallbacks. Git history is the archive.
+
+### Immediate next action
+
+1. Sync local checkout from `main`.
+2. Put/use the two approved equipment source sheets locally and run `tools/slice_equipment_assets.py --attire <sheet> --jewelry <sheet>` if the atlases are not already present.
+3. Run `VERIFY_GODOT_LOCAL.cmd`.
+4. Fix only proven import/parse/runtime/390×844 defects.
+5. After base Kho Đồ art is visually stable, design rarity-frame and enhancement animation assets/VFX.
+6. Do **not** jump to Pháp Bảo until the user changes priority or the current item/Kho Đồ slice is visually satisfactory.
 
 ## UI/UX phase
 
@@ -23,8 +60,8 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - Canonical execution workflow: `docs/ui/UI_UX_WORKFLOW_V2_20260913.md`.
 - **No reconstructed mock, partial HTML/CSS recreation, concept image, or placeholder preview counts as visual proof.**
 - **No UI slice may move from candidate to LOCKED without screenshots from the actual runtime candidate and explicit user approval.**
-- Implementation order remains: **Home/Tu Luyện → App Shell/HUD → Character/Equipment → Combat readability → Dungeon/Hunt → Collection/Alchemy → Reincarnation/Automation → World/Faction/Social**.
-- Immediate UI action: start **Combat Readability** from the actual runtime baseline, preserve locked V168 Combat/Stat authority, keep the approved Home/Character chibi-manhua visual family, and repeat the Workflow V2 visual approval gate.
+- The web UI implementation order below is retained as historical closure context. Active new presentation work is governed by the Godot migration section above.
+- Combat Readability remains an **open web presentation debt**, not the current forced next task while Godot Character/Kho Đồ is active.
 
 ### Home / Tu Luyện — CLOSED / LOCKED (Workflow V2)
 
