@@ -2,8 +2,8 @@ extends Control
 
 const MEDITATION_FRAME_01_PATH := "res://art/approved/home/home_meditation_idle_01.webp"
 const MEDITATION_FRAME_04_PATH := "res://art/approved/home/home_meditation_idle_04.webp"
-const MEDITATION_FRAME_01: Texture2D = preload(MEDITATION_FRAME_01_PATH)
-const MEDITATION_FRAME_04: Texture2D = preload(MEDITATION_FRAME_04_PATH)
+const MEDITATION_FRAME_01: Texture2D = preload("res://art/approved/home/home_meditation_idle_01.webp")
+const MEDITATION_FRAME_04: Texture2D = preload("res://art/approved/home/home_meditation_idle_04.webp")
 const FRAME_INTERVAL := 0.34
 
 var runtime_animation_ready := false
