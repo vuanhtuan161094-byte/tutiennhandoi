@@ -1,35 +1,40 @@
-# Tu Tiên Nhàn Dỗi — Godot Bootstrap
+# Tu Tiên Nhàn Dỗi — Godot Client
 
-Godot 4.7.2 project for the staged migration of the current web game.
+Godot 4.7.2 is the active presentation migration target.
 
-## Open
+## Run
 
-1. Pull the latest repository.
-2. Start Godot 4.7.2.
-3. Import `godot/project.godot`.
-4. Press **F5** to run the portrait bootstrap scene.
+1. Update the repository with `CAP_NHAT_GAME_LOCAL.cmd` or use `00_CHOI_GAME_GODOT_LOCAL.cmd`.
+2. Open `godot/project.godot` in Godot 4.7.2.
+3. Run the project at the canonical portrait viewport 390×844.
 
-The existing web implementation remains the gameplay/reference authority while systems are ported in controlled slices.
+## Authority boundary
 
-## Bootstrap V1 owns
+The canonical JavaScript runtime under `dist/` remains gameplay/save authority through the locked V160–V179 contracts.
 
-- Godot project configuration.
-- Portrait 390×844 shell.
-- Main scene and interaction wiring.
-- Minimal `AppState` autoload for route/action events.
-- Visual target documentation.
+Godot currently owns presentation/transport slices for:
+- Home / Tu Luyện;
+- Character;
+- Kho Đồ / Trang Bị candidate flows.
 
-It does **not** yet own combat, save/load, offline progression or any V160–V179 gameplay authority.
+It must not invent gameplay values that are not exposed by the canonical bridge.
 
+## Canonical bridge
 
-## Canonical backend bridge
+`BackendBridge` launches:
 
-When the project runs from the Godot editor, `BackendBridge` starts:
+`node godot/backend/bridge_server.mjs 4192`
 
-`node godot/backend/bridge_server.mjs 4190`
+The bridge version is `godot-bridge.v2`. It serves canonical Home and Character/Equipment DTOs and dispatches an allowlisted set of actions back into the existing JS runtime. The migration save is local under `godot/.runtime/` and is ignored by Git.
 
-automatically and polls the canonical Home DTO once per second.
+See `godot/docs/BACKEND_BRIDGE.md`.
 
-The visible Home screen now reads V140 cultivation/life/root/resource data from the locked JS runtime instead of using display-only placeholder numbers.
+## Verification
 
-If the header shows `CANONICAL V140 • ONLINE`, the bridge is connected.
+Run:
+
+`VERIFY_GODOT_LOCAL.cmd`
+
+Required order is import → parse → GdUnit4 → bridge smoke → bounded runtime smoke → Stagehand structural smoke → visual capture/diff.
+
+A static source review is never a Godot runtime PASS.

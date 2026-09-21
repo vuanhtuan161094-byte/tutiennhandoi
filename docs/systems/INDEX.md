@@ -7,7 +7,7 @@ Use this file only to decide which subsystem to open. Do not preload every syste
 For each task, read in this order:
 
 1. `/CURRENT_CHECKPOINT.md`
-2. `/docs/versions/<ACTIVE_VERSION>.md`
+2. the active version/workflow spec only when the checkpoint names one
 3. this index only if the affected subsystem is unclear
 4. exact live source/test regions for that subsystem
 
