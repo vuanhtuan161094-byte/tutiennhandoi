@@ -2,6 +2,7 @@ extends Control
 
 signal close_requested
 signal equip_requested(item_id: String)
+signal equipment_detail_requested(item_id: String)
 signal enhance_requested(item_id: String, use_protection: bool)
 signal profile_action_requested(action_id: String, payload: Dictionary)
 signal potential_action_requested(stat_id: String, points: int)
@@ -360,13 +361,17 @@ func _render_equipment() -> void:
 
 	var ordered_inventory := inventory.duplicate(true)
 	if _equipment_focus_slot != "":
-		ordered_inventory.sort_custom(func(a, b):
-			var a_match := typeof(a) == TYPE_DICTIONARY and str(a.get("slot", "")) == _equipment_focus_slot
-			var b_match := typeof(b) == TYPE_DICTIONARY and str(b.get("slot", "")) == _equipment_focus_slot
-			if a_match != b_match:
-				return a_match
-			return int(a.get("itemLevel", 0)) > int(b.get("itemLevel", 0))
+		ordered_inventory = ordered_inventory.filter(
+			func(entry):
+				return typeof(entry) == TYPE_DICTIONARY and str(entry.get("slot", "")) == _equipment_focus_slot
 		)
+	ordered_inventory.sort_custom(func(a, b):
+		var a_equipped := typeof(a) == TYPE_DICTIONARY and bool(a.get("equipped", false))
+		var b_equipped := typeof(b) == TYPE_DICTIONARY and bool(b.get("equipped", false))
+		if a_equipped != b_equipped:
+			return a_equipped
+		return int(a.get("itemLevel", 0)) > int(b.get("itemLevel", 0))
+	)
 
 	var shown := 0
 	for item_variant in ordered_inventory:
@@ -409,15 +414,29 @@ func _render_equipment() -> void:
 				_add_body_text(card, comparison, _comparison_color(comparison), 8)
 
 		_add_affix_lines(card, item.get("affixes", []))
-		_add_enhancement_controls(
-			card,
-			item,
-			item_id,
-			enhancement,
-			maxi(1, int(item.get("maxEnhancementLevel", max_enhancement))),
-			forging_essence,
-			protection_talismans
+		var has_heavy_detail := (
+			item.has("effectiveStats")
+			or item.has("nextEnhanceChancePct")
+			or item.has("affixDetails")
 		)
+		if has_heavy_detail:
+			_add_enhancement_controls(
+				card,
+				item,
+				item_id,
+				enhancement,
+				maxi(1, int(item.get("maxEnhancementLevel", max_enhancement))),
+				forging_essence,
+				protection_talismans
+			)
+		elif item_id != "":
+			var inspect_button := _compact_action_button(
+				"Inspect_%s" % _safe_node_name(item_id),
+				"SO SÁNH",
+				true
+			)
+			inspect_button.pressed.connect(_emit_equipment_detail.bind(item_id))
+			card.add_child(inspect_button)
 
 		if not is_equipped and item_id != "":
 			var equip_button := _action_button(
@@ -925,6 +944,11 @@ func _add_note(value: String) -> void:
 
 func _emit_equip(item_id: String) -> void:
 	equip_requested.emit(item_id)
+
+func _emit_equipment_detail(item_id: String) -> void:
+	if item_id.is_empty():
+		return
+	equipment_detail_requested.emit(item_id)
 
 func _emit_enhance(item_id: String, use_protection: bool) -> void:
 	if item_id.is_empty():
