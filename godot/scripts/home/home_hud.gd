@@ -476,13 +476,22 @@ func _update_action_band() -> void:
 	_anchor_bottom_wide(quick_actions, 14.0, 14.0, -216.0, -98.0)
 
 func _add_action_cell(art_id: StringName, icon: Texture2D, caption: String, subtitle: String, accent: Color, button_name: String) -> Button:
-	var cell := VBoxContainer.new()
+	# The entire destination cell is tappable. On mobile, limiting the hit target
+	# to the 72 px orb made taps on the caption/subtitle feel broken.
+	var cell := Control.new()
 	cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	cell.add_theme_constant_override("separation", 1)
+	cell.custom_minimum_size = Vector2(0, 112)
+	cell.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	quick_actions.add_child(cell)
 
 	var center := CenterContainer.new()
-	center.custom_minimum_size = Vector2(0, 76)
+	center.anchor_left = 0.0
+	center.anchor_right = 1.0
+	center.anchor_top = 0.0
+	center.anchor_bottom = 0.0
+	center.offset_top = 0.0
+	center.offset_bottom = 76.0
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	cell.add_child(center)
 
 	var orb := Control.new()
@@ -492,28 +501,48 @@ func _add_action_cell(art_id: StringName, icon: Texture2D, caption: String, subt
 
 	_add_action_orb_art(orb, art_id, icon, accent)
 
+	var title := _readable_label(caption, 10, TEXT)
+	title.anchor_left = 0.0
+	title.anchor_right = 1.0
+	title.anchor_top = 0.0
+	title.anchor_bottom = 0.0
+	title.offset_top = 76.0
+	title.offset_bottom = 94.0
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cell.add_child(title)
+
+	var sub := _readable_label(subtitle, 7, MUTED)
+	sub.anchor_left = 0.0
+	sub.anchor_right = 1.0
+	sub.anchor_top = 0.0
+	sub.anchor_bottom = 0.0
+	sub.offset_top = 94.0
+	sub.offset_bottom = 110.0
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	sub.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	sub.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cell.add_child(sub)
+
 	var button := Button.new()
 	button.name = button_name
 	button.text = ""
 	button.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	button.focus_mode = Control.FOCUS_NONE
 	button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
 	button.add_theme_stylebox_override(
 		"hover",
-		_flat(Color(accent.r, accent.g, accent.b, 0.10), 36, Color(accent.r, accent.g, accent.b, 0.92), 2)
+		_flat(Color(accent.r, accent.g, accent.b, 0.075), 18, Color(accent.r, accent.g, accent.b, 0.58), 1)
 	)
-	button.add_theme_stylebox_override("pressed", _flat(Color(accent.r, accent.g, accent.b, 0.16), 36, accent, 2))
+	button.add_theme_stylebox_override(
+		"pressed",
+		_flat(Color(accent.r, accent.g, accent.b, 0.14), 18, Color(accent.r, accent.g, accent.b, 0.92), 2)
+	)
 	button.add_theme_stylebox_override("disabled", StyleBoxEmpty.new())
-	orb.add_child(button)
-
-	var title := _readable_label(caption, 10, TEXT)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	cell.add_child(title)
-
-	var sub := _readable_label(subtitle, 7, MUTED)
-	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	sub.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	cell.add_child(sub)
+	cell.add_child(button)
 
 	button.set_meta("visual_root", cell)
 	button.set_meta("subtitle_label", sub)
