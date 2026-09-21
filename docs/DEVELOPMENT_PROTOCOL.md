@@ -42,9 +42,9 @@ Rules:
 - G3: Canonical Closure QA only for an approved closure candidate.
 
 Current default is local:
-- `TEST_GAME_LOCAL.cmd` for web/runtime;
+- `tools/web/TEST_GAME_LOCAL.cmd` for web/runtime;
 - Mode 5 — FULL CLEAN for clean exact-candidate proof;
-- `VERIFY_GODOT_LOCAL.cmd` for Godot.
+- `KIEM_TRA_GAME.cmd` for Godot.
 
 Manual GitHub Actions remains available as an optional exact-SHA gate when account storage is available.
 
@@ -137,8 +137,8 @@ Rules:
 - UI-visible Godot work requires actual 390×844 runtime evidence;
 - do not ask the user to discover obvious parser/import failures that a headless gate can catch;
 - Stagehand v0.4.1 and GdUnit4 v6.2.1 are pinned by `tools/godot/TOOLING_LOCK.json`;
-- run `VERIFY_GODOT_LOCAL.cmd` as the normal Godot local gate;
+- run `KIEM_TRA_GAME.cmd` as the normal Godot local gate;
 - Stagehand structural smoke is required after executable Godot changes;
 - UI-visible work uses deterministic Stagehand capture before baseline approval and screenshot diff after a user-approved baseline is committed;
-- baseline promotion is explicit via `APPROVE_GODOT_HOME_BASELINE.cmd`; never auto-refresh a golden baseline;
+- baseline promotion is explicit via `powershell -NoProfile -ExecutionPolicy Bypass -File tools/godot/Approve-HomeBaseline.ps1 -ConfirmApproved`; never auto-refresh a golden baseline;
 - this lane supplements, not replaces, existing Game CI for web/backend surfaces.
