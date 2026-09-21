@@ -1,25 +1,19 @@
 extends Control
 
 const HOME_ART := preload("res://scripts/home/home_art_atlas.gd")
-const MEDITATION_ATLAS_FALLBACK_PATH := "res://art/approved/home/home_meditation_idle_atlas.webp"
-const STANDING_EMERGENCY_FALLBACK_PATH := "res://art/approved/home/home_hero_standing.webp"
-
-const FRAME_SIZE := Vector2i(192, 288)
-const FRAME_COLUMNS := 4
-const FRAME_COUNT := 12
-const FRAME_FPS := 6.0
+const MEDITATION_FRAME_01_PATH := "res://art/approved/home/home_meditation_idle_01.webp"
+const MEDITATION_FRAME_04_PATH := "res://art/approved/home/home_meditation_idle_04.webp"
+const FRAME_INTERVAL := 0.34
 
 var runtime_animation_ready := false
 var animation_mode := "meditation_idle"
 var accent_mode := "none"
-var animation_source := "video_atlas"
+var animation_source := "video_frames"
 var source_pose := "meditation"
 
 var _body: TextureRect
-var _atlas_texture: Texture2D
-var _frame_texture: AtlasTexture
+var _frames: Array[Texture2D] = []
 var _frame_index := 0
-var _frame_direction := 1
 var _frame_elapsed := 0.0
 var _time := 0.0
 var _base_position := Vector2.ZERO
@@ -61,24 +55,19 @@ func _build_body() -> void:
 	_body.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_body.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	_atlas_texture = HOME_ART.texture(&"hero_meditation_idle_atlas", MEDITATION_ATLAS_FALLBACK_PATH)
-	if _atlas_texture != null:
-		_frame_texture = AtlasTexture.new()
-		_frame_texture.atlas = _atlas_texture
-		_apply_frame_region()
-		_body.texture = _frame_texture
-		animation_source = "video_atlas"
-	else:
-		if ResourceLoader.exists(STANDING_EMERGENCY_FALLBACK_PATH):
-			_body.texture = ResourceLoader.load(STANDING_EMERGENCY_FALLBACK_PATH) as Texture2D
-		else:
-			_body.texture = null
-		animation_source = "procedural_fallback"
+	var frame_01 := HOME_ART.texture(&"hero_meditation_idle_01", MEDITATION_FRAME_01_PATH)
+	var frame_04 := HOME_ART.texture(&"hero_meditation_idle_04", MEDITATION_FRAME_04_PATH)
+	if frame_01 != null:
+		_frames.append(frame_01)
+	if frame_04 != null:
+		_frames.append(frame_04)
 
-	_body.material = _meditation_material()
+	if not _frames.is_empty():
+		_body.texture = _frames[0]
 	add_child(_body)
 
-	runtime_animation_ready = _body.texture != null
+	# Home must never silently fall back to the standing Character art.
+	runtime_animation_ready = _frames.size() >= 2
 	set_process(runtime_animation_ready)
 
 func _process(delta: float) -> void:
@@ -86,12 +75,11 @@ func _process(delta: float) -> void:
 		return
 
 	_time += delta
-	if _frame_texture != null:
-		_frame_elapsed += delta
-		var frame_interval: float = 1.0 / FRAME_FPS
-		while _frame_elapsed >= frame_interval:
-			_frame_elapsed -= frame_interval
-			_step_video_frame()
+	_frame_elapsed += delta
+	if _frame_elapsed >= FRAME_INTERVAL:
+		_frame_elapsed = fmod(_frame_elapsed, FRAME_INTERVAL)
+		_frame_index = (_frame_index + 1) % _frames.size()
+		_body.texture = _frames[_frame_index]
 
 	var breath: float = sin(_time * 1.08)
 	var sway: float = sin(_time * 0.54 + 0.8)
@@ -106,8 +94,8 @@ func _process(delta: float) -> void:
 	else:
 		accent_mode = "none"
 
-	position = _base_position + Vector2(sway * 0.32, breath * (0.55 + surge_strength * 0.85))
-	rotation = deg_to_rad(sway * 0.035)
+	position = _base_position + Vector2(sway * 0.28, breath * (0.45 + surge_strength * 0.85))
+	rotation = deg_to_rad(sway * 0.03)
 	scale = Vector2(
 		_base_scale.x * (1.0 + surge_strength * 0.003),
 		_base_scale.y * (1.0 + surge_strength * 0.004)
@@ -116,28 +104,6 @@ func _process(delta: float) -> void:
 	if _body.material is ShaderMaterial:
 		var mat := _body.material as ShaderMaterial
 		mat.set_shader_parameter("surge", surge_strength)
-
-func _step_video_frame() -> void:
-	_frame_index += _frame_direction
-	if _frame_index >= FRAME_COUNT - 1:
-		_frame_index = FRAME_COUNT - 1
-		_frame_direction = -1
-	elif _frame_index <= 0:
-		_frame_index = 0
-		_frame_direction = 1
-	_apply_frame_region()
-
-func _apply_frame_region() -> void:
-	if _frame_texture == null:
-		return
-	var col: int = _frame_index % FRAME_COLUMNS
-	var row: int = floori(float(_frame_index) / float(FRAME_COLUMNS))
-	_frame_texture.region = Rect2(
-		float(col * FRAME_SIZE.x),
-		float(row * FRAME_SIZE.y),
-		float(FRAME_SIZE.x),
-		float(FRAME_SIZE.y)
-	)
 
 func _meditation_material() -> ShaderMaterial:
 	var shader := Shader.new()
