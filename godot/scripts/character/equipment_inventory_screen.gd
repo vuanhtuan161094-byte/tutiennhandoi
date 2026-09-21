@@ -728,9 +728,9 @@ func _render_merge_picker(group: Array) -> void:
 			continue
 		var item: Dictionary = item_variant
 		var item_id := str(item.get("id", ""))
-		var is_main := item_id == _merge_main_id
-		var is_fodder := _merge_fodder_ids.has(item_id)
-		var protected_fodder := bool(item.get("equipped", false)) or bool(item.get("locked", false)) or str(item.get("setId", "")) != ""
+		var is_main: bool = item_id == _merge_main_id
+		var is_fodder: bool = _merge_fodder_ids.has(item_id)
+		var protected_fodder: bool = bool(item.get("equipped", false)) or bool(item.get("locked", false)) or str(item.get("setId", "")) != ""
 		var caption := ""
 		if is_main:
 			caption = "GIỮ · " + _merge_item_label(item)
@@ -740,7 +740,7 @@ func _render_merge_picker(group: Array) -> void:
 			caption = "CHỌN GIỮ · " + _merge_item_label(item)
 		else:
 			caption = "CHỌN PHỤ · " + _merge_item_label(item)
-		var enabled := is_main or is_fodder or _merge_main_id == "" or not protected_fodder
+		var enabled: bool = is_main or is_fodder or _merge_main_id == "" or not protected_fodder
 		var button := _action_button("MergePick_%s" % _safe_node_name(item_id), caption, enabled)
 		button.pressed.connect(_toggle_merge_item.bind(item_id))
 		card.add_child(button)
@@ -1012,7 +1012,7 @@ func _add_set_engrave_controls(item: Dictionary) -> void:
 	for set_variant in eligible:
 		var set_row: Dictionary = set_variant
 		var set_id := str(set_row.get("setId", ""))
-		var current := set_id == str(item.get("setId", ""))
+		var current: bool = set_id == str(item.get("setId", ""))
 		var balance := maxi(0, int(set_row.get("fragmentBalance", 0)))
 		var cost := maxi(1, int(set_row.get("engraveCost", 1)))
 		var button := _action_button(
@@ -1198,7 +1198,7 @@ func _set_filter(filter_id: String) -> void:
 func _update_tab_styles() -> void:
 	for key in _tabs.keys():
 		var button := _tabs[key] as Button
-		var active := str(key) == _filter
+		var active: bool = str(key) == _filter
 		button.add_theme_color_override("font_color", GOLD_HI if active else MUTED)
 		button.add_theme_stylebox_override("normal", _box(
 			Color(0.07, 0.08, 0.045, 0.92) if active else Color(0.012, 0.040, 0.055, 0.88),
