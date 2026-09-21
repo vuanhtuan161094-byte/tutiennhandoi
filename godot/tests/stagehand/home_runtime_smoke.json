@@ -98,6 +98,36 @@
       }
     },
     {
+      "name": "Cultivation display has per-second rate",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:HomeHUD",
+        "property": "display_rate_per_second",
+        "operator": "greater_than",
+        "expected": 0
+      }
+    },
+    {
+      "name": "Cultivation interpolation is active",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:HomeHUD",
+        "property": "cultivation_animation_active",
+        "operator": "equals",
+        "expected": true
+      }
+    },
+    {
+      "name": "Cultivation rate label exposes smooth cadence",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CultivationRate",
+        "property": "text",
+        "operator": "contains",
+        "expected": "/s"
+      }
+    },
+    {
       "name": "Open current-life sheet",
       "action": "click",
       "with": {
