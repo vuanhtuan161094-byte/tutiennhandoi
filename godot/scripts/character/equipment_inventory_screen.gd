@@ -609,8 +609,9 @@ func _render_forge() -> void:
 	slot_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slot_grid.add_theme_constant_override("h_separation", 3)
 	slot_grid.add_theme_constant_override("v_separation", 3)
-	for slot_id in ATTIRE_SLOTS + JEWELRY_SLOTS:
-		var selected := slot_id == _forge_slot
+	for slot_id_variant in ATTIRE_SLOTS + JEWELRY_SLOTS:
+		var slot_id: String = str(slot_id_variant)
+		var selected: bool = slot_id == _forge_slot
 		var button := Button.new()
 		button.name = "ForgeSlot_%s" % slot_id
 		button.text = _slot_short_label(slot_id)
