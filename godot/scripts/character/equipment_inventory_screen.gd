@@ -31,6 +31,10 @@ const STAT_LABELS := {
 	"mobility": "Thân Pháp", "dodgeChancePct": "Né Tránh", "damageReductionPct": "Giảm Thương",
 	"controlPower": "Khống Chế", "controlDurationReductionPct": "Kháng Khống Chế",
 	"spiritEfficiencyPct": "Hiệu Suất Chân Nguyên", "breakEffectPct": "Phá Thế",
+	"brokenTargetDamagePct": "Sát Thương Phá Thế", "dotDamagePct": "Sát Thương Duy Trì",
+	"healingEffectivenessPct": "Hiệu Quả Hồi Phục", "trueEssenceScalingPct": "Chân Nguyên Hiệu Lực",
+	"shieldEffectPct": "Hiệu Quả Hộ Thuẫn", "counterDamagePct": "Phản Chấn",
+	"cooldownReductionPct": "Giảm Hồi Chiêu",
 }
 const SLOT_LABELS := {
 	"weapon": "Đạo Binh", "head": "Đạo Quan", "robe": "Pháp Bào", "belt": "Huyền Đái",
@@ -465,6 +469,9 @@ func _render_sets() -> void:
 					"ĐÃ KÍCH" if active else "Chưa kích",
 					POSITIVE if active else MUTED
 				)
+				var effect_text := _set_bonus_text(threshold)
+				if effect_text != "":
+					_add_small_text(card, effect_text, TEXT if active else MUTED)
 
 func _render_materials() -> void:
 	var equipment: Dictionary = _vm.get("equipment", {})
@@ -852,6 +859,25 @@ func _action_button(node_name: String, caption: String, enabled: bool) -> Button
 	button.add_theme_stylebox_override("pressed", _box(Color(0.11, 0.10, 0.055, 0.99), 10, GOLD_HI, 2))
 	button.add_theme_stylebox_override("disabled", _box(Color(0.02, 0.035, 0.045, 0.72), 10, Color(0.30, 0.38, 0.40, 0.14), 1))
 	return button
+
+func _set_bonus_text(threshold: Dictionary) -> String:
+	var parts: Array[String] = []
+	var multipliers = threshold.get("statMultipliers", {})
+	if typeof(multipliers) == TYPE_DICTIONARY:
+		for key in multipliers.keys():
+			var value := float(multipliers.get(key, 0))
+			if absf(value) <= 0.0001:
+				continue
+			parts.append("%s +%.0f%%" % [str(STAT_LABELS.get(key, key)), value * 100.0])
+	var flats = threshold.get("flatStats", {})
+	if typeof(flats) == TYPE_DICTIONARY:
+		for key in flats.keys():
+			var value := float(flats.get(key, 0))
+			if absf(value) <= 0.0001:
+				continue
+			parts.append("%s %s" % [str(STAT_LABELS.get(key, key)), _format_stat(str(key), value)])
+	return " · ".join(parts)
+
 
 func _set_accent(set_id: String) -> Color:
 	var id := set_id.to_lower()
