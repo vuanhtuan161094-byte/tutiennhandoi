@@ -65,6 +65,7 @@ func _connect_ui() -> void:
 	character_screen.detail_requested.connect(_on_character_detail_requested)
 	character_screen.equipment_action_requested.connect(_on_character_equipment_action_requested)
 	character_screen.profile_action_requested.connect(_on_character_profile_action_requested)
+	character_screen.potential_action_requested.connect(_on_character_potential_action_requested)
 	AppState.route_changed.connect(_on_route_changed)
 
 func _start_backend() -> void:
@@ -126,6 +127,9 @@ func _on_action_completed(action_id: String, result: Dictionary) -> void:
 	elif action_id in ["nourishBloodline", "advanceBloodline", "advancePhysique"]:
 		character_screen.set_status_message("Hồ sơ tu hành đã cập nhật")
 		backend_bridge.refresh_character()
+	elif action_id == "spendPotential":
+		character_screen.set_status_message("Đã phân bổ Điểm Tiềm Năng")
+		backend_bridge.refresh_character()
 
 func _open_identity() -> void:
 	if _vm.is_empty():
@@ -171,10 +175,8 @@ func _on_route_changed(route_id: StringName) -> void:
 
 func _on_character_detail_requested(detail_id: StringName) -> void:
 	match detail_id:
-		&"equipment", &"stats", &"profile":
+		&"equipment", &"stats", &"profile", &"potential":
 			character_screen.open_detail(detail_id)
-		&"potential":
-			character_screen.set_status_message("Tăng Điểm · mutation authority sẽ được nối ở slice kế tiếp")
 		_:
 			character_screen.set_status_message(String(detail_id))
 
@@ -187,6 +189,11 @@ func _on_character_profile_action_requested(action_id: String, payload: Dictiona
 	if action_id.is_empty():
 		return
 	backend_bridge.perform_action(action_id, payload)
+
+func _on_character_potential_action_requested(stat_id: String, points: int) -> void:
+	if stat_id.is_empty() or points <= 0:
+		return
+	backend_bridge.perform_action("spendPotential", {"statId": stat_id, "points": points})
 
 func _route_label(route_id: StringName) -> String:
 	var labels := {
