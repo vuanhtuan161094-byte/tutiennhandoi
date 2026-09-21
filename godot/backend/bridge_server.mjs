@@ -214,6 +214,19 @@ class GodotCanonicalRuntime {
     const now=Date.now();
     this.api.syncForgingV12328(now);
     const patch=buildWebClientViewPatch(this.api,'character',now,'');
+    const selectedEquipmentId=String(selectedItemId||'').trim();
+    let equipmentInventory=this.api.getEquipmentInventoryV129(selectedEquipmentId);
+    if(selectedEquipmentId){
+      try{
+        const impact=this.session.equipmentCombatImpact(selectedEquipmentId);
+        equipmentInventory=equipmentInventory.map(row=>row?.id===selectedEquipmentId?{
+          ...row,
+          powerDeltaPct:Number(impact?.deltaPct)||0,
+          powerAfter:Number(impact?.scoreAfter)||0,
+          powerImpactDeferredV129:false,
+        }:row);
+      }catch{}
+    }
     const equipmentSystem=patch.equipmentSystem||{};
     const v142=equipmentSystem.v142||{};
     const v142SetRows=Array.isArray(v142.setRows)?v142.setRows.map(row=>{
@@ -250,8 +263,8 @@ class GodotCanonicalRuntime {
       character:patch.character||{},
       spiritualRoot:patch.spiritualRoot||{},
       equipment:Array.isArray(patch.equipment)?patch.equipment:[],
-      equipmentInventory:this.api.getEquipmentInventoryV129(String(selectedItemId||'')),
-      equipmentSelection:{selectedItemId:String(selectedItemId||'')},
+      equipmentInventory,
+      equipmentSelection:{selectedItemId:selectedEquipmentId},
       equipmentSystem:godotEquipmentSystem,
       inventoryResources:Array.isArray(this.api.getInventory?.())?this.api.getInventory():[],
     };
