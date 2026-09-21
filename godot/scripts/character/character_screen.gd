@@ -272,6 +272,7 @@ func _on_slot_pressed(slot_id: String, data: Dictionary) -> void:
 		detail_requested.emit(&"equipment")
 		return
 	_status.text = "%s · %s · +%d" % [str(data.get("label", slot_id)), str(data.get("name", "Trang bị")), int(data.get("enhancement", 0))]
+	detail_requested.emit(&"equipment")
 
 func _emit_detail(detail_id: StringName) -> void:
 	detail_requested.emit(detail_id)
@@ -288,6 +289,10 @@ func open_detail(detail_id: StringName) -> void:
 			_detail_sheet.show_detail("profile", _vm)
 		_:
 			set_status_message(String(detail_id))
+
+func hide_detail() -> void:
+	if _detail_sheet != null:
+		_detail_sheet.visible = false
 
 func _on_detail_equip_requested(item_id: String) -> void:
 	if item_id.is_empty():
