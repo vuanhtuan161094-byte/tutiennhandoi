@@ -54,6 +54,11 @@ var combat_button: Button
 var combat_action_visual: Control
 var combat_subtitle_label: Label
 
+var cultivation_event_shell: PanelContainer
+var cultivation_event_title: Label
+var cultivation_event_subtitle: Label
+var _cultivation_event_tween: Tween
+
 # Presentation-only interpolation. The canonical runtime still commits Tu Vi in
 # V140 quanta; Home only visualizes the current 15-second quantum continuously.
 var display_tu_vi := 0.0
@@ -74,6 +79,7 @@ func _ready() -> void:
 	_build_progress()
 	_build_primary()
 	_build_quick_actions()
+	_build_cultivation_event()
 	set_process(true)
 
 func bind(vm: Dictionary) -> void:
@@ -122,8 +128,8 @@ func bind(vm: Dictionary) -> void:
 		primary_subtitle_label.text = "Chuẩn bị vượt kiếp → %s" % str(progression.get("next_realm", ""))
 		primary_button.set_meta("action_id", "tribulationV140")
 	elif ready and transition == "ascend":
-		primary_title_label.text = "THĂNG CẢNH"
-		primary_subtitle_label.text = "Đủ điều kiện → %s" % str(progression.get("next_realm", ""))
+		primary_title_label.text = "ĐỘT PHÁ"
+		primary_subtitle_label.text = "Phá cảnh → %s" % str(progression.get("next_realm", ""))
 		primary_button.set_meta("action_id", "ascendRealmV140")
 	if show_primary:
 		_set_primary_art(&"cta_tribulation" if transition == "tribulation" else &"cta_ascend")
@@ -157,6 +163,73 @@ func set_bridge_status(online: bool, message: String) -> void:
 
 func set_status_message(message: String) -> void:
 	status_label.text = message
+
+func show_breakthrough(from_realm: String, to_realm: String, steps: int = 1, major: bool = false) -> void:
+	var safe_steps := maxi(1, steps)
+	var title := "ĐẠI CẢNH ĐỘT PHÁ" if major else ("LIÊN PHÁ %d CẢNH" % safe_steps if safe_steps > 1 else "ĐỘT PHÁ")
+	var subtitle := "%s → %s" % [from_realm, to_realm]
+	_play_cultivation_event(title, subtitle, GOLD_HI if major else MINT, 1.75 if major else 1.35)
+
+func show_tribulation_result(passed: bool, kind: String = "", temper_stacks: int = 0) -> void:
+	if passed:
+		var suffix := " · Luyện Đạo %d/5" % clampi(temper_stacks, 0, 5) if temper_stacks > 0 else ""
+		_play_cultivation_event("ĐỘ KIẾP THÀNH CÔNG", _humanize_tribulation(kind) + suffix, GOLD_HI, 2.0)
+	else:
+		_play_cultivation_event("THIÊN KIẾP THẤT BẠI", _humanize_tribulation(kind), Color("ff9b78"), 1.75)
+
+func show_ling_quang(multiplier: int) -> void:
+	var event := ling_quang_event_copy(multiplier)
+	if event.is_empty():
+		return
+	_play_cultivation_event(
+		str(event.get("title", "")),
+		str(event.get("subtitle", "")),
+		event.get("accent", MINT) as Color,
+		float(event.get("hold", 1.15))
+	)
+
+static func ling_quang_event_copy(multiplier: int) -> Dictionary:
+	var m := clampi(multiplier, 1, 10)
+	if m <= 1:
+		return {}
+	if m >= 9:
+		return {"title": "THIÊN ĐỊA CỘNG MINH ×%d" % m, "subtitle": "Linh khí đại bạo phát", "accent": GOLD_HI, "hold": 2.0}
+	if m >= 7:
+		return {"title": "ĐẠI LINH QUANG ×%d" % m, "subtitle": "Đạo vận hội tụ", "accent": Color("ffe099"), "hold": 1.7}
+	if m >= 5:
+		return {"title": "ĐẠI LINH QUANG ×%d" % m, "subtitle": "Tu Vi bùng nổ", "accent": VIOLET, "hold": 1.5}
+	if m >= 3:
+		return {"title": "LINH QUANG ×%d" % m, "subtitle": "Nhất niệm thông huyền", "accent": CYAN, "hold": 1.25}
+	return {"title": "LINH QUANG ×2", "subtitle": "Tu Vi tăng vọt", "accent": MINT, "hold": 0.95}
+
+func _play_cultivation_event(title: String, subtitle: String, accent: Color, hold: float) -> void:
+	if cultivation_event_shell == null:
+		return
+	if _cultivation_event_tween != null and _cultivation_event_tween.is_valid():
+		_cultivation_event_tween.kill()
+	cultivation_event_title.text = title
+	cultivation_event_title.add_theme_color_override("font_color", accent)
+	cultivation_event_subtitle.text = subtitle
+	cultivation_event_shell.add_theme_stylebox_override(
+		"panel",
+		_flat(Color(0.005, 0.025, 0.040, 0.90), 22, Color(accent.r, accent.g, accent.b, 0.78), 2)
+	)
+	cultivation_event_shell.visible = true
+	cultivation_event_shell.modulate = Color(1, 1, 1, 0)
+	_cultivation_event_tween = create_tween()
+	_cultivation_event_tween.tween_property(cultivation_event_shell, "modulate:a", 1.0, 0.14)
+	_cultivation_event_tween.tween_interval(maxf(0.45, hold))
+	_cultivation_event_tween.tween_property(cultivation_event_shell, "modulate:a", 0.0, 0.28)
+	_cultivation_event_tween.tween_callback(func(): cultivation_event_shell.visible = false)
+
+func _humanize_tribulation(kind: String) -> String:
+	var names := {
+		"heavenly_lightning": "Thiên Lôi",
+		"heart_demon": "Tâm Ma",
+		"karma_fire": "Nghiệp Hỏa",
+		"dao_judgment": "Đạo Phán",
+	}
+	return str(names.get(kind, "Thiên Kiếp"))
 
 func _process(delta: float) -> void:
 	if not cultivation_animation_active or not _has_cultivation_sample:
@@ -472,6 +545,43 @@ func _build_progress() -> void:
 	tap.add_theme_stylebox_override("hover", _flat(Color(0.40, 0.88, 1.0, 0.035), 18, Color(0.45, 0.86, 1.0, 0.24), 1))
 	tap.pressed.connect(func(): cultivation_pressed.emit())
 	shell.add_child(tap)
+
+func _build_cultivation_event() -> void:
+	cultivation_event_shell = PanelContainer.new()
+	cultivation_event_shell.name = "CultivationEvent"
+	cultivation_event_shell.visible = false
+	cultivation_event_shell.z_index = 45
+	cultivation_event_shell.anchor_left = 0.5
+	cultivation_event_shell.anchor_right = 0.5
+	cultivation_event_shell.anchor_top = 0.0
+	cultivation_event_shell.anchor_bottom = 0.0
+	cultivation_event_shell.offset_left = -142.0
+	cultivation_event_shell.offset_right = 142.0
+	cultivation_event_shell.offset_top = 166.0
+	cultivation_event_shell.offset_bottom = 226.0
+	cultivation_event_shell.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(cultivation_event_shell)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 12)
+	margin.add_theme_constant_override("margin_right", 12)
+	margin.add_theme_constant_override("margin_top", 7)
+	margin.add_theme_constant_override("margin_bottom", 7)
+	cultivation_event_shell.add_child(margin)
+
+	var col := VBoxContainer.new()
+	col.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.add_theme_constant_override("separation", -1)
+	margin.add_child(col)
+
+	cultivation_event_title = _readable_label("", 16, GOLD_HI)
+	cultivation_event_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	col.add_child(cultivation_event_title)
+
+	cultivation_event_subtitle = _readable_label("", 8, TEXT)
+	cultivation_event_subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	cultivation_event_subtitle.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	col.add_child(cultivation_event_subtitle)
 
 func _build_primary() -> void:
 	primary_shell = PanelContainer.new()
