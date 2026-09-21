@@ -484,39 +484,11 @@ func _card() -> VBoxContainer:
 	var card := VBoxContainer.new()
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.add_theme_constant_override("separation", 4)
-
-	var backdrop := StyleBoxFlat.new()
-	backdrop.bg_color = CARD
-	backdrop.corner_radius_top_left = 12
-	backdrop.corner_radius_top_right = 12
-	backdrop.corner_radius_bottom_left = 12
-	backdrop.corner_radius_bottom_right = 12
-	backdrop.content_margin_left = 10
-	backdrop.content_margin_right = 10
-	backdrop.content_margin_top = 8
-	backdrop.content_margin_bottom = 8
-	backdrop.border_color = Color(0.37, 0.59, 0.65, 0.18)
-	backdrop.border_width_left = 1
-	backdrop.border_width_top = 1
-	backdrop.border_width_right = 1
-	backdrop.border_width_bottom = 1
-	card.add_theme_stylebox_override("panel", backdrop)
-
-	var wrapper := PanelContainer.new()
-	wrapper.add_theme_stylebox_override("panel", backdrop)
-	wrapper.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	var inner := VBoxContainer.new()
-	inner.add_theme_constant_override("separation", 4)
-	wrapper.add_child(inner)
-
-	# Return inner but preserve wrapper insertion by storing it as metadata-like child owner.
-	inner.set_meta("_character_card_wrapper", wrapper)
-	return inner
-
-func _ensure_card_parent(card: VBoxContainer) -> Control:
-	var wrapper = card.get_meta("_character_card_wrapper", null)
-	return wrapper if wrapper is Control else card
+	card.add_theme_constant_override("margin_left", 8)
+	card.add_theme_constant_override("margin_right", 8)
+	card.add_theme_constant_override("margin_top", 6)
+	card.add_theme_constant_override("margin_bottom", 6)
+	return card
 
 func _add_card_title(card: VBoxContainer, left: String, right: String) -> void:
 	var row := HBoxContainer.new()
@@ -571,7 +543,7 @@ func _add_stats_line(card: VBoxContainer, stats_variant) -> void:
 	var parts: Array[String] = []
 	for key in ["attack", "maxHp", "defense", "maxSpirit", "accuracy", "resolve"]:
 		if stats.has(key) and absf(float(stats.get(key, 0))) > 0.0001:
-			parts.append("%s %+g" % [str(STAT_LABELS.get(key, key)), float(stats.get(key, 0))])
+			parts.append("%s +%s" % [str(STAT_LABELS.get(key, key)), _fmt_num(float(stats.get(key, 0)))])
 		if parts.size() >= 3:
 			break
 	if not parts.is_empty():
@@ -588,11 +560,7 @@ func _add_section_label(value: String) -> void:
 func _add_note(value: String) -> void:
 	var card := _card()
 	_add_body_text(card, value, MUTED, 9)
-	_add_card_to_body(card)
-
-func _add_card_to_body(card: VBoxContainer) -> void:
-	var wrapper = _ensure_card_parent(card)
-	_body.add_child(wrapper)
+	_body.add_child(card)
 
 func _emit_equip(item_id: String) -> void:
 	equip_requested.emit(item_id)
