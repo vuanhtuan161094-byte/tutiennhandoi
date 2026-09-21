@@ -91,6 +91,7 @@ func _on_home_updated(home: Dictionary) -> void:
 	_last_home_generated_at = maxi(_last_home_generated_at, generated_at)
 	_home = home
 	_vm = vm
+	stage.bind(vm)
 	hud.bind(vm)
 
 func _on_character_updated(character_view: Dictionary) -> void:
@@ -119,6 +120,7 @@ func _on_action_completed(action_id: String, result: Dictionary) -> void:
 		var gained := float(result.get("gained", 0))
 		if gained > 0:
 			hud.set_status_message("Bế Quan %.2fh · +%s Tu Vi" % [used, _fmt_num(gained)])
+			stage.play_meditation_surge(1.35)
 		else:
 			hud.set_status_message("Bế Quan chưa tạo thêm Tu Vi")
 	elif action_id == "equipItem":
