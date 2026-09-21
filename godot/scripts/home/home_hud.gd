@@ -90,7 +90,7 @@ func bind(vm: Dictionary) -> void:
 
 	name_label.text = str(identity.get("name", "Tu Sĩ"))
 	life_label.text = "Đời %d" % int(identity.get("life_number", 1))
-	realm_label.text = str(identity.get("realm", "Phàm Nhân"))
+	realm_label.text = realm_display_text(str(identity.get("realm", "Phàm Nhân")))
 	root_label.text = "Linh Căn · %s" % str(identity.get("root_name", "Phàm Căn"))
 
 	var remaining_life := float(progression.get("remaining_life_years", 0))
@@ -153,6 +153,20 @@ func bind(vm: Dictionary) -> void:
 
 	if status_label.text.begins_with("Đang"):
 		status_label.text = ""
+
+
+static func realm_display_text(value: String) -> String:
+	var normalized := value.strip_edges()
+	if normalized.is_empty():
+		return "Phàm Nhân"
+	var marker := " tầng "
+	var split_at := normalized.find(marker)
+	if split_at > 0:
+		var major := normalized.substr(0, split_at).strip_edges()
+		var stage := normalized.substr(split_at + marker.length()).strip_edges()
+		if not stage.is_empty():
+			return "%s\nTầng %s" % [major, stage]
+	return normalized
 
 func set_bridge_status(online: bool, message: String) -> void:
 	_bridge_online = online
@@ -417,9 +431,10 @@ func _build_identity_clusters() -> void:
 	life_label = _readable_label("Đời —", 8, GOLD)
 	identity_col.add_child(life_label)
 
-	realm_label = _readable_label("Phàm Nhân", 15, Color("e9f8ff"))
+	realm_label = _readable_label("Phàm Nhân", 13, Color("e9f8ff"))
 	realm_label.name = "RealmLabel"
-	realm_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	realm_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	realm_label.custom_minimum_size = Vector2(0, 30)
 	identity_col.add_child(realm_label)
 
 	var tap := Button.new()
