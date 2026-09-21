@@ -29,11 +29,47 @@ var _last_home_realm_name := ""
 var _last_ling_quang_tick := -1
 var _pending_cultivation_action := ""
 var _pending_breakthrough_from_realm := ""
+var _qa_mode := OS.get_environment("TUTIEN_GODOT_QA") == "1"
 
 func _ready() -> void:
 	_build_home()
 	_connect_ui()
 	_start_backend()
+	set_process_unhandled_key_input(_qa_mode)
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not _qa_mode or not (event is InputEventKey):
+		return
+	var key := event as InputEventKey
+	if not key.pressed or key.echo:
+		return
+
+	match key.keycode:
+		KEY_F2:
+			_run_qa_fixture("inventory", &"character", "Kho Đồ canonical fixture")
+		KEY_F3:
+			_run_qa_fixture("ling2", &"home", "Linh Quang ×2")
+		KEY_F4:
+			_run_qa_fixture("ling3", &"home", "Linh Quang ×3")
+		KEY_F5:
+			_run_qa_fixture("ling4", &"home", "Linh Quang ×4")
+		KEY_F6:
+			_run_qa_fixture("ascend", &"home", "Đột Phá canonical ready")
+		KEY_F7:
+			_run_qa_fixture("tribulation", &"home", "Độ Kiếp gate preview")
+		KEY_F8:
+			_run_qa_fixture("clear", &"home", "Clear QA fixture")
+		_:
+			return
+	get_viewport().set_input_as_handled()
+
+func _run_qa_fixture(fixture_id: String, route_id: StringName, label: String) -> void:
+	if backend_bridge == null:
+		return
+	AppState.request_route(route_id)
+	hud.set_status_message("QA · %s" % label)
+	character_screen.set_status_message("QA · %s" % label)
+	backend_bridge.perform_action("diagnosticFixture", {"fixture": fixture_id})
 
 func _build_home() -> void:
 	stage = HOME_STAGE_SCRIPT.new()
@@ -193,6 +229,20 @@ func _on_action_completed(action_id: String, result: Dictionary) -> void:
 			hud.set_status_message("Độ Kiếp thất bại · Thương Thế tăng")
 		_pending_cultivation_action = ""
 		_pending_breakthrough_from_realm = ""
+	elif action_id == "diagnosticFixture":
+		var fixture := str(result.get("fixture", ""))
+		match fixture:
+			"inventory":
+				character_screen.set_status_message("QA · Kho Đồ canonical đã seed")
+				backend_bridge.refresh_character()
+			"ling2", "ling3", "ling4":
+				hud.set_status_message("QA · %s" % fixture.to_upper())
+			"ascend":
+				hud.set_status_message("QA · Đột Phá đã sẵn sàng · bấm nút để chạy canonical action")
+			"tribulation":
+				hud.set_status_message("QA · Độ Kiếp đúng gate order 41 · milestone vẫn canonical")
+			"clear":
+				hud.set_status_message("QA fixture đã tắt")
 	elif action_id == "equipItem":
 		character_screen.set_status_message("Đã cập nhật trang bị")
 		backend_bridge.refresh_character()
