@@ -500,12 +500,13 @@ func _equipment_comparison_line(candidate_variant, equipped_variant) -> String:
 		if absf(delta) <= 0.0001:
 			continue
 		var label := str(STAT_LABELS.get(key, key))
+		var sign := "+" if delta > 0.0 else ""
 		if str(key).ends_with("Pct"):
-			parts.append("%s %+.1f%%" % [label, delta])
+			parts.append("%s %s%.1f%%" % [label, sign, delta])
 		else:
 			parts.append("%s %s%s" % [
 				label,
-				"+" if delta > 0.0 else "",
+				sign,
 				_fmt_num(delta),
 			])
 		if parts.size() >= 3:
