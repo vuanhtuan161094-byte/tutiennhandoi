@@ -265,18 +265,24 @@ func _render_equipment() -> void:
 	var inventory: Array = equipment.get("inventory", [])
 	var system: Dictionary = equipment.get("system", {})
 	var resources: Dictionary = system.get("resources", {})
+	var max_enhancement := int(equipment.get("max_enhancement", 15))
+	var forging_essence := maxi(0, int(resources.get("forgingEssence", 0)))
+	var protection_talismans := maxi(0, int(resources.get("protectionTalismans", 0)))
 
 	var summary := _card()
-	_add_card_title(summary, "ĐANG MẶC", "%d/%d ô" % [
+	_add_card_title(summary, "TRANG BỊ", "%d/%d đang mặc" % [
 		int(equipment.get("equipped_count", 0)),
 		int(equipment.get("canonical_slot_count", 10)),
 	])
-	_add_pair(summary, "Khí Luyện Tinh Hoa", _fmt_num(float(resources.get("forgingEssence", 0))))
-	_add_pair(summary, "Bùa Chống Tụt", _fmt_num(float(resources.get("protectionTalismans", 0))))
+	_add_pair(summary, "Tinh Hoa", _fmt_num(forging_essence))
+	_add_pair(summary, "Bùa Chống Tụt", _fmt_num(protection_talismans))
 
 	var sets_variant = system.get("sets", [])
 	if typeof(sets_variant) == TYPE_ARRAY:
-		var active_sets: Array = sets_variant.filter(func(entry): return typeof(entry) == TYPE_DICTIONARY and int(entry.get("equippedPieces", 0)) > 0)
+		var active_sets: Array = sets_variant.filter(
+			func(entry):
+				return typeof(entry) == TYPE_DICTIONARY and int(entry.get("equippedPieces", 0)) > 0
+		)
 		if not active_sets.is_empty():
 			_add_section_label("BỘ ĐANG KÍCH HOẠT")
 			for set_variant in active_sets:
@@ -289,49 +295,45 @@ func _render_equipment() -> void:
 				var thresholds = set_data.get("thresholds", [])
 				if typeof(thresholds) == TYPE_ARRAY:
 					for threshold_variant in thresholds:
-						if typeof(threshold_variant) == TYPE_DICTIONARY:
-							var threshold: Dictionary = threshold_variant
-							var state := "Đã kích" if bool(threshold.get("active", false)) else "Chưa kích"
-							_add_pair(set_card, "%d món · %s" % [int(threshold.get("pieces", 0)), str(threshold.get("name", "Hiệu ứng"))], state)
+						if typeof(threshold_variant) != TYPE_DICTIONARY:
+							continue
+						var threshold: Dictionary = threshold_variant
+						var active := bool(threshold.get("active", false))
+						_add_pair(
+							set_card,
+							"%d món · %s" % [int(threshold.get("pieces", 0)), str(threshold.get("name", "Hiệu ứng"))],
+							"Đã kích" if active else "Chưa kích"
+						)
 
-	_add_section_label("10 VỊ TRÍ TRANG BỊ")
+	_add_section_label("10 VỊ TRÍ")
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", 7)
+	grid.add_theme_constant_override("v_separation", 7)
+	_body.add_child(grid)
 	for slot_variant in slots:
 		if typeof(slot_variant) != TYPE_DICTIONARY:
 			continue
-		var slot: Dictionary = slot_variant
-		var card := _card()
-		var label := str(slot.get("label", SLOT_LABELS.get(str(slot.get("id", "")), "Trang bị")))
-		if bool(slot.get("filled", false)):
-			_add_card_title(card, label, "+%d" % int(slot.get("enhancement", 0)))
-			_add_body_text(card, str(slot.get("name", "Trang bị")), GOLD_HI, 12)
-			var meta: Array[String] = []
-			var rank := str(slot.get("rank_name", ""))
-			if rank != "":
-				meta.append(rank)
-			var set_name := str(slot.get("set_name", ""))
-			if set_name != "":
-				meta.append(set_name)
-			var source := str(slot.get("source", ""))
-			if source != "":
-				meta.append(source)
-			if not meta.is_empty():
-				_add_body_text(card, " · ".join(meta), MUTED, 9)
-			_add_stats_line(card, slot.get("stats", {}))
-		else:
-			_add_card_title(card, label, "Ô trống")
-			_add_body_text(card, "Chưa trang bị", MUTED, 10)
+		_add_compact_equipment_slot(grid, slot_variant)
 
 	_add_section_label("KHO TRANG BỊ")
 	if inventory.is_empty():
 		_add_note("Chưa có trang bị trong kho.")
 		return
 
+	var equipped_by_slot := {}
 	var equipped_ids := {}
 	for slot_variant in slots:
-		if typeof(slot_variant) == TYPE_DICTIONARY:
-			var item_id := str(slot_variant.get("item_id", ""))
-			if item_id != "":
-				equipped_ids[item_id] = true
+		if typeof(slot_variant) != TYPE_DICTIONARY:
+			continue
+		var slot: Dictionary = slot_variant
+		var slot_id := str(slot.get("id", ""))
+		if slot_id != "" and bool(slot.get("filled", false)):
+			equipped_by_slot[slot_id] = slot
+		var equipped_id := str(slot.get("item_id", ""))
+		if equipped_id != "":
+			equipped_ids[equipped_id] = true
 
 	var shown := 0
 	for item_variant in inventory:
@@ -339,12 +341,15 @@ func _render_equipment() -> void:
 			continue
 		if shown >= 36:
 			break
+
 		var item: Dictionary = item_variant
 		var card := _card()
 		var item_id := str(item.get("id", ""))
+		var slot_id := str(item.get("slot", ""))
 		var is_equipped := bool(equipped_ids.get(item_id, false)) or bool(item.get("equipped", false))
-		var slot_label := str(item.get("slotLabel", SLOT_LABELS.get(str(item.get("slot", "")), "Trang bị")))
-		var enhancement := int(item.get("enhancementLevel", 0))
+		var slot_label := str(item.get("slotLabel", SLOT_LABELS.get(slot_id, "Trang bị")))
+		var enhancement := maxi(0, int(item.get("enhancementLevel", 0)))
+
 		_add_card_title(card, slot_label, "ĐANG MẶC" if is_equipped else "+%d" % enhancement)
 		_add_body_text(card, str(item.get("name", "Trang bị")), GOLD_HI if is_equipped else TEXT, 12)
 
@@ -353,28 +358,187 @@ func _render_equipment() -> void:
 			str(item.get("equipmentRankName", "")),
 			str(item.get("grade", "")),
 			str(item.get("setName", "")),
-			str(item.get("source", "")),
 		]:
 			if value != "" and not meta.has(value):
 				meta.append(value)
 		if not meta.is_empty():
 			_add_body_text(card, " · ".join(meta), MUTED, 8)
 
-		_add_stats_line(card, item.get("effectiveStats", item.get("stats", {})))
+		var item_stats = item.get("effectiveStats", item.get("stats", {}))
+		_add_stats_line(card, item_stats)
+
+		if not is_equipped and equipped_by_slot.has(slot_id):
+			var comparison := _equipment_comparison_line(
+				item_stats,
+				(equipped_by_slot[slot_id] as Dictionary).get("stats", {})
+			)
+			if comparison != "":
+				_add_body_text(card, comparison, _comparison_color(comparison), 8)
+
 		_add_affix_lines(card, item.get("affixes", []))
+		_add_enhancement_controls(
+			card,
+			item,
+			item_id,
+			enhancement,
+			max_enhancement,
+			forging_essence,
+			protection_talismans
+		)
 
 		if not is_equipped and item_id != "":
-			var equip_button := Button.new()
-			equip_button.text = "TRANG BỊ"
-			equip_button.name = "Equip_%s" % _safe_node_name(item_id)
-			equip_button.add_theme_font_size_override("font_size", 10)
-			equip_button.add_theme_color_override("font_color", GOLD_HI)
-			equip_button.add_theme_stylebox_override("normal", _box(Color(0.05, 0.08, 0.07, 0.94), 12, Color(0.91, 0.73, 0.28, 0.52), 1))
-			equip_button.custom_minimum_size = Vector2(0, 34)
+			var equip_button := _action_button(
+				"Equip_%s" % _safe_node_name(item_id),
+				"TRANG BỊ",
+				true
+			)
 			equip_button.pressed.connect(_emit_equip.bind(item_id))
 			card.add_child(equip_button)
 
 		shown += 1
+
+func _add_compact_equipment_slot(parent: GridContainer, slot: Dictionary) -> void:
+	var wrapper := PanelContainer.new()
+	wrapper.custom_minimum_size = Vector2(0, 54)
+	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var filled := bool(slot.get("filled", false))
+	var style := _box(
+		Color(0.018, 0.052, 0.067, 0.90) if filled else Color(0.010, 0.030, 0.043, 0.78),
+		11,
+		Color(0.80, 0.66, 0.30, 0.34) if filled else Color(0.32, 0.48, 0.54, 0.18),
+		1
+	)
+	style.content_margin_left = 8
+	style.content_margin_right = 8
+	style.content_margin_top = 6
+	style.content_margin_bottom = 6
+	wrapper.add_theme_stylebox_override("panel", style)
+	parent.add_child(wrapper)
+
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 0)
+	wrapper.add_child(col)
+
+	var top := HBoxContainer.new()
+	col.add_child(top)
+	var slot_name := Label.new()
+	slot_name.text = str(slot.get("label", SLOT_LABELS.get(str(slot.get("id", "")), "Trang bị")))
+	slot_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slot_name.add_theme_font_size_override("font_size", 8)
+	slot_name.add_theme_color_override("font_color", CYAN)
+	top.add_child(slot_name)
+
+	var badge := Label.new()
+	badge.text = "+%d" % int(slot.get("enhancement", 0)) if filled else "TRỐNG"
+	badge.add_theme_font_size_override("font_size", 8)
+	badge.add_theme_color_override("font_color", GOLD if filled else MUTED)
+	top.add_child(badge)
+
+	var item_name := Label.new()
+	item_name.text = str(slot.get("name", "Chưa trang bị")) if filled else "Chưa trang bị"
+	item_name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	item_name.add_theme_font_size_override("font_size", 9)
+	item_name.add_theme_color_override("font_color", TEXT if filled else MUTED)
+	col.add_child(item_name)
+
+func _add_enhancement_controls(
+	card: VBoxContainer,
+	item: Dictionary,
+	item_id: String,
+	level: int,
+	max_level: int,
+	forging_essence: int,
+	protection_talismans: int
+) -> void:
+	if item_id.is_empty() or level >= max_level:
+		if level >= max_level:
+			_add_body_text(card, "Cường hóa đã đạt +%d" % max_level, GOLD, 8)
+		return
+
+	var chance := clampf(float(item.get("nextEnhanceChancePct", 100.0)), 0.0, 100.0)
+	var downgrade := clampf(float(item.get("nextEnhanceDowngradeChancePct", 0.0)), 0.0, 100.0)
+	var cost := maxi(0, int(round(float(item.get("nextEnhanceCost", 0)))))
+	var enough_essence := cost <= forging_essence
+	var info := "%.0f%% thành công" % chance
+	if cost > 0:
+		info += " · %s Tinh Hoa" % _fmt_num(cost)
+	if downgrade > 0.0:
+		info += " · %.0f%% tụt cấp" % downgrade
+	_add_body_text(card, info, MUTED, 8)
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	card.add_child(row)
+
+	var enhance := _compact_action_button(
+		"Enhance_%s" % _safe_node_name(item_id),
+		"CƯỜNG HÓA → +%d" % (level + 1),
+		enough_essence
+	)
+	enhance.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	enhance.pressed.connect(_emit_enhance.bind(item_id, false))
+	row.add_child(enhance)
+
+	if downgrade > 0.0:
+		var protect := _compact_action_button(
+			"EnhanceProtect_%s" % _safe_node_name(item_id),
+			"DÙNG BÙA",
+			enough_essence and protection_talismans > 0
+		)
+		protect.custom_minimum_size.x = 94
+		protect.pressed.connect(_emit_enhance.bind(item_id, true))
+		row.add_child(protect)
+
+func _equipment_comparison_line(candidate_variant, equipped_variant) -> String:
+	if typeof(candidate_variant) != TYPE_DICTIONARY or typeof(equipped_variant) != TYPE_DICTIONARY:
+		return ""
+	var candidate: Dictionary = candidate_variant
+	var equipped: Dictionary = equipped_variant
+	var parts: Array[String] = []
+	for key in ["attack", "maxHp", "defense", "maxSpirit", "accuracy", "resolve", "critChancePct", "damageReductionPct"]:
+		var delta := float(candidate.get(key, 0)) - float(equipped.get(key, 0))
+		if absf(delta) <= 0.0001:
+			continue
+		var label := str(STAT_LABELS.get(key, key))
+		if str(key).ends_with("Pct"):
+			parts.append("%s %+.1f%%" % [label, delta])
+		else:
+			parts.append("%s %s%s" % [
+				label,
+				"+" if delta > 0.0 else "",
+				_fmt_num(delta),
+			])
+		if parts.size() >= 3:
+			break
+	if parts.is_empty():
+		return "So với đang mặc · gần tương đương"
+	return "So với đang mặc · " + " · ".join(parts)
+
+func _comparison_color(value: String) -> Color:
+	if value.contains(" -") and not value.contains(" +"):
+		return Color("ffb19d")
+	if value.contains(" +"):
+		return Color("9de6b4")
+	return MUTED
+
+func _compact_action_button(node_name: String, caption: String, enabled: bool) -> Button:
+	var button := Button.new()
+	button.name = node_name
+	button.text = caption
+	button.disabled = not enabled
+	button.custom_minimum_size = Vector2(0, 30)
+	button.add_theme_font_size_override("font_size", 9)
+	button.add_theme_color_override("font_color", GOLD_HI if enabled else MUTED)
+	button.add_theme_stylebox_override(
+		"normal",
+		_box(Color(0.045, 0.070, 0.065, 0.95), 10, Color(0.88, 0.71, 0.29, 0.42), 1)
+	)
+	button.add_theme_stylebox_override(
+		"disabled",
+		_box(Color(0.02, 0.035, 0.045, 0.72), 10, Color(0.30, 0.38, 0.40, 0.14), 1)
+	)
+	return button
+
 
 func _render_stats() -> void:
 	var stats: Dictionary = _vm.get("stats", {})
@@ -712,6 +876,11 @@ func _add_note(value: String) -> void:
 
 func _emit_equip(item_id: String) -> void:
 	equip_requested.emit(item_id)
+
+func _emit_enhance(item_id: String, use_protection: bool) -> void:
+	if item_id.is_empty():
+		return
+	enhance_requested.emit(item_id, use_protection)
 
 func _emit_profile_action(action_id: String, payload: Dictionary) -> void:
 	profile_action_requested.emit(action_id, payload)
