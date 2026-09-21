@@ -3,7 +3,7 @@ Version: 1.39.0-alpha.23.78
 
 MOT CODEBASE, BA SURFACE:
 1) Android / Termux: chay START_GAME_ANDROID.sh.
-2) Windows desktop: double-click CHOI_WEB_GAME.cmd (hoac START_WEBGAME_WINDOWS.bat). Launcher dung Node.js lam local static server va tu mo trinh duyet. Khong can Python.
+2) Windows desktop: double-click tools/web/CHOI_WEB_GAME.cmd. Launcher dung Node.js lam local static server va tu mo trinh duyet. Khong can Python.
 3) Linux/macOS/Termux: chay START_WEBGAME_LAN.sh, sau do mo dia chi launcher hien thi.
 4) Web tren dien thoai: dien thoai va may host cung Wi-Fi, mo dia chi LAN do launcher/server cung cap. Hoac upload toan bo thu muc nay vao document-root cua mot static web host HTTPS.
 
