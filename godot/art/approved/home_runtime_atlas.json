@@ -178,11 +178,14 @@
     "hero": {
       "path": "res://art/approved/home/home_hero_standing.webp"
     },
-    "hero_meditation_idle_atlas": {
-      "path": "res://art/approved/home/home_meditation_idle_atlas.webp"
-    },
     "portrait": {
       "path": "res://art/approved/home/home_portrait_standing.webp"
+    },
+    "hero_meditation_idle_01": {
+      "path": "res://art/approved/home/home_meditation_idle_01.webp"
+    },
+    "hero_meditation_idle_04": {
+      "path": "res://art/approved/home/home_meditation_idle_04.webp"
     }
   }
 }
