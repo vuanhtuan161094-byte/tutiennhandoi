@@ -16,6 +16,14 @@ const GOLD_HI := Color("fff0bd")
 const MUTED := Color("9fb0bd")
 
 var _items: Dictionary = {}
+var _enabled_routes := {
+	&"home": true,
+	&"character": true,
+	&"artifacts": false,
+	&"pets": false,
+	&"world": false,
+	&"faction": false,
+}
 
 func _ready() -> void:
 	# HomeNav is a full-screen composition layer, but only its dock buttons
@@ -29,6 +37,12 @@ func set_route(route_id: StringName) -> void:
 		var nav_id := StringName(str(key))
 		var item: Dictionary = _items[key]
 		_apply_state(item, nav_id == route_id)
+		_apply_enabled(item, bool(_enabled_routes.get(nav_id, false)))
+
+func set_route_enabled(route_id: StringName, enabled: bool) -> void:
+	_enabled_routes[route_id] = enabled
+	if _items.has(route_id):
+		_apply_enabled(_items[route_id], enabled)
 
 func _build() -> void:
 	var dock := Panel.new()
@@ -99,6 +113,7 @@ func _build() -> void:
 		_items[route_id] = nav_item
 		row.add_child(nav_item["root"])
 		_apply_state(nav_item, route_id == &"home")
+		_apply_enabled(nav_item, bool(_enabled_routes.get(route_id, false)))
 
 func _nav_item(art_id: StringName, fallback_icon: Texture2D, caption: String, route_id: StringName) -> Dictionary:
 	var root := PanelContainer.new()
@@ -157,6 +172,8 @@ func _nav_item(art_id: StringName, fallback_icon: Texture2D, caption: String, ro
 	button.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
 	button.add_theme_stylebox_override("hover", _flat(Color(0.05, 0.10, 0.13, 0.26), 14))
+	button.add_theme_stylebox_override("pressed", _flat(Color(0.16, 0.11, 0.035, 0.42), 14, Color(0.92, 0.76, 0.38, 0.42), 1))
+	button.add_theme_stylebox_override("disabled", StyleBoxEmpty.new())
 	button.pressed.connect(_emit_route.bind(route_id))
 	root.add_child(button)
 
@@ -188,7 +205,18 @@ func _apply_state(item: Dictionary, selected: bool) -> void:
 	else:
 		root.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 
+func _apply_enabled(item: Dictionary, enabled: bool) -> void:
+	var button := item["button"] as Button
+	var icon := item["icon"] as TextureRect
+	var label := item["label"] as Label
+	button.disabled = not enabled
+	if not enabled:
+		icon.modulate = Color(0.40, 0.46, 0.50, 0.38)
+		label.add_theme_color_override("font_color", Color(0.52, 0.58, 0.62, 0.52))
+
 func _emit_route(route_id: StringName) -> void:
+	if not bool(_enabled_routes.get(route_id, false)):
+		return
 	route_requested.emit(route_id)
 
 func _flat(fill: Color, radius: int, border: Color = Color.TRANSPARENT, border_width: int = 0) -> StyleBoxFlat:
