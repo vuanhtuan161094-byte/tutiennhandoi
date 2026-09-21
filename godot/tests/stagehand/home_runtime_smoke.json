@@ -18,6 +18,45 @@
       }
     },
     {
+      "name": "Home meditation hero exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:HomeMeditationHero",
+        "state": "visible",
+        "timeout_ms": 15000
+      }
+    },
+    {
+      "name": "Home hero uses meditation pose",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:HomeMeditationHero",
+        "property": "source_pose",
+        "operator": "equals",
+        "expected": "meditation"
+      }
+    },
+    {
+      "name": "Home meditation animation is live",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:HomeMeditationHero",
+        "property": "runtime_animation_ready",
+        "operator": "equals",
+        "expected": true
+      }
+    },
+    {
+      "name": "Home defaults to meditation idle",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:HomeMeditationHero",
+        "property": "animation_mode",
+        "operator": "equals",
+        "expected": "meditation_idle"
+      }
+    },
+    {
       "name": "Home HUD exists",
       "action": "wait_for_node",
       "with": {
