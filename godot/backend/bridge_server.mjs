@@ -219,6 +219,15 @@ class GodotCanonicalRuntime {
       if(!itemId)throw new Error('Thiếu itemId trang bị.');
       result=this.api.perform({type:'equip',itemId});
     }
+    else if(id==='nourishBloodline'){
+      result=this.api.perform({type:'nourishBloodline',points:Math.max(1,Math.min(100,Number(payload.points)||10))});
+    }
+    else if(id==='advanceBloodline'){
+      result=this.api.perform({type:'advanceBloodline',useProtection:Boolean(payload.useProtection)});
+    }
+    else if(id==='advancePhysique'){
+      result=this.api.perform({type:'advancePhysique'});
+    }
     else if(id==='diagnosticCommit'&&DIAGNOSTIC_MODE){
       const seconds=Math.max(LIVE_COMMIT_REAL_SECONDS,Math.min(3600,Number(payload.seconds)||LIVE_COMMIT_REAL_SECONDS));
       result=this.session.advanceRealtimeCultivationV140(seconds);
