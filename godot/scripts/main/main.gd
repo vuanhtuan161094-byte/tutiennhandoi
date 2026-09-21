@@ -23,6 +23,13 @@ var _last_home_generated_at := 0
 var _last_character_generated_at := 0
 var _pending_character_detail: StringName = &""
 
+var _home_observed := false
+var _last_home_realm_order := -1
+var _last_home_realm_name := ""
+var _last_ling_quang_tick := -1
+var _pending_cultivation_action := ""
+var _pending_breakthrough_from_realm := ""
+
 func _ready() -> void:
 	_build_home()
 	_connect_ui()
@@ -91,6 +98,38 @@ func _on_home_updated(home: Dictionary) -> void:
 		return
 
 	_last_home_generated_at = maxi(_last_home_generated_at, generated_at)
+
+	var identity: Dictionary = vm.get("identity", {})
+	var progression: Dictionary = vm.get("progression", {})
+	var reincarnation_r3: Dictionary = progression.get("reincarnation_r3", {})
+	var realm_order := int(identity.get("realm_order", -1))
+	var realm_name := str(identity.get("realm", ""))
+	var ling_tick := int(reincarnation_r3.get("last_ling_quang_tick", 0))
+	var ling_multiplier := int(round(float(reincarnation_r3.get("last_ling_quang_multiplier", 1.0))))
+	var did_breakthrough := false
+
+	if not _home_observed:
+		_home_observed = true
+		_last_home_realm_order = realm_order
+		_last_home_realm_name = realm_name
+		_last_ling_quang_tick = ling_tick
+	else:
+		if realm_order > _last_home_realm_order:
+			var steps := realm_order - _last_home_realm_order
+			var primary_transition := _pending_cultivation_action in ["ascendRealmV140", "tribulationV140"]
+			if not primary_transition and hud.visible:
+				hud.show_breakthrough(_last_home_realm_name, realm_name, steps, false)
+				stage.play_breakthrough_burst(false)
+				did_breakthrough = true
+		_last_home_realm_order = realm_order
+		_last_home_realm_name = realm_name
+
+		if ling_tick > _last_ling_quang_tick:
+			if ling_multiplier > 1 and not did_breakthrough and hud.visible:
+				hud.show_ling_quang(ling_multiplier)
+				stage.play_ling_quang_burst(ling_multiplier)
+			_last_ling_quang_tick = ling_tick
+
 	_home = home
 	_vm = vm
 	stage.bind(vm)
@@ -118,6 +157,8 @@ func _on_bridge_status_changed(online: bool, message: String) -> void:
 func _on_action_failed(message: String) -> void:
 	hud.set_status_message(message)
 	character_screen.set_status_message(message)
+	_pending_cultivation_action = ""
+	_pending_breakthrough_from_realm = ""
 
 func _on_action_completed(action_id: String, result: Dictionary) -> void:
 	if action_id == "retreatV140":
@@ -128,6 +169,27 @@ func _on_action_completed(action_id: String, result: Dictionary) -> void:
 			stage.play_meditation_surge(1.35)
 		else:
 			hud.set_status_message("Bế Quan chưa tạo thêm Tu Vi")
+	elif action_id == "ascendRealmV140":
+		var to_realm := str(_vm.get("identity", {}).get("realm", "Cảnh giới mới"))
+		var from_realm := _pending_breakthrough_from_realm if not _pending_breakthrough_from_realm.is_empty() else "Cảnh giới cũ"
+		hud.show_breakthrough(from_realm, to_realm, 1, true)
+		hud.set_status_message("Đột Phá thành công")
+		stage.play_breakthrough_burst(true)
+		_pending_cultivation_action = ""
+		_pending_breakthrough_from_realm = ""
+	elif action_id == "tribulationV140":
+		var passed := bool(result.get("passed", false))
+		var kind := str(result.get("kind", ""))
+		var r3: Dictionary = _vm.get("progression", {}).get("reincarnation_r3", {})
+		var temper_stacks := int(r3.get("tribulation_temper_stacks", 0))
+		hud.show_tribulation_result(passed, kind, temper_stacks)
+		if passed:
+			hud.set_status_message("Độ Kiếp thành công")
+			stage.play_breakthrough_burst(true)
+		else:
+			hud.set_status_message("Độ Kiếp thất bại · Thương Thế tăng")
+		_pending_cultivation_action = ""
+		_pending_breakthrough_from_realm = ""
 	elif action_id == "equipItem":
 		character_screen.set_status_message("Đã cập nhật trang bị")
 		backend_bridge.refresh_character()
@@ -160,6 +222,9 @@ func _on_retreat_hours_selected(hours: int) -> void:
 func _on_primary_action(action_id: String) -> void:
 	if action_id.is_empty():
 		return
+	if action_id in ["ascendRealmV140", "tribulationV140"]:
+		_pending_cultivation_action = action_id
+		_pending_breakthrough_from_realm = str(_vm.get("identity", {}).get("realm", ""))
 	backend_bridge.perform_action(action_id)
 
 func _on_route_requested(route_id: StringName) -> void:
