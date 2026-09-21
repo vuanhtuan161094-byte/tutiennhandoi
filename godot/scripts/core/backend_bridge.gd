@@ -165,9 +165,16 @@ func _on_action_completed(_result: int, response_code: int, _headers: PackedStri
 	action_completed.emit(action_id, result if typeof(result) == TYPE_DICTIONARY else {})
 
 func _decode_response(response_code: int, body: PackedByteArray) -> Dictionary:
-	var parsed = JSON.parse_string(body.get_string_from_utf8())
-	if response_code < 200 or response_code >= 300 or typeof(parsed) != TYPE_DICTIONARY:
+	if response_code < 200 or response_code >= 300 or body.is_empty():
 		_set_online(false, "Backend bridge offline")
+		return {}
+	var raw := body.get_string_from_utf8().strip_edges()
+	if raw.is_empty():
+		_set_online(false, "Backend bridge offline")
+		return {}
+	var parsed = JSON.parse_string(raw)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		_set_online(false, "Backend bridge trả dữ liệu không hợp lệ")
 		return {}
 	var data: Dictionary = parsed
 	if data.get("ok", false) != true:
