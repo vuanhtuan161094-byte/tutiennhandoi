@@ -222,15 +222,18 @@ func _render_cultivation_display() -> void:
 		_fmt_num(_display_required_tu_vi),
 	]
 	if display_rate_per_second > 0.0:
-		rate_label.text = "+%s/s · +%s/15s" % [
-			_fmt_rate(display_rate_per_second),
-			_fmt_num(_rate_per_15s),
-		]
+		rate_label.text = cultivation_rate_label(_rate_per_15s)
 	else:
-		rate_label.text = "+0 Tu Vi / 15s"
+		rate_label.text = "+0 Tu Vi/s"
 
 static func cultivation_rate_per_second(rate_per_15s: float, commit_seconds: float = 15.0) -> float:
 	return maxf(0.0, rate_per_15s) / maxf(0.001, commit_seconds)
+
+static func cultivation_rate_label(rate_per_15s: float, commit_seconds: float = 15.0) -> String:
+	var per_second := cultivation_rate_per_second(rate_per_15s, commit_seconds)
+	var rounded := int(round(per_second))
+	var prefix := "+ " if is_equal_approx(per_second, float(rounded)) else "≈ + "
+	return "%s%d Tu Vi/s" % [prefix, rounded]
 
 func _build_top_shell() -> void:
 	var shell := MarginContainer.new()
@@ -815,11 +818,6 @@ func _fmt_decimal(value: float) -> String:
 	if is_equal_approx(value, round(value)):
 		return str(int(round(value)))
 	return "%.1f" % value
-
-func _fmt_rate(value: float) -> String:
-	if is_equal_approx(value, round(value)):
-		return str(int(round(value)))
-	return "%.2f" % value
 
 func _label(value: String, size: int, color: Color) -> Label:
 	var label := Label.new()
