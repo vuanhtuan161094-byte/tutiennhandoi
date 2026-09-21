@@ -199,6 +199,9 @@ func _validate_character(view: Dictionary) -> bool:
 	if str(authority.get("equipment", "")) != "equipment.v142" or str(authority.get("stats", "")) != "combat-stat.v168":
 		_set_online(false, "Character authority không khớp V165/V168")
 		return false
+	if typeof(view.get("equipment", null)) != TYPE_ARRAY or typeof(view.get("equipmentInventory", null)) != TYPE_ARRAY:
+		_set_online(false, "Character thiếu Equipment DTO")
+		return false
 	return true
 
 func _set_online(value: bool, message: String) -> void:
