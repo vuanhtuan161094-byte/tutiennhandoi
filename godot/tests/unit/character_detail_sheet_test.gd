@@ -22,3 +22,9 @@ func test_equipment_comparison_handles_near_equal_items() -> void:
 	)
 	assert_str(line).contains("gần tương đương")
 	sheet.free()
+
+func test_equipment_comparison_skips_deferred_lightweight_rows() -> void:
+	var sheet = DETAIL_SHEET.new()
+	assert_str(sheet._equipment_comparison_line({}, {"attack": 100.0})).is_equal("")
+	assert_str(sheet._equipment_comparison_line({"attack": 100.0}, {})).is_equal("")
+	sheet.free()
