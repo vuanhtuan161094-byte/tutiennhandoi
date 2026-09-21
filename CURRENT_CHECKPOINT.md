@@ -39,6 +39,7 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - The two approved binary atlases are **not yet committed from the connector session**. `tools/slice_equipment_assets.py` now accepts the two approved source sheets explicitly and deterministically produces all 46 individual assets plus both runtime atlases without redrawing.
 - Item rarity/frame animation and enhancement VFX are intentionally deferred; the user wants those designed separately after the base assets/inventory are integrated.
 - Current Godot work is a **STATIC CANDIDATE**, not runtime-closed. No Godot PASS may be claimed until `KIEM_TRA_GAME.cmd` succeeds and actual 390×844 runtime evidence is reviewed.
+- **P2 deterministic QA fixtures are now available but QA-only:** `CHOI_GAME_QA.cmd` launches an isolated save and enables F2 Kho Đồ, F3/F4/F5 Linh Quang ×2/×3/×4, F6 canonical-ready Đột Phá, F7 canonical order-41 Độ Kiếp preview, and F8 reset/clear. The fixture action is double-gated by diagnostic + QA env flags; normal `CHOI_GAME.cmd` cannot invoke it. Inventory fixture uses canonical V142 craft/merge/set/equip APIs; Đột Phá uses the real canonical action; Độ Kiếp does not bypass dungeon milestone blockers. `KIEM_TRA_GAME.cmd` now includes an isolated P2 fixture smoke in addition to the normal bridge smoke.
 - GitHub Actions push automation is **disabled/manual-only** to avoid further Actions artifact/storage consumption. Normal verification is local:
   - web/runtime: `tools/web/TEST_GAME_LOCAL.cmd` (Mode 5 — FULL CLEAN for clean candidate proof);
   - Godot: `KIEM_TRA_GAME.cmd`.
@@ -47,11 +48,12 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 ### Immediate next action
 
 1. Sync local checkout from `main`.
-2. Put/use the two approved equipment source sheets locally and run `tools/slice_equipment_assets.py --attire <sheet> --jewelry <sheet>` if the atlases are not already present.
-3. Run `KIEM_TRA_GAME.cmd`.
-4. Fix only proven import/parse/runtime/390×844 defects.
-5. After base Kho Đồ art is visually stable, design rarity-frame and enhancement animation assets/VFX.
-6. Do **not** jump to Pháp Bảo until the user changes priority or the current item/Kho Đồ slice is visually satisfactory.
+2. Run `KIEM_TRA_GAME.cmd`; P0/P1/P2 remain static candidates until this local gate succeeds.
+3. For deterministic presentation review, run `CHOI_GAME_QA.cmd` and use F2–F8 fixtures; this uses `godot/.runtime/qa-fixture-save.json`, not the production bridge save.
+4. Review actual 390×844 Home (seated meditation), Character/Kho Đồ safe-area, and forced ×2/×3/×4/Đột Phá/Độ Kiếp states.
+5. Fix only proven import/parse/runtime/visual defects; do not alter locked V160–V179 gameplay authority to satisfy presentation QA.
+6. After base Kho Đồ art is visually stable, design rarity-frame and enhancement animation assets/VFX.
+7. Do **not** jump to Pháp Bảo until the user changes priority or the current item/Kho Đồ slice is visually satisfactory.
 
 ## UI/UX phase
 
