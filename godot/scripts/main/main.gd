@@ -21,6 +21,7 @@ var _character_vm: Dictionary = {}
 var _vm: Dictionary = {}
 var _last_home_generated_at := 0
 var _last_character_generated_at := 0
+var _pending_character_detail: StringName = &""
 
 func _ready() -> void:
 	_build_home()
@@ -59,6 +60,7 @@ func _connect_ui() -> void:
 	hud.cultivation_pressed.connect(_open_cultivation)
 	hud.retreat_pressed.connect(_open_retreat)
 	hud.route_requested.connect(_on_route_requested)
+	hud.character_section_requested.connect(_on_home_character_section_requested)
 	hud.primary_action_requested.connect(_on_primary_action)
 	nav.route_requested.connect(_on_route_requested)
 	overlay.retreat_hours_selected.connect(_on_retreat_hours_selected)
@@ -105,6 +107,9 @@ func _on_character_updated(character_view: Dictionary) -> void:
 	_last_character_generated_at = maxi(_last_character_generated_at, generated_at)
 	_character_vm = vm
 	character_screen.bind(vm)
+	if _pending_character_detail != &"":
+		character_screen.open_detail(_pending_character_detail)
+		_pending_character_detail = &""
 
 func _on_bridge_status_changed(online: bool, message: String) -> void:
 	hud.set_bridge_status(online, message)
@@ -158,7 +163,14 @@ func _on_primary_action(action_id: String) -> void:
 	backend_bridge.perform_action(action_id)
 
 func _on_route_requested(route_id: StringName) -> void:
+	if route_id not in [&"home", &"character"]:
+		hud.set_status_message("Chức năng này chưa mở trong bản Godot hiện tại")
+		return
 	AppState.request_route(route_id)
+
+func _on_home_character_section_requested(section_id: StringName) -> void:
+	_pending_character_detail = section_id
+	AppState.request_route(&"character")
 
 func _on_route_changed(route_id: StringName) -> void:
 	nav.set_route(route_id)
