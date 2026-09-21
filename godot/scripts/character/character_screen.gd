@@ -10,6 +10,7 @@ signal potential_action_requested(stat_id: String, points: int)
 const STANDING_HERO_SCRIPT := preload("res://scripts/character/standing_hero.gd")
 const EQUIPMENT_SLOT_SCRIPT := preload("res://scripts/character/character_equipment_slot.gd")
 const CHARACTER_DETAIL_SHEET_SCRIPT := preload("res://scripts/character/character_detail_sheet.gd")
+const EQUIPMENT_INVENTORY_SCREEN_SCRIPT := preload("res://scripts/character/equipment_inventory_screen.gd")
 const BACKGROUND_PATH := "res://art/approved/home/home_background.webp"
 
 const GOLD_HI := Color("fff1bf")
@@ -32,6 +33,7 @@ var _hero
 var _hero_glow: Panel
 var _visual_time := 0.0
 var _detail_sheet
+var _equipment_inventory
 var _slot_components: Dictionary = {}
 var _vm: Dictionary = {}
 
@@ -81,6 +83,8 @@ func bind(vm: Dictionary) -> void:
 	_status.text = "Chạm ô trang bị để mở Hành Trang" if equipped_count <= 0 else "%d/%d trang bị đang mặc" % [equipped_count, slot_count]
 	if _detail_sheet != null and _detail_sheet.visible:
 		_detail_sheet.refresh(vm)
+	if _equipment_inventory != null and _equipment_inventory.visible:
+		_equipment_inventory.refresh(vm)
 
 func set_bridge_status(online: bool, message: String) -> void:
 	if not visible:
@@ -248,12 +252,17 @@ func _build() -> void:
 	_detail_sheet = CHARACTER_DETAIL_SHEET_SCRIPT.new()
 	_detail_sheet.name = "CharacterDetailSheet"
 	_detail_sheet.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_detail_sheet.equip_requested.connect(_on_detail_equip_requested)
-	_detail_sheet.equipment_detail_requested.connect(_on_detail_equipment_detail_requested)
-	_detail_sheet.enhance_requested.connect(_on_detail_enhance_requested)
 	_detail_sheet.profile_action_requested.connect(_on_detail_profile_action_requested)
 	_detail_sheet.potential_action_requested.connect(_on_detail_potential_action_requested)
 	add_child(_detail_sheet)
+
+	_equipment_inventory = EQUIPMENT_INVENTORY_SCREEN_SCRIPT.new()
+	_equipment_inventory.name = "EquipmentInventoryScreen"
+	_equipment_inventory.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_equipment_inventory.equip_requested.connect(_on_detail_equip_requested)
+	_equipment_inventory.equipment_detail_requested.connect(_on_detail_equipment_detail_requested)
+	_equipment_inventory.enhance_requested.connect(_on_detail_enhance_requested)
+	add_child(_equipment_inventory)
 
 func _add_slot(stage: Control, slot_id: String, slot_label: String, x: float, y: float) -> void:
 	var slot = EQUIPMENT_SLOT_SCRIPT.new()
@@ -306,16 +315,19 @@ func _emit_detail(detail_id: StringName) -> void:
 	detail_requested.emit(detail_id)
 
 func open_equipment_for_slot(slot_id: String) -> void:
-	if _detail_sheet == null or _vm.is_empty():
+	if _equipment_inventory == null or _vm.is_empty():
 		return
-	_detail_sheet.show_equipment_for_slot(slot_id, _vm)
+	if _detail_sheet != null:
+		_detail_sheet.visible = false
+	_equipment_inventory.show_inventory(_vm, slot_id)
 
 func open_detail(detail_id: StringName) -> void:
 	if _detail_sheet == null or _vm.is_empty():
 		return
 	match detail_id:
 		&"equipment":
-			_detail_sheet.show_detail("equipment", _vm)
+			_detail_sheet.visible = false
+			_equipment_inventory.show_inventory(_vm)
 		&"stats":
 			_detail_sheet.show_detail("stats", _vm)
 		&"profile":
@@ -328,6 +340,8 @@ func open_detail(detail_id: StringName) -> void:
 func hide_detail() -> void:
 	if _detail_sheet != null:
 		_detail_sheet.visible = false
+	if _equipment_inventory != null:
+		_equipment_inventory.visible = false
 
 func _on_detail_equip_requested(item_id: String) -> void:
 	if item_id.is_empty():
