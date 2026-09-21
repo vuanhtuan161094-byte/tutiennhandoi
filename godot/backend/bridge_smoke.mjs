@@ -105,6 +105,16 @@ try{
   const health=await waitHealth();
   assert(health.bridgeVersion===EXPECTED_VERSION,'Health bridge version mismatch');
   assert(health.authority==='canonical-dist','Health authority must be canonical-dist');
+  assert(health.qaMode===false,'Canonical diagnostic smoke must keep P2 QA mode disabled');
+
+  const blockedFixtureResponse=await fetch(BASE+'/action',{
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body:JSON.stringify({action:'diagnosticFixture',fixture:'ling2'}),
+  });
+  const blockedFixtureBody=await blockedFixtureResponse.json().catch(()=>({}));
+  assert(blockedFixtureResponse.status===400,'P2 fixture must be rejected unless TUTIEN_GODOT_QA=1');
+  assert(String(blockedFixtureBody?.error||'').includes('không hỗ trợ'),'Expected unsupported-action error outside QA mode');
 
   const created=await request('/new',{method:'POST',body:{seed:161094}});
   validateHome(created.home);
