@@ -13,6 +13,9 @@ func test_build_maps_canonical_home_into_presentation_model() -> void:
 	assert_float(float(vm["progression"]["tu_vi"])).is_equal(705.0)
 	assert_float(float(vm["progression"]["live_tu_vi"])).is_equal(705.8)
 	assert_float(float(vm["progression"]["rate_per_second"])).is_equal(1.0)
+	assert_int(int(vm["progression"]["reincarnation_r3"]["last_ling_quang_multiplier"])).is_equal(4)
+	assert_int(int(vm["progression"]["reincarnation_r3"]["last_ling_quang_tick"])).is_equal(28)
+	assert_int(int(vm["progression"]["reincarnation_r3"]["tribulation_temper_stacks"])).is_equal(2)
 	assert_float(float(vm["progression"]["required_tu_vi"])).is_equal(1371.0)
 	assert_float(float(vm["progression"]["remaining_life_years"])).is_equal(82.0)
 	assert_bool(bool(vm["progression"]["retreat"]["enabled"])).is_true()
@@ -96,6 +99,12 @@ func _valid_home() -> Dictionary:
 			"liveTuVi": 705.8,
 			"commitIntervalSeconds": 15.0,
 			"commitPhaseSeconds": 1.0,
+			"reincarnationR3": {
+				"selfTicks": 30,
+				"lastLingGuangMultiplier": 4,
+				"lastLingGuangTick": 28,
+				"tribulationTemperStacks": 2,
+			},
 			"sources": [
 				{"id": "base", "label": "Cơ sở", "kind": "flat", "value": 10.0},
 				{"id": "root", "label": "Linh Căn", "kind": "flat", "value": 3.0},
