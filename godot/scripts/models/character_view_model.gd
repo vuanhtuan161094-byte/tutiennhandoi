@@ -79,8 +79,6 @@ static func build(payload: Dictionary) -> Dictionary:
 	var realm := str(life.get("realm", character.get("realm", "Phàm Nhân")))
 	var active_technique := _active_technique_label(character)
 	var path_secondary := root_name
-	if active_technique != "":
-		path_secondary = active_technique
 
 	return {
 		"ok": true,
@@ -124,7 +122,7 @@ static func _path_primary(character: Dictionary, active_technique: String) -> St
 		if value != "":
 			return value
 	if active_technique != "":
-		return "Lối tu hiện tại"
+		return active_technique
 	return "Đạo đồ chưa định"
 
 static func _validate(payload: Dictionary) -> String:
