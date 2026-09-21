@@ -10,6 +10,23 @@ rem batch file can move the read cursor into the middle of a line.
 rem ============================================================
 if /I "%~1"=="--bootstrap" goto :bootstrap
 if /I "%~1"=="--post-update" goto :post_update
+if /I "%~1"=="--qa-bootstrap" goto :qa_bootstrap
+if /I "%~1"=="--qa-post-update" goto :qa_post_update
+if /I "%~1"=="--qa" goto :qa_entry
+
+:qa_entry
+set "ROOT=%~dp0"
+set "TEMP_LAUNCHER=%TEMP%\tutien_choi_game_qa_%RANDOM%_%RANDOM%.cmd"
+copy /y "%~f0" "%TEMP_LAUNCHER%" >nul
+if errorlevel 1 (
+  echo [ERROR] Khong tao duoc QA launcher tam.
+  pause
+  exit /b 1
+)
+call "%TEMP_LAUNCHER%" --qa-bootstrap "%ROOT%"
+set "BOOT_RC=%ERRORLEVEL%"
+del /q "%TEMP_LAUNCHER%" >nul 2>&1
+exit /b %BOOT_RC%
 
 set "ROOT=%~dp0"
 set "TEMP_LAUNCHER=%TEMP%\tutien_choi_game_%RANDOM%_%RANDOM%.cmd"
@@ -49,9 +66,49 @@ rem Start the freshly updated copy; do not continue old logic.
 call "%ROOT%CHOI_GAME.cmd" --post-update
 exit /b %ERRORLEVEL%
 
+:qa_bootstrap
+set "ROOT=%~2"
+cd /d "%ROOT%"
+title Tu Tien Nhan Doi - P2 QA Update
+
+cls
+echo ================================================
+echo   TU TIEN NHAN DOI - P2 QA
+echo   isolated save + deterministic fixtures
+echo ================================================
+echo.
+
+call "%ROOT%CAP_NHAT_GAME_LOCAL.cmd" --no-pause
+if errorlevel 1 (
+  echo.
+  echo [STOP] Khong cap nhat duoc game. Godot chua duoc mo.
+  pause
+  exit /b 1
+)
+
+call "%ROOT%CHOI_GAME.cmd" --qa-post-update
+exit /b %ERRORLEVEL%
+
+:qa_post_update
+set "QA_LAUNCH=1"
+set "TUTIEN_GODOT_BRIDGE_DIAGNOSTIC=1"
+set "TUTIEN_GODOT_QA=1"
+set "TUTIEN_GODOT_BRIDGE_SAVE=%~dp0godot\.runtime\qa-fixture-save.json"
+goto :post_update
+
 :post_update
 cd /d "%~dp0"
-title Tu Tien Nhan Doi
+if not defined QA_LAUNCH (
+  set "TUTIEN_GODOT_BRIDGE_DIAGNOSTIC="
+  set "TUTIEN_GODOT_QA="
+)
+if defined QA_LAUNCH (
+  title Tu Tien Nhan Doi - P2 QA
+  echo [QA] Isolated save: %TUTIEN_GODOT_BRIDGE_SAVE%
+  echo [QA] F2 Kho Do ^| F3 x2 ^| F4 x3 ^| F5 x4 ^| F6 Dot Pha ^| F7 Do Kiep ^| F8 Clear
+) else (
+  title Tu Tien Nhan Doi
+)
 
 set "PROJECT=%CD%\godot"
 set "GODOT_BIN="
@@ -134,7 +191,7 @@ if not defined NODE_BIN (
 if not exist "%PROJECT%\.runtime" mkdir "%PROJECT%\.runtime" >nul 2>&1
 
 echo [BRIDGE] Kiem tra backend...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $r=Invoke-RestMethod -Uri 'http://127.0.0.1:4192/health' -TimeoutSec 1; if($r.ok -and $r.bridgeVersion -eq 'godot-bridge.v2'){exit 0} } catch {}; exit 1"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $r=Invoke-RestMethod -Uri 'http://127.0.0.1:4192/health' -TimeoutSec 1; $wantQa=($env:TUTIEN_GODOT_QA -eq '1'); if($r.ok -and $r.bridgeVersion -eq 'godot-bridge.v2' -and [bool]$r.qaMode -eq $wantQa){exit 0} } catch {}; exit 1"
 if not errorlevel 1 goto :bridge_ready
 
 echo [BRIDGE] Kiem tra syntax backend...
@@ -164,7 +221,7 @@ if errorlevel 1 goto :bridge_fail
 set "BRIDGE_OWNED=1"
 
 for /L %%I in (1,1,12) do (
-  powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $r=Invoke-RestMethod -Uri 'http://127.0.0.1:4192/health' -TimeoutSec 1; if($r.ok -and $r.bridgeVersion -eq 'godot-bridge.v2'){exit 0} } catch {}; exit 1"
+  powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $r=Invoke-RestMethod -Uri 'http://127.0.0.1:4192/health' -TimeoutSec 1; $wantQa=($env:TUTIEN_GODOT_QA -eq '1'); if($r.ok -and $r.bridgeVersion -eq 'godot-bridge.v2' -and [bool]$r.qaMode -eq $wantQa){exit 0} } catch {}; exit 1"
   if not errorlevel 1 goto :bridge_ready
   timeout /t 1 /nobreak >nul
 )
@@ -172,7 +229,11 @@ for /L %%I in (1,1,12) do (
 goto :bridge_fail
 
 :bridge_ready
-echo       Bridge OK - http://127.0.0.1:4192
+if defined QA_LAUNCH (
+  echo       Bridge OK - QA MODE - http://127.0.0.1:4192
+) else (
+  echo       Bridge OK - http://127.0.0.1:4192
+)
 set "TUTIEN_GODOT_BRIDGE_EXTERNAL=1"
 
 for /f "delims=" %%V in ('"!GODOT_BIN!" --version 2^>nul') do set "GODOT_VERSION=%%V"
