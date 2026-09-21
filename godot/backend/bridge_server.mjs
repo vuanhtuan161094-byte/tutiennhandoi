@@ -110,6 +110,7 @@ class GodotCanonicalRuntime {
     const cultivationLiveTuVi=cultivationRequiredTuVi>0
       ? Math.min(cultivationRequiredTuVi,cultivationCanonicalTuVi+cultivationFinalPerSecondExact*cultivationPhaseSeconds)
       : cultivationCanonicalTuVi;
+    const cultivationR3=this.session?.stateValue?.cultivation?.reincarnationR3||{};
     const character=this.api.getCharacter();
     const root=this.api.getSpiritualRootV145();
     const stones=(patch.inventory||[]).find(x=>x.id==='resource.spirit_stone')?.quantity??0;
@@ -147,6 +148,12 @@ class GodotCanonicalRuntime {
         finalTuViPerSecond:cultivationFinalPerSecond,
         commitIntervalSeconds:cultivationCommitSeconds,
         commitPhaseSeconds:cultivationPhaseSeconds,
+        reincarnationR3:{
+          selfTicks:Math.max(0,Math.floor(Number(cultivationR3.selfTicks)||0)),
+          lastLingGuangMultiplier:Math.max(1,Math.min(10,Number(cultivationR3.lastLingGuangMultiplier)||1)),
+          lastLingGuangTick:Math.max(0,Math.floor(Number(cultivationR3.lastLingGuangTick)||0)),
+          tribulationTemperStacks:Math.max(0,Math.min(5,Math.floor(Number(cultivationR3.tribulationTemperStacks)||0))
+        },
         sources:Array.isArray(cultivation.sources)?cultivation.sources.map(x=>({
           id:String(x?.id||''),
           label:String(x?.label||x?.name||x?.id||''),
