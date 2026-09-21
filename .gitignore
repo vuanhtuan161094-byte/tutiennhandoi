@@ -32,3 +32,14 @@ artifacts/local-ci/
 # Keep authored runtime under dist/ tracked intentionally.
 .tools/
 artifacts/godot-tools/
+
+
+# Godot generated local metadata
+.godot/
+*.gd.uid
+
+# Local sync / one-off recovery artifacts
+.local-sync-backup/
+payload/
+HOME_PRODUCTION_PACK_GODOT_RESUME_20260921/
+KHOI_PHUC_LOCAL_1_LAN.cmd
