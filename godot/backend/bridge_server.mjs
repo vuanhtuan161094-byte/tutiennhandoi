@@ -14,7 +14,7 @@ import { createInitialLifeMeta } from '../../dist/core/life.js';
 import { buildWebClientViewPatch } from '../../dist/core/client-shell.js';
 import { createWebClientSave, parseWebClientSave } from '../../dist/core/web-save.js';
 import { LIVE_COMMIT_REAL_SECONDS } from '../../dist/core/realtime-balance.js';
-import { equipmentSetDefinitionV142 } from '../../dist/core/equipment-v142.js';
+import { equipmentSetDefinitionV142, grantEquipmentFragmentsV142, grantEquipmentSetFragmentsV142 } from '../../dist/core/equipment-v142.js';
 
 const HERE=dirname(fileURLToPath(import.meta.url));
 const BRIDGE_VERSION='godot-bridge.v2';
@@ -24,6 +24,7 @@ const SAVE_PATH=process.env.TUTIEN_GODOT_BRIDGE_SAVE
 const PORT=Math.max(1,Math.min(65535,Number(process.argv[2]||4190)||4190));
 const HOST='127.0.0.1';
 const DIAGNOSTIC_MODE=process.env.TUTIEN_GODOT_BRIDGE_DIAGNOSTIC==='1';
+const QA_MODE=DIAGNOSTIC_MODE&&process.env.TUTIEN_GODOT_QA==='1';
 const registry=buildRegistry();
 
 class GodotCanonicalRuntime {
@@ -34,6 +35,8 @@ class GodotCanonicalRuntime {
     this.carry=0;
     this.lastTickAt=Date.now();
     this.dirty=false;
+    this.qaFixture='';
+    this.qaFixtureSeq=0;
     this.newGame();
   }
   attach(session){
@@ -88,6 +91,100 @@ class GodotCanonicalRuntime {
       this.dirty=true;
     }
   }
+  applyQaHomeFixture(view){
+    if(!QA_MODE||!this.qaFixture)return view;
+    view.diagnostic={
+      qa:true,
+      fixture:this.qaFixture,
+      sequence:this.qaFixtureSeq,
+      previewOnly:this.qaFixture==='tribulation',
+    };
+    const lingMatch=/^ling([234])$/.exec(this.qaFixture);
+    if(lingMatch){
+      const multiplier=Number(lingMatch[1]);
+      view.cultivation.reincarnationR3.lastLingGuangMultiplier=multiplier;
+      view.cultivation.reincarnationR3.lastLingGuangTick=100000+this.qaFixtureSeq;
+    }
+    return view;
+  }
+  seedQaInventory(){
+    this.newGame(161094);
+    const state=this.session.stateValue;
+    grantEquipmentFragmentsV142(state,10000,'godot-p2-qa');
+    for(const setId of ['set.v142.attire.metal','set.v142.jewelry.huyen_nguyen']){
+      grantEquipmentSetFragmentsV142(state,setId,500,'godot-p2-qa');
+    }
+    const craft=(slot)=>{
+      this.api.perform({type:'craftEquipmentV142',slot,rankIndex:0});
+      const items=Array.isArray(this.session.stateValue?.equipment?.items)?this.session.stateValue.equipment.items:[];
+      return String(items.at(-1)?.id||'');
+    };
+    const weaponIds=[craft('weapon'),craft('weapon'),craft('weapon')].filter(Boolean);
+    if(weaponIds.length===3){
+      this.api.perform({type:'mergeEquipmentV142',mainItemId:weaponIds[0],fodderItemAId:weaponIds[1],fodderItemBId:weaponIds[2]});
+    }
+    const attireIds=[weaponIds[0],craft('head'),craft('robe'),craft('gloves')].filter(Boolean);
+    const jewelryIds=[craft('necklace'),craft('ring'),craft('talisman')].filter(Boolean);
+    for(const itemId of attireIds.slice(0,3)){
+      this.api.perform({type:'engraveEquipmentSetV142',itemId,setId:'set.v142.attire.metal'});
+    }
+    for(const itemId of jewelryIds.slice(0,2)){
+      this.api.perform({type:'engraveEquipmentSetV142',itemId,setId:'set.v142.jewelry.huyen_nguyen'});
+    }
+    if(attireIds[0])this.api.perform({type:'equip',itemId:attireIds[0]});
+    if(attireIds[2])this.api.perform({type:'equip',itemId:attireIds[2]});
+    if(jewelryIds[1])this.api.perform({type:'equip',itemId:jewelryIds[1]});
+    this.dirty=true;
+    return {
+      fixture:'inventory',
+      canonical:true,
+      itemCount:Array.isArray(this.session.stateValue?.equipment?.items)?this.session.stateValue.equipment.items.length:0,
+    };
+  }
+  prepareQaAscend(){
+    this.newGame(161094);
+    const summary=this.session.cultivationSummaryV140();
+    if(summary.transition!=='ascend')throw new Error(`QA ascend fixture expected major gate, got ${summary.transition}`);
+    this.session.stateValue.cultivation.tuVi=Math.max(0,Number(summary.requiredTuVi)||0);
+    this.dirty=true;
+    return {fixture:'ascend',canonical:true,realmOrder:summary.realmOrder,requiredTuVi:summary.requiredTuVi};
+  }
+  prepareQaTribulation(){
+    this.newGame(161094);
+    while(this.session.stateValue.realm.maxRealmOrder<41){
+      const current=this.session.registry.realm(this.session.stateValue.realm.realmId);
+      if(!current?.nextRealmId)throw new Error('QA tribulation fixture cannot advance to order 41.');
+      this.session.applyRealmTransitionV140(current.nextRealmId,'diagnostic');
+    }
+    const summary=this.session.cultivationSummaryV140();
+    if(summary.transition!=='tribulation')throw new Error(`QA tribulation fixture expected gate, got ${summary.transition}`);
+    this.session.stateValue.cultivation.tuVi=Math.max(0,Number(summary.requiredTuVi)||0);
+    this.dirty=true;
+    return {
+      fixture:'tribulation',
+      canonicalGate:true,
+      previewOnly:true,
+      realmOrder:summary.realmOrder,
+      requiredTuVi:summary.requiredTuVi,
+      note:'Milestone blockers remain canonical; QA does not bypass dungeon prerequisites.',
+    };
+  }
+  setQaFixture(value){
+    if(!QA_MODE)throw new Error('QA fixture chỉ khả dụng trong isolated QA mode.');
+    const fixture=String(value||'').trim().toLowerCase();
+    const allowed=new Set(['clear','inventory','ling2','ling3','ling4','ascend','tribulation']);
+    if(!allowed.has(fixture))throw new Error('QA fixture không hợp lệ: '+fixture);
+    this.qaFixtureSeq+=1;
+    if(fixture==='clear'){
+      this.qaFixture='';
+      return {fixture:'clear',canonical:true};
+    }
+    this.qaFixture=fixture;
+    if(fixture==='inventory')return this.seedQaInventory();
+    if(fixture==='ascend')return this.prepareQaAscend();
+    if(fixture==='tribulation')return this.prepareQaTribulation();
+    return {fixture,canonical:false,presentationOnly:true,multiplier:Number(fixture.slice(-1))||1};
+  }
   homeView(){
     this.flushRealtime();
     const now=Date.now();
@@ -116,7 +213,7 @@ class GodotCanonicalRuntime {
     const root=this.api.getSpiritualRootV145();
     const stones=(patch.inventory||[]).find(x=>x.id==='resource.spirit_stone')?.quantity??0;
     const cp=patch.shell?.reincarnationCp??this.api.getReincarnation()?.cp??0;
-    return {
+    const view={
       ok:true,
       schema:'godot-home-bridge.v1',
       bridgeVersion:BRIDGE_VERSION,
@@ -208,6 +305,7 @@ class GodotCanonicalRuntime {
         }
       }
     };
+    return this.applyQaHomeFixture(view);
   }
   characterView(selectedItemId=''){
     this.flushRealtime();
@@ -348,6 +446,9 @@ class GodotCanonicalRuntime {
       const points=Math.max(1,Math.floor(Number(payload.points)||1));
       result=this.api.spendPotential(statId,points);
     }
+    else if(id==='diagnosticFixture'&&QA_MODE){
+      result=this.setQaFixture(payload.fixture);
+    }
     else if(id==='diagnosticCommit'&&DIAGNOSTIC_MODE){
       const seconds=Math.max(LIVE_COMMIT_REAL_SECONDS,Math.min(3600,Number(payload.seconds)||LIVE_COMMIT_REAL_SECONDS));
       result=this.session.advanceRealtimeCultivationV140(seconds);
@@ -397,7 +498,7 @@ const server=createServer(async(req,res)=>{
   if(req.method==='OPTIONS'){res.writeHead(204,{'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'content-type'});res.end();return;}
   const url=new URL(req.url||'/',`http://${HOST}:${PORT}`);
   try{
-    if(req.method==='GET'&&url.pathname==='/health')return send(res,200,{ok:true,schema:'godot-bridge-health.v1',bridgeVersion:BRIDGE_VERSION,port:PORT,authority:'canonical-dist'});
+    if(req.method==='GET'&&url.pathname==='/health')return send(res,200,{ok:true,schema:'godot-bridge-health.v1',bridgeVersion:BRIDGE_VERSION,port:PORT,authority:'canonical-dist',diagnosticMode:DIAGNOSTIC_MODE,qaMode:QA_MODE});
     if(req.method==='GET'&&url.pathname==='/home')return send(res,200,runtime.homeView());
     if(req.method==='GET'&&url.pathname==='/character'){
       const selectedItemId=String(url.searchParams.get('selectedItemId')||'').trim();
