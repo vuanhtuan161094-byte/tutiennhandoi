@@ -20,6 +20,7 @@ static func build(home: Dictionary) -> Dictionary:
 	var root: Dictionary = home.get("spiritualRoot", {})
 	var resources: Dictionary = home.get("resources", {})
 	var retreat: Dictionary = cultivation.get("retreat", {})
+	var reincarnation_r3: Dictionary = cultivation.get("reincarnationR3", {})
 	var home_context: Dictionary = home.get("homeContext", {})
 
 	var tu_vi := maxf(0.0, float(cultivation.get("tuVi", 0)))
@@ -72,6 +73,12 @@ static func build(home: Dictionary) -> Dictionary:
 			"ready": bool(cultivation.get("ready", false)),
 			"transition": str(cultivation.get("transition", "auto")),
 			"next_realm": str(cultivation.get("nextRealm", "")),
+			"reincarnation_r3": {
+				"self_ticks": maxi(0, int(reincarnation_r3.get("selfTicks", 0))),
+				"last_ling_quang_multiplier": clampf(float(reincarnation_r3.get("lastLingGuangMultiplier", 1.0)), 1.0, 10.0),
+				"last_ling_quang_tick": maxi(0, int(reincarnation_r3.get("lastLingGuangTick", 0))),
+				"tribulation_temper_stacks": clampi(int(reincarnation_r3.get("tribulationTemperStacks", 0)), 0, 5),
+			},
 			"retreat": {
 				"enabled": retreat_enabled,
 				"bank_hours": maxf(0.0, float(retreat.get("bankHours", 0))),
