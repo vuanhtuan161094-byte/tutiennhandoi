@@ -487,8 +487,12 @@ func _add_enhancement_controls(
 		if level >= max_level:
 			_add_body_text(card, "Cường hóa đã đạt +%d" % max_level, GOLD, 8)
 		return
+	# V129 intentionally sends lightweight rows for most of the inventory. Never
+	# fabricate chance/cost for a row whose canonical heavy detail was deferred.
+	if not item.has("nextEnhanceChancePct") or not item.has("nextEnhanceCost"):
+		return
 
-	var chance := clampf(float(item.get("nextEnhanceChancePct", 100.0)), 0.0, 100.0)
+	var chance := clampf(float(item.get("nextEnhanceChancePct", 0.0)), 0.0, 100.0)
 	var downgrade := clampf(float(item.get("nextEnhanceDowngradeChancePct", 0.0)), 0.0, 100.0)
 	var cost := maxi(0, int(round(float(item.get("nextEnhanceCost", 0)))))
 	var enough_essence := cost <= forging_essence
@@ -527,6 +531,8 @@ func _equipment_comparison_line(candidate_variant, equipped_variant) -> String:
 		return ""
 	var candidate: Dictionary = candidate_variant
 	var equipped: Dictionary = equipped_variant
+	if candidate.is_empty() or equipped.is_empty():
+		return ""
 	var parts: Array[String] = []
 	for key in ["attack", "maxHp", "defense", "maxSpirit", "accuracy", "resolve", "critChancePct", "damageReductionPct"]:
 		var delta := float(candidate.get(key, 0)) - float(equipped.get(key, 0))
