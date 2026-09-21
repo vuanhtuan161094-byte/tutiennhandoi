@@ -89,11 +89,14 @@ func refresh_home() -> void:
 		_poll_inflight = false
 		_set_online(false, "Bridge chưa sẵn sàng")
 
-func refresh_character() -> void:
+func refresh_character(selected_item_id: String = "") -> void:
 	if _character_inflight:
 		return
 	_character_inflight = true
-	var err := _character_http.request(BASE_URL + "/character")
+	var endpoint := BASE_URL + "/character"
+	if not selected_item_id.is_empty():
+		endpoint += "?selectedItemId=" + selected_item_id.uri_encode()
+	var err := _character_http.request(endpoint)
 	if err != OK:
 		_character_inflight = false
 		_set_online(false, "Không tải được Character DTO")
