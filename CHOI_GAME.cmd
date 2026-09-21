@@ -119,6 +119,18 @@ echo [BRIDGE] Kiem tra backend...
 powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $r=Invoke-RestMethod -Uri 'http://127.0.0.1:4192/health' -TimeoutSec 1; if($r.ok -and $r.bridgeVersion -eq 'godot-bridge.v2'){exit 0} } catch {}; exit 1"
 if not errorlevel 1 goto :bridge_ready
 
+echo [BRIDGE] Kiem tra syntax backend...
+pushd "%PROJECT%\backend"
+"%NODE_BIN%" --check bridge_server.mjs
+set "BRIDGE_CHECK_RC=%ERRORLEVEL%"
+popd
+if not "%BRIDGE_CHECK_RC%"=="0" (
+  echo.
+  echo [ERROR] bridge_server.mjs co loi syntax. Godot chua duoc mo.
+  pause
+  exit /b %BRIDGE_CHECK_RC%
+)
+
 echo [BRIDGE] Khoi dong canonical backend...
 set "NODE_BIN_ENV=%NODE_BIN%"
 set "BRIDGE_DIR_ENV=%PROJECT%\backend"
