@@ -179,7 +179,6 @@ func _render_equipment() -> void:
 	])
 	_add_pair(summary, "Khí Luyện Tinh Hoa", _fmt_num(float(resources.get("forgingEssence", 0))))
 	_add_pair(summary, "Bùa Chống Tụt", _fmt_num(float(resources.get("protectionTalismans", 0))))
-	_body.add_child(summary)
 
 	_add_section_label("10 VỊ TRÍ TRANG BỊ")
 	for slot_variant in slots:
@@ -207,7 +206,6 @@ func _render_equipment() -> void:
 		else:
 			_add_card_title(card, label, "Ô trống")
 			_add_body_text(card, "Chưa trang bị", MUTED, 10)
-		_body.add_child(card)
 
 	_add_section_label("KHO TRANG BỊ")
 	if inventory.is_empty():
@@ -261,7 +259,6 @@ func _render_equipment() -> void:
 			equip_button.pressed.connect(_emit_equip.bind(item_id))
 			card.add_child(equip_button)
 
-		_body.add_child(card)
 		shown += 1
 
 func _render_stats() -> void:
@@ -273,7 +270,6 @@ func _render_stats() -> void:
 	_add_pair(core, "Công Lực", _fmt_num(float(stats.get("power", 0))))
 	_add_pair(core, "Thể Phách", _fmt_num(float(stats.get("body", 0))))
 	_add_pair(core, "Phòng Ngự", _fmt_num(float(stats.get("defense", 0))))
-	_body.add_child(core)
 
 	_add_stat_group("TẤN CÔNG", [
 		["Công Lực", _fmt_num(float(combat.get("attack", 0)))],
@@ -319,7 +315,6 @@ func _render_stats() -> void:
 				var affinity := _element_pct(affinities.get(key, 0) if typeof(affinities) == TYPE_DICTIONARY else 0)
 				var resist := _element_pct(resistances.get(key, 0) if typeof(resistances) == TYPE_DICTIONARY else 0)
 				_add_pair(card, str(ELEMENT_LABELS.get(key, key)), "%.1f%% / %.1f%%" % [affinity, resist])
-			_body.add_child(card)
 
 func _render_profile() -> void:
 	_update_profile_tab_styles()
@@ -351,7 +346,6 @@ func _render_profile_origin() -> void:
 	_add_pair(root_card, "Công", "+%.1f%%" % float(root_combat.get("attackPct", 0)))
 	_add_pair(root_card, "Khí Huyết", "+%.1f%%" % float(root_combat.get("maxHpPct", 0)))
 	_add_pair(root_card, "Phòng", "+%.1f%%" % float(root_combat.get("defensePct", 0)))
-	_body.add_child(root_card)
 
 	var permanent := _card()
 	_add_card_title(permanent, "CĂN NGUYÊN", "Giữ qua Luân Hồi")
@@ -359,7 +353,6 @@ func _render_profile_origin() -> void:
 	var physique: Dictionary = detail.get("physique", {})
 	_add_pair(permanent, "Huyết Mạch", _origin_name(blood, "Vô Huyết Mạch"))
 	_add_pair(permanent, "Thể Chất", _origin_name(physique, "Phàm Thể"))
-	_body.add_child(permanent)
 
 	var life := _card()
 	_add_card_title(life, "ĐỜI HIỆN TẠI", "Khởi nguyên")
@@ -370,7 +363,6 @@ func _render_profile_origin() -> void:
 	_add_pair(life, "Mệnh Cách", str(fate.get("name", birth.get("fate", "Không rõ"))))
 	_add_pair(life, "Xuất Thân", str(background.get("name", birth.get("family", "Không rõ"))))
 	_add_pair(life, "Gia Tộc", str(birth.get("family", "Không rõ")))
-	_body.add_child(life)
 
 func _render_profile_blood() -> void:
 	var profile: Dictionary = _vm.get("profile", {})
@@ -389,7 +381,6 @@ func _render_profile_blood() -> void:
 	_add_pair(card, "Hộ Huyết", _fmt_num(float(resources.get("protection", 0))))
 	_add_pair(card, "Nuôi Độ Thuần", "Sẵn sàng" if bool(blood.get("canPurify", false)) else "Chưa đủ điều kiện")
 	_add_pair(card, "Thăng Huyết Mạch", "Sẵn sàng" if bool(blood.get("canAdvance", false)) else "Chưa đủ điều kiện")
-	_body.add_child(card)
 
 	var catalog: Array = profile.get("bloodlines", [])
 	if not catalog.is_empty():
@@ -399,7 +390,6 @@ func _render_profile_blood() -> void:
 			if typeof(entry_variant) == TYPE_DICTIONARY:
 				var entry: Dictionary = entry_variant
 				_add_pair(owned, str(entry.get("name", entry.get("id", "Huyết Mạch"))), "%.0f%%" % float(entry.get("purity", 0)))
-		_body.add_child(owned)
 
 func _render_profile_physique() -> void:
 	var profile: Dictionary = _vm.get("profile", {})
@@ -417,7 +407,6 @@ func _render_profile_physique() -> void:
 	_add_pair(card, "Thể Phách Tinh Hoa", _fmt_num(float(resources.get("bodyEssence", 0))))
 	_add_pair(card, "Chi phí", _fmt_num(float(physique.get("cost", 0))))
 	_add_pair(card, "Tiến Thể Chất", "Sẵn sàng" if bool(physique.get("canAdvance", false)) else "Chưa đủ điều kiện")
-	_body.add_child(card)
 
 	var names: Array = profile.get("physiques", [])
 	if not names.is_empty():
@@ -425,7 +414,6 @@ func _render_profile_physique() -> void:
 		_add_card_title(current, "THỂ CHẤT ĐÃ THỨC TỈNH", "%d" % names.size())
 		for name_variant in names:
 			_add_body_text(current, str(name_variant), TEXT, 11)
-		_body.add_child(current)
 
 func _render_profile_skills() -> void:
 	var profile: Dictionary = _vm.get("profile", {})
@@ -433,7 +421,6 @@ func _render_profile_skills() -> void:
 	var card := _card()
 	_add_card_title(card, "KỸ NĂNG ĐÃ LĨNH NGỘ", "%d" % skills.size())
 	_add_body_text(card, "Danh sách này lấy trực tiếp từ Character canonical; chưa tạo một lớp Công Pháp giả riêng.", MUTED, 8)
-	_body.add_child(card)
 
 	if skills.is_empty():
 		_add_note("Chưa lĩnh ngộ kỹ năng chiến đấu.")
@@ -451,7 +438,6 @@ func _render_profile_skills() -> void:
 			_add_body_text(skill_card, description, MUTED, 8)
 		_add_pair(skill_card, "Chân Nguyên", _fmt_num(float(skill.get("spiritCost", 0))))
 		_add_pair(skill_card, "Hồi chiêu", "%.1fs" % float(skill.get("cooldown", 0)))
-		_body.add_child(skill_card)
 
 func _set_profile_tab(tab: String) -> void:
 	_profile_tab = tab
@@ -478,16 +464,22 @@ func _add_stat_group(title: String, rows: Array) -> void:
 	for row_variant in rows:
 		var row: Array = row_variant
 		_add_pair(card, str(row[0]), str(row[1]))
-	_body.add_child(card)
 
 func _card() -> VBoxContainer:
+	var wrapper := PanelContainer.new()
+	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var style := _box(CARD, 12, Color(0.37, 0.59, 0.65, 0.18), 1)
+	style.content_margin_left = 10
+	style.content_margin_right = 10
+	style.content_margin_top = 8
+	style.content_margin_bottom = 8
+	wrapper.add_theme_stylebox_override("panel", style)
+	_body.add_child(wrapper)
+
 	var card := VBoxContainer.new()
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.add_theme_constant_override("separation", 4)
-	card.add_theme_constant_override("margin_left", 8)
-	card.add_theme_constant_override("margin_right", 8)
-	card.add_theme_constant_override("margin_top", 6)
-	card.add_theme_constant_override("margin_bottom", 6)
+	wrapper.add_child(card)
 	return card
 
 func _add_card_title(card: VBoxContainer, left: String, right: String) -> void:
@@ -560,7 +552,6 @@ func _add_section_label(value: String) -> void:
 func _add_note(value: String) -> void:
 	var card := _card()
 	_add_body_text(card, value, MUTED, 9)
-	_body.add_child(card)
 
 func _emit_equip(item_id: String) -> void:
 	equip_requested.emit(item_id)
