@@ -87,6 +87,9 @@ function validateCharacter(view){
   assert(view?.character&&typeof view.character==='object','Character DTO missing character');
   assert(view?.equipmentSystem&&typeof view.equipmentSystem==='object','Character DTO missing equipmentSystem');
   assert(Array.isArray(view?.equipment),'Character DTO equipment must be an array');
+  assert(Array.isArray(view?.equipmentInventory),'Character DTO equipmentInventory must be an array');
+  assert(view?.character?.combatStats&&typeof view.character.combatStats==='object','Character DTO missing V168 combatStats');
+  assert(view?.character?.originProgression&&typeof view.character.originProgression==='object','Character DTO missing profile progression');
   const slotCount=Number(view.equipmentSystem?.canonicalSlotCount)||Number(view.equipmentSystem?.slots?.length)||0;
   assert(slotCount===10,`Expected 10 canonical equipment slots, got ${slotCount}`);
 }
