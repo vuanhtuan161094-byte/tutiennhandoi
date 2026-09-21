@@ -29,23 +29,37 @@ if not defined PY_MODE (
 )
 
 if "%PY_MODE%"=="py" (
-  py -3 -c "import PIL, imageio_ffmpeg" >nul 2>&1
+  py -3 -c "import PIL" >nul 2>&1
 ) else (
-  python -c "import PIL, imageio_ffmpeg" >nul 2>&1
+  python -c "import PIL" >nul 2>&1
 )
-if errorlevel 1 (
-  echo.
-  echo [ERROR] Thieu dependency cho tool video animation.
-  echo Chay mot lan:
-  if "%PY_MODE%"=="py" (
-    echo   py -3 -m pip install -r "%REQ%"
-  ) else (
-    echo   python -m pip install -r "%REQ%"
-  )
-  echo.
-  pause
-  exit /b 1
+if errorlevel 1 goto :missing_deps
+
+where ffmpeg >nul 2>&1
+if not errorlevel 1 goto :deps_ok
+
+if "%PY_MODE%"=="py" (
+  py -3 -c "import imageio_ffmpeg" >nul 2>&1
+) else (
+  python -c "import imageio_ffmpeg" >nul 2>&1
 )
+if errorlevel 1 goto :missing_deps
+goto :deps_ok
+
+:missing_deps
+echo.
+echo [ERROR] Thieu dependency cho tool video animation.
+echo Chay mot lan:
+if "%PY_MODE%"=="py" (
+  echo   py -3 -m pip install -r "%REQ%"
+) else (
+  echo   python -m pip install -r "%REQ%"
+)
+echo.
+pause
+exit /b 1
+
+:deps_ok
 
 if "%~1"=="" (
   echo ================================================
