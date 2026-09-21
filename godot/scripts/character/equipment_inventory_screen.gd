@@ -257,7 +257,10 @@ func _render(reset_scroll: bool = true) -> void:
 
 	var v142_count := 0
 	for item_variant in inventory:
-		if typeof(item_variant) == TYPE_DICTIONARY and bool((item_variant as Dictionary).get("isV142", false)):
+		if typeof(item_variant) != TYPE_DICTIONARY:
+			continue
+		var count_item: Dictionary = item_variant
+		if bool(count_item.get("isV142", false)):
 			v142_count += 1
 	_item_count.text = "%d món" % v142_count
 	_resource_essence.text = _fmt_num(float(resources.get("forgingEssence", 0)))
@@ -408,7 +411,8 @@ func _add_item_card(parent: GridContainer, item: Dictionary) -> void:
 	var strength := Label.new()
 	strength.text = str(signal_info.get("label", "SO SÁNH"))
 	strength.add_theme_font_size_override("font_size", 8)
-	strength.add_theme_color_override("font_color", signal_info.get("color", MUTED))
+	var strength_color: Color = signal_info.get("color", MUTED)
+	strength.add_theme_color_override("font_color", strength_color)
 	col.add_child(strength)
 
 	var button := Button.new()
@@ -534,7 +538,8 @@ func _render_detail() -> void:
 	], MUTED)
 
 	var signal_info := _strength_signal(item)
-	_add_small_text(_detail_body, str(signal_info.get("label", "SO SÁNH")), signal_info.get("color", MUTED))
+	var signal_color: Color = signal_info.get("color", MUTED)
+	_add_small_text(_detail_body, str(signal_info.get("label", "SO SÁNH")), signal_color)
 
 	if set_id != "":
 		_add_small_text(_detail_body, "SET · " + str(item.get("setName", set_id)), accent)
@@ -562,7 +567,8 @@ func _render_detail() -> void:
 			_add_section_label_to(_detail_body, "SO VỚI ĐANG MẶC")
 			for row_variant in comparison:
 				var row: Dictionary = row_variant
-				_add_pair(_detail_body, str(row.get("label", "")), str(row.get("value", "")), row.get("color", MUTED))
+				var row_color: Color = row.get("color", MUTED)
+				_add_pair(_detail_body, str(row.get("label", "")), str(row.get("value", "")), row_color)
 
 	var affixes = item.get("affixDetails", [])
 	if typeof(affixes) == TYPE_ARRAY and not affixes.is_empty():
@@ -703,8 +709,11 @@ func _equipped_slot(slot_id: String) -> Dictionary:
 	if typeof(slots) != TYPE_ARRAY:
 		return {}
 	for slot_variant in slots:
-		if typeof(slot_variant) == TYPE_DICTIONARY and str((slot_variant as Dictionary).get("id", "")) == slot_id:
-			return slot_variant
+		if typeof(slot_variant) != TYPE_DICTIONARY:
+			continue
+		var slot: Dictionary = slot_variant
+		if str(slot.get("id", "")) == slot_id:
+			return slot
 	return {}
 
 func _find_item(item_id: String) -> Dictionary:
@@ -712,8 +721,11 @@ func _find_item(item_id: String) -> Dictionary:
 	if typeof(inventory) != TYPE_ARRAY:
 		return {}
 	for item_variant in inventory:
-		if typeof(item_variant) == TYPE_DICTIONARY and str((item_variant as Dictionary).get("id", "")) == item_id:
-			return item_variant
+		if typeof(item_variant) != TYPE_DICTIONARY:
+			continue
+		var item: Dictionary = item_variant
+		if str(item.get("id", "")) == item_id:
+			return item
 	return {}
 
 func _has_heavy_detail(item: Dictionary) -> bool:
