@@ -100,6 +100,8 @@ func set_bridge_status(online: bool, message: String) -> void:
 func set_status_message(message: String) -> void:
 	if message != "":
 		_status.text = message
+		if _equipment_inventory != null and _equipment_inventory.visible:
+			_equipment_inventory.set_status_message(message)
 
 func _build() -> void:
 	var bg := TextureRect.new()
@@ -348,25 +350,25 @@ func hide_detail() -> void:
 func _on_detail_equip_requested(item_id: String) -> void:
 	if item_id.is_empty():
 		return
-	_status.text = "Đang trang bị…"
+	set_status_message("Đang trang bị…")
 	equipment_action_requested.emit(item_id)
 
 func _on_detail_equipment_detail_requested(item_id: String) -> void:
 	if item_id.is_empty():
 		return
-	_status.text = "Đang so sánh trang bị…"
+	set_status_message("Đang tải chi tiết trang bị…")
 	equipment_detail_requested.emit(item_id)
 
 func _on_detail_enhance_requested(item_id: String, use_protection: bool) -> void:
 	if item_id.is_empty():
 		return
-	_status.text = "Đang cường hóa…"
+	set_status_message("Đang cường hóa…")
 	equipment_enhance_requested.emit(item_id, use_protection)
 
 func _on_inventory_command_requested(action_id: String, payload: Dictionary) -> void:
 	if action_id.is_empty():
 		return
-	_status.text = "Đang xử lý trang bị…"
+	set_status_message("Đang xử lý trang bị…")
 	equipment_system_action_requested.emit(action_id, payload)
 
 func _on_detail_profile_action_requested(action_id: String, payload: Dictionary) -> void:
