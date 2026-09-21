@@ -183,6 +183,29 @@ class GodotCanonicalRuntime {
       }
     };
   }
+  characterView(){
+    this.flushRealtime();
+    const now=Date.now();
+    this.api.syncForgingV12328(now);
+    const patch=buildWebClientViewPatch(this.api,'character',now,'');
+    return {
+      ok:true,
+      schema:'godot-character-bridge.v1',
+      bridgeVersion:BRIDGE_VERSION,
+      authority:{
+        equipment:'equipment.v142',
+        stats:'combat-stat.v168',
+        transport:'web-client-view-patch.v140',
+        lockedRuntime:'V160-V179'
+      },
+      generatedAtUnixMs:now,
+      overview:patch.overview||{},
+      character:patch.character||{},
+      spiritualRoot:patch.spiritualRoot||{},
+      equipment:Array.isArray(patch.equipment)?patch.equipment:[],
+      equipmentSystem:patch.equipmentSystem||{},
+    };
+  }
   action(id,payload={}){
     this.flushRealtime();
     let result;
@@ -241,6 +264,7 @@ const server=createServer(async(req,res)=>{
   try{
     if(req.method==='GET'&&url.pathname==='/health')return send(res,200,{ok:true,schema:'godot-bridge-health.v1',bridgeVersion:BRIDGE_VERSION,port:PORT,authority:'canonical-dist'});
     if(req.method==='GET'&&url.pathname==='/home')return send(res,200,runtime.homeView());
+    if(req.method==='GET'&&url.pathname==='/character')return send(res,200,runtime.characterView());
     if(DIAGNOSTIC_MODE&&req.method==='POST'&&url.pathname==='/diagnostic/shutdown'){
       send(res,200,{ok:true,bridgeVersion:BRIDGE_VERSION,shuttingDown:true});
       setTimeout(()=>void shutdown('diagnostic'),20);
