@@ -230,9 +230,7 @@ static func cultivation_rate_label(rate_per_15s: float, commit_seconds: float = 
 
 static func cultivation_rate_label_from_per_second(per_second: float) -> String:
 	var safe_rate := maxf(0.0, per_second)
-	var rounded := int(round(safe_rate))
-	var prefix := "+ " if is_equal_approx(safe_rate, float(rounded)) else "≈ + "
-	return "%s%d Tu Vi/s" % [prefix, rounded]
+	return "+%d Tu Vi/s" % int(ceil(safe_rate))
 
 func _build_top_shell() -> void:
 	var shell := MarginContainer.new()
