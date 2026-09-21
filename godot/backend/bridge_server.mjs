@@ -103,10 +103,12 @@ class GodotCanonicalRuntime {
     const cultivationRequiredTuVi=Math.max(0,Number(cultivation.requiredTuVi)||0);
     const cultivationBasePer15=Math.max(0,Number(cultivation.baseTuViPer15s)||0);
     const cultivationFinalPer15=Math.max(0,Number(cultivation.finalTuViPer15s)||0);
-    const cultivationBasePerSecond=cultivationBasePer15/cultivationCommitSeconds;
-    const cultivationFinalPerSecond=cultivationFinalPer15/cultivationCommitSeconds;
+    const cultivationBasePerSecondExact=cultivationBasePer15/cultivationCommitSeconds;
+    const cultivationFinalPerSecondExact=cultivationFinalPer15/cultivationCommitSeconds;
+    const cultivationBasePerSecond=Math.ceil(cultivationBasePerSecondExact);
+    const cultivationFinalPerSecond=Math.ceil(cultivationFinalPerSecondExact);
     const cultivationLiveTuVi=cultivationRequiredTuVi>0
-      ? Math.min(cultivationRequiredTuVi,cultivationCanonicalTuVi+cultivationFinalPerSecond*cultivationPhaseSeconds)
+      ? Math.min(cultivationRequiredTuVi,cultivationCanonicalTuVi+cultivationFinalPerSecondExact*cultivationPhaseSeconds)
       : cultivationCanonicalTuVi;
     const character=this.api.getCharacter();
     const root=this.api.getSpiritualRootV145();
