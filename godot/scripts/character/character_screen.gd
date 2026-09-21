@@ -3,6 +3,7 @@ extends Control
 signal detail_requested(detail_id: StringName)
 
 const STANDING_HERO_SCRIPT := preload("res://scripts/character/standing_hero.gd")
+const EQUIPMENT_SLOT_SCRIPT := preload("res://scripts/character/character_equipment_slot.gd")
 const BACKGROUND_PATH := "res://art/approved/home/home_background.webp"
 
 const GOLD_HI := Color("fff1bf")
@@ -22,7 +23,7 @@ var _stat_defense: Label
 var _potential_button: Button
 var _status: Label
 var _hero
-var _slot_nodes: Dictionary = {}
+var _slot_components: Dictionary = {}
 var _vm: Dictionary = {}
 
 func _ready() -> void:
@@ -56,16 +57,19 @@ func bind(vm: Dictionary) -> void:
 		for slot_variant in slots:
 			if typeof(slot_variant) == TYPE_DICTIONARY:
 				_bind_slot(slot_variant)
-	_status.text = "%d/%d ô trang bị · V165/V168 canonical" % [
-		int(equipment.get("equipped_count", 0)),
-		int(equipment.get("canonical_slot_count", 10)),
-	]
+	var equipped_count := int(equipment.get("equipped_count", 0))
+	var slot_count := int(equipment.get("canonical_slot_count", 10))
+	_status.text = "Chạm ô trang bị để mở Hành Trang" if equipped_count <= 0 else "%d/%d trang bị đang mặc" % [equipped_count, slot_count]
 
 func set_bridge_status(online: bool, message: String) -> void:
 	if not visible:
 		return
-	_status.text = ("ONLINE · " if online else "OFFLINE · ") + message
-	_status.add_theme_color_override("font_color", CYAN if online else Color("ffb19d"))
+	if not online:
+		_status.text = "Mất kết nối · " + message
+		_status.add_theme_color_override("font_color", Color("ffb19d"))
+	elif _vm.is_empty():
+		_status.text = "Đang đồng bộ nhân vật…"
+		_status.add_theme_color_override("font_color", CYAN)
 
 func set_status_message(message: String) -> void:
 	if message != "":
@@ -132,15 +136,15 @@ func _build() -> void:
 
 	_hero = STANDING_HERO_SCRIPT.new()
 	_hero.name = "CharacterHero"
-	_anchor(_hero, 95, 38, 295, 392)
+	_anchor(_hero, 78, 26, 312, 402)
 	stage.add_child(_hero)
 
 	var slot_specs := [
-		["weapon", 8, 40], ["head", 8, 112], ["gloves", 8, 184], ["bracelet", 8, 256], ["necklace", 8, 328],
-		["robe", 322, 40], ["belt", 322, 112], ["boots", 322, 184], ["ring", 322, 256], ["talisman", 322, 328],
+		["weapon", "Đạo Binh", 2, 30], ["head", "Đạo Quan", 2, 100], ["gloves", "Hộ Uyển", 2, 170], ["bracelet", "Linh Trạc", 2, 240], ["necklace", "Ngọc Bội", 2, 310],
+		["robe", "Pháp Bào", 324, 30], ["belt", "Huyền Đái", 324, 100], ["boots", "Vân Ngoa", 324, 170], ["ring", "Đạo Giới", 324, 240], ["talisman", "Hộ Phù", 324, 310],
 	]
 	for spec in slot_specs:
-		_add_slot(stage, str(spec[0]), float(spec[1]), float(spec[2]))
+		_add_slot(stage, str(spec[0]), str(spec[1]), float(spec[2]), float(spec[3]))
 
 	var path_panel := Panel.new()
 	_anchor(path_panel, 76, 378, 314, 426)
@@ -215,48 +219,21 @@ func _build() -> void:
 	_anchor(_status, 16, 686, 374, 714)
 	add_child(_status)
 
-func _add_slot(stage: Control, slot_id: String, x: float, y: float) -> void:
-	var root := Control.new()
-	root.name = "CharacterSlot_%s" % slot_id
-	_anchor(root, x, y, x + 60, y + 62)
-	stage.add_child(root)
-
-	var seal := Button.new()
-	seal.name = "SlotTap_%s" % slot_id
-	seal.text = "+"
-	seal.add_theme_font_size_override("font_size", 15)
-	seal.add_theme_color_override("font_color", GOLD_HI)
-	seal.add_theme_stylebox_override("normal", _flat(Color(0.01, 0.04, 0.06, 0.90), 24, Color(0.86, 0.69, 0.31, 0.50), 2))
-	seal.add_theme_stylebox_override("hover", _flat(Color(0.04, 0.08, 0.09, 0.96), 24, Color(0.98, 0.82, 0.41, 0.78), 2))
-	_anchor(seal, 7, 0, 53, 46)
-	seal.pressed.connect(_on_slot_pressed.bind(slot_id))
-	root.add_child(seal)
-
-	var label := Label.new()
-	label.text = slot_id
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 8)
-	label.add_theme_color_override("font_color", TEXT)
-	_anchor(label, 0, 47, 60, 62)
-	root.add_child(label)
-
-	_slot_nodes[slot_id] = {"root": root, "button": seal, "label": label, "data": {}}
+func _add_slot(stage: Control, slot_id: String, slot_label: String, x: float, y: float) -> void:
+	var slot = EQUIPMENT_SLOT_SCRIPT.new()
+	slot.name = "CharacterSlot_%s" % slot_id
+	slot.setup(slot_id, slot_label)
+	_anchor(slot, x, y, x + 64, y + 66)
+	slot.slot_pressed.connect(_on_slot_pressed)
+	stage.add_child(slot)
+	_slot_components[slot_id] = slot
 
 func _bind_slot(slot: Dictionary) -> void:
 	var slot_id := str(slot.get("id", ""))
-	if not _slot_nodes.has(slot_id):
+	if not _slot_components.has(slot_id):
 		return
-	var nodes: Dictionary = _slot_nodes[slot_id]
-	var button := nodes["button"] as Button
-	var label := nodes["label"] as Label
-	var filled := bool(slot.get("filled", false))
-	var enhancement := int(slot.get("enhancement", 0))
-	button.text = "+%d" % enhancement if filled else "+"
-	button.tooltip_text = str(slot.get("name", slot.get("label", ""))) if filled else "%s · ô trống" % str(slot.get("label", ""))
-	button.add_theme_color_override("font_color", CYAN if filled else GOLD_HI)
-	label.text = str(slot.get("label", slot_id))
-	nodes["data"] = slot.duplicate(true)
-	_slot_nodes[slot_id] = nodes
+	var component = _slot_components[slot_id]
+	component.bind_slot(slot)
 
 func _stat_cell(parent: Control, node_name: String, caption: String, index: int) -> Label:
 	var left := 6.0 + index * 120.0
@@ -278,9 +255,7 @@ func _stat_cell(parent: Control, node_name: String, caption: String, index: int)
 	parent.add_child(value)
 	return value
 
-func _on_slot_pressed(slot_id: String) -> void:
-	var nodes: Dictionary = _slot_nodes.get(slot_id, {})
-	var data: Dictionary = nodes.get("data", {})
+func _on_slot_pressed(slot_id: String, data: Dictionary) -> void:
 	if data.is_empty() or not bool(data.get("filled", false)):
 		_status.text = "%s đang trống · mở Trang Bị để chọn" % str(data.get("label", slot_id))
 		detail_requested.emit(&"equipment")
