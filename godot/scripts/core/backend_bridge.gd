@@ -56,6 +56,9 @@ func _exit_tree() -> void:
 		OS.kill(_bridge_pid)
 
 func _start_local_bridge() -> void:
+	if OS.get_environment("TUTIEN_GODOT_BRIDGE_EXTERNAL") == "1":
+		_set_online(false, "Đang chờ backend bridge")
+		return
 	if not OS.is_debug_build():
 		return
 	var node_executable := _resolve_node_executable()
