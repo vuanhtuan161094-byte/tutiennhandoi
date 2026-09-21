@@ -63,6 +63,7 @@ func _connect_ui() -> void:
 	nav.route_requested.connect(_on_route_requested)
 	overlay.retreat_hours_selected.connect(_on_retreat_hours_selected)
 	character_screen.detail_requested.connect(_on_character_detail_requested)
+	character_screen.equipment_action_requested.connect(_on_character_equipment_action_requested)
 	AppState.route_changed.connect(_on_route_changed)
 
 func _start_backend() -> void:
@@ -118,6 +119,9 @@ func _on_action_completed(action_id: String, result: Dictionary) -> void:
 			hud.set_status_message("Bế Quan %.2fh · +%s Tu Vi" % [used, _fmt_num(gained)])
 		else:
 			hud.set_status_message("Bế Quan chưa tạo thêm Tu Vi")
+	elif action_id == "equipItem":
+		character_screen.set_status_message("Đã cập nhật trang bị")
+		backend_bridge.refresh_character()
 
 func _open_identity() -> void:
 	if _vm.is_empty():
@@ -161,16 +165,17 @@ func _on_route_changed(route_id: StringName) -> void:
 
 func _on_character_detail_requested(detail_id: StringName) -> void:
 	match detail_id:
-		&"equipment":
-			character_screen.set_status_message("Trang Bị · 10 ô canonical V165")
-		&"stats":
-			character_screen.set_status_message("Thuộc Tính · chỉ số chiến đấu canonical V168")
-		&"profile":
-			character_screen.set_status_message("Hồ Sơ · Linh Căn / Thể Chất / Công Pháp")
+		&"equipment", &"stats", &"profile":
+			character_screen.open_detail(detail_id)
 		&"potential":
 			character_screen.set_status_message("Tăng Điểm · mutation authority sẽ được nối ở slice kế tiếp")
 		_:
 			character_screen.set_status_message(String(detail_id))
+
+func _on_character_equipment_action_requested(item_id: String) -> void:
+	if item_id.is_empty():
+		return
+	backend_bridge.perform_action("equipItem", {"itemId": item_id})
 
 func _route_label(route_id: StringName) -> String:
 	var labels := {
