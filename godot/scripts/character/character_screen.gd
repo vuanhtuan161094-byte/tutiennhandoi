@@ -4,6 +4,7 @@ signal detail_requested(detail_id: StringName)
 signal equipment_action_requested(item_id: String)
 signal equipment_detail_requested(item_id: String)
 signal equipment_enhance_requested(item_id: String, use_protection: bool)
+signal equipment_system_action_requested(action_id: String, payload: Dictionary)
 signal profile_action_requested(action_id: String, payload: Dictionary)
 signal potential_action_requested(stat_id: String, points: int)
 
@@ -262,6 +263,7 @@ func _build() -> void:
 	_equipment_inventory.equip_requested.connect(_on_detail_equip_requested)
 	_equipment_inventory.equipment_detail_requested.connect(_on_detail_equipment_detail_requested)
 	_equipment_inventory.enhance_requested.connect(_on_detail_enhance_requested)
+	_equipment_inventory.equipment_command_requested.connect(_on_inventory_command_requested)
 	add_child(_equipment_inventory)
 
 func _add_slot(stage: Control, slot_id: String, slot_label: String, x: float, y: float) -> void:
@@ -360,6 +362,12 @@ func _on_detail_enhance_requested(item_id: String, use_protection: bool) -> void
 		return
 	_status.text = "Đang cường hóa…"
 	equipment_enhance_requested.emit(item_id, use_protection)
+
+func _on_inventory_command_requested(action_id: String, payload: Dictionary) -> void:
+	if action_id.is_empty():
+		return
+	_status.text = "Đang xử lý trang bị…"
+	equipment_system_action_requested.emit(action_id, payload)
 
 func _on_detail_profile_action_requested(action_id: String, payload: Dictionary) -> void:
 	if action_id.is_empty():
