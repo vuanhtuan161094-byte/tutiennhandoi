@@ -69,3 +69,13 @@ func test_comparison_rows_surface_canonical_deltas() -> void:
 	assert_str(summary).contains("Phòng Ngự -8")
 	assert_str(summary).contains("Bạo Kích +2.0%")
 	screen.free()
+
+func test_set_bonus_text_uses_canonical_numeric_effects() -> void:
+	var screen = INVENTORY_SCREEN.new()
+	var text: String = screen._set_bonus_text({
+		"statMultipliers": {"attack": 0.08},
+		"flatStats": {"critChancePct": 12.0},
+	})
+	assert_str(text).contains("Công Lực +8%")
+	assert_str(text).contains("Bạo Kích +12.0%")
+	screen.free()
