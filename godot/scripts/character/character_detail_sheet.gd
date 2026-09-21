@@ -237,7 +237,10 @@ func _potential_effect(stat_id: String, definitions: Array) -> String:
 			continue
 		var per_point = definition.get("perPoint", [])
 		if typeof(per_point) == TYPE_ARRAY and not per_point.is_empty():
-			return " · ".join(Array(per_point).map(func(value): return str(value)))
+			var parts: Array[String] = []
+			for value in per_point:
+				parts.append(str(value))
+			return " · ".join(parts)
 		var description := str(definition.get("description", ""))
 		if description != "":
 			return description
