@@ -165,6 +165,16 @@ func _build() -> void:
 	_hero_glow.add_theme_stylebox_override("panel", _flat(Color(0.23, 0.68, 0.76, 0.035), 98, Color(0.95, 0.75, 0.31, 0.22), 2))
 	stage.add_child(_hero_glow)
 
+	var hero_ground := Panel.new()
+	hero_ground.name = "CharacterGroundShadow"
+	_anchor(hero_ground, 116, 350, 274, 382)
+	hero_ground.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hero_ground.add_theme_stylebox_override(
+		"panel",
+		_flat(Color(0.005, 0.025, 0.032, 0.54), 48, Color(0.58, 0.88, 0.86, 0.16), 1)
+	)
+	stage.add_child(hero_ground)
+
 	_hero = STANDING_HERO_SCRIPT.new()
 	_hero.name = "CharacterHero"
 	_anchor(_hero, 78, 26, 312, 402)
