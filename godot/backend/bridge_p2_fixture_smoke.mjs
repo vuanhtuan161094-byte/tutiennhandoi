@@ -123,9 +123,12 @@ try{
   assert(Array.isArray(tribulationFixture.result?.milestoneBlockers)&&tribulationFixture.result.milestoneBlockers.length>0,`QA fixture expected canonical milestone blockers, got ${JSON.stringify(tribulationFixture.result?.milestoneBlockers)}`);
   assert(String(tribulationFixture.result.milestoneBlockers[0]||'').includes('Vạn Đạo Thiên Mạc'),'Expected Vạn Đạo Thiên Mạc blocker before action');
 
-  const blocked=await request('/action',{method:'POST',body:{action:'tribulationV140'},allowError:true});
-  assert(blocked.response.ok===false,`QA must not bypass canonical tribulation milestone blocker; response=${JSON.stringify(blocked.data)}`);
-  assert(String(blocked.data?.error||'').includes('Vạn Đạo Thiên Mạc'),`Expected canonical Great Vehicle milestone blocker, got ${blocked.data?.error||''}`);
+  const blocked=await request('/action',{method:'POST',body:{action:'tribulationV140'}});
+  assert(blocked.response.ok===true,'Bridge transport must stay successful for handled gameplay rejection');
+  assert(blocked.data?.ok===true,'Bridge envelope must stay ok for handled gameplay rejection');
+  assert(blocked.data?.result?.ok===false,`Tribulation action must be rejected by canonical gameplay; result=${JSON.stringify(blocked.data?.result)}`);
+  const blockedSummary=Array.isArray(blocked.data?.result?.summaryLines)?blocked.data.result.summaryLines.join(' · '):'';
+  assert(blockedSummary.includes('Vạn Đạo Thiên Mạc'),`Expected canonical Great Vehicle milestone blocker, got ${blockedSummary}`);
 
   const cleared=(await request('/action',{
     method:'POST',
