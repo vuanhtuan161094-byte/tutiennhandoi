@@ -13,16 +13,15 @@ func test_character_registry_uses_split_runtime_and_still_resources() -> void:
 	for entry in REGISTRY.PRESETS:
 		assert_str(str(entry.get("resource_path", ""))).contains("character/animation_v2/presets/")
 		assert_str(str(entry.get("still_path", ""))).contains("character/animation_v2/stills/")
-		assert_str(str(entry.get("animation_name", ""))).begins_with("character_")
+		assert_str(str(entry.get("animation_name", ""))).starts_with("character_")
 
 func test_character_hero_defaults_to_static_presentation() -> void:
-	var hero = STANDING_HERO.new()
+	var hero = auto_free(STANDING_HERO.new())
 	assert_str(str(hero.animation_profile)).is_equal("character_standing_v3_options")
 	assert_str(str(hero.animation_mode)).is_equal("standing_still")
 	assert_str(str(hero.motion_mode)).is_equal("still")
 	assert_str(str(hero.animation_preset_id)).is_equal("character_idle_01")
 	assert_bool(hero.get_presentation_active()).is_false()
-	hero.free()
 
 func test_character_motion_mode_normalization_supports_three_modes() -> void:
 	assert_str(str(STANDING_HERO.normalize_motion_mode(&"still"))).is_equal("still")
