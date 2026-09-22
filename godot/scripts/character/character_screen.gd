@@ -173,7 +173,7 @@ func _build() -> void:
 
 	var veil := ColorRect.new()
 	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	veil.color = Color(0.006, 0.020, 0.032, 0.34)
+	veil.color = Color(0.006, 0.020, 0.032, 0.16)
 	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(veil)
 
@@ -187,16 +187,20 @@ func _build() -> void:
 	_realm_label = Label.new()
 	_realm_label.name = "CharacterRealm"
 	_realm_label.text = "ĐỜI 1 · PHÀM NHÂN"
-	_realm_label.add_theme_font_size_override("font_size", 10)
+	_realm_label.add_theme_font_size_override("font_size", 12)
 	_realm_label.add_theme_color_override("font_color", CYAN)
+	_realm_label.add_theme_constant_override("outline_size", 2)
+	_realm_label.add_theme_color_override("font_outline_color", Color(0.0, 0.01, 0.02, 0.90))
 	_anchor(_realm_label, 14, 7, 268, 24)
 	header.add_child(_realm_label)
 
 	_name_label = Label.new()
 	_name_label.name = "CharacterName"
 	_name_label.text = "Tu Sĩ"
-	_name_label.add_theme_font_size_override("font_size", 18)
+	_name_label.add_theme_font_size_override("font_size", 21)
 	_name_label.add_theme_color_override("font_color", GOLD_HI)
+	_name_label.add_theme_constant_override("outline_size", 3)
+	_name_label.add_theme_color_override("font_outline_color", Color(0.0, 0.01, 0.02, 0.92))
 	_anchor(_name_label, 14, 23, 268, 51)
 	header.add_child(_name_label)
 
@@ -204,20 +208,20 @@ func _build() -> void:
 	_root_label.name = "CharacterRoot"
 	_root_label.text = "Phàm Căn"
 	_root_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_root_label.add_theme_font_size_override("font_size", 11)
+	_root_label.add_theme_font_size_override("font_size", 13)
 	_root_label.add_theme_color_override("font_color", TEXT)
 	_anchor(_root_label, 266, 20, 354, 46)
 	header.add_child(_root_label)
 
 	var stage := Control.new()
 	stage.name = "CharacterStage"
-	stage.z_index = 0
+	stage.z_index = 5
 	_anchor(stage, 0, 0, 390, 526)
 	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(stage)
 
 	_hero_glow = Panel.new()
-	_hero_glow.z_index = -8
+	_hero_glow.z_index = -3
 	_anchor(_hero_glow, 62, 8, 328, 506)
 	_hero_glow.pivot_offset = Vector2(133, 249)
 	_hero_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -226,7 +230,7 @@ func _build() -> void:
 
 	var hero_ground := Panel.new()
 	hero_ground.name = "CharacterGroundShadow"
-	hero_ground.z_index = -7
+	hero_ground.z_index = -2
 	_anchor(hero_ground, 96, 468, 294, 506)
 	hero_ground.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hero_ground.add_theme_stylebox_override(
@@ -237,7 +241,7 @@ func _build() -> void:
 
 	_hero = STANDING_HERO_SCRIPT.new()
 	_hero.name = "CharacterHero"
-	_hero.z_index = -6
+	_hero.z_index = 0
 	# Character animation is the stage backdrop. UI remains interactive above it.
 	_anchor(_hero, 42, -6, 348, 512)
 	stage.add_child(_hero)
@@ -259,7 +263,7 @@ func _build() -> void:
 	var path_kicker := Label.new()
 	path_kicker.text = "LỐI TU HIỆN TẠI"
 	path_kicker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	path_kicker.add_theme_font_size_override("font_size", 8)
+	path_kicker.add_theme_font_size_override("font_size", 10)
 	path_kicker.add_theme_color_override("font_color", MUTED)
 	_anchor(path_kicker, 8, 4, 230, 16)
 	path_panel.add_child(path_kicker)
@@ -268,14 +272,14 @@ func _build() -> void:
 	_path_primary.name = "CharacterPathPrimary"
 	_path_primary.text = "Lối tu hiện tại"
 	_path_primary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_path_primary.add_theme_font_size_override("font_size", 12)
+	_path_primary.add_theme_font_size_override("font_size", 14)
 	_path_primary.add_theme_color_override("font_color", GOLD_HI)
 	_anchor(_path_primary, 8, 15, 230, 32)
 	path_panel.add_child(_path_primary)
 
 	_path_secondary = Label.new()
 	_path_secondary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_path_secondary.add_theme_font_size_override("font_size", 8)
+	_path_secondary.add_theme_font_size_override("font_size", 10)
 	_path_secondary.add_theme_color_override("font_color", CYAN)
 	_anchor(_path_secondary, 8, 31, 230, 45)
 	path_panel.add_child(_path_secondary)
@@ -293,7 +297,7 @@ func _build() -> void:
 	_potential_button = Button.new()
 	_potential_button.name = "CharacterPotentialCTA"
 	_potential_button.text = "TĂNG ĐIỂM"
-	_potential_button.add_theme_font_size_override("font_size", 14)
+	_potential_button.add_theme_font_size_override("font_size", 15)
 	_potential_button.add_theme_color_override("font_color", TEXT)
 	_potential_button.add_theme_stylebox_override("normal", _flat(Color(0.05, 0.08, 0.08, 0.90), 14, Color(0.94, 0.74, 0.29, 0.52), 1))
 	_potential_button.add_theme_stylebox_override("hover", _flat(Color(0.10, 0.10, 0.07, 0.96), 14, Color(1.0, 0.84, 0.42, 0.76), 2))
@@ -309,7 +313,7 @@ func _build() -> void:
 		var button := Button.new()
 		button.name = "CharacterAction_%s" % String(action[1])
 		button.text = str(action[0])
-		button.add_theme_font_size_override("font_size", 11)
+		button.add_theme_font_size_override("font_size", 13)
 		button.add_theme_color_override("font_color", TEXT)
 		button.add_theme_stylebox_override("normal", _flat(Color(0.01, 0.04, 0.06, 0.84), 14, Color(0.38, 0.70, 0.78, 0.22), 1))
 		button.add_theme_stylebox_override("hover", _flat(Color(0.04, 0.08, 0.10, 0.94), 14, Color(0.55, 0.88, 0.91, 0.42), 1))
@@ -323,7 +327,7 @@ func _build() -> void:
 	_status.name = "CharacterStatus"
 	_status.text = "Đang tải dữ liệu nhân vật…"
 	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_status.add_theme_font_size_override("font_size", 9)
+	_status.add_theme_font_size_override("font_size", 11)
 	_status.add_theme_color_override("font_color", MUTED)
 	_anchor(_status, 16, 670, 374, 700)
 	add_child(_status)
@@ -362,7 +366,7 @@ func _build_character_presentation_controls() -> void:
 	_presentation_trigger.text = "Hiển thị · Tĩnh"
 	_presentation_trigger.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_presentation_trigger.focus_mode = Control.FOCUS_NONE
-	_presentation_trigger.add_theme_font_size_override("font_size", 9)
+	_presentation_trigger.add_theme_font_size_override("font_size", 11)
 	_presentation_trigger.add_theme_color_override("font_color", TEXT)
 	_presentation_trigger.add_theme_color_override("font_hover_color", GOLD_HI)
 	_presentation_trigger.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
@@ -398,7 +402,7 @@ func _build_character_presentation_controls() -> void:
 	var title := Label.new()
 	title.text = "HIỂN THỊ NHÂN VẬT"
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	title.add_theme_font_size_override("font_size", 11)
+	title.add_theme_font_size_override("font_size", 13)
 	title.add_theme_color_override("font_color", GOLD_HI)
 	header_row.add_child(title)
 	var close_button := Button.new()
@@ -413,7 +417,7 @@ func _build_character_presentation_controls() -> void:
 
 	var display_label := Label.new()
 	display_label.text = "CHẾ ĐỘ HIỂN THỊ"
-	display_label.add_theme_font_size_override("font_size", 8)
+	display_label.add_theme_font_size_override("font_size", 10)
 	display_label.add_theme_color_override("font_color", MUTED)
 	col.add_child(display_label)
 
@@ -432,7 +436,7 @@ func _build_character_presentation_controls() -> void:
 
 	var preset_hint := Label.new()
 	preset_hint.text = "ANIMATION · chọn một kiểu"
-	preset_hint.add_theme_font_size_override("font_size", 8)
+	preset_hint.add_theme_font_size_override("font_size", 10)
 	preset_hint.add_theme_color_override("font_color", MUTED)
 	col.add_child(preset_hint)
 
@@ -466,7 +470,7 @@ func _character_presentation_button(caption: String, node_name: String) -> Butto
 	button.custom_minimum_size = Vector2(88, 30)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.focus_mode = Control.FOCUS_NONE
-	button.add_theme_font_size_override("font_size", 9)
+	button.add_theme_font_size_override("font_size", 11)
 	button.add_theme_color_override("font_hover_color", GOLD_HI)
 	return button
 
@@ -554,7 +558,7 @@ func _stat_cell(parent: Control, node_name: String, caption: String, index: int)
 	var caption_label := Label.new()
 	caption_label.text = caption
 	caption_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	caption_label.add_theme_font_size_override("font_size", 8)
+	caption_label.add_theme_font_size_override("font_size", 10)
 	caption_label.add_theme_color_override("font_color", MUTED)
 	_anchor(caption_label, left, 8, left + 116, 23)
 	parent.add_child(caption_label)
@@ -563,7 +567,7 @@ func _stat_cell(parent: Control, node_name: String, caption: String, index: int)
 	value.name = node_name
 	value.text = "0"
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	value.add_theme_font_size_override("font_size", 17)
+	value.add_theme_font_size_override("font_size", 19)
 	value.add_theme_color_override("font_color", GOLD_HI if index == 0 else TEXT)
 	_anchor(value, left, 23, left + 116, 55)
 	parent.add_child(value)
