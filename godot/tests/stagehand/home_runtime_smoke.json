@@ -150,6 +150,16 @@
       }
     },
     {
+      "name": "Current-life sheet is fully dismissed",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:ActiveSheet",
+        "state": "removed",
+        "timeout_ms": 3000,
+        "poll_interval_ms": 25
+      }
+    },
+    {
       "name": "Unported Phap Bao nav is disabled",
       "action": "assert_property",
       "with": {
