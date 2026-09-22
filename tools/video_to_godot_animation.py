@@ -671,7 +671,7 @@ def _self_test() -> None:
             matte_blur_radius=0.45,
             alpha_threshold=8,
             padding=4,
-            frame_width=0,
+            frame_width=72,
             dedupe_threshold=0.4,
             columns=0,
             animation_name="self_test_idle",
@@ -690,6 +690,9 @@ def _self_test() -> None:
 
         assert meta["sampledFrameCount"] == 6
         assert 3 <= meta["uniqueFrameCount"] <= 5
+        assert meta["frameSize"][0] == 72
+        assert meta["matteCloseRadius"] == 1
+        assert meta["matteBlurRadius"] == 0.45
         assert (output / "atlas.webp").is_file()
         assert (output / "animation.json").is_file()
         assert (output / "preview.webp").is_file()
