@@ -100,6 +100,10 @@ try{
     body:{action:'diagnosticFixture',fixture:'inventory'},
   })).data;
   assert(inventoryFixture.result?.canonical===true,'Inventory fixture must report canonical=true');
+  assert(Number(inventoryFixture.result?.itemCount)>=7,`Inventory fixture seed produced ${inventoryFixture.result?.itemCount??0} canonical items`);
+  assert(Number(inventoryFixture.result?.rank0FragmentBalance)>=0,'Rank-0 fragment wallet missing after canonical seed');
+  assert(Number(inventoryFixture.result?.attireSetFragmentBalance)>=0,'Attire Set fragment wallet missing after canonical seed');
+  assert(Number(inventoryFixture.result?.jewelrySetFragmentBalance)>=0,'Jewelry Set fragment wallet missing after canonical seed');
   const character=(await request('/character')).data;
   const items=Array.isArray(character?.equipmentInventory)?character.equipmentInventory:[];
   assert(items.length>=7,`Expected >=7 canonical QA items, got ${items.length}`);
