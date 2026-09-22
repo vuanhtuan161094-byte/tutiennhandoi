@@ -6,6 +6,10 @@ signal retreat_pressed
 signal route_requested(route_id: StringName)
 signal character_section_requested(section_id: StringName)
 signal primary_action_requested(action_id: String)
+signal home_mode_requested(mode: StringName)
+
+const MODE_CULTIVATION: StringName = &"cultivation"
+const MODE_REST: StringName = &"rest"
 
 const HOME_ART := preload("res://scripts/home/home_art_atlas.gd")
 const ICON_CHARACTER := preload("res://art/icons/character.svg")
@@ -54,6 +58,11 @@ var combat_button: Button
 var combat_action_visual: Control
 var combat_subtitle_label: Label
 
+var home_mode_shell: PanelContainer
+var cultivation_mode_button: Button
+var rest_mode_button: Button
+var home_presentation_mode: StringName = MODE_CULTIVATION
+
 var cultivation_event_shell: PanelContainer
 var cultivation_event_title: Label
 var cultivation_event_subtitle: Label
@@ -82,6 +91,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	_build_top_shell()
 	_build_identity_clusters()
+	_build_home_mode_switch()
 	_build_progress()
 	_build_primary()
 	_build_quick_actions()
@@ -183,6 +193,23 @@ func set_bridge_status(online: bool, message: String) -> void:
 
 func set_status_message(message: String) -> void:
 	status_label.text = message
+
+func set_home_presentation_mode(mode: StringName) -> void:
+	home_presentation_mode = normalize_home_presentation_mode(mode)
+	_refresh_home_mode_buttons()
+
+func get_home_presentation_mode() -> StringName:
+	return home_presentation_mode
+
+static func normalize_home_presentation_mode(mode: StringName) -> StringName:
+	return MODE_REST if mode == MODE_REST else MODE_CULTIVATION
+
+func _request_home_presentation_mode(mode: StringName) -> void:
+	var normalized := normalize_home_presentation_mode(mode)
+	if normalized == home_presentation_mode:
+		return
+	set_home_presentation_mode(normalized)
+	home_mode_requested.emit(normalized)
 
 func show_breakthrough(from_realm: String, to_realm: String, steps: int = 1, major: bool = false) -> void:
 	var safe_steps := maxi(1, steps)
@@ -583,6 +610,91 @@ func _build_identity_clusters() -> void:
 	injury_badge.add_theme_stylebox_override("normal", _flat(Color(0.22, 0.075, 0.025, 0.74), 10, Color(0.95, 0.47, 0.24, 0.50), 1))
 	injury_badge.pressed.connect(func(): identity_pressed.emit())
 	root_col.add_child(injury_badge)
+
+func _build_home_mode_switch() -> void:
+	home_mode_shell = PanelContainer.new()
+	home_mode_shell.name = "HomeModeSwitch"
+	home_mode_shell.z_index = 18
+	home_mode_shell.anchor_left = 0.5
+	home_mode_shell.anchor_right = 0.5
+	home_mode_shell.anchor_top = 0.0
+	home_mode_shell.anchor_bottom = 0.0
+	home_mode_shell.offset_left = -104.0
+	home_mode_shell.offset_right = 104.0
+	home_mode_shell.offset_top = 452.0
+	home_mode_shell.offset_bottom = 486.0
+	home_mode_shell.add_theme_stylebox_override(
+		"panel",
+		_flat(Color(0.004, 0.022, 0.035, 0.86), 17, Color(0.58, 0.78, 0.82, 0.22), 1)
+	)
+	add_child(home_mode_shell)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 3)
+	margin.add_theme_constant_override("margin_right", 3)
+	margin.add_theme_constant_override("margin_top", 3)
+	margin.add_theme_constant_override("margin_bottom", 3)
+	home_mode_shell.add_child(margin)
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 3)
+	margin.add_child(row)
+
+	cultivation_mode_button = _home_mode_button("Tu Luyện", "CultivationModeButton")
+	cultivation_mode_button.pressed.connect(func(): _request_home_presentation_mode(MODE_CULTIVATION))
+	row.add_child(cultivation_mode_button)
+
+	rest_mode_button = _home_mode_button("Nghỉ Ngơi", "RestModeButton")
+	rest_mode_button.pressed.connect(func(): _request_home_presentation_mode(MODE_REST))
+	row.add_child(rest_mode_button)
+
+	_refresh_home_mode_buttons()
+
+func _home_mode_button(caption: String, node_name: String) -> Button:
+	var button := Button.new()
+	button.name = node_name
+	button.text = caption
+	button.custom_minimum_size = Vector2(98, 28)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.focus_mode = Control.FOCUS_NONE
+	button.add_theme_font_size_override("font_size", 9)
+	button.add_theme_color_override("font_color", TEXT)
+	button.add_theme_color_override("font_hover_color", GOLD_HI)
+	return button
+
+func _refresh_home_mode_buttons() -> void:
+	if cultivation_mode_button == null or rest_mode_button == null:
+		return
+	_apply_home_mode_button_style(
+		cultivation_mode_button,
+		home_presentation_mode == MODE_CULTIVATION,
+		MINT
+	)
+	_apply_home_mode_button_style(
+		rest_mode_button,
+		home_presentation_mode == MODE_REST,
+		GOLD
+	)
+
+func _apply_home_mode_button_style(button: Button, selected: bool, accent: Color) -> void:
+	button.add_theme_color_override("font_color", GOLD_HI if selected else MUTED)
+	button.add_theme_stylebox_override(
+		"normal",
+		_flat(
+			Color(accent.r, accent.g, accent.b, 0.16 if selected else 0.025),
+			13,
+			Color(accent.r, accent.g, accent.b, 0.72 if selected else 0.12),
+			1
+		)
+	)
+	button.add_theme_stylebox_override(
+		"hover",
+		_flat(Color(accent.r, accent.g, accent.b, 0.13), 13, Color(accent.r, accent.g, accent.b, 0.62), 1)
+	)
+	button.add_theme_stylebox_override(
+		"pressed",
+		_flat(Color(accent.r, accent.g, accent.b, 0.22), 13, Color(accent.r, accent.g, accent.b, 0.92), 1)
+	)
 
 func _build_progress() -> void:
 	var shell := Control.new()
