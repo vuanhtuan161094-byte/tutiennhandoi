@@ -1430,6 +1430,7 @@ export class SimulationSession {
         const seed = mixSeed(this.rootSeed ^ 0x71b3c4d5, this.actionIndexValue);
         let wonCombat;
         let combatResult;
+        let combatSettlement;
         let summary = choice.resultText;
         let completed = true;
         let combatData = {};
@@ -1470,12 +1471,12 @@ export class SimulationSession {
             }
             else {
                 this.applyContentEventEffect(choice.combat.onLose, definition, choice);
-                const defeatSettlement = applyCombatSettlementPolicyV1({
+                combatSettlement = applyCombatSettlementPolicyV1({
                     state: this.stateValue,
                     policy: contentEventDefeatPolicyV1(`content:${eventId}`),
                     applyCanonicalDeathPenalty: context => this.applyCombatDeathPenalty(context),
                 });
-                const deathPenalty = defeatSettlement.canonicalDeathPenaltyResult;
+                const deathPenalty = combatSettlement.canonicalDeathPenaltyResult;
                 summary = `${choice.combat.loseText ?? `${choice.resultText} Ngươi thất bại trước ${enemyBase.name}.`} ${deathPenalty?.applied ? `Thương Thế tăng từ ${deathPenalty.injuryBefore.toFixed(0)} lên ${deathPenalty.injuryAfter.toFixed(0)}; Thọ Nguyên không giảm.` : ''}`.trim();
                 completed = choice.combat.completeOnLoss !== false;
             }
@@ -1503,7 +1504,7 @@ export class SimulationSession {
         this.recordPlayerWorldEvent(chronicleEvent);
         this.applyNaturalDeathToState(seed);
         this.actionIndexValue += 1;
-        return { eventId, choiceId, completed, wonCombat, summary, combatResult, chronicleEvent, state: this.state };
+        return { eventId, choiceId, completed, wonCombat, summary, combatResult, combatSettlement, chronicleEvent, state: this.state };
     }
     contentEventAvailable(definition) {
         return isContentEventAvailable(definition, this.stateValue, this.currentLifeValue, this.metaValue);
@@ -4330,8 +4331,9 @@ export class SimulationSession {
         this.stateValue.worldTimeYears += elapsedYears;
         this.stateValue.ageYears += elapsedYears;
         advanceDaoSuyByWorldYearsV127(this.stateValue.immortal, order, elapsedYears, this.stateValue.inheritedOrigins);
-        if (!won)
-            applyCombatSettlementPolicyV1({ state: this.stateValue, policy: daoSuyDefeatPolicyV1() });
+        const combatSettlement = !won
+            ? applyCombatSettlementPolicyV1({ state: this.stateValue, policy: daoSuyDefeatPolicyV1() })
+            : undefined;
         const statusAfter = daoSuyStatusV127(this.stateValue.immortal, order, this.stateValue.inheritedOrigins);
         const event = {
             id: `dao-suy.tribulation.${this.currentLifeValue.lifeId}.${this.actionIndexValue}`,
@@ -4347,7 +4349,7 @@ export class SimulationSession {
         };
         this.historyValue.append(event);
         this.actionIndexValue += 1;
-        return { schema: 'dao-suy-tribulation.v127', won, pressure, resolution, status: statusAfter, battle: kernel.battle, combatResult: kernel.combatResult, event, state: this.state };
+        return { schema: 'dao-suy-tribulation.v127', won, pressure, resolution, status: statusAfter, battle: kernel.battle, combatResult: kernel.combatResult, combatSettlement, event, state: this.state };
     }
 
     refineImmortalEssence(batches = 1) {
