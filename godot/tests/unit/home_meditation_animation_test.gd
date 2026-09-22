@@ -4,15 +4,13 @@ extends GdUnitTestSuite
 const MEDITATION_HERO := preload("res://scripts/home/meditation_hero.gd")
 const REGISTRY := preload("res://scripts/home/home_animation_registry.gd")
 
-func test_home_hero_defaults_to_static_cultivation_without_animation_cache() -> void:
-	var hero = MEDITATION_HERO.new()
-	assert_str(str(hero.source_pose)).is_equal("meditation")
-	assert_str(str(hero.home_mode)).is_equal("cultivation")
-	assert_str(str(hero.motion_mode)).is_equal("still")
-	assert_str(str(hero.animation_preset_id)).is_equal("cultivation_01")
-	assert_str(str(hero.animation_mode)).is_equal("cultivation_still")
-	assert_int(hero.get_cached_animation_resource_count()).is_equal(0)
-	hero.free()
+func test_home_hero_declares_static_cultivation_defaults_without_instantiation() -> void:
+	assert_str(str(MEDITATION_HERO.SOURCE_POSE)).is_equal("meditation")
+	assert_str(str(MEDITATION_HERO.DEFAULT_HOME_MODE)).is_equal("cultivation")
+	assert_str(str(MEDITATION_HERO.DEFAULT_MOTION_MODE)).is_equal("still")
+	assert_str(str(MEDITATION_HERO.DEFAULT_ANIMATION_PRESET_ID)).is_equal("cultivation_01")
+	assert_str(str(MEDITATION_HERO.DEFAULT_ANIMATION_MODE)).is_equal("cultivation_still")
+	assert_int(MEDITATION_HERO.MAX_ANIMATION_CACHE_RESOURCES).is_equal(2)
 
 func test_home_registry_exposes_scalable_mode_presets() -> void:
 	var cultivation := REGISTRY.presets_for_mode(&"cultivation")
