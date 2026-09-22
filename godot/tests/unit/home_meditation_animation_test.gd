@@ -37,4 +37,4 @@ func test_home_still_assets_are_mode_specific() -> void:
 func test_home_animation_paths_have_no_standing_source() -> void:
 	assert_bool(MEDITATION_HERO.CULTIVATION_V3_PATH.contains("standing")).is_false()
 	assert_bool(MEDITATION_HERO.REST_V3_PATH.contains("standing")).is_false()
-assert_bool(MEDITATION_HERO.MEDITATION_FRAME_01_PATH.contains("standing")).is_false()
+	assert_bool(MEDITATION_HERO.MEDITATION_FRAME_01_PATH.contains("standing")).is_false()
