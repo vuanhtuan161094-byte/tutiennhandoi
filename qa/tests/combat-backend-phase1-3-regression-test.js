@@ -111,14 +111,13 @@ test('Phase 3 Dungeon and Content Event cannot own duplicate player-stat composi
   assert.equal(contentCombat.includes('applyCharacterToEntity('), false, 'Content Event must not reconstruct player stat composition');
 });
 
-test('Phase 2 Hunt practice counts real CombatKernel castStart events instead of estimating casts from duration', () => {
+test('Phase 2 Hunt practice consumes actual CombatKernel cast counts instead of estimating from duration', () => {
   const sessionSource = fs.readFileSync(fileURLToPath(new URL('../../dist/core/session.js', import.meta.url)), 'utf8');
   const start = sessionSource.indexOf('const kernelCombat = resolveEndlessHuntWithCombatKernelV2');
   const end = sessionSource.indexOf('const fateRuntime =', start);
   assert(start >= 0 && end > start, 'Endless Hunt combat/practice slice not found');
   const huntSlice = sessionSource.slice(start, end);
-  assert(huntSlice.includes('for (const log of kernelCombat.battle.logs)'), 'Hunt must count actual kernel logs');
-  assert(huntSlice.includes("log.type === 'castStart'"), 'Hunt must count actual castStart events');
+  assert(huntSlice.includes('kernelCombat.combatResult.summary.castCountsByActor'), 'Hunt must consume typed cast counts derived from actual kernel events');
   assert.equal(huntSlice.includes('estimateBattleDaoCastCountsV125'), false, 'Hunt must not estimate casts from battle duration');
 });
 
