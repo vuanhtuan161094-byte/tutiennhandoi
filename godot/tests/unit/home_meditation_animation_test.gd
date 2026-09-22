@@ -2,26 +2,33 @@ class_name HomeMeditationAnimationTest
 extends GdUnitTestSuite
 
 const MEDITATION_HERO := preload("res://scripts/home/meditation_hero.gd")
+const REGISTRY := preload("res://scripts/home/home_animation_registry.gd")
 
-func test_home_hero_defaults_to_static_cultivation() -> void:
+func test_home_hero_defaults_to_static_cultivation_without_animation_cache() -> void:
 	var hero = MEDITATION_HERO.new()
 	assert_str(str(hero.source_pose)).is_equal("meditation")
 	assert_str(str(hero.home_mode)).is_equal("cultivation")
 	assert_str(str(hero.motion_mode)).is_equal("still")
+	assert_str(str(hero.animation_preset_id)).is_equal("cultivation_01")
 	assert_str(str(hero.animation_mode)).is_equal("cultivation_still")
+	assert_int(hero.get_cached_animation_resource_count()).is_equal(0)
 	hero.free()
 
-func test_home_animation_v3_declares_separate_cultivation_and_rest_playlists() -> void:
-	assert_str(MEDITATION_HERO.CULTIVATION_V3_PATH).contains("animation_v3/home_cultivation_v3.tres")
-	assert_int(MEDITATION_HERO.CULTIVATION_V3_VARIANTS.size()).is_equal(2)
-	assert_str(str(MEDITATION_HERO.CULTIVATION_V3_VARIANTS[0])).is_equal("cultivation_01")
-	assert_str(str(MEDITATION_HERO.CULTIVATION_V3_VARIANTS[1])).is_equal("cultivation_02")
+func test_home_registry_exposes_scalable_mode_presets() -> void:
+	var cultivation := REGISTRY.presets_for_mode(&"cultivation")
+	var rest := REGISTRY.presets_for_mode(&"rest")
+	assert_int(cultivation.size()).is_equal(2)
+	assert_int(rest.size()).is_equal(3)
+	assert_str(str(REGISTRY.default_preset_id(&"cultivation"))).is_equal("cultivation_01")
+	assert_str(str(REGISTRY.default_preset_id(&"rest"))).is_equal("rest_01")
+	assert_str(str(cultivation[0].get("animation_name", &""))).is_equal("cultivation_01")
+	assert_str(str(rest[2].get("animation_name", &""))).is_equal("idle_relaxed_03")
 
-	assert_str(MEDITATION_HERO.REST_V3_PATH).contains("animation_v3/home_rest_v3.tres")
-	assert_int(MEDITATION_HERO.REST_V3_VARIANTS.size()).is_equal(3)
-	assert_str(str(MEDITATION_HERO.REST_V3_VARIANTS[0])).is_equal("idle_relaxed_01")
-	assert_str(str(MEDITATION_HERO.REST_V3_VARIANTS[1])).is_equal("idle_relaxed_02")
-	assert_str(str(MEDITATION_HERO.REST_V3_VARIANTS[2])).is_equal("idle_relaxed_03")
+func test_home_registry_prefers_split_resources_with_v3_fallback() -> void:
+	for entry in REGISTRY.PRESETS:
+		assert_str(str(entry.get("resource_path", ""))).contains("/presets/")
+		assert_str(str(entry.get("fallback_resource_path", ""))).contains("animation_v3/")
+		assert_bool(str(entry.get("resource_path", "")).contains("standing")).is_false()
 
 func test_home_motion_mode_normalization_supports_still_animated_hidden() -> void:
 	assert_str(str(MEDITATION_HERO.normalize_motion_mode(&"still"))).is_equal("still")
@@ -30,11 +37,9 @@ func test_home_motion_mode_normalization_supports_still_animated_hidden() -> voi
 	assert_str(str(MEDITATION_HERO.normalize_motion_mode(&"unknown"))).is_equal("still")
 
 func test_home_still_assets_are_mode_specific() -> void:
-	assert_str(MEDITATION_HERO.CULTIVATION_STILL_PATH).contains("home_cultivation_still.webp")
-	assert_str(MEDITATION_HERO.REST_STILL_PATH).contains("home_rest_still.webp")
-	assert_bool(MEDITATION_HERO.CULTIVATION_STILL_PATH == MEDITATION_HERO.REST_STILL_PATH).is_false()
+	assert_str(REGISTRY.still_path(&"cultivation")).contains("home_cultivation_still.webp")
+	assert_str(REGISTRY.still_path(&"rest")).contains("home_rest_still.webp")
+	assert_bool(REGISTRY.still_path(&"cultivation") == REGISTRY.still_path(&"rest")).is_false()
 
-func test_home_animation_paths_have_no_standing_source() -> void:
-	assert_bool(MEDITATION_HERO.CULTIVATION_V3_PATH.contains("standing")).is_false()
-	assert_bool(MEDITATION_HERO.REST_V3_PATH.contains("standing")).is_false()
-	assert_bool(MEDITATION_HERO.MEDITATION_FRAME_01_PATH.contains("standing")).is_false()
+func test_home_animation_cache_is_intentionally_bounded() -> void:
+	assert_int(MEDITATION_HERO.MAX_ANIMATION_CACHE_RESOURCES).is_equal(2)
