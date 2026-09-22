@@ -14,6 +14,8 @@ import { createInitialLifeMeta } from '../../dist/core/life.js';
 import { buildWebClientViewPatch } from '../../dist/core/client-shell.js';
 import { createWebClientSave, parseWebClientSave } from '../../dist/core/web-save.js';
 import { LIVE_COMMIT_REAL_SECONDS } from '../../dist/core/realtime-balance.js';
+import { highestClearedDungeonFloor } from '../../dist/core/dungeon.js';
+import { tribulationMilestoneBlockersV113 } from '../../dist/core/progression-closure-v113.js';
 import { equipmentSetDefinitionV142 } from '../../dist/core/equipment-v142.js';
 import { grantEquipmentFragmentRankV142 } from '../../dist/core/equipment-fragments-v142.js';
 import { grantEquipmentSetFragmentV142 } from '../../dist/core/equipment-set-fragments-v142.js';
@@ -165,12 +167,16 @@ class GodotCanonicalRuntime {
     if(summary.transition!=='tribulation')throw new Error(`QA tribulation fixture expected gate, got ${summary.transition}`);
     this.session.stateValue.cultivation.tuVi=Math.max(0,Number(summary.requiredTuVi)||0);
     this.dirty=true;
+    const greatVehicleClearedFloor=highestClearedDungeonFloor(this.session.stateValue.dungeons,'dungeon.great_vehicle_domain');
+    const milestoneBlockers=tribulationMilestoneBlockersV113(this.session.stateValue,this.session.stateValue.dungeons);
     return {
       fixture:'tribulation',
       canonicalGate:true,
       previewOnly:true,
       realmOrder:summary.realmOrder,
       requiredTuVi:summary.requiredTuVi,
+      greatVehicleClearedFloor,
+      milestoneBlockers:[...milestoneBlockers],
       note:'Milestone blockers remain canonical; QA does not bypass dungeon prerequisites.',
     };
   }
