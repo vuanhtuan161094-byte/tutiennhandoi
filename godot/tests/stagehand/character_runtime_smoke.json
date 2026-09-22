@@ -68,7 +68,7 @@
       "action": "assert_property",
       "with": {
         "selector": "name:CharacterHero",
-        "property": "_presentation_active",
+        "property": "presentation_active",
         "operator": "equals",
         "expected": true
       }
