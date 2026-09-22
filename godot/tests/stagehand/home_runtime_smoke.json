@@ -1,6 +1,6 @@
 {
   "name": "tutien-home-runtime-smoke",
-  "description": "Launch the real Godot Home headlessly, verify canonical bridge connectivity and exercise progressive disclosure.",
+  "description": "Launch the real Godot Home headlessly, verify canonical bridge connectivity, Home presentation modes, and progressive disclosure.",
   "target": {
     "mode": "launch",
     "project_path": "../..",
@@ -47,13 +47,13 @@
       }
     },
     {
-      "name": "Home defaults to meditation idle",
+      "name": "Home defaults to cultivation presentation mode",
       "action": "assert_property",
       "with": {
         "selector": "name:HomeMeditationHero",
-        "property": "animation_mode",
+        "property": "home_mode",
         "operator": "equals",
-        "expected": "meditation_idle"
+        "expected": "cultivation"
       }
     },
     {
@@ -63,6 +63,49 @@
         "selector": "name:HomeHUD",
         "state": "exists",
         "timeout_ms": 15000
+      }
+    },
+    {
+      "name": "Rest mode control exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:RestModeButton",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Switch Home to rest presentation",
+      "action": "click",
+      "with": {
+        "selector": "name:RestModeButton"
+      }
+    },
+    {
+      "name": "Hero enters rest presentation mode",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:HomeMeditationHero",
+        "property": "home_mode",
+        "operator": "equals",
+        "expected": "rest"
+      }
+    },
+    {
+      "name": "Switch Home back to cultivation presentation",
+      "action": "click",
+      "with": {
+        "selector": "name:CultivationModeButton"
+      }
+    },
+    {
+      "name": "Hero returns to cultivation presentation mode",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:HomeMeditationHero",
+        "property": "home_mode",
+        "operator": "equals",
+        "expected": "cultivation"
       }
     },
     {
