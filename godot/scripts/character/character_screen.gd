@@ -9,6 +9,7 @@ signal profile_action_requested(action_id: String, payload: Dictionary)
 signal potential_action_requested(stat_id: String, points: int)
 
 const STANDING_HERO_SCRIPT := preload("res://scripts/character/standing_hero.gd")
+const CHARACTER_ANIMATION_REGISTRY := preload("res://scripts/character/character_animation_registry.gd")
 const EQUIPMENT_SLOT_SCRIPT := preload("res://scripts/character/character_equipment_slot.gd")
 const CHARACTER_DETAIL_SHEET_SCRIPT := preload("res://scripts/character/character_detail_sheet.gd")
 const EQUIPMENT_INVENTORY_SCREEN_SCRIPT := preload("res://scripts/character/equipment_inventory_screen.gd")
@@ -21,6 +22,9 @@ const MUTED := Color("aab9c3")
 const DARK := Color(0.015, 0.035, 0.055, 0.86)
 const EQUIPMENT_SLOT_LEFT_X := 10.0
 const EQUIPMENT_SLOT_RIGHT_X := 316.0
+const MOTION_STILL: StringName = &"still"
+const MOTION_ANIMATED: StringName = &"animated"
+const MOTION_HIDDEN: StringName = &"hidden"
 
 var _name_label: Label
 var _realm_label: Label
@@ -39,6 +43,15 @@ var _detail_sheet
 var _equipment_inventory
 var _slot_components: Dictionary = {}
 var _vm: Dictionary = {}
+
+var _presentation_trigger: Button
+var _presentation_panel: PanelContainer
+var _presentation_preset_list: VBoxContainer
+var _presentation_still_button: Button
+var _presentation_animated_button: Button
+var _presentation_hidden_button: Button
+var character_motion_mode: StringName = MOTION_STILL
+var character_animation_preset_id: StringName = &"character_idle_01"
 
 func _ready() -> void:
 	name = "CharacterScreen"
@@ -106,13 +119,47 @@ func set_status_message(message: String) -> void:
 			_equipment_inventory.set_status_message(message)
 
 func set_presentation_active(active: bool) -> void:
-	if is_instance_valid(_hero) and _hero.has_method("set_presentation_active"):
-		_hero.set_presentation_active(active)
+	if is_instance_valid(_hero):
+		if _hero.has_method("set_animation_preset"):
+			_hero.set_animation_preset(character_animation_preset_id)
+		if _hero.has_method("set_motion_mode"):
+			_hero.set_motion_mode(character_motion_mode)
+		if _hero.has_method("set_presentation_active"):
+			_hero.set_presentation_active(active)
+	if not active:
+		close_character_presentation_panel()
 
 func get_character_animation_preset() -> StringName:
-	if is_instance_valid(_hero) and _hero.has_method("get_animation_preset"):
-		return _hero.get_animation_preset()
-	return &""
+	return character_animation_preset_id
+
+func get_character_motion_mode() -> StringName:
+	return character_motion_mode
+
+func set_character_motion_mode(mode: StringName) -> void:
+	character_motion_mode = _normalize_character_motion_mode(mode)
+	if is_instance_valid(_hero) and _hero.has_method("set_motion_mode"):
+		_hero.set_motion_mode(character_motion_mode)
+	_refresh_character_presentation_controls()
+
+func set_character_animation_preset(preset_id: StringName) -> void:
+	if CHARACTER_ANIMATION_REGISTRY.preset(preset_id).is_empty():
+		return
+	character_animation_preset_id = preset_id
+	if is_instance_valid(_hero) and _hero.has_method("set_animation_preset"):
+		_hero.set_animation_preset(preset_id)
+	_refresh_character_presentation_controls()
+	_refresh_character_preset_list()
+
+static func _normalize_character_motion_mode(mode: StringName) -> StringName:
+	if mode == MOTION_ANIMATED:
+		return MOTION_ANIMATED
+	if mode == MOTION_HIDDEN:
+		return MOTION_HIDDEN
+	return MOTION_STILL
+
+func close_character_presentation_panel() -> void:
+	if _presentation_panel != null:
+		_presentation_panel.visible = false
 
 func _build() -> void:
 	var bg := TextureRect.new()
@@ -281,6 +328,8 @@ func _build() -> void:
 	_anchor(_status, 16, 670, 374, 700)
 	add_child(_status)
 
+	_build_character_presentation_controls()
+
 	_detail_sheet = CHARACTER_DETAIL_SHEET_SCRIPT.new()
 	_detail_sheet.name = "CharacterDetailSheet"
 	_detail_sheet.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -296,6 +345,192 @@ func _build() -> void:
 	_equipment_inventory.enhance_requested.connect(_on_detail_enhance_requested)
 	_equipment_inventory.equipment_command_requested.connect(_on_inventory_command_requested)
 	add_child(_equipment_inventory)
+
+func _build_character_presentation_controls() -> void:
+	var trigger_shell := PanelContainer.new()
+	trigger_shell.name = "CharacterPresentationTrigger"
+	trigger_shell.z_index = 70
+	_anchor(trigger_shell, 252, 82, 382, 118)
+	trigger_shell.add_theme_stylebox_override(
+		"panel",
+		_flat(Color(0.004, 0.022, 0.035, 0.90), 16, Color(0.58, 0.78, 0.82, 0.30), 1)
+	)
+	add_child(trigger_shell)
+
+	_presentation_trigger = Button.new()
+	_presentation_trigger.name = "CharacterPresentationButton"
+	_presentation_trigger.text = "Hiển thị · Tĩnh"
+	_presentation_trigger.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_presentation_trigger.focus_mode = Control.FOCUS_NONE
+	_presentation_trigger.add_theme_font_size_override("font_size", 9)
+	_presentation_trigger.add_theme_color_override("font_color", TEXT)
+	_presentation_trigger.add_theme_color_override("font_hover_color", GOLD_HI)
+	_presentation_trigger.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
+	_presentation_trigger.add_theme_stylebox_override("hover", _flat(Color(0.25, 0.70, 0.82, 0.09), 16, Color(0.45, 0.85, 0.94, 0.40), 1))
+	_presentation_trigger.add_theme_stylebox_override("pressed", _flat(Color(0.30, 0.76, 0.92, 0.14), 16, CYAN, 1))
+	_presentation_trigger.pressed.connect(_toggle_character_presentation_panel)
+	trigger_shell.add_child(_presentation_trigger)
+
+	_presentation_panel = PanelContainer.new()
+	_presentation_panel.name = "CharacterPresentationPanel"
+	_presentation_panel.visible = false
+	_presentation_panel.z_index = 90
+	_anchor(_presentation_panel, 42, 124, 348, 410)
+	_presentation_panel.add_theme_stylebox_override(
+		"panel",
+		_flat(Color(0.004, 0.020, 0.033, 0.97), 22, Color(0.65, 0.82, 0.88, 0.42), 1)
+	)
+	add_child(_presentation_panel)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 12)
+	margin.add_theme_constant_override("margin_right", 12)
+	margin.add_theme_constant_override("margin_top", 10)
+	margin.add_theme_constant_override("margin_bottom", 10)
+	_presentation_panel.add_child(margin)
+
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 7)
+	margin.add_child(col)
+
+	var header_row := HBoxContainer.new()
+	col.add_child(header_row)
+	var title := Label.new()
+	title.text = "HIỂN THỊ NHÂN VẬT"
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title.add_theme_font_size_override("font_size", 11)
+	title.add_theme_color_override("font_color", GOLD_HI)
+	header_row.add_child(title)
+	var close_button := Button.new()
+	close_button.name = "CharacterPresentationClose"
+	close_button.text = "×"
+	close_button.custom_minimum_size = Vector2(32, 28)
+	close_button.focus_mode = Control.FOCUS_NONE
+	close_button.add_theme_font_size_override("font_size", 16)
+	close_button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
+	close_button.pressed.connect(close_character_presentation_panel)
+	header_row.add_child(close_button)
+
+	var display_label := Label.new()
+	display_label.text = "CHẾ ĐỘ HIỂN THỊ"
+	display_label.add_theme_font_size_override("font_size", 8)
+	display_label.add_theme_color_override("font_color", MUTED)
+	col.add_child(display_label)
+
+	var motion_row := HBoxContainer.new()
+	motion_row.add_theme_constant_override("separation", 4)
+	col.add_child(motion_row)
+	_presentation_still_button = _character_presentation_button("Tĩnh", "CharacterStillButton")
+	_presentation_still_button.button_down.connect(func(): set_character_motion_mode(MOTION_STILL))
+	motion_row.add_child(_presentation_still_button)
+	_presentation_animated_button = _character_presentation_button("Động", "CharacterAnimatedButton")
+	_presentation_animated_button.button_down.connect(func(): set_character_motion_mode(MOTION_ANIMATED))
+	motion_row.add_child(_presentation_animated_button)
+	_presentation_hidden_button = _character_presentation_button("Ẩn", "CharacterHiddenButton")
+	_presentation_hidden_button.button_down.connect(func(): set_character_motion_mode(MOTION_HIDDEN))
+	motion_row.add_child(_presentation_hidden_button)
+
+	var preset_hint := Label.new()
+	preset_hint.text = "ANIMATION · chọn một kiểu"
+	preset_hint.add_theme_font_size_override("font_size", 8)
+	preset_hint.add_theme_color_override("font_color", MUTED)
+	col.add_child(preset_hint)
+
+	var scroll := ScrollContainer.new()
+	scroll.name = "CharacterAnimationPresetScroll"
+	scroll.custom_minimum_size = Vector2(0, 150)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	col.add_child(scroll)
+
+	_presentation_preset_list = VBoxContainer.new()
+	_presentation_preset_list.name = "CharacterAnimationPresetList"
+	_presentation_preset_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_presentation_preset_list.add_theme_constant_override("separation", 3)
+	scroll.add_child(_presentation_preset_list)
+
+	_refresh_character_presentation_controls()
+	_refresh_character_preset_list()
+
+func _toggle_character_presentation_panel() -> void:
+	if _presentation_panel == null:
+		return
+	_presentation_panel.visible = not _presentation_panel.visible
+	if _presentation_panel.visible:
+		_refresh_character_preset_list()
+
+func _character_presentation_button(caption: String, node_name: String) -> Button:
+	var button := Button.new()
+	button.name = node_name
+	button.text = caption
+	button.custom_minimum_size = Vector2(88, 30)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.focus_mode = Control.FOCUS_NONE
+	button.add_theme_font_size_override("font_size", 9)
+	button.add_theme_color_override("font_hover_color", GOLD_HI)
+	return button
+
+func _refresh_character_presentation_controls() -> void:
+	if _presentation_trigger != null:
+		var mode_label := "Tĩnh"
+		if character_motion_mode == MOTION_ANIMATED:
+			mode_label = "Động"
+		elif character_motion_mode == MOTION_HIDDEN:
+			mode_label = "Ẩn"
+		_presentation_trigger.text = "Hiển thị · %s" % mode_label
+	if _presentation_still_button != null:
+		_style_character_presentation_button(_presentation_still_button, character_motion_mode == MOTION_STILL, CYAN)
+	if _presentation_animated_button != null:
+		_style_character_presentation_button(_presentation_animated_button, character_motion_mode == MOTION_ANIMATED, GOLD_HI)
+	if _presentation_hidden_button != null:
+		_style_character_presentation_button(_presentation_hidden_button, character_motion_mode == MOTION_HIDDEN, Color("c285ff"))
+
+func _refresh_character_preset_list() -> void:
+	if _presentation_preset_list == null:
+		return
+	for child in _presentation_preset_list.get_children():
+		child.free()
+
+	for entry in CHARACTER_ANIMATION_REGISTRY.PRESETS:
+		var preset_id: StringName = entry.get("id", &"")
+		var resource_path := str(entry.get("resource_path", ""))
+		var still_path := str(entry.get("still_path", ""))
+		var installed := (
+			(not resource_path.is_empty() and ResourceLoader.exists(resource_path))
+			or (not still_path.is_empty() and ResourceLoader.exists(still_path))
+		)
+		var button := _character_presentation_button(
+			str(entry.get("title", String(preset_id))),
+			"CharacterPreset_%s" % String(preset_id)
+		)
+		button.disabled = not installed
+		_style_character_presentation_button(
+			button,
+			preset_id == character_animation_preset_id,
+			GOLD_HI if installed else MUTED
+		)
+		button.button_down.connect(func(): set_character_animation_preset(preset_id))
+		_presentation_preset_list.add_child(button)
+
+func _style_character_presentation_button(button: Button, selected: bool, accent: Color) -> void:
+	button.add_theme_color_override("font_color", GOLD_HI if selected else MUTED)
+	button.add_theme_stylebox_override(
+		"normal",
+		_flat(
+			Color(accent.r, accent.g, accent.b, 0.16 if selected else 0.025),
+			13,
+			Color(accent.r, accent.g, accent.b, 0.72 if selected else 0.12),
+			1
+		)
+	)
+	button.add_theme_stylebox_override(
+		"hover",
+		_flat(Color(accent.r, accent.g, accent.b, 0.13), 13, Color(accent.r, accent.g, accent.b, 0.62), 1)
+	)
+	button.add_theme_stylebox_override(
+		"pressed",
+		_flat(Color(accent.r, accent.g, accent.b, 0.22), 13, Color(accent.r, accent.g, accent.b, 0.92), 1)
+	)
 
 func _add_slot(stage: Control, slot_id: String, slot_label: String, x: float, y: float) -> void:
 	var slot = EQUIPMENT_SLOT_SCRIPT.new()
