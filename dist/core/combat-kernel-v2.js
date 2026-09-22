@@ -1,13 +1,22 @@
 import { CombatEngine } from './combat.js';
 import { prepareBossGameplayV2 } from './boss-gameplay-v2.js';
+import { buildCombatResultV1 } from './combat-result-v1.js';
 export class CombatKernelV2 {
     run(input) {
         const entities = input.entities.map(entity => prepareBossGameplayV2(entity));
         const engine = new CombatEngine(input.registry, input.seed, entities);
-        const battle = engine.run(input.maxDuration ?? 120);
+        const maxDuration = input.maxDuration ?? 120;
+        const battle = engine.run(maxDuration);
+        const combatResult = buildCombatResultV1({
+            battle,
+            registry: input.registry,
+            maxDuration,
+            engineVersion: 'combat.v2',
+        });
         return {
             mode: input.mode,
             battle,
+            combatResult,
             presentationPolicy: input.mode === 'realtime' ? 'timeline-1to1' : 'none',
         };
     }
