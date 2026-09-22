@@ -3,11 +3,10 @@ import { daoNatureTierForRealmV125, gainBattleDaoPracticeFromCastCountsV125, gra
 import { lockLootItem } from './inventory.js';
 import { recordActiveArtifactBattle, recordArtifactOwnershipYears } from './artifact.js';
 import { buildDungeonGuardian, canChallengeDungeonFloor, grantDungeonGuardianLoot, guardianMechanicForFloor, highestClearedDungeonFloor, markDungeonFloorCleared } from './dungeon.js';
-import { applyCombatPacingV124 } from './combat-pacing-v124.js';
 import { analyzeBattle, topDamageSkill } from './combat-analytics.js';
 import { V125_DAO_NATURE_DUNGEON_ID } from '../content/dungeons.js';
 import { compareCombatPower } from './personal-power.js';
-import { runCombatKernelV2 } from './combat-kernel-v2.js';
+import { compileCombatEncounterV1, runCompiledCombatEncounterV2 } from './combat-encounter-compiler.js';
 import { ensureCollectionProgressStateV12316 } from './collection-progression-v12316.js';
 import { grantResourcePveRewardsV12329, isResourcePveDungeonV12329, resourcePveVirtualBreakIdV12329, resourcePveVirtualMaterialIdV12329 } from './resource-pve-v12329.js';
 import { recordEconomyActivityV89, recordFirstClearBoundJadeV89 } from './economy-activity-v89.js';
@@ -46,7 +45,18 @@ export function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {
         const guardian = buildDungeonGuardian(guardianBase, dungeon, floor);
         const readiness = compareCombatPower(playerCombat, guardian);
         const mechanic = guardianMechanicForFloor(dungeon, floor);
-        const battle = runCombatKernelV2({ registry: this.registry, seed, entities: [applyCombatPacingV124(playerCombat), applyCombatPacingV124(guardian)], mode: 'realtime' }).battle;
+        const encounter = compileCombatEncounterV1({
+            encounterId: `dungeon.${dungeonId}.${floor}.${seed}`,
+            activity: 'dungeon',
+            seed,
+            entities: [playerCombat, guardian],
+            mode: 'realtime',
+            maxDuration: 120,
+            applyPacing: true,
+            metadata: { dungeonId, floor, guardianId: guardian.id },
+        });
+        const kernel = runCompiledCombatEncounterV2(encounter, this.registry);
+        const battle = kernel.battle;
         const analytics = analyzeBattle(battle);
         const playerAnalytics = analytics.combatants[playerCombat.id];
         const guardianAnalytics = analytics.combatants[guardian.id];
