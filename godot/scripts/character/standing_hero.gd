@@ -38,7 +38,7 @@ func _notification(what: int) -> void:
 func has_runtime_animation() -> bool:
 	return runtime_animation_ready
 
-func setpresentation_active(active: bool) -> void:
+func set_presentation_active(active: bool) -> void:
 	if active == presentation_active:
 		return
 	presentation_active = active
@@ -48,7 +48,7 @@ func setpresentation_active(active: bool) -> void:
 		_release_registered_animation()
 		_load_static_master()
 
-func getpresentation_active() -> bool:
+func get_presentation_active() -> bool:
 	return presentation_active
 
 func get_animation_preset() -> StringName:
