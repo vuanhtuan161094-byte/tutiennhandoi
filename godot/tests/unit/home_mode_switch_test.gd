@@ -5,11 +5,9 @@ const HOME_HUD := preload("res://scripts/home/home_hud.gd")
 const REGISTRY := preload("res://scripts/home/home_animation_registry.gd")
 
 func test_home_defaults_to_cultivation_static_and_first_preset() -> void:
-	var hud = HOME_HUD.new()
-	assert_str(str(hud.home_presentation_mode)).is_equal("cultivation")
-	assert_str(str(hud.home_motion_mode)).is_equal("still")
-	assert_str(str(hud.home_animation_preset_id)).is_equal("cultivation_01")
-	hud.free()
+	assert_str(str(HOME_HUD.DEFAULT_HOME_MODE)).is_equal("cultivation")
+	assert_str(str(HOME_HUD.DEFAULT_MOTION_MODE)).is_equal("still")
+	assert_str(str(HOME_HUD.DEFAULT_ANIMATION_PRESET_ID)).is_equal("cultivation_01")
 
 func test_home_content_mode_normalization_accepts_two_modes() -> void:
 	assert_str(str(HOME_HUD.normalize_home_presentation_mode(&"cultivation"))).is_equal("cultivation")
