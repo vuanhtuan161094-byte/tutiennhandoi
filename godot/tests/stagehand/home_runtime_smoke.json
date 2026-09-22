@@ -1,6 +1,6 @@
 {
   "name": "tutien-home-runtime-smoke",
-  "description": "Launch the real Godot Home headlessly, verify canonical bridge connectivity, static/animated/hidden heroine presentation, content modes, and progressive disclosure.",
+  "description": "Launch the real Godot Home headlessly, verify canonical bridge connectivity, progressive-disclosure presentation controls, animation registry selection, and static/animated/hidden heroine states.",
   "target": {
     "mode": "launch",
     "project_path": "../..",
@@ -76,7 +76,32 @@
       }
     },
     {
-      "name": "Rest mode control exists",
+      "name": "Home presentation entry point is visible",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:HomePresentationButton",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Open Home presentation controls",
+      "action": "click",
+      "with": {
+        "selector": "name:HomePresentationButton"
+      }
+    },
+    {
+      "name": "Home presentation panel appears",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:HomePresentationPanel",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Rest mode control exists inside panel",
       "action": "wait_for_node",
       "with": {
         "selector": "name:RestModeButton",
@@ -85,7 +110,7 @@
       }
     },
     {
-      "name": "Animated mode control exists",
+      "name": "Animated mode control exists inside panel",
       "action": "wait_for_node",
       "with": {
         "selector": "name:AnimatedModeButton",
@@ -94,12 +119,31 @@
       }
     },
     {
-      "name": "Hidden mode control exists",
+      "name": "Hidden mode control exists inside panel",
       "action": "wait_for_node",
       "with": {
         "selector": "name:HiddenModeButton",
         "state": "visible",
         "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Select second cultivation animation preset",
+      "action": "click",
+      "with": {
+        "selector": "name:Preset_cultivation_02"
+      }
+    },
+    {
+      "name": "Hero receives selected cultivation preset",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:HomeMeditationHero",
+        "property": "animation_preset_id",
+        "operator": "equals",
+        "expected_value": "cultivation_02",
+        "timeout_ms": 2000,
+        "poll_interval_ms": 25
       }
     },
     {
@@ -136,6 +180,18 @@
         "property": "home_mode",
         "operator": "equals",
         "expected_value": "rest",
+        "timeout_ms": 2000,
+        "poll_interval_ms": 25
+      }
+    },
+    {
+      "name": "Rest mode resets to registered default preset",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:HomeMeditationHero",
+        "property": "animation_preset_id",
+        "operator": "equals",
+        "expected_value": "rest_01",
         "timeout_ms": 2000,
         "poll_interval_ms": 25
       }
@@ -179,6 +235,16 @@
       }
     },
     {
+      "name": "Static mode releases animation cache",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:HomeMeditationHero",
+        "property": "runtime_animation_ready",
+        "operator": "equals",
+        "expected": true
+      }
+    },
+    {
       "name": "Switch Home back to cultivation presentation",
       "action": "click",
       "with": {
@@ -195,6 +261,13 @@
         "expected_value": "cultivation",
         "timeout_ms": 2000,
         "poll_interval_ms": 25
+      }
+    },
+    {
+      "name": "Close Home presentation panel",
+      "action": "click",
+      "with": {
+        "selector": "name:HomePresentationClose"
       }
     },
     {
