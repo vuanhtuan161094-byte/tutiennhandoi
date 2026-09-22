@@ -1,6 +1,6 @@
 {
   "name": "tutien-character-runtime-smoke",
-  "description": "Launch the real Godot client, route from Home into Character and prove canonical Character transport + 10-slot presentation exists.",
+  "description": "Launch the real Godot client, route from Home into Character, prove lazy-loaded green-screen Character animation plus canonical 10-slot presentation.",
   "target": {
     "mode": "launch",
     "project_path": "../..",
@@ -64,13 +64,23 @@
       }
     },
     {
+      "name": "Standing hero activates only on Character route",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CharacterHero",
+        "property": "_presentation_active",
+        "operator": "equals",
+        "expected": true
+      }
+    },
+    {
       "name": "Standing hero uses Character production animation profile",
       "action": "assert_property",
       "with": {
         "selector": "name:CharacterHero",
         "property": "animation_profile",
         "operator": "equals",
-        "expected": "character_standing_v1"
+        "expected": "character_standing_v2_green"
       }
     },
     {
@@ -84,13 +94,13 @@
       }
     },
     {
-      "name": "Standing hero uses standing idle state",
+      "name": "Standing hero uses registered video state",
       "action": "assert_property",
       "with": {
         "selector": "name:CharacterHero",
         "property": "animation_mode",
         "operator": "equals",
-        "expected": "standing_idle"
+        "expected": "standing_video"
       }
     },
     {
