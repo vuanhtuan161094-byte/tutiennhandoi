@@ -165,9 +165,18 @@ func _select_retreat_hour(hour: int) -> void:
 	retreat_hours_selected.emit(hour)
 
 func close_all() -> void:
-	if _active != null and is_instance_valid(_active):
-		_active.queue_free()
+	if _active == null or not is_instance_valid(_active):
+		_active = null
+		return
+
+	# queue_free() is deferred until the end of the frame. Make the outgoing
+	# sheet non-interactive immediately so it cannot become a one-frame ghost
+	# overlay that blocks Home actions after the close button is pressed.
+	var closing := _active
 	_active = null
+	closing.visible = false
+	closing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	closing.queue_free()
 
 func _open_sheet(title_text: String, eyebrow_text: String, lines: Array, height: float) -> void:
 	close_all()
