@@ -344,6 +344,7 @@ func _on_route_changed(route_id: StringName) -> void:
 		# Until a Godot screen exists, Home remains the truthful active surface.
 		nav.set_route(&"home")
 		character_screen.visible = false
+		character_screen.set_presentation_active(false)
 		character_screen.hide_detail()
 		stage.visible = true
 		hud.visible = true
@@ -356,6 +357,7 @@ func _on_route_changed(route_id: StringName) -> void:
 	if character_active:
 		hud.close_home_presentation_panel()
 	character_screen.visible = character_active
+	character_screen.set_presentation_active(character_active)
 	stage.visible = not character_active
 	hud.visible = not character_active
 	overlay.visible = not character_active
