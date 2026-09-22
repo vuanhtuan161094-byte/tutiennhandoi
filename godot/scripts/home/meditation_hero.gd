@@ -1,5 +1,7 @@
 extends Control
 
+const ANIMATION_REGISTRY := preload("res://scripts/home/home_animation_registry.gd")
+
 const MODE_CULTIVATION: StringName = &"cultivation"
 const MODE_REST: StringName = &"rest"
 
@@ -7,20 +9,7 @@ const MOTION_STILL: StringName = &"still"
 const MOTION_ANIMATED: StringName = &"animated"
 const MOTION_HIDDEN: StringName = &"hidden"
 
-const CULTIVATION_V3_PATH := "res://art/approved/home/animation_v3/home_cultivation_v3.tres"
-const CULTIVATION_V3_VARIANTS := [
-	&"cultivation_01",
-	&"cultivation_02",
-]
-const REST_V3_PATH := "res://art/approved/home/animation_v3/home_rest_v3.tres"
-const REST_V3_VARIANTS := [
-	&"idle_relaxed_01",
-	&"idle_relaxed_02",
-	&"idle_relaxed_03",
-]
-
-const CULTIVATION_STILL_PATH := "res://art/approved/home/animation_v3/home_cultivation_still.webp"
-const REST_STILL_PATH := "res://art/approved/home/animation_v3/home_rest_still.webp"
+const MAX_ANIMATION_CACHE_RESOURCES := 2
 
 const MEDITATION_FRAME_01_PATH := "res://art/approved/home/home_meditation_idle_01.webp"
 const MEDITATION_FRAME_04_PATH := "res://art/approved/home/home_meditation_idle_04.webp"
@@ -34,12 +23,19 @@ var animation_source := "still_fallback"
 var source_pose := "meditation"
 var home_mode: StringName = MODE_CULTIVATION
 var motion_mode: StringName = MOTION_STILL
+var animation_preset_id: StringName = &"cultivation_01"
 
 var _still_body: TextureRect
 var _video_sprite: AnimatedSprite2D
 var _video_frames: SpriteFrames
-var _loaded_video_mode: StringName = &""
-var _video_variant_index := 0
+var _loaded_resource_path := ""
+var _active_animation_name: StringName = &""
+
+# Runtime owns a tiny, explicit cache instead of preloading every atlas. Static
+# and hidden modes clear it completely; animated mode keeps at most the current
+# and one recently used SpriteFrames resource.
+var _animation_cache: Dictionary = {}
+var _animation_cache_order: Array[String] = []
 
 var _base_position := Vector2.ZERO
 var _base_scale := Vector2.ONE
@@ -53,19 +49,20 @@ func _ready() -> void:
 	pivot_offset = size * Vector2(0.5, 0.80)
 	_base_position = position
 	_base_scale = scale
+	animation_preset_id = ANIMATION_REGISTRY.default_preset_id(home_mode)
 	_build_body()
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_RESIZED:
-		if is_instance_valid(_video_sprite):
-			_layout_video_sprite()
+	if what == NOTIFICATION_RESIZED and is_instance_valid(_video_sprite):
+		_layout_video_sprite()
 
 func set_home_mode(mode: StringName) -> void:
 	var normalized := normalize_home_mode(mode)
 	if normalized == home_mode:
 		return
 	home_mode = normalized
-	_video_variant_index = 0
+	if ANIMATION_REGISTRY.preset_for_mode(animation_preset_id, home_mode).is_empty():
+		animation_preset_id = ANIMATION_REGISTRY.default_preset_id(home_mode)
 	_apply_presentation()
 
 func get_home_mode() -> StringName:
@@ -80,6 +77,19 @@ func set_motion_mode(mode: StringName) -> void:
 
 func get_motion_mode() -> StringName:
 	return motion_mode
+
+func set_animation_preset(preset_id: StringName) -> void:
+	var entry := ANIMATION_REGISTRY.preset_for_mode(preset_id, home_mode)
+	if entry.is_empty():
+		return
+	if preset_id == animation_preset_id:
+		return
+	animation_preset_id = preset_id
+	if motion_mode == MOTION_ANIMATED:
+		_apply_presentation()
+
+func get_animation_preset() -> StringName:
+	return animation_preset_id
 
 static func normalize_home_mode(mode: StringName) -> StringName:
 	return MODE_REST if mode == MODE_REST else MODE_CULTIVATION
@@ -98,7 +108,7 @@ func play_idle() -> void:
 	_surge_peak = 1.0
 	_set_surge(0.0)
 	if motion_mode == MOTION_ANIMATED and is_instance_valid(_video_sprite) and _video_sprite.visible and not _video_sprite.is_playing():
-		_start_video_variant(_video_variant_index)
+		_play_selected_animation()
 
 func play_surge(duration: float = 1.25, intensity: float = 1.0) -> void:
 	# Static means truly static: character pixels do not pulse/breathe until the
@@ -114,10 +124,10 @@ func has_runtime_animation() -> bool:
 	return runtime_animation_ready
 
 func get_active_idle_variant() -> StringName:
-	var variants := _variants_for_mode(home_mode)
-	if variants.is_empty():
-		return &""
-	return variants[posmod(_video_variant_index, variants.size())]
+	return _active_animation_name
+
+func get_cached_animation_resource_count() -> int:
+	return _animation_cache.size()
 
 func _build_body() -> void:
 	_still_body = TextureRect.new()
@@ -149,7 +159,7 @@ func _apply_presentation() -> void:
 
 	if motion_mode == MOTION_HIDDEN:
 		visible = false
-		_stop_and_release_video()
+		_release_active_animation(true)
 		animation_mode = "hidden"
 		animation_source = "hidden"
 		runtime_animation_ready = true
@@ -157,7 +167,7 @@ func _apply_presentation() -> void:
 
 	visible = true
 	if motion_mode == MOTION_STILL:
-		_stop_and_release_video()
+		_release_active_animation(true)
 		_video_sprite.visible = false
 		_still_body.visible = true
 		_still_body.texture = _load_still_texture(home_mode)
@@ -167,15 +177,15 @@ func _apply_presentation() -> void:
 		return
 
 	_still_body.visible = false
-	if _load_video_frames(home_mode):
+	if _load_selected_animation():
 		_video_sprite.visible = true
 		animation_mode = "cultivation_idle" if home_mode == MODE_CULTIVATION else "rest_idle"
-		animation_source = "video_spriteframes_v3"
 		runtime_animation_ready = true
 		_layout_video_sprite()
-		_start_video_variant(0)
+		_play_selected_animation()
 	else:
-		# Do not leave Home blank if a local checkout is missing the binary pack.
+		# Missing local binary resources must not make Home blank.
+		_release_active_animation(true)
 		_video_sprite.visible = false
 		_still_body.visible = true
 		_still_body.texture = _load_still_texture(home_mode)
@@ -184,7 +194,7 @@ func _apply_presentation() -> void:
 		runtime_animation_ready = _still_body.texture != null
 
 func _load_still_texture(mode: StringName) -> Texture2D:
-	var path := CULTIVATION_STILL_PATH if mode == MODE_CULTIVATION else REST_STILL_PATH
+	var path := ANIMATION_REGISTRY.still_path(mode)
 	if ResourceLoader.exists(path):
 		var loaded := ResourceLoader.load(path)
 		if loaded is Texture2D:
@@ -192,55 +202,82 @@ func _load_still_texture(mode: StringName) -> Texture2D:
 	return MEDITATION_FRAME_01 if mode == MODE_CULTIVATION else MEDITATION_FRAME_04
 
 func _still_path_exists(mode: StringName) -> bool:
-	return ResourceLoader.exists(CULTIVATION_STILL_PATH if mode == MODE_CULTIVATION else REST_STILL_PATH)
+	return ResourceLoader.exists(ANIMATION_REGISTRY.still_path(mode))
 
-func _load_video_frames(mode: StringName) -> bool:
-	if _loaded_video_mode == mode and _video_frames != null:
-		_video_sprite.sprite_frames = _video_frames
-		return true
-
-	_stop_and_release_video()
-	var path := CULTIVATION_V3_PATH if mode == MODE_CULTIVATION else REST_V3_PATH
-	if not ResourceLoader.exists(path):
-		return false
-	var resource := ResourceLoader.load(path)
-	if resource == null or not resource is SpriteFrames:
-		push_warning("Home animation resource is not SpriteFrames: %s" % path)
+func _load_selected_animation() -> bool:
+	var entry := ANIMATION_REGISTRY.preset_for_mode(animation_preset_id, home_mode)
+	if entry.is_empty():
+		animation_preset_id = ANIMATION_REGISTRY.default_preset_id(home_mode)
+		entry = ANIMATION_REGISTRY.preset_for_mode(animation_preset_id, home_mode)
+	if entry.is_empty():
 		return false
 
-	var frames := resource as SpriteFrames
-	for animation_name in _variants_for_mode(mode):
-		if not frames.has_animation(animation_name):
-			push_warning("Home animation resource %s missing animation: %s" % [path, animation_name])
+	var resource_path := ANIMATION_REGISTRY.resolved_resource_path(entry)
+	if resource_path.is_empty():
+		return false
+	var animation_name: StringName = entry.get("animation_name", &"")
+	if animation_name == &"":
+		return false
+
+	var frames: SpriteFrames = null
+	if _animation_cache.has(resource_path):
+		frames = _animation_cache[resource_path] as SpriteFrames
+	else:
+		var resource := ResourceLoader.load(resource_path, "", ResourceLoader.CACHE_MODE_IGNORE)
+		if resource == null or not resource is SpriteFrames:
+			push_warning("Home animation resource is not SpriteFrames: %s" % resource_path)
 			return false
+		frames = resource as SpriteFrames
+		_animation_cache[resource_path] = frames
+		_touch_animation_cache(resource_path)
+		_trim_animation_cache(resource_path)
+
+	if frames == null or not frames.has_animation(animation_name):
+		push_warning("Home preset %s missing animation %s in %s" % [animation_preset_id, animation_name, resource_path])
+		return false
 
 	_video_frames = frames
-	_loaded_video_mode = mode
+	_loaded_resource_path = resource_path
+	_active_animation_name = animation_name
 	_video_sprite.sprite_frames = frames
+
+	var primary_path := str(entry.get("resource_path", ""))
+	animation_source = "video_spriteframes_split" if resource_path == primary_path else "video_spriteframes_v3_fallback"
+	_touch_animation_cache(resource_path)
 	return true
 
-func _stop_and_release_video() -> void:
-	if not is_instance_valid(_video_sprite):
-		return
-	_video_sprite.stop()
-	_video_sprite.visible = false
-	_video_sprite.sprite_frames = null
-	_video_frames = null
-	_loaded_video_mode = &""
+func _touch_animation_cache(resource_path: String) -> void:
+	var existing := _animation_cache_order.find(resource_path)
+	if existing >= 0:
+		_animation_cache_order.remove_at(existing)
+	_animation_cache_order.append(resource_path)
 
-func _variants_for_mode(mode: StringName) -> Array:
-	return REST_V3_VARIANTS if mode == MODE_REST else CULTIVATION_V3_VARIANTS
+func _trim_animation_cache(current_path: String) -> void:
+	while _animation_cache_order.size() > MAX_ANIMATION_CACHE_RESOURCES:
+		var evict_path := _animation_cache_order.pop_front()
+		if evict_path == current_path:
+			_animation_cache_order.append(evict_path)
+			continue
+		_animation_cache.erase(evict_path)
+
+func _release_active_animation(clear_cache: bool) -> void:
+	if is_instance_valid(_video_sprite):
+		_video_sprite.stop()
+		_video_sprite.visible = false
+		_video_sprite.sprite_frames = null
+	_video_frames = null
+	_loaded_resource_path = ""
+	_active_animation_name = &""
+	if clear_cache:
+		_animation_cache.clear()
+		_animation_cache_order.clear()
 
 func _layout_video_sprite() -> void:
-	if not is_instance_valid(_video_sprite) or _video_sprite.sprite_frames == null:
+	if not is_instance_valid(_video_sprite) or _video_sprite.sprite_frames == null or _active_animation_name == &"":
 		return
-	var variants := _variants_for_mode(home_mode)
-	if variants.is_empty():
+	if _video_sprite.sprite_frames.get_frame_count(_active_animation_name) <= 0:
 		return
-	var first_variant: StringName = variants[0]
-	if _video_sprite.sprite_frames.get_frame_count(first_variant) <= 0:
-		return
-	var first_texture := _video_sprite.sprite_frames.get_frame_texture(first_variant, 0)
+	var first_texture := _video_sprite.sprite_frames.get_frame_texture(_active_animation_name, 0)
 	if first_texture == null:
 		return
 	var frame_size := first_texture.get_size()
@@ -253,19 +290,19 @@ func _layout_video_sprite() -> void:
 		size.y - frame_size.y * fit_scale * 0.5
 	)
 
-func _start_video_variant(index: int) -> void:
+func _play_selected_animation() -> void:
 	if motion_mode != MOTION_ANIMATED or not is_instance_valid(_video_sprite) or not _video_sprite.visible:
 		return
-	var variants := _variants_for_mode(home_mode)
-	if variants.is_empty():
+	if _video_sprite.sprite_frames == null or _active_animation_name == &"":
 		return
-	_video_variant_index = posmod(index, variants.size())
-	_video_sprite.play(variants[_video_variant_index])
+	_video_sprite.play(_active_animation_name)
 
 func _on_video_animation_finished() -> void:
 	if motion_mode != MOTION_ANIMATED or not is_instance_valid(_video_sprite) or not _video_sprite.visible:
 		return
-	_start_video_variant(_video_variant_index + 1)
+	# Compatibility V3 resources are non-looping. Explicitly restart the chosen
+	# preset rather than rotating through every atlas behind the player's back.
+	_play_selected_animation()
 
 func _process(delta: float) -> void:
 	if not runtime_animation_ready or motion_mode != MOTION_ANIMATED:
