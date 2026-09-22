@@ -179,51 +179,51 @@ func _build() -> void:
 
 	var header := Panel.new()
 	header.z_index = 20
-	_anchor(header, 10, 430, 380, 492)
+	_anchor(header, 10, 506, 380, 548)
 	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	header.add_theme_stylebox_override("panel", _flat(Color(0.01, 0.03, 0.05, 0.72), 16, Color(0.70, 0.82, 0.86, 0.16), 1))
+	header.add_theme_stylebox_override("panel", _flat(Color(0.01, 0.03, 0.05, 0.78), 14, Color(0.70, 0.82, 0.86, 0.14), 1))
 	add_child(header)
 
 	_realm_label = Label.new()
 	_realm_label.name = "CharacterRealm"
 	_realm_label.text = "ĐỜI 1 · PHÀM NHÂN"
-	_realm_label.add_theme_font_size_override("font_size", 12)
+	_realm_label.add_theme_font_size_override("font_size", 10)
 	_realm_label.add_theme_color_override("font_color", CYAN)
 	_realm_label.add_theme_constant_override("outline_size", 2)
 	_realm_label.add_theme_color_override("font_outline_color", Color(0.0, 0.01, 0.02, 0.90))
-	_anchor(_realm_label, 14, 7, 268, 24)
+	_anchor(_realm_label, 12, 4, 230, 17)
 	header.add_child(_realm_label)
 
 	_name_label = Label.new()
 	_name_label.name = "CharacterName"
 	_name_label.text = "Tu Sĩ"
-	_name_label.add_theme_font_size_override("font_size", 21)
+	_name_label.add_theme_font_size_override("font_size", 15)
 	_name_label.add_theme_color_override("font_color", GOLD_HI)
 	_name_label.add_theme_constant_override("outline_size", 3)
 	_name_label.add_theme_color_override("font_outline_color", Color(0.0, 0.01, 0.02, 0.92))
-	_anchor(_name_label, 14, 23, 268, 51)
+	_anchor(_name_label, 12, 17, 230, 38)
 	header.add_child(_name_label)
 
 	_root_label = Label.new()
 	_root_label.name = "CharacterRoot"
 	_root_label.text = "Phàm Căn"
 	_root_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_root_label.add_theme_font_size_override("font_size", 13)
+	_root_label.add_theme_font_size_override("font_size", 11)
 	_root_label.add_theme_color_override("font_color", TEXT)
-	_anchor(_root_label, 266, 20, 354, 46)
+	_anchor(_root_label, 232, 10, 356, 33)
 	header.add_child(_root_label)
 
 	var stage := Control.new()
 	stage.name = "CharacterStage"
 	stage.z_index = 5
-	_anchor(stage, 0, 0, 390, 526)
+	_anchor(stage, 0, 0, 390, 570)
 	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(stage)
 
 	_hero_glow = Panel.new()
 	_hero_glow.z_index = -3
-	_anchor(_hero_glow, 62, 8, 328, 506)
-	_hero_glow.pivot_offset = Vector2(133, 249)
+	_anchor(_hero_glow, 48, 6, 342, 554)
+	_hero_glow.pivot_offset = Vector2(147, 274)
 	_hero_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hero_glow.add_theme_stylebox_override("panel", _flat(Color(0.23, 0.68, 0.76, 0.035), 98, Color(0.95, 0.75, 0.31, 0.22), 2))
 	stage.add_child(_hero_glow)
@@ -231,7 +231,7 @@ func _build() -> void:
 	var hero_ground := Panel.new()
 	hero_ground.name = "CharacterGroundShadow"
 	hero_ground.z_index = -2
-	_anchor(hero_ground, 96, 468, 294, 506)
+	_anchor(hero_ground, 88, 514, 302, 552)
 	hero_ground.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hero_ground.add_theme_stylebox_override(
 		"panel",
@@ -243,50 +243,50 @@ func _build() -> void:
 	_hero.name = "CharacterHero"
 	_hero.z_index = 0
 	# Character animation is the stage backdrop. UI remains interactive above it.
-	_anchor(_hero, 42, -6, 348, 512)
+	_anchor(_hero, 24, -8, 366, 560)
 	stage.add_child(_hero)
 
 	var slot_specs := [
-		["weapon", "Đạo Binh", EQUIPMENT_SLOT_LEFT_X, 154], ["head", "Đạo Quan", EQUIPMENT_SLOT_LEFT_X, 220], ["gloves", "Hộ Uyển", EQUIPMENT_SLOT_LEFT_X, 286], ["bracelet", "Linh Trạc", EQUIPMENT_SLOT_LEFT_X, 352], ["necklace", "Ngọc Bội", EQUIPMENT_SLOT_LEFT_X, 418],
-		["robe", "Pháp Bào", EQUIPMENT_SLOT_RIGHT_X, 154], ["belt", "Huyền Đái", EQUIPMENT_SLOT_RIGHT_X, 220], ["boots", "Vân Ngoa", EQUIPMENT_SLOT_RIGHT_X, 286], ["ring", "Đạo Giới", EQUIPMENT_SLOT_RIGHT_X, 352], ["talisman", "Hộ Phù", EQUIPMENT_SLOT_RIGHT_X, 418],
+		["weapon", "Đạo Binh", EQUIPMENT_SLOT_LEFT_X, 138], ["head", "Đạo Quan", EQUIPMENT_SLOT_LEFT_X, 204], ["gloves", "Hộ Uyển", EQUIPMENT_SLOT_LEFT_X, 270], ["bracelet", "Linh Trạc", EQUIPMENT_SLOT_LEFT_X, 336], ["necklace", "Ngọc Bội", EQUIPMENT_SLOT_LEFT_X, 402],
+		["robe", "Pháp Bào", EQUIPMENT_SLOT_RIGHT_X, 138], ["belt", "Huyền Đái", EQUIPMENT_SLOT_RIGHT_X, 204], ["boots", "Vân Ngoa", EQUIPMENT_SLOT_RIGHT_X, 270], ["ring", "Đạo Giới", EQUIPMENT_SLOT_RIGHT_X, 336], ["talisman", "Hộ Phù", EQUIPMENT_SLOT_RIGHT_X, 402],
 	]
 	for spec in slot_specs:
 		_add_slot(stage, str(spec[0]), str(spec[1]), float(spec[2]), float(spec[3]))
 
 	var path_panel := Panel.new()
 	path_panel.z_index = 12
-	_anchor(path_panel, 76, 374, 314, 422)
+	_anchor(path_panel, 70, 466, 320, 502)
 	path_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	path_panel.add_theme_stylebox_override("panel", _flat(Color(0.01, 0.03, 0.05, 0.84), 15, Color(0.91, 0.74, 0.34, 0.34), 1))
+	path_panel.add_theme_stylebox_override("panel", _flat(Color(0.01, 0.03, 0.05, 0.72), 14, Color(0.91, 0.74, 0.34, 0.30), 1))
 	stage.add_child(path_panel)
 
 	var path_kicker := Label.new()
 	path_kicker.text = "LỐI TU HIỆN TẠI"
 	path_kicker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	path_kicker.add_theme_font_size_override("font_size", 10)
+	path_kicker.add_theme_font_size_override("font_size", 8)
 	path_kicker.add_theme_color_override("font_color", MUTED)
-	_anchor(path_kicker, 8, 4, 230, 16)
+	_anchor(path_kicker, 8, 2, 242, 13)
 	path_panel.add_child(path_kicker)
 
 	_path_primary = Label.new()
 	_path_primary.name = "CharacterPathPrimary"
 	_path_primary.text = "Lối tu hiện tại"
 	_path_primary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_path_primary.add_theme_font_size_override("font_size", 14)
+	_path_primary.add_theme_font_size_override("font_size", 12)
 	_path_primary.add_theme_color_override("font_color", GOLD_HI)
-	_anchor(_path_primary, 8, 15, 230, 32)
+	_anchor(_path_primary, 8, 12, 242, 27)
 	path_panel.add_child(_path_primary)
 
 	_path_secondary = Label.new()
 	_path_secondary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_path_secondary.add_theme_font_size_override("font_size", 10)
+	_path_secondary.add_theme_font_size_override("font_size", 8)
 	_path_secondary.add_theme_color_override("font_color", CYAN)
-	_anchor(_path_secondary, 8, 31, 230, 45)
+	_anchor(_path_secondary, 8, 26, 242, 36)
 	path_panel.add_child(_path_secondary)
 
 	var stats_panel := Panel.new()
 	stats_panel.z_index = 20
-	_anchor(stats_panel, 10, 500, 380, 558)
+	_anchor(stats_panel, 10, 552, 380, 596)
 	stats_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stats_panel.add_theme_stylebox_override("panel", _flat(DARK, 15, Color(0.43, 0.67, 0.75, 0.20), 1))
 	add_child(stats_panel)
@@ -297,13 +297,13 @@ func _build() -> void:
 	_potential_button = Button.new()
 	_potential_button.name = "CharacterPotentialCTA"
 	_potential_button.text = "TĂNG ĐIỂM"
-	_potential_button.add_theme_font_size_override("font_size", 15)
+	_potential_button.add_theme_font_size_override("font_size", 12)
 	_potential_button.add_theme_color_override("font_color", TEXT)
 	_potential_button.add_theme_stylebox_override("normal", _flat(Color(0.05, 0.08, 0.08, 0.90), 14, Color(0.94, 0.74, 0.29, 0.52), 1))
 	_potential_button.add_theme_stylebox_override("hover", _flat(Color(0.10, 0.10, 0.07, 0.96), 14, Color(1.0, 0.84, 0.42, 0.76), 2))
 	_potential_button.add_theme_stylebox_override("pressed", _flat(Color(0.16, 0.12, 0.045, 0.98), 14, GOLD_HI, 2))
 	_potential_button.focus_mode = Control.FOCUS_NONE
-	_anchor(_potential_button, 72, 566, 318, 608)
+	_anchor(_potential_button, 92, 600, 298, 632)
 	_potential_button.pressed.connect(_emit_detail.bind(&"potential"))
 	add_child(_potential_button)
 
@@ -313,13 +313,13 @@ func _build() -> void:
 		var button := Button.new()
 		button.name = "CharacterAction_%s" % String(action[1])
 		button.text = str(action[0])
-		button.add_theme_font_size_override("font_size", 13)
+		button.add_theme_font_size_override("font_size", 11)
 		button.add_theme_color_override("font_color", TEXT)
 		button.add_theme_stylebox_override("normal", _flat(Color(0.01, 0.04, 0.06, 0.84), 14, Color(0.38, 0.70, 0.78, 0.22), 1))
 		button.add_theme_stylebox_override("hover", _flat(Color(0.04, 0.08, 0.10, 0.94), 14, Color(0.55, 0.88, 0.91, 0.42), 1))
 		button.add_theme_stylebox_override("pressed", _flat(Color(0.06, 0.11, 0.13, 0.98), 14, CYAN, 2))
 		button.focus_mode = Control.FOCUS_NONE
-		_anchor(button, 20 + i * 119, 616, 132 + i * 119, 664)
+		_anchor(button, 20 + i * 119, 636, 132 + i * 119, 674)
 		button.pressed.connect(_emit_detail.bind(action[1]))
 		add_child(button)
 
@@ -327,9 +327,9 @@ func _build() -> void:
 	_status.name = "CharacterStatus"
 	_status.text = "Đang tải dữ liệu nhân vật…"
 	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_status.add_theme_font_size_override("font_size", 11)
+	_status.add_theme_font_size_override("font_size", 9)
 	_status.add_theme_color_override("font_color", MUTED)
-	_anchor(_status, 16, 670, 374, 700)
+	_anchor(_status, 16, 676, 374, 696)
 	add_child(_status)
 
 	_build_character_presentation_controls()
@@ -354,7 +354,7 @@ func _build_character_presentation_controls() -> void:
 	var trigger_shell := PanelContainer.new()
 	trigger_shell.name = "CharacterPresentationTrigger"
 	trigger_shell.z_index = 70
-	_anchor(trigger_shell, 252, 82, 382, 118)
+	_anchor(trigger_shell, 262, 76, 382, 108)
 	trigger_shell.add_theme_stylebox_override(
 		"panel",
 		_flat(Color(0.004, 0.022, 0.035, 0.90), 16, Color(0.58, 0.78, 0.82, 0.30), 1)
@@ -366,7 +366,7 @@ func _build_character_presentation_controls() -> void:
 	_presentation_trigger.text = "Hiển thị · Tĩnh"
 	_presentation_trigger.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_presentation_trigger.focus_mode = Control.FOCUS_NONE
-	_presentation_trigger.add_theme_font_size_override("font_size", 11)
+	_presentation_trigger.add_theme_font_size_override("font_size", 9)
 	_presentation_trigger.add_theme_color_override("font_color", TEXT)
 	_presentation_trigger.add_theme_color_override("font_hover_color", GOLD_HI)
 	_presentation_trigger.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
@@ -558,18 +558,18 @@ func _stat_cell(parent: Control, node_name: String, caption: String, index: int)
 	var caption_label := Label.new()
 	caption_label.text = caption
 	caption_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	caption_label.add_theme_font_size_override("font_size", 10)
+	caption_label.add_theme_font_size_override("font_size", 8)
 	caption_label.add_theme_color_override("font_color", MUTED)
-	_anchor(caption_label, left, 8, left + 116, 23)
+	_anchor(caption_label, left, 4, left + 116, 16)
 	parent.add_child(caption_label)
 
 	var value := Label.new()
 	value.name = node_name
 	value.text = "0"
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	value.add_theme_font_size_override("font_size", 19)
+	value.add_theme_font_size_override("font_size", 16)
 	value.add_theme_color_override("font_color", GOLD_HI if index == 0 else TEXT)
-	_anchor(value, left, 23, left + 116, 55)
+	_anchor(value, left, 16, left + 116, 42)
 	parent.add_child(value)
 	return value
 
