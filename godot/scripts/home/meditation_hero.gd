@@ -11,19 +11,25 @@ const MOTION_HIDDEN: StringName = &"hidden"
 
 const MAX_ANIMATION_CACHE_RESOURCES := 2
 
+const DEFAULT_HOME_MODE: StringName = MODE_CULTIVATION
+const DEFAULT_MOTION_MODE: StringName = MOTION_STILL
+const DEFAULT_ANIMATION_PRESET_ID: StringName = &"cultivation_01"
+const DEFAULT_ANIMATION_MODE := "cultivation_still"
+const SOURCE_POSE := "meditation"
+
 const MEDITATION_FRAME_01_PATH := "res://art/approved/home/home_meditation_idle_01.webp"
 const MEDITATION_FRAME_04_PATH := "res://art/approved/home/home_meditation_idle_04.webp"
 const MEDITATION_FRAME_01: Texture2D = preload("res://art/approved/home/home_meditation_idle_01.webp")
 const MEDITATION_FRAME_04: Texture2D = preload("res://art/approved/home/home_meditation_idle_04.webp")
 
 var runtime_animation_ready := false
-var animation_mode := "cultivation_still"
+var animation_mode := DEFAULT_ANIMATION_MODE
 var accent_mode := "none"
 var animation_source := "still_fallback"
-var source_pose := "meditation"
-var home_mode: StringName = MODE_CULTIVATION
-var motion_mode: StringName = MOTION_STILL
-var animation_preset_id: StringName = &"cultivation_01"
+var source_pose := SOURCE_POSE
+var home_mode: StringName = DEFAULT_HOME_MODE
+var motion_mode: StringName = DEFAULT_MOTION_MODE
+var animation_preset_id: StringName = DEFAULT_ANIMATION_PRESET_ID
 
 var _still_body: TextureRect
 var _video_sprite: AnimatedSprite2D
