@@ -15,5 +15,23 @@
     "repository": "godot-gdunit-labs/gdUnit4",
     "tag": "v6.2.1",
     "commit": "08ffc7c65b61b1b2edd545616061a99973c13ce1"
+  },
+  "saltmire_juice": {
+    "repository": "saltmire/saltmire-juice",
+    "version": "1.1.0",
+    "commit": "258dbf25f3a131ae0960374b3a7c6c0b4d417ee9",
+    "license": "MIT",
+    "vendored_path": "godot/addons/saltmire_juice",
+    "integration": "runtime-subset",
+    "combat_allowed": [
+      "shake",
+      "flash",
+      "pop",
+      "damage_number"
+    ],
+    "combat_blocked": [
+      "hitstop"
+    ],
+    "blocked_reason": "Juice.hitstop mutates Engine.time_scale while canonical Combat authority remains in the external JavaScript runtime."
   }
 }
