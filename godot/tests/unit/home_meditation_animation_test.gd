@@ -10,12 +10,13 @@ func test_home_hero_contract_is_meditation_not_standing() -> void:
 	assert_str(str(hero.animation_source)).is_equal("video_frames_preloaded")
 	hero.free()
 
-func test_video_frames_are_parse_time_texture_dependencies() -> void:
+func test_meditation_key_poses_are_parse_time_texture_dependencies() -> void:
 	assert_str(MEDITATION_HERO.MEDITATION_FRAME_01_PATH).contains("home_meditation_idle_01.webp")
 	assert_str(MEDITATION_HERO.MEDITATION_FRAME_04_PATH).contains("home_meditation_idle_04.webp")
 	assert_bool(MEDITATION_HERO.MEDITATION_FRAME_01 != null).is_true()
 	assert_bool(MEDITATION_HERO.MEDITATION_FRAME_04 != null).is_true()
-	assert_float(MEDITATION_HERO.FRAME_INTERVAL).is_equal_approx(0.34, 0.001)
+	assert_float(MEDITATION_HERO.POSE_CYCLE_SECONDS).is_greater(4.0)
+	assert_float(MEDITATION_HERO.SECONDARY_POSE_MAX_ALPHA).is_between(0.25, 0.60)
 
 func test_home_meditation_has_no_standing_fallback_path() -> void:
 	assert_bool(MEDITATION_HERO.MEDITATION_FRAME_01_PATH.contains("standing")).is_false()
