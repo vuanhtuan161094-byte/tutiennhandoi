@@ -1,4 +1,4 @@
-import { runCombatKernelV2 } from './combat-kernel-v2.js';
+import { compileCombatEncounterV1, runCompiledCombatEncounterV2 } from './combat-encounter-compiler.js';
 
 export const PVP_V91_SCHEMA = 'pvp.v91';
 export const PVP_V94_FEATURE_VERSION = 'v94';
@@ -391,7 +391,17 @@ export function challengePvpV91(state, currentEntity, registry, opponentId, now 
   const tacticalEntity = applyPvpTacticalPresetV93(currentEntity, pvp.tacticalPresetId, registry);
   const playerEntity = normalizeEntityIdentity(tacticalEntity, playerId, currentEntity?.name ?? 'Tu Sĩ');
   const seed = opponent.ticketSeed;
-  const kernel = runCombatKernelV2({ registry, seed, entities: [playerEntity, opponentEntity], mode: 'offline', maxDuration: 120 });
+  const encounter = compileCombatEncounterV1({
+    encounterId: `pvp.${seq}.${seed}`,
+    activity: 'pvp',
+    seed,
+    entities: [playerEntity, opponentEntity],
+    mode: 'offline',
+    maxDuration: 120,
+    applyPacing: false,
+    metadata: { opponentId: opponent.id, ticketId: opponent.ticketId },
+  });
+  const kernel = runCompiledCombatEncounterV2(encounter, registry);
   const battle = kernel.battle;
   const won = !battle.draw && battle.winnerId === playerId;
   const lost = !battle.draw && battle.loserId === playerId;
@@ -412,7 +422,7 @@ export function challengePvpV91(state, currentEntity, registry, opponentId, now 
     fightId, atUnixMs: now, opponentId: opponent.id, ticketId: opponent.ticketId, opponentName: opponent.name, opponentBand: opponent.band,
     result: won ? 'win' : lost ? 'loss' : 'draw', ratingBefore, ratingAfter, ratingDelta, baseRatingDelta, ratingFactor: diminished.factor, sameBandStreak: streak, rewardBoundJade: 0,
     tacticalPresetId: pvp.tacticalPresetId, duration: Number(battle.duration ?? 0),
-    replay: { seed, ticketId: opponent.ticketId, maxDuration: 120, playerEntity: cloneEntity(playerEntity), opponentEntity: cloneEntity(opponentEntity), winnerId: battle.winnerId, loserId: battle.loserId, draw: Boolean(battle.draw) },
+    replay: { engineVersion: 'combat.v2', seed, ticketId: opponent.ticketId, maxDuration: 120, playerEntity: cloneEntity(playerEntity), opponentEntity: cloneEntity(opponentEntity), winnerId: battle.winnerId, loserId: battle.loserId, draw: Boolean(battle.draw) },
   };
   pvp.history = [entry, ...(pvp.history ?? [])].slice(0, PVP_V91_HISTORY_CAP);
   appendIntegrityEvent(pvp, 'match', { fightId, ticketId: opponent.ticketId, seed, band: opponent.band, result: entry.result, ratingBefore, ratingAfter, ratingDelta, baseRatingDelta, ratingFactor: diminished.factor, sameBandStreak: streak, tacticalPresetId: pvp.tacticalPresetId }, now);
@@ -472,7 +482,17 @@ export function replayPvpV91(state, registry, fightId) {
   const entry = pvp?.history?.find(x => x.fightId === fightId);
   if (!entry?.replay) throw new Error('Không tìm thấy chiến báo/replay Đấu Pháp.');
   const replay = entry.replay;
-  const kernel = runCombatKernelV2({ registry, seed: replay.seed, entities: [cloneEntity(replay.playerEntity), cloneEntity(replay.opponentEntity)], mode: 'offline', maxDuration: replay.maxDuration ?? 120 });
+  const encounter = compileCombatEncounterV1({
+    encounterId: `pvp.replay.${fightId}`,
+    activity: 'pvp-replay',
+    seed: replay.seed,
+    entities: [cloneEntity(replay.playerEntity), cloneEntity(replay.opponentEntity)],
+    mode: 'offline',
+    maxDuration: replay.maxDuration ?? 120,
+    applyPacing: false,
+    metadata: { fightId, ticketId: replay.ticketId, engineVersion: replay.engineVersion ?? 'combat.v2' },
+  });
+  const kernel = runCompiledCombatEncounterV2(encounter, registry);
   const verified = Boolean(kernel.battle.draw) === Boolean(replay.draw) && kernel.battle.winnerId === replay.winnerId && kernel.battle.loserId === replay.loserId;
   return { schema: 'pvp-replay.v94', fightId, verified, source: 'CombatKernelV2', ticketId: replay.ticketId, seed: replay.seed, integrity, battle: kernel.battle };
 }
