@@ -15,7 +15,7 @@ var animation_preset_id: StringName = &""
 var _video_sprite: AnimatedSprite2D
 var _video_frames: SpriteFrames
 var _active_animation_name: StringName = &""
-var _presentation_active := false
+var presentation_active := false
 var _time := 0.0
 var _base_position := Vector2.ZERO
 var _base_scale := Vector2.ONE
@@ -38,18 +38,18 @@ func _notification(what: int) -> void:
 func has_runtime_animation() -> bool:
 	return runtime_animation_ready
 
-func set_presentation_active(active: bool) -> void:
-	if active == _presentation_active:
+func setpresentation_active(active: bool) -> void:
+	if active == presentation_active:
 		return
-	_presentation_active = active
+	presentation_active = active
 	if active:
 		_start_registered_animation()
 	else:
 		_release_registered_animation()
 		_load_static_master()
 
-func get_presentation_active() -> bool:
-	return _presentation_active
+func getpresentation_active() -> bool:
+	return presentation_active
 
 func get_animation_preset() -> StringName:
 	return animation_preset_id
@@ -58,7 +58,7 @@ func set_animation_preset(preset_id: StringName) -> void:
 	if ANIMATION_REGISTRY.preset(preset_id).is_empty():
 		return
 	animation_preset_id = preset_id
-	if _presentation_active:
+	if presentation_active:
 		_start_registered_animation()
 
 func _build_video_sprite() -> void:
@@ -136,7 +136,7 @@ func _release_registered_animation() -> void:
 	_active_animation_name = &""
 
 func _on_registered_animation_finished() -> void:
-	if not _presentation_active:
+	if not presentation_active:
 		return
 	var next_id := ANIMATION_REGISTRY.next_preset_id(animation_preset_id)
 	if next_id == &"":
@@ -163,7 +163,7 @@ func _layout_video_sprite() -> void:
 	)
 
 func _process(delta: float) -> void:
-	if not visible or not runtime_animation_ready or _presentation_active:
+	if not visible or not runtime_animation_ready or presentation_active:
 		return
 	_time += delta
 	# Static fallback only. Registered videos contain real articulated motion.
