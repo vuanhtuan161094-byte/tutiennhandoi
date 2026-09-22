@@ -102,6 +102,7 @@ export function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {
         let milestoneLootProtected = false;
         let resourcePve;
         let economyAwards = [];
+        let combatSettlement;
         if (won) {
             if (firstClear)
                 markDungeonFloorCleared(this.stateValue.dungeons, dungeonId, floor);
@@ -147,7 +148,7 @@ export function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {
             }
         }
         else {
-            applyCombatSettlementPolicyV1({
+            combatSettlement = applyCombatSettlementPolicyV1({
                 state: this.stateValue,
                 policy: dungeonDefeatPolicyV1(dungeonId, floor),
                 applyCanonicalDeathPenalty: context => this.applyCombatDeathPenalty(context),
@@ -184,7 +185,7 @@ export function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {
         return {
             seed, dungeonId, floor, guardianId: guardianBase.id, guardianName: guardianBase.name,
             won, firstClear, elapsedYears, battleDuration: battle.duration, rewards,
-            equipmentDropIds, equipmentFragmentDrops, artifactDropIds, signatureSkillId: signature.skillId, battleInsightGain, skillPractice, daoNaturePointGain, daoNatureXpGain, milestoneLootProtected, readiness, mechanic, phaseTransitions, counterWindowSuccesses, counterWindowFailures, combatTimeline, combatResult: kernel.combatResult, resourcePve, economyAwards, event,
+            equipmentDropIds, equipmentFragmentDrops, artifactDropIds, signatureSkillId: signature.skillId, battleInsightGain, skillPractice, daoNaturePointGain, daoNatureXpGain, milestoneLootProtected, readiness, mechanic, phaseTransitions, counterWindowSuccesses, counterWindowFailures, combatTimeline, combatResult: kernel.combatResult, combatSettlement, resourcePve, economyAwards, event,
             state: this.state,
         };
     
