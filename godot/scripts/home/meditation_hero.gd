@@ -101,7 +101,9 @@ func play_idle() -> void:
 		_start_video_variant(_video_variant_index)
 
 func play_surge(duration: float = 1.25, intensity: float = 1.0) -> void:
-	if motion_mode == MOTION_HIDDEN:
+	# Static means truly static: character pixels do not pulse/breathe until the
+	# player explicitly chooses Động. Scene-level aura/VFX remain independent.
+	if motion_mode != MOTION_ANIMATED:
 		return
 	accent_mode = "meditation_surge"
 	_surge_duration = maxf(0.25, duration)
@@ -266,10 +268,10 @@ func _on_video_animation_finished() -> void:
 	_start_video_variant(_video_variant_index + 1)
 
 func _process(delta: float) -> void:
-	if not runtime_animation_ready or motion_mode == MOTION_HIDDEN:
+	if not runtime_animation_ready or motion_mode != MOTION_ANIMATED:
 		return
 	var surge_strength := _update_surge(delta)
-	if motion_mode == MOTION_ANIMATED and is_instance_valid(_video_sprite) and _video_sprite.visible:
+	if is_instance_valid(_video_sprite) and _video_sprite.visible:
 		position = _base_position
 		rotation = 0.0
 		scale = _base_scale
