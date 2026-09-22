@@ -22,3 +22,9 @@ func test_ling_quang_event_copy_has_distinct_rarity_tiers() -> void:
 	assert_str(str(HOME_HUD.ling_quang_event_copy(4)["title"])).is_equal("LINH QUANG ×4")
 	assert_str(str(HOME_HUD.ling_quang_event_copy(6)["title"])).is_equal("ĐẠI LINH QUANG ×6")
 	assert_str(str(HOME_HUD.ling_quang_event_copy(10)["title"])).is_equal("THIÊN ĐỊA CỘNG MINH ×10")
+
+func test_gain_pulse_tracks_visible_integer_advance_only() -> void:
+	assert_int(HOME_HUD.cultivation_gain_pulse_amount(10.0, 11.1)).is_equal(1)
+	assert_int(HOME_HUD.cultivation_gain_pulse_amount(10.2, 12.2)).is_equal(2)
+	assert_int(HOME_HUD.cultivation_gain_pulse_amount(12.0, 11.0)).is_equal(0)
+	assert_int(HOME_HUD.cultivation_gain_pulse_amount(5.1, 5.4)).is_equal(0)
