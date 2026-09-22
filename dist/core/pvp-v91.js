@@ -426,7 +426,7 @@ export function challengePvpV91(state, currentEntity, registry, opponentId, now 
   };
   pvp.history = [entry, ...(pvp.history ?? [])].slice(0, PVP_V91_HISTORY_CAP);
   appendIntegrityEvent(pvp, 'match', { fightId, ticketId: opponent.ticketId, seed, band: opponent.band, result: entry.result, ratingBefore, ratingAfter, ratingDelta, baseRatingDelta, ratingFactor: diminished.factor, sameBandStreak: streak, tacticalPresetId: pvp.tacticalPresetId }, now);
-  return { schema: 'pvp-match-result.v94', fightId, won, lost, draw: Boolean(battle.draw), result: entry.result, ratingBefore, ratingAfter, ratingDelta, baseRatingDelta, ratingFactor: diminished.factor, sameBandStreak: streak, tacticalPresetId: pvp.tacticalPresetId, ticketId: opponent.ticketId, seed, opponent: publicOpponent(opponent), battle, rewardBoundJade: 0 };
+  return { schema: 'pvp-match-result.v94', fightId, won, lost, draw: Boolean(battle.draw), result: entry.result, ratingBefore, ratingAfter, ratingDelta, baseRatingDelta, ratingFactor: diminished.factor, sameBandStreak: streak, tacticalPresetId: pvp.tacticalPresetId, ticketId: opponent.ticketId, seed, opponent: publicOpponent(opponent), battle, combatResult: kernel.combatResult, rewardBoundJade: 0 };
 }
 
 export function attachPvpRewardV91(state, fightId, rewardBoundJade) {
@@ -494,5 +494,5 @@ export function replayPvpV91(state, registry, fightId) {
   });
   const kernel = runCompiledCombatEncounterV2(encounter, registry);
   const verified = Boolean(kernel.battle.draw) === Boolean(replay.draw) && kernel.battle.winnerId === replay.winnerId && kernel.battle.loserId === replay.loserId;
-  return { schema: 'pvp-replay.v94', fightId, verified, source: 'CombatKernelV2', ticketId: replay.ticketId, seed: replay.seed, integrity, battle: kernel.battle };
+  return { schema: 'pvp-replay.v94', fightId, verified, source: 'CombatKernelV2', engineVersion: replay.engineVersion ?? 'combat.v2', ticketId: replay.ticketId, seed: replay.seed, integrity, battle: kernel.battle, combatResult: kernel.combatResult };
 }
