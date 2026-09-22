@@ -107,6 +107,7 @@ func _connect_ui() -> void:
 	hud.primary_action_requested.connect(_on_primary_action)
 	hud.home_mode_requested.connect(_on_home_mode_requested)
 	hud.home_motion_mode_requested.connect(_on_home_motion_mode_requested)
+	hud.home_animation_preset_requested.connect(_on_home_animation_preset_requested)
 	nav.route_requested.connect(_on_route_requested)
 	overlay.retreat_hours_selected.connect(_on_retreat_hours_selected)
 	character_screen.detail_requested.connect(_on_character_detail_requested)
@@ -333,6 +334,10 @@ func _on_home_motion_mode_requested(mode: StringName) -> void:
 	stage.set_motion_mode(mode)
 	hud.set_home_motion_mode(mode)
 
+func _on_home_animation_preset_requested(preset_id: StringName) -> void:
+	stage.set_animation_preset(preset_id)
+	hud.set_home_animation_preset(preset_id)
+
 func _on_route_changed(route_id: StringName) -> void:
 	if route_id not in [&"home", &"character"]:
 		# Never leave Home visible while a non-existent destination looks selected.
@@ -348,6 +353,8 @@ func _on_route_changed(route_id: StringName) -> void:
 
 	nav.set_route(route_id)
 	var character_active := route_id == &"character"
+	if character_active:
+		hud.close_home_presentation_panel()
 	character_screen.visible = character_active
 	stage.visible = not character_active
 	hud.visible = not character_active
