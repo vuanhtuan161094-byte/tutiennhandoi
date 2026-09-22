@@ -77,10 +77,9 @@ export function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {
             .filter(log => log.type !== 'counterWindow' || log.data?.success === true || log.data?.opens === true || log.data?.failure === true)
             .slice(0, 96)
             .map(log => ({ time: log.time, type: log.type, message: log.message }));
-        const castCounts = {};
-        for (const log of battle.logs)
-            if (log.type === 'castStart' && log.actorId === playerCombat.id && log.skillId)
-                castCounts[log.skillId] = (castCounts[log.skillId] ?? 0) + 1;
+        const castCounts = {
+            ...(kernel.combatResult.summary.castCountsByActor[playerCombat.id] ?? {}),
+        };
         const skillPractice = gainBattleDaoPracticeFromCastCountsV125(this.stateValue.character, castCounts, [...this.registry.skills.values()], practiceContentEfficiencyForGapV125(this.stateValue.realm.maxRealmOrder - spec.requiredRealmOrder));
         const won = battle.winnerId === playerCombat.id;
         const firstClear = won && floor > highestClearedDungeonFloor(this.stateValue.dungeons, dungeonId);
@@ -185,7 +184,7 @@ export function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {
         return {
             seed, dungeonId, floor, guardianId: guardianBase.id, guardianName: guardianBase.name,
             won, firstClear, elapsedYears, battleDuration: battle.duration, rewards,
-            equipmentDropIds, equipmentFragmentDrops, artifactDropIds, signatureSkillId: signature.skillId, battleInsightGain, skillPractice, daoNaturePointGain, daoNatureXpGain, milestoneLootProtected, readiness, mechanic, phaseTransitions, counterWindowSuccesses, counterWindowFailures, combatTimeline, resourcePve, economyAwards, event,
+            equipmentDropIds, equipmentFragmentDrops, artifactDropIds, signatureSkillId: signature.skillId, battleInsightGain, skillPractice, daoNaturePointGain, daoNatureXpGain, milestoneLootProtected, readiness, mechanic, phaseTransitions, counterWindowSuccesses, counterWindowFailures, combatTimeline, combatResult: kernel.combatResult, resourcePve, economyAwards, event,
             state: this.state,
         };
     
