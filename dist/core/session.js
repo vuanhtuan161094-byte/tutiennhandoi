@@ -5,7 +5,7 @@ import { fiveElementCounter } from './combat-rules.js';
 import { cloneAdventureState } from './world.js';
 import { applyCharacterToEntity, awakenBloodline, characterStatSourceStagesV129, cloneCharacterSystemState, learnSkill as learnCombatSkill, learnTechnique, setActiveTechnique, setCombatLoadout } from './character.js';
 import { cloneBuildFoundationV113, setSkillVariantsV118 } from './build-foundation-v113.js';
-import { BATTLE_DAO_ACTIVE_LOADOUT_SLOTS_V125, addDaoNatureCultivationXpV125, allocateDaoNaturePointV125, battleDaoOfSkillV125, battleDaoSkillPreviewV125, battleDaoGameplayGuideV12311, canLearnBattleDaoSkillV125, chooseDaoNatureMajorBranchV125, chooseSecondaryDaoV125, commitSpecializationV125, estimateBattleDaoCastCountsV125, gainBattleDaoPracticeFromCastCountsV125, isBattleDaoSkillV125, isCurrentDaoEligibleV125, isV119BattleDaoTechniqueV125, passiveUpgradeV125, practiceContentEfficiencyForGapV125, retroactiveSkillPointsForRealmV125, rewardSkillPointsForRealmV125, skillPracticeProfileV125, spendSkillPointsToLearnV125, syncBattleDaoV2ProgressionV78, syncCanonicalBattleDaoLoadoutV125, syncDaoNatureTierUnlocksV125, techniqueDaoEligibleV125, validateBattleDaoSkillUseV125, v125SpecializationSummary } from './specialization-skill-progression-v125.js';
+import { BATTLE_DAO_ACTIVE_LOADOUT_SLOTS_V125, addDaoNatureCultivationXpV125, allocateDaoNaturePointV125, battleDaoOfSkillV125, battleDaoSkillPreviewV125, battleDaoGameplayGuideV12311, canLearnBattleDaoSkillV125, chooseDaoNatureMajorBranchV125, chooseSecondaryDaoV125, commitSpecializationV125, gainBattleDaoPracticeFromCastCountsV125, isBattleDaoSkillV125, isCurrentDaoEligibleV125, isV119BattleDaoTechniqueV125, passiveUpgradeV125, practiceContentEfficiencyForGapV125, retroactiveSkillPointsForRealmV125, rewardSkillPointsForRealmV125, skillPracticeProfileV125, spendSkillPointsToLearnV125, syncBattleDaoV2ProgressionV78, syncCanonicalBattleDaoLoadoutV125, syncDaoNatureTierUnlocksV125, techniqueDaoEligibleV125, validateBattleDaoSkillUseV125, v125SpecializationSummary } from './specialization-skill-progression-v125.js';
 import { BATTLE_DAO_V2_REALM_ORDER, battleDaoV2ActiveSlotsUnlocked, battleDaoV2Catalog, battleDaoV2Passives } from '../content/battle-dao-v2-catalog.js';
 import { battleDaoSkillGrowthCurrentSummaryV126, battleDaoSkillGrowthProfileV126 } from './battle-dao-skill-growth-v126.js';
 import { advanceSkillGradeV12317, ensureSkillHeartProgressionV12317, heartMethodGradeV12317, heartMethodStatSummaryV12317, skillAdvanceCostV12317, skillGradeV12317, skillLevelCostV12317, skillLevelV12317, skillScalingSummaryV12317, SKILL_GRADE_LABEL_V12317, SKILL_GRADE_ORDER_V12317, upgradeSkillLevelV12317 } from './skill-heart-method-v12317.js';
@@ -67,6 +67,7 @@ import { buildHuntCombatProfileV130 } from './hunt-real-combat-v130.js';
 import { resolveEndlessHuntWithCombatKernelV2 } from './endless-hunt-combat-kernel-v2.js';
 import { deterministicBinomialV77, deterministicJitteredTotalV77, huntVirtualFarmPlayerDpsLog10V77, huntVirtualFarmProfileV77 } from './hunt-virtual-farm-v77.js';
 import { runCombatKernelV2 } from './combat-kernel-v2.js';
+import { buildPlayerCombatEntityV1 } from './combat-entity-factory.js';
 import { challengePvpV91, joinPvpV91, pvpViewV91, refreshPvpDefenseV91, replayPvpV91, setPvpTacticalV94, settlePvpSeasonV94, recordPvpRewardIntegrityV94, recordPvpSeasonRewardIntegrityV94 } from './pvp-v91.js';
 import { endlessHuntFarmRecommendationsV123, evaluateHuntBossMechanicV123, huntFarmRewardEfficiencyV123 } from './pve-progression-v123.js';
 import { buildHuntProductionV110 } from './hunt-production-v110.js';
@@ -855,24 +856,15 @@ export class SimulationSession {
         const integration = this.integrationSummary();
         return deriveGreatVehicleSummary(this.stateValue.realm, integration, this.stateValue.dao, this.stateValue.factions, this.currentLifeValue.lifeId);
     }
-    /** Build the exact final combat entity from a cloned/current AdventureState. Kept single-source so item previews cannot drift from live combat. */
+    /** Build the exact final combat entity from a cloned/current AdventureState through the canonical factory. */
     personalCombatEntityForState(state) {
-        const character = applyCharacterToEntity(this.profile.combatEntity, state.character, this.registry, techniquePassiveStrengthMultiplier(state.inheritedOrigins), Boolean(state.inheritedOrigins['birth.v101.authoritative']));
-        const equipped = applyEquipmentToEntity(character, state.equipment, this.registry.equipmentSets);
-        const artifacts = equipped; // V88: legacy ArtifactState is compatibility/history only; collection V88 owns production power.
-        const collected = applyCollectionEconomyToEntityV12325(artifacts, state.collectionV12316);
-        const artifactTalents = applyReincarnationArtifactTalents(collected, state.inheritedOrigins);
-        const dao = applyDaoToEntity(artifactTalents, state.dao, this.registry);
-        const integration = deriveIntegrationSummary(state.realm, state.cultivation, state.soul, state.dao, state.artifacts);
-        const integrated = applyIntegrationToEntity(dao, integration);
-        const great = applyGreatVehicleToEntity(integrated, deriveGreatVehicleSummary(state.realm, integration, state.dao, state.factions, this.currentLifeValue.lifeId));
-        const immortal = applyImmortalToEntity(great, state.immortal, state.realm, state.immortal.manifestationCapacity);
-        const born = applyBirthCombatOrigins(applyReincarnationCombatTalents(immortal, state.inheritedOrigins), state.inheritedOrigins);
-        const alchemy = ensureAlchemyV112State(state.economy);
-        const lifeBonus = { ...emptyAlchemyAllocation(), power: Math.max(0, alchemy.life.lifeStatBonus?.power ?? 0), body: Math.max(0, alchemy.life.lifeStatBonus?.body ?? 0), defense: Math.max(0, alchemy.life.lifeStatBonus?.defense ?? 0) };
-        const permanent = { ...emptyAlchemyAllocation(), ...(this.metaValue.reincarnationProgress?.alchemyPermanentStats ?? {}) };
-        const buff = activeAlchemyBuff(alchemy, state.worldTimeYears);
-        return applyAlchemyStatBonuses(born, lifeBonus, permanent, buff);
+        return buildPlayerCombatEntityV1({
+            profileCombatEntity: this.profile.combatEntity,
+            state,
+            registry: this.registry,
+            currentLifeId: this.currentLifeValue.lifeId,
+            alchemyPermanentStats: this.metaValue.reincarnationProgress?.alchemyPermanentStats,
+        });
     }
     /** Final player combat entity after every personal system has been applied. Strategic systems are never required here. */
     personalCombatEntity() { return this.personalCombatEntityForState(this.stateValue); }
@@ -1102,7 +1094,11 @@ export class SimulationSession {
         const result = resolveEndlessHuntFight(hunt, playerPowerLog10, seed, luck, loot, mapPowerMultiplier, map.gradeWeights, map.localFloor, map.elementPool, map.maxMonsterElements, realCombat, challengeBoss);
         // V77 has no real ordinary-monster chain. Every floor action is one Boss, so no combat carry state survives the encounter.
         this.stateValue.huntCombatRuntimeV117 = undefined;
-        const practiceCastCounts = estimateBattleDaoCastCountsV125(canonicalSkills, result.battleSeconds, [...this.registry.skills.values()]);
+        const practiceCastCounts = {};
+        for (const log of kernelCombat.battle.logs) {
+            if (log.type === 'castStart' && log.actorId === kernelCombat.playerEntity.id && log.skillId)
+                practiceCastCounts[log.skillId] = (practiceCastCounts[log.skillId] ?? 0) + 1;
+        }
         const skillPractice = gainBattleDaoPracticeFromCastCountsV125(this.stateValue.character, practiceCastCounts, [...this.registry.skills.values()], practiceContentEfficiencyForGapV125(this.stateValue.realm.maxRealmOrder - map.realmOrder));
         const fateRuntime = this.currentLifeValue.fateRuntime ?? (this.currentLifeValue.fateRuntime = createFateRuntimeState());
         const fateMods = result.won ? fateHuntModifiers(this.currentLifeValue.birth.originsV101?.fate, fateRuntime) : { rewardMultiplier: 1, equipmentChanceBonusPct: 0, notes: [], consumeOpportunityBoost: false };
@@ -1416,18 +1412,7 @@ export class SimulationSession {
             const enemyBase = this.entityDefinitions[choice.combat.entityId];
             if (!enemyBase)
                 throw new Error(`Unknown content-event combat entity: ${choice.combat.entityId}`);
-            const characterPlayer = applyCharacterToEntity(this.profile.combatEntity, this.stateValue.character, this.registry, techniquePassiveStrengthMultiplier(this.stateValue.inheritedOrigins), Boolean(this.stateValue.inheritedOrigins['birth.v101.authoritative']));
-            const equippedPlayer = applyEquipmentToEntity(characterPlayer, this.stateValue.equipment, this.registry.equipmentSets);
-            const artifactPlayer = equippedPlayer; // V88 canonical Pháp Bảo is applied below.
-            const collectionPlayer = applyCollectionEconomyToEntityV12325(artifactPlayer, this.stateValue.collectionV12316);
-            const artifactTalentPlayer = applyReincarnationArtifactTalents(collectionPlayer, this.stateValue.inheritedOrigins);
-            const daoPlayer = applyDaoToEntity(artifactTalentPlayer, this.stateValue.dao, this.registry);
-            const integration = deriveIntegrationSummary(this.stateValue.realm, this.stateValue.cultivation, this.stateValue.soul, this.stateValue.dao, this.stateValue.artifacts);
-            const integratedPlayer = applyIntegrationToEntity(daoPlayer, integration);
-            const greatPlayer = applyGreatVehicleToEntity(integratedPlayer, deriveGreatVehicleSummary(this.stateValue.realm, integration, this.stateValue.dao, this.stateValue.factions, this.currentLifeValue.lifeId));
-            const immortalPlayer = applyImmortalToEntity(greatPlayer, this.stateValue.immortal, this.stateValue.realm, this.stateValue.immortal.manifestationCapacity);
-            const talentedPlayer = applyReincarnationCombatTalents(immortalPlayer, this.stateValue.inheritedOrigins);
-            const playerCombat = { ...talentedPlayer, id: `${this.profile.combatEntity.id}.content.${eventId}` };
+            const playerCombat = { ...this.personalCombatEntityForState(this.stateValue), id: `${this.profile.combatEntity.id}.content.${eventId}` };
             const enemy = { ...enemyBase, id: `${enemyBase.id}.content.${eventId}` };
             const battle = runCombatKernelV2({ registry: this.registry, seed, entities: [applyCombatPacingV124(playerCombat), applyCombatPacingV124(enemy)], mode: 'headless' }).battle;
             wonCombat = battle.winnerId === playerCombat.id;
@@ -1449,7 +1434,7 @@ export class SimulationSession {
             else {
                 this.applyContentEventEffect(choice.combat.onLose, definition, choice);
                 const deathPenalty = this.applyCombatDeathPenalty(`content:${eventId}`);
-                summary = `${choice.combat.loseText ?? `${choice.resultText} Ngươi thất bại trước ${enemyBase.name}.`} ${deathPenalty.applied ? `Tử vong làm giảm 0,1% Thọ Nguyên tối đa (${deathPenalty.lostYears.toFixed(2)} năm).` : ''}`.trim();
+                summary = `${choice.combat.loseText ?? `${choice.resultText} Ngươi thất bại trước ${enemyBase.name}.`} ${deathPenalty.applied ? `Thương Thế tăng từ ${deathPenalty.injuryBefore.toFixed(0)} lên ${deathPenalty.injuryAfter.toFixed(0)}; Thọ Nguyên không giảm.` : ''}`.trim();
                 completed = choice.combat.completeOnLoss !== false;
             }
         }
