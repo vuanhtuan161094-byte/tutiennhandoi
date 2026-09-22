@@ -1,7 +1,16 @@
 extends Control
 
-const HOME_IDLE_V2_PATH := "res://art/approved/home/animation_v2/home_idle_v2.tres"
-const HOME_IDLE_V2_VARIANTS := [
+const MODE_CULTIVATION: StringName = &"cultivation"
+const MODE_REST: StringName = &"rest"
+
+const CULTIVATION_V2_PATH := "res://art/approved/home/animation_v2/home_cultivation_v2.tres"
+const CULTIVATION_V2_VARIANTS := [
+	&"cultivation_01",
+	&"cultivation_02",
+]
+
+const REST_V2_PATH := "res://art/approved/home/animation_v2/home_idle_v2.tres"
+const REST_V2_VARIANTS := [
 	&"idle_relaxed_01",
 	&"idle_relaxed_02",
 	&"idle_relaxed_03",
@@ -12,9 +21,7 @@ const MEDITATION_FRAME_04_PATH := "res://art/approved/home/home_meditation_idle_
 const MEDITATION_FRAME_01: Texture2D = preload("res://art/approved/home/home_meditation_idle_01.webp")
 const MEDITATION_FRAME_04: Texture2D = preload("res://art/approved/home/home_meditation_idle_04.webp")
 
-# Legacy seated key-pose fallback. HOME ANIMATION V2 takes priority whenever
-# the approved SpriteFrames resource exists; this fallback keeps current main
-# bootable while binary candidate assets are installed through the asset pack.
+# Safe fallback until each video-derived SpriteFrames resource is present.
 const POSE_CYCLE_SECONDS := 5.6
 const SECONDARY_POSE_MAX_ALPHA := 0.42
 
@@ -23,11 +30,12 @@ var animation_mode := "meditation_idle"
 var accent_mode := "none"
 var animation_source := "video_frames_preloaded"
 var source_pose := "meditation"
+var home_mode: StringName = MODE_CULTIVATION
 
 var _body: TextureRect
 var _secondary_body: TextureRect
 var _video_sprite: AnimatedSprite2D
-var _video_frames: SpriteFrames
+var _mode_frames: Dictionary = {}
 var _video_variant_index := 0
 
 var _time := 0.0
@@ -39,6 +47,7 @@ var _surge_peak := 1.0
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	clip_contents = false
 	pivot_offset = size * Vector2(0.5, 0.80)
 	_base_position = position
 	_base_scale = scale
@@ -48,13 +57,27 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED and is_instance_valid(_video_sprite):
 		_layout_video_sprite()
 
+func set_home_mode(mode: StringName) -> void:
+	var normalized := normalize_home_mode(mode)
+	if normalized == home_mode and runtime_animation_ready:
+		return
+	home_mode = normalized
+	_video_variant_index = 0
+	_apply_home_mode()
+
+func get_home_mode() -> StringName:
+	return home_mode
+
+static func normalize_home_mode(mode: StringName) -> StringName:
+	return MODE_REST if mode == MODE_REST else MODE_CULTIVATION
+
 func play_idle() -> void:
 	accent_mode = "none"
 	_surge_remaining = 0.0
 	_surge_duration = 0.0
 	_surge_peak = 1.0
 	_set_surge(0.0)
-	if is_instance_valid(_video_sprite) and not _video_sprite.is_playing():
+	if is_instance_valid(_video_sprite) and _video_sprite.visible and not _video_sprite.is_playing():
 		_start_video_variant(_video_variant_index)
 
 func play_surge(duration: float = 1.25, intensity: float = 1.0) -> void:
@@ -67,46 +90,17 @@ func has_runtime_animation() -> bool:
 	return runtime_animation_ready
 
 func get_active_idle_variant() -> StringName:
-	if HOME_IDLE_V2_VARIANTS.is_empty():
+	var variants := _variants_for_mode(home_mode)
+	if variants.is_empty():
 		return &""
-	return HOME_IDLE_V2_VARIANTS[_video_variant_index]
+	return variants[posmod(_video_variant_index, variants.size())]
 
 func _build_body() -> void:
-	if _try_build_video_playlist():
-		return
 	_build_legacy_body()
-
-func _try_build_video_playlist() -> bool:
-	if not ResourceLoader.exists(HOME_IDLE_V2_PATH):
-		return false
-
-	var resource := ResourceLoader.load(HOME_IDLE_V2_PATH)
-	if resource == null or not resource is SpriteFrames:
-		push_warning("HOME ANIMATION V2 resource is not SpriteFrames: %s" % HOME_IDLE_V2_PATH)
-		return false
-
-	var frames := resource as SpriteFrames
-	for animation_name in HOME_IDLE_V2_VARIANTS:
-		if not frames.has_animation(animation_name):
-			push_warning("HOME ANIMATION V2 missing animation: %s" % animation_name)
-			return false
-
-	_video_frames = frames
-	_video_sprite = AnimatedSprite2D.new()
-	_video_sprite.name = "HomeIdleVideoBody"
-	_video_sprite.sprite_frames = _video_frames
-	_video_sprite.centered = true
-	_video_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-	_video_sprite.material = _meditation_material()
-	_video_sprite.animation_finished.connect(_on_video_animation_finished)
-	add_child(_video_sprite)
-
-	animation_source = "video_spriteframes_v2"
-	runtime_animation_ready = true
-	_layout_video_sprite()
-	_start_video_variant(0)
-	set_process(true)
-	return true
+	_load_mode_resources()
+	_build_video_sprite()
+	_apply_home_mode()
+	set_process(runtime_animation_ready)
 
 func _build_legacy_body() -> void:
 	_body = _make_pose("MeditationBody", MEDITATION_FRAME_01)
@@ -114,13 +108,65 @@ func _build_legacy_body() -> void:
 	_secondary_body.modulate.a = 0.0
 	add_child(_body)
 	add_child(_secondary_body)
+	runtime_animation_ready = MEDITATION_FRAME_01 != null and MEDITATION_FRAME_04 != null
 
-	runtime_animation_ready = (
-		MEDITATION_FRAME_01 != null
-		and MEDITATION_FRAME_04 != null
-	)
+func _load_mode_resources() -> void:
+	_try_load_mode_frames(MODE_CULTIVATION, CULTIVATION_V2_PATH, CULTIVATION_V2_VARIANTS)
+	_try_load_mode_frames(MODE_REST, REST_V2_PATH, REST_V2_VARIANTS)
+
+func _try_load_mode_frames(mode: StringName, path: String, variants: Array) -> void:
+	if not ResourceLoader.exists(path):
+		return
+	var resource := ResourceLoader.load(path)
+	if resource == null or not resource is SpriteFrames:
+		push_warning("Home animation resource is not SpriteFrames: %s" % path)
+		return
+	var frames := resource as SpriteFrames
+	for animation_name in variants:
+		if not frames.has_animation(animation_name):
+			push_warning("Home animation resource %s missing animation: %s" % [path, animation_name])
+			return
+	_mode_frames[mode] = frames
+
+func _build_video_sprite() -> void:
+	_video_sprite = AnimatedSprite2D.new()
+	_video_sprite.name = "HomeVideoBody"
+	_video_sprite.centered = true
+	_video_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	_video_sprite.material = _meditation_material()
+	_video_sprite.visible = false
+	_video_sprite.animation_finished.connect(_on_video_animation_finished)
+	add_child(_video_sprite)
+
+func _apply_home_mode() -> void:
+	var frames := _frames_for_mode(home_mode)
+	if frames != null:
+		_body.visible = false
+		_secondary_body.visible = false
+		_video_sprite.visible = true
+		_video_sprite.sprite_frames = frames
+		animation_source = "video_spriteframes_%s" % String(home_mode)
+		animation_mode = "cultivation_idle" if home_mode == MODE_CULTIVATION else "rest_idle"
+		runtime_animation_ready = true
+		_layout_video_sprite()
+		_start_video_variant(0)
+		return
+
+	if is_instance_valid(_video_sprite):
+		_video_sprite.stop()
+		_video_sprite.visible = false
+	_body.visible = true
+	_secondary_body.visible = true
 	animation_source = "video_frames_preloaded"
-	set_process(runtime_animation_ready)
+	animation_mode = "meditation_idle" if home_mode == MODE_CULTIVATION else "rest_fallback"
+	runtime_animation_ready = MEDITATION_FRAME_01 != null and MEDITATION_FRAME_04 != null
+
+func _frames_for_mode(mode: StringName) -> SpriteFrames:
+	var value = _mode_frames.get(mode)
+	return value as SpriteFrames if value is SpriteFrames else null
+
+func _variants_for_mode(mode: StringName) -> Array:
+	return REST_V2_VARIANTS if mode == MODE_REST else CULTIVATION_V2_VARIANTS
 
 func _make_pose(node_name: String, pose_texture: Texture2D) -> TextureRect:
 	var pose := TextureRect.new()
@@ -135,12 +181,15 @@ func _make_pose(node_name: String, pose_texture: Texture2D) -> TextureRect:
 	return pose
 
 func _layout_video_sprite() -> void:
-	if not is_instance_valid(_video_sprite) or _video_frames == null:
+	if not is_instance_valid(_video_sprite) or _video_sprite.sprite_frames == null:
 		return
-	var first_variant: StringName = HOME_IDLE_V2_VARIANTS[0]
-	if _video_frames.get_frame_count(first_variant) <= 0:
+	var variants := _variants_for_mode(home_mode)
+	if variants.is_empty():
 		return
-	var first_texture := _video_frames.get_frame_texture(first_variant, 0)
+	var first_variant: StringName = variants[0]
+	if _video_sprite.sprite_frames.get_frame_count(first_variant) <= 0:
+		return
+	var first_texture := _video_sprite.sprite_frames.get_frame_texture(first_variant, 0)
 	if first_texture == null:
 		return
 	var frame_size := first_texture.get_size()
@@ -149,23 +198,22 @@ func _layout_video_sprite() -> void:
 
 	var fit_scale := minf(size.x / frame_size.x, size.y / frame_size.y)
 	_video_sprite.scale = Vector2.ONE * fit_scale
-	# Bottom-center anchoring keeps every sampled pose visually seated on the
-	# same cultivation platform instead of making the heroine float.
 	_video_sprite.position = Vector2(
 		size.x * 0.5,
 		size.y - frame_size.y * fit_scale * 0.5
 	)
 
 func _start_video_variant(index: int) -> void:
-	if not is_instance_valid(_video_sprite) or _video_frames == null:
+	if not is_instance_valid(_video_sprite) or not _video_sprite.visible:
 		return
-	if HOME_IDLE_V2_VARIANTS.is_empty():
+	var variants := _variants_for_mode(home_mode)
+	if variants.is_empty():
 		return
-	_video_variant_index = posmod(index, HOME_IDLE_V2_VARIANTS.size())
-	_video_sprite.play(HOME_IDLE_V2_VARIANTS[_video_variant_index])
+	_video_variant_index = posmod(index, variants.size())
+	_video_sprite.play(variants[_video_variant_index])
 
 func _on_video_animation_finished() -> void:
-	if not is_instance_valid(_video_sprite):
+	if not is_instance_valid(_video_sprite) or not _video_sprite.visible:
 		return
 	_start_video_variant(_video_variant_index + 1)
 
@@ -176,16 +224,15 @@ func _process(delta: float) -> void:
 	_time += maxf(0.0, delta)
 	var surge_strength := _update_surge(delta)
 
-	if is_instance_valid(_video_sprite):
-		# HOME ANIMATION V2 already contains real articulated body movement.
-		# Never add whole-image sway/zoom/breathing on top of the video frames.
+	if is_instance_valid(_video_sprite) and _video_sprite.visible:
+		# Video source already carries real articulated motion. Never layer
+		# whole-character sway/zoom on top of it.
 		position = _base_position
 		rotation = 0.0
 		scale = _base_scale
 		_set_surge(surge_strength)
 		return
 
-	# Legacy fallback only.
 	var pose_wave := (sin((_time / POSE_CYCLE_SECONDS) * TAU - PI * 0.5) + 1.0) * 0.5
 	var eased_pose := pose_wave * pose_wave * (3.0 - 2.0 * pose_wave)
 	_secondary_body.modulate.a = eased_pose * SECONDARY_POSE_MAX_ALPHA
