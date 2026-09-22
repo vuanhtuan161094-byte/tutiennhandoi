@@ -233,16 +233,24 @@ func _process(delta: float) -> void:
 		_set_surge(surge_strength)
 		return
 
-	var pose_wave := (sin((_time / POSE_CYCLE_SECONDS) * TAU - PI * 0.5) + 1.0) * 0.5
+	var cycle_seconds := 7.8 if home_mode == MODE_REST else POSE_CYCLE_SECONDS
+	var pose_wave := (sin((_time / cycle_seconds) * TAU - PI * 0.5) + 1.0) * 0.5
 	var eased_pose := pose_wave * pose_wave * (3.0 - 2.0 * pose_wave)
-	_secondary_body.modulate.a = eased_pose * SECONDARY_POSE_MAX_ALPHA
+	if home_mode == MODE_REST:
+		# Distinct presentation-only fallback: favor the relaxed key pose and
+		# crossfade slowly. Real rest videos replace this as soon as the V2
+		# SpriteFrames pack is installed.
+		_secondary_body.modulate.a = 0.58 + eased_pose * 0.34
+	else:
+		_secondary_body.modulate.a = eased_pose * SECONDARY_POSE_MAX_ALPHA
 
-	var breath := sin(_time * 1.15)
+	var breath_speed := 0.82 if home_mode == MODE_REST else 1.15
+	var breath := sin(_time * breath_speed)
 	position = _base_position
 	rotation = 0.0
 	scale = Vector2(
-		_base_scale.x * (1.0 - breath * 0.00035 + surge_strength * 0.0015),
-		_base_scale.y * (1.0 + breath * 0.00115 + surge_strength * 0.0022)
+		_base_scale.x * (1.0 - breath * 0.00025 + surge_strength * 0.0015),
+		_base_scale.y * (1.0 + breath * 0.00095 + surge_strength * 0.0022)
 	)
 	_set_surge(surge_strength)
 
