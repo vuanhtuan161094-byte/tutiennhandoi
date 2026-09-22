@@ -1,6 +1,6 @@
 {
   "name": "tutien-character-runtime-smoke",
-  "description": "Launch the real Godot client, route from Home into Character, prove lazy-loaded green-screen Character animation plus canonical 10-slot presentation.",
+  "description": "Launch the real Godot client, route into Character, verify progressive-disclosure Tĩnh/Động/Ẩn controls, eleven animation presets, lazy loading, and canonical 10-slot presentation.",
   "target": {
     "mode": "launch",
     "project_path": "../..",
@@ -44,7 +44,17 @@
       }
     },
     {
-      "name": "Standing hero is animated",
+      "name": "Character hero defaults to static presentation",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CharacterHero",
+        "property": "motion_mode",
+        "operator": "equals",
+        "expected": "still"
+      }
+    },
+    {
+      "name": "Character hero runtime is ready in static mode",
       "action": "assert_property",
       "with": {
         "selector": "name:CharacterHero",
@@ -54,7 +64,60 @@
       }
     },
     {
-      "name": "Standing hero loads green-screen video preset",
+      "name": "Character presentation entry point exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:CharacterPresentationButton",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Open Character presentation controls",
+      "action": "click",
+      "with": {
+        "selector": "name:CharacterPresentationButton"
+      }
+    },
+    {
+      "name": "Character presentation panel appears",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:CharacterPresentationPanel",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Character eleven preset option exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:CharacterPreset_character_motion_11",
+        "state": "exists",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Switch Character to animated mode",
+      "action": "click",
+      "with": {
+        "selector": "name:CharacterAnimatedButton"
+      }
+    },
+    {
+      "name": "Character hero enters animated mode",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:CharacterHero",
+        "property": "motion_mode",
+        "operator": "equals",
+        "expected_value": "animated",
+        "timeout_ms": 3000,
+        "poll_interval_ms": 25
+      }
+    },
+    {
+      "name": "Character selected preset loads on demand",
       "action": "wait_for_property",
       "with": {
         "selector": "name:CharacterHero",
@@ -66,7 +129,65 @@
       }
     },
     {
-      "name": "Standing hero activates only on Character route",
+      "name": "Character hero uses video state",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CharacterHero",
+        "property": "animation_mode",
+        "operator": "equals",
+        "expected": "standing_video"
+      }
+    },
+    {
+      "name": "Hide Character hero",
+      "action": "click",
+      "with": {
+        "selector": "name:CharacterHiddenButton"
+      }
+    },
+    {
+      "name": "Character hero enters hidden mode",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:CharacterHero",
+        "property": "motion_mode",
+        "operator": "equals",
+        "expected_value": "hidden",
+        "timeout_ms": 2000,
+        "poll_interval_ms": 25
+      }
+    },
+    {
+      "name": "Restore Character hero as static",
+      "action": "click",
+      "with": {
+        "selector": "name:CharacterStillButton"
+      }
+    },
+    {
+      "name": "Character hero returns to static mode",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:CharacterHero",
+        "property": "motion_mode",
+        "operator": "equals",
+        "expected_value": "still",
+        "timeout_ms": 2000,
+        "poll_interval_ms": 25
+      }
+    },
+    {
+      "name": "Character presentation profile is current",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:CharacterHero",
+        "property": "animation_profile",
+        "operator": "equals",
+        "expected": "character_standing_v3_options"
+      }
+    },
+    {
+      "name": "Character route owns presentation lifecycle",
       "action": "assert_property",
       "with": {
         "selector": "name:CharacterHero",
@@ -76,33 +197,10 @@
       }
     },
     {
-      "name": "Standing hero uses Character production animation profile",
-      "action": "assert_property",
+      "name": "Close Character presentation controls",
+      "action": "click",
       "with": {
-        "selector": "name:CharacterHero",
-        "property": "animation_profile",
-        "operator": "equals",
-        "expected": "character_standing_v2_green"
-      }
-    },
-    {
-      "name": "Standing hero uses standing pose",
-      "action": "assert_property",
-      "with": {
-        "selector": "name:CharacterHero",
-        "property": "source_pose",
-        "operator": "equals",
-        "expected": "standing"
-      }
-    },
-    {
-      "name": "Standing hero uses registered video state",
-      "action": "assert_property",
-      "with": {
-        "selector": "name:CharacterHero",
-        "property": "animation_mode",
-        "operator": "equals",
-        "expected": "standing_video"
+        "selector": "name:CharacterPresentationClose"
       }
     },
     {
