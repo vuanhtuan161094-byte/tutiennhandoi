@@ -105,6 +105,7 @@ func _connect_ui() -> void:
 	hud.route_requested.connect(_on_route_requested)
 	hud.character_section_requested.connect(_on_home_character_section_requested)
 	hud.primary_action_requested.connect(_on_primary_action)
+	hud.home_mode_requested.connect(_on_home_mode_requested)
 	nav.route_requested.connect(_on_route_requested)
 	overlay.retreat_hours_selected.connect(_on_retreat_hours_selected)
 	character_screen.detail_requested.connect(_on_character_detail_requested)
@@ -322,6 +323,10 @@ func _on_route_requested(route_id: StringName) -> void:
 func _on_home_character_section_requested(section_id: StringName) -> void:
 	_pending_character_detail = section_id
 	AppState.request_route(&"character")
+
+func _on_home_mode_requested(mode: StringName) -> void:
+	stage.set_home_mode(mode)
+	hud.set_home_presentation_mode(mode)
 
 func _on_route_changed(route_id: StringName) -> void:
 	if route_id not in [&"home", &"character"]:
