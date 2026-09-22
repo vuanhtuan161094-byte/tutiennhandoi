@@ -155,7 +155,7 @@ func _queue_registered_animation() -> void:
 	_pending_resource_path = path
 	_pending_animation_name = animation_name
 	_pending_preset_id = animation_preset_id
-	var request_error: Error = ResourceLoader.load_threaded_request(
+	var request_error: int = ResourceLoader.load_threaded_request(
 		path,
 		"",
 		false,
@@ -172,7 +172,7 @@ func _poll_threaded_animation() -> void:
 	if not _thread_loading or _pending_resource_path.is_empty():
 		return
 
-	var status: ResourceLoader.ThreadLoadStatus = ResourceLoader.load_threaded_get_status(_pending_resource_path)
+	var status: int = ResourceLoader.load_threaded_get_status(_pending_resource_path)
 	if status == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 		return
 
@@ -229,8 +229,7 @@ func _clear_pending_request() -> void:
 	_pending_animation_name = &""
 	_pending_preset_id = &""
 	_thread_loading = false
-	if motion_mode != MOTION_ANIMATED:
-		set_process(false)
+	set_process(false)
 
 func _on_registered_animation_finished() -> void:
 	if (
