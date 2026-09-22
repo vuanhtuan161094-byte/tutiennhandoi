@@ -87,6 +87,18 @@ function isRetiredPlayerFacingResource(log) {
         && log.data?.artifactEvent === 'baoQi';
 }
 
+function sanitizePlayerFacingData(data) {
+    const clean = structuredClone(data ?? {});
+    // V150 retired Bảo Khí as a live player resource. Artifact trigger/cooldown
+    // events remain valid, but their compatibility-only Bảo Khí bookkeeping
+    // must never enter the typed Godot-facing contract.
+    delete clean.baoQi;
+    delete clean.baoQiMax;
+    delete clean.baoQiCost;
+    delete clean.baoQiGain;
+    return clean;
+}
+
 function countByActor(events, type) {
     const out = {};
     for (const event of events) {
@@ -140,7 +152,7 @@ export function buildCombatResultV1(input) {
             actionId = activeAction[log.actorId].id;
         }
 
-        const data = structuredClone(log.data ?? {});
+        const data = sanitizePlayerFacingData(log.data);
         const event = {
             schema: 'combat-event.v1',
             id: `combat-event.v1.${index}`,
@@ -192,7 +204,9 @@ export function buildCombatResultV1(input) {
         required: Number(event.data.required ?? 0),
     }));
 
+    const livingCount = Object.values(battle.finalState ?? {}).filter(state => state?.alive === true).length;
     const timedOut = Boolean(battle.draw)
+        && livingCount > 1
         && Number.isFinite(maxDuration)
         && Number(battle.duration) >= maxDuration - 1e-9;
     const outcome = battle.draw ? (timedOut ? 'timeout' : 'draw') : 'victory';
