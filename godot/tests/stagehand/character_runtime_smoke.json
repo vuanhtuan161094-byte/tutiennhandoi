@@ -54,13 +54,15 @@
       }
     },
     {
-      "name": "Standing hero selected a production animation source",
-      "action": "assert_property",
+      "name": "Standing hero loads green-screen video preset",
+      "action": "wait_for_property",
       "with": {
         "selector": "name:CharacterHero",
         "property": "animation_source",
-        "operator": "not_equals",
-        "expected": "none"
+        "operator": "equals",
+        "expected_value": "video_spriteframes_v2_green",
+        "timeout_ms": 12000,
+        "poll_interval_ms": 100
       }
     },
     {
