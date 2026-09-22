@@ -111,9 +111,12 @@ func _process(delta: float) -> void:
 	_set_surge(surge_strength)
 
 func _set_surge(value: float) -> void:
-	for pose in [_body, _secondary_body]:
-		if pose != null and pose.material is ShaderMaterial:
-			(pose.material as ShaderMaterial).set_shader_parameter("surge", value)
+	_set_pose_surge(_body, value)
+	_set_pose_surge(_secondary_body, value)
+
+func _set_pose_surge(pose: TextureRect, value: float) -> void:
+	if pose != null and pose.material is ShaderMaterial:
+		(pose.material as ShaderMaterial).set_shader_parameter("surge", value)
 
 func _meditation_material() -> ShaderMaterial:
 	var shader := Shader.new()
