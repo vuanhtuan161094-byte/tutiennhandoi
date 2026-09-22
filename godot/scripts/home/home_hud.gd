@@ -19,6 +19,10 @@ const MOTION_HIDDEN: StringName = &"hidden"
 const DEFAULT_HOME_MODE: StringName = MODE_CULTIVATION
 const DEFAULT_MOTION_MODE: StringName = MOTION_STILL
 const DEFAULT_ANIMATION_PRESET_ID: StringName = &"cultivation_01"
+const CULTIVATION_EVENT_FADE_IN_SECONDS := 0.20
+const CULTIVATION_EVENT_SETTLE_SECONDS := 0.14
+const CULTIVATION_EVENT_FADE_OUT_SECONDS := 0.38
+const LING_QUANG_MIN_HOLD_SECONDS := 2.20
 
 const HOME_ART := preload("res://scripts/home/home_art_atlas.gd")
 const HOME_ANIMATION_REGISTRY := preload("res://scripts/home/home_animation_registry.gd")
@@ -306,14 +310,14 @@ static func ling_quang_event_copy(multiplier: int) -> Dictionary:
 	if m <= 1:
 		return {}
 	if m >= 9:
-		return {"title": "THIÊN ĐỊA CỘNG MINH ×%d" % m, "subtitle": "Linh khí đại bạo phát", "accent": GOLD_HI, "hold": 2.0}
+		return {"title": "THIÊN ĐỊA CỘNG MINH ×%d" % m, "subtitle": "Linh khí đại bạo phát", "accent": GOLD_HI, "hold": 3.60}
 	if m >= 7:
-		return {"title": "ĐẠI LINH QUANG ×%d" % m, "subtitle": "Đạo vận hội tụ", "accent": Color("ffe099"), "hold": 1.7}
+		return {"title": "ĐẠI LINH QUANG ×%d" % m, "subtitle": "Đạo vận hội tụ", "accent": Color("ffe099"), "hold": 3.20}
 	if m >= 5:
-		return {"title": "ĐẠI LINH QUANG ×%d" % m, "subtitle": "Tu Vi bùng nổ", "accent": VIOLET, "hold": 1.5}
+		return {"title": "ĐẠI LINH QUANG ×%d" % m, "subtitle": "Tu Vi bùng nổ", "accent": VIOLET, "hold": 2.90}
 	if m >= 3:
-		return {"title": "LINH QUANG ×%d" % m, "subtitle": "Nhất niệm thông huyền", "accent": CYAN, "hold": 1.25}
-	return {"title": "LINH QUANG ×2", "subtitle": "Tu Vi tăng vọt", "accent": MINT, "hold": 0.95}
+		return {"title": "LINH QUANG ×%d" % m, "subtitle": "Nhất niệm thông huyền", "accent": CYAN, "hold": 2.55}
+	return {"title": "LINH QUANG ×2", "subtitle": "Tu Vi tăng vọt", "accent": MINT, "hold": LING_QUANG_MIN_HOLD_SECONDS}
 
 func _play_cultivation_event(title: String, subtitle: String, accent: Color, hold: float) -> void:
 	if cultivation_event_shell == null:
@@ -335,14 +339,14 @@ func _play_cultivation_event(title: String, subtitle: String, accent: Color, hol
 	# Events should land with impact instead of looking like a flat toast.
 	_cultivation_event_tween = create_tween()
 	_cultivation_event_tween.set_parallel(true)
-	_cultivation_event_tween.tween_property(cultivation_event_shell, "modulate:a", 1.0, 0.12)
-	_cultivation_event_tween.tween_property(cultivation_event_shell, "scale", Vector2(1.045, 1.045), 0.17).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_cultivation_event_tween.tween_property(cultivation_event_shell, "modulate:a", 1.0, CULTIVATION_EVENT_FADE_IN_SECONDS)
+	_cultivation_event_tween.tween_property(cultivation_event_shell, "scale", Vector2(1.035, 1.035), CULTIVATION_EVENT_FADE_IN_SECONDS).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_cultivation_event_tween.set_parallel(false)
-	_cultivation_event_tween.tween_property(cultivation_event_shell, "scale", Vector2.ONE, 0.09).set_ease(Tween.EASE_OUT)
-	_cultivation_event_tween.tween_interval(maxf(0.40, hold))
+	_cultivation_event_tween.tween_property(cultivation_event_shell, "scale", Vector2.ONE, CULTIVATION_EVENT_SETTLE_SECONDS).set_ease(Tween.EASE_OUT)
+	_cultivation_event_tween.tween_interval(maxf(LING_QUANG_MIN_HOLD_SECONDS, hold))
 	_cultivation_event_tween.set_parallel(true)
-	_cultivation_event_tween.tween_property(cultivation_event_shell, "modulate:a", 0.0, 0.24)
-	_cultivation_event_tween.tween_property(cultivation_event_shell, "scale", Vector2(0.975, 0.975), 0.24)
+	_cultivation_event_tween.tween_property(cultivation_event_shell, "modulate:a", 0.0, CULTIVATION_EVENT_FADE_OUT_SECONDS)
+	_cultivation_event_tween.tween_property(cultivation_event_shell, "scale", Vector2(0.985, 0.985), CULTIVATION_EVENT_FADE_OUT_SECONDS)
 	_cultivation_event_tween.set_parallel(false)
 	_cultivation_event_tween.tween_callback(func():
 		cultivation_event_shell.visible = false
