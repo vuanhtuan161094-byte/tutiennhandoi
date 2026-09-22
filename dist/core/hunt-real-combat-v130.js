@@ -110,12 +110,12 @@ function skillTotals(skill, entity) {
     const cast = Math.max(.05, skill.castTime * (1 - (growth?.castTimeReductionPct ?? 0) / 100) / speed);
     const recovery = Math.max(.05, (skill.recoveryTime ?? .2) * (1 - (growth?.recoveryReductionPct ?? 0) / 100) / speed);
     const cycleBase = Math.max(.35, cd, cast + recovery, skill.channel?.duration ?? 0);
-    const cycle = Math.max(.25, cycleBase * (1 + ((origin.cyclePct ?? 0) + milestone.cyclePct) / 100));
+    const cycle = Math.max(.25, cycleBase);
     const authored = skill.spiritCostStandardPct !== undefined ? standard * skill.spiritCostStandardPct / 100 : skill.spiritCost;
     const baseEfficiency = clamp(entity.stats.spiritEfficiencyPct ?? 0, 0, COMBAT_RULES.spiritEfficiencyCapPct);
     const practiceMultiplier = 1 - clamp(practice.spiritCostReductionPct, 0, 95) / 100;
     const growthMultiplier = 1 - clamp(growth?.spiritCostReductionPct ?? 0, 0, 95) / 100;
-    const cost = Math.max(0, authored * (1 - baseEfficiency / 100) * practiceMultiplier * growthMultiplier * (1 + ((origin.costPct ?? 0) + milestone.costPct) / 100));
+    const cost = Math.max(0, authored * (1 - baseEfficiency / 100) * practiceMultiplier * growthMultiplier);
     return { damageCoeff, heal, shield, breakPct, control, cost, cycle, gate: conditionFactor(skill.id, entity) };
 }
 export function buildHuntCombatProfileV130(entity, registry) {
