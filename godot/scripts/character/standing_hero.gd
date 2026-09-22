@@ -11,11 +11,15 @@ var animation_profile := "character_standing_v2_green"
 var source_pose := "standing"
 var current_frame := 0
 var animation_preset_id: StringName = &""
+var presentation_active := false
 
 var _video_sprite: AnimatedSprite2D
 var _video_frames: SpriteFrames
 var _active_animation_name: StringName = &""
-var presentation_active := false
+var _pending_resource_path := ""
+var _pending_animation_name: StringName = &""
+var _pending_preset_id: StringName = &""
+var _thread_loading := false
 var _time := 0.0
 var _base_position := Vector2.ZERO
 var _base_scale := Vector2.ONE
@@ -43,8 +47,12 @@ func set_presentation_active(active: bool) -> void:
 		return
 	presentation_active = active
 	if active:
-		_start_registered_animation()
+		_queue_registered_animation()
 	else:
+		_pending_resource_path = ""
+		_pending_animation_name = &""
+		_pending_preset_id = &""
+		_thread_loading = false
 		_release_registered_animation()
 		_load_static_master()
 
@@ -59,7 +67,7 @@ func set_animation_preset(preset_id: StringName) -> void:
 		return
 	animation_preset_id = preset_id
 	if presentation_active:
-		_start_registered_animation()
+		_queue_registered_animation()
 
 func _build_video_sprite() -> void:
 	_video_sprite = AnimatedSprite2D.new()
@@ -74,6 +82,7 @@ func _load_static_master() -> void:
 	if ResourceLoader.exists(APPROVED_MASTER_PATH):
 		texture = ResourceLoader.load(APPROVED_MASTER_PATH) as Texture2D
 		animation_source = "procedural_approved_master"
+		animation_mode = "standing_idle"
 		runtime_animation_ready = texture != null
 		if runtime_animation_ready:
 			material = _standing_idle_material()
@@ -82,11 +91,12 @@ func _load_static_master() -> void:
 	texture = null
 	material = null
 	animation_source = "none"
+	animation_mode = "standing_idle"
 	runtime_animation_ready = false
-	set_process(false)
+	set_process(_thread_loading)
 
-func _start_registered_animation() -> void:
-	var available := ANIMATION_REGISTRY.available_presets()
+func _queue_registered_animation() -> void:
+	var available: Array = ANIMATION_REGISTRY.available_presets()
 	if available.is_empty():
 		_load_static_master()
 		return
@@ -94,29 +104,83 @@ func _start_registered_animation() -> void:
 	if animation_preset_id == &"" or ANIMATION_REGISTRY.preset(animation_preset_id).is_empty():
 		animation_preset_id = StringName(available[0].get("id", &""))
 
-	var entry := ANIMATION_REGISTRY.preset(animation_preset_id)
+	var entry: Dictionary = ANIMATION_REGISTRY.preset(animation_preset_id)
 	var path := str(entry.get("resource_path", ""))
 	if path.is_empty() or not ResourceLoader.exists(path):
 		animation_preset_id = StringName(available[0].get("id", &""))
 		entry = ANIMATION_REGISTRY.preset(animation_preset_id)
 		path = str(entry.get("resource_path", ""))
 
-	_release_registered_animation()
-	var loaded := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE_DEEP)
-	if loaded == null or not loaded is SpriteFrames:
-		_load_static_master()
-		return
-
 	var animation_name: StringName = entry.get("animation_name", &"")
-	var frames := loaded as SpriteFrames
-	if animation_name == &"" or not frames.has_animation(animation_name):
+	if path.is_empty() or animation_name == &"":
 		_load_static_master()
 		return
 
+	_pending_resource_path = path
+	_pending_animation_name = animation_name
+	_pending_preset_id = animation_preset_id
+	var request_error := ResourceLoader.load_threaded_request(
+		path,
+		"",
+		false,
+		ResourceLoader.CACHE_MODE_IGNORE_DEEP
+	)
+	if request_error != OK:
+		_pending_resource_path = ""
+		_pending_animation_name = &""
+		_pending_preset_id = &""
+		_thread_loading = false
+		_load_static_master()
+		return
+
+	_thread_loading = true
+	set_process(true)
+
+func _poll_threaded_animation() -> void:
+	if not _thread_loading or _pending_resource_path.is_empty():
+		return
+	var status := ResourceLoader.load_threaded_get_status(_pending_resource_path)
+	if status == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		return
+	if status != ResourceLoader.THREAD_LOAD_LOADED:
+		_thread_loading = false
+		_pending_resource_path = ""
+		_pending_animation_name = &""
+		_pending_preset_id = &""
+		if not is_instance_valid(_video_sprite) or not _video_sprite.visible:
+			_load_static_master()
+		return
+
+	var loaded := ResourceLoader.load_threaded_get(_pending_resource_path)
+	var pending_animation := _pending_animation_name
+	var pending_preset := _pending_preset_id
+	_thread_loading = false
+	_pending_resource_path = ""
+	_pending_animation_name = &""
+	_pending_preset_id = &""
+
+	if not presentation_active or loaded == null or not loaded is SpriteFrames:
+		return
+
+	var frames := loaded as SpriteFrames
+	if not frames.has_animation(pending_animation):
+		if not is_instance_valid(_video_sprite) or not _video_sprite.visible:
+			_load_static_master()
+		return
+
+	_apply_loaded_animation(frames, pending_animation, pending_preset)
+
+func _apply_loaded_animation(
+	frames: SpriteFrames,
+	animation_name: StringName,
+	preset_id: StringName
+) -> void:
+	_release_registered_animation()
 	texture = null
 	material = null
 	_video_frames = frames
 	_active_animation_name = animation_name
+	animation_preset_id = preset_id
 	_video_sprite.sprite_frames = frames
 	_video_sprite.visible = true
 	animation_source = "video_spriteframes_v2_green"
@@ -124,7 +188,7 @@ func _start_registered_animation() -> void:
 	runtime_animation_ready = true
 	_layout_video_sprite()
 	_video_sprite.play(animation_name)
-	set_process(false)
+	set_process(true)
 
 func _release_registered_animation() -> void:
 	if not is_instance_valid(_video_sprite):
@@ -138,11 +202,11 @@ func _release_registered_animation() -> void:
 func _on_registered_animation_finished() -> void:
 	if not presentation_active:
 		return
-	var next_id := ANIMATION_REGISTRY.next_preset_id(animation_preset_id)
+	var next_id: StringName = ANIMATION_REGISTRY.next_preset_id(animation_preset_id)
 	if next_id == &"":
 		return
 	animation_preset_id = next_id
-	_start_registered_animation()
+	_queue_registered_animation()
 
 func _layout_video_sprite() -> void:
 	if not is_instance_valid(_video_sprite) or _video_sprite.sprite_frames == null or _active_animation_name == &"":
@@ -163,10 +227,13 @@ func _layout_video_sprite() -> void:
 	)
 
 func _process(delta: float) -> void:
+	if _thread_loading:
+		_poll_threaded_animation()
+
 	if not visible or not runtime_animation_ready or presentation_active:
 		return
+
 	_time += delta
-	# Static fallback only. Registered videos contain real articulated motion.
 	var breath := sin(_time * 1.06)
 	position = _base_position
 	rotation = 0.0
