@@ -66,7 +66,7 @@ import { applyEndlessLifeLegacy, bestEndlessHuntFarmFloors, bossReady, cloneEndl
 import { buildHuntCombatProfileV130 } from './hunt-real-combat-v130.js';
 import { resolveEndlessHuntWithCombatKernelV2 } from './endless-hunt-combat-kernel-v2.js';
 import { deterministicBinomialV77, deterministicJitteredTotalV77, huntVirtualFarmPlayerDpsLog10V77, huntVirtualFarmProfileV77 } from './hunt-virtual-farm-v77.js';
-import { runCombatKernelV2 } from './combat-kernel-v2.js';
+import { compileCombatEncounterV1, runCompiledCombatEncounterV2 } from './combat-encounter-compiler.js';
 import { buildPlayerCombatEntityV1 } from './combat-entity-factory.js';
 import { challengePvpV91, joinPvpV91, pvpViewV91, refreshPvpDefenseV91, replayPvpV91, setPvpTacticalV94, settlePvpSeasonV94, recordPvpRewardIntegrityV94, recordPvpSeasonRewardIntegrityV94 } from './pvp-v91.js';
 import { endlessHuntFarmRecommendationsV123, evaluateHuntBossMechanicV123, huntFarmRewardEfficiencyV123 } from './pve-progression-v123.js';
@@ -1184,7 +1184,17 @@ export class SimulationSession {
             const offenseId = `${entity.id}.a22.offense`;
             const dummy = { id: 'entity.alpha22.training_dummy', name: 'Mộc Nhân Chuẩn', tags: ['TrainingDummy', 'Alpha22'], combatModel: 'locked-v1', stats: { maxHp: 1e200, maxSpirit: 1, attack: 1, defense: Math.max(1, reference.stats.defense), mobility: 0, accuracy: 0, critChancePct: 0, critPowerPerLayer: .5, controlPower: 0, resolve: 1e9, actionSpeed: .25, damageReductionPct: 0, controlDurationReductionPct: 100 }, skillIds: [], aiProfile: { name: 'Bất động', rules: [] } };
             const offensePlayer = { ...entity, id: offenseId };
-            const offenseBattle = runCombatKernelV2({ registry: this.registry, seed, entities: [offensePlayer, dummy], maxDuration: durationSeconds, mode: 'simulation' }).battle;
+            const offenseEncounter = compileCombatEncounterV1({
+                encounterId: `benchmark.offense.${offenseId}.${seed}`,
+                activity: 'benchmark',
+                seed,
+                entities: [offensePlayer, dummy],
+                maxDuration: durationSeconds,
+                mode: 'simulation',
+                applyPacing: false,
+                metadata: { kind: 'equipment-offense' },
+            });
+            const offenseBattle = runCompiledCombatEncounterV2(offenseEncounter, this.registry).battle;
             const offenseAnalytics = analyzeBattle(offenseBattle);
             const oa = offenseAnalytics.combatants[offenseId];
             const dps = Math.max(0, oa?.damageDealt ?? 0) / Math.max(1, Math.min(durationSeconds, offenseBattle.duration));
@@ -1194,7 +1204,18 @@ export class SimulationSession {
             const pressure = { id: pressureId, name: 'Áp Lực Chuẩn', tags: ['TrainingPressure', 'Alpha22'], combatModel: 'locked-v1', stats: { maxHp: 1e200, maxSpirit: 1e9, attack: Math.max(1, reference.stats.attack * 2.25), defense: 1e200, mobility: 0, accuracy: 1e9, critChancePct: 0, critPowerPerLayer: .5, controlPower: 0, resolve: 1e9, actionSpeed: 1.05, damageReductionPct: 80, controlDurationReductionPct: 100 }, skillIds: ['skill.basic_strike'], aiProfile: { name: 'Áp lực chuẩn', rules: [{ skillId: 'skill.basic_strike', priority: 10, conditions: [{ type: 'always' }] }] } };
             const survivalId = `${entity.id}.a22.survival`;
             const defender = { ...entity, id: survivalId };
-            const survivalBattle = runCombatKernelV2({ registry: this.registry, seed: seed ^ 0x6a09e667, entities: [defender, pressure], maxDuration: durationSeconds, mode: 'simulation' }).battle;
+            const survivalSeed = seed ^ 0x6a09e667;
+            const survivalEncounter = compileCombatEncounterV1({
+                encounterId: `benchmark.survival.${survivalId}.${survivalSeed >>> 0}`,
+                activity: 'benchmark',
+                seed: survivalSeed,
+                entities: [defender, pressure],
+                maxDuration: durationSeconds,
+                mode: 'simulation',
+                applyPacing: false,
+                metadata: { kind: 'equipment-survival' },
+            });
+            const survivalBattle = runCompiledCombatEncounterV2(survivalEncounter, this.registry).battle;
             const final = survivalBattle.finalState[survivalId];
             const maxHp = Math.max(1, buildHuntCombatProfileV130(entity, this.registry).maxHp);
             const hpPct = Math.max(0, Math.min(100, (final?.hp ?? 0) / maxHp * 100));
@@ -1414,7 +1435,18 @@ export class SimulationSession {
                 throw new Error(`Unknown content-event combat entity: ${choice.combat.entityId}`);
             const playerCombat = { ...this.personalCombatEntityForState(this.stateValue), id: `${this.profile.combatEntity.id}.content.${eventId}` };
             const enemy = { ...enemyBase, id: `${enemyBase.id}.content.${eventId}` };
-            const battle = runCombatKernelV2({ registry: this.registry, seed, entities: [applyCombatPacingV124(playerCombat), applyCombatPacingV124(enemy)], mode: 'headless' }).battle;
+            const encounter = compileCombatEncounterV1({
+                encounterId: `content.${eventId}.${seed}`,
+                activity: 'content-event',
+                seed,
+                entities: [playerCombat, enemy],
+                mode: 'headless',
+                maxDuration: 120,
+                applyPacing: true,
+                metadata: { eventId, choiceId, enemyId: enemy.id },
+            });
+            const kernel = runCompiledCombatEncounterV2(encounter, this.registry);
+            const battle = kernel.battle;
             wonCombat = battle.winnerId === playerCombat.id;
             const analytics = analyzeBattle(battle);
             const playerAnalytics = analytics.combatants[playerCombat.id];
@@ -4271,7 +4303,17 @@ export class SimulationSession {
                 resolve: Math.max(0, (baseGuardian.stats.resolve ?? 0) * Math.sqrt(pressure)),
             },
         };
-        const kernel = runCombatKernelV2({ registry: this.registry, seed, entities: [applyCombatPacingV124(player), applyCombatPacingV124(guardian)], mode: 'headless', maxDuration: 120 });
+        const encounter = compileCombatEncounterV1({
+            encounterId: `dao-suy.${this.currentLifeValue.lifeId}.${seed}`,
+            activity: 'dao-suy',
+            seed,
+            entities: [player, guardian],
+            mode: 'headless',
+            maxDuration: 120,
+            applyPacing: true,
+            metadata: { guardianId: guardian.id, pressure },
+        });
+        const kernel = runCompiledCombatEncounterV2(encounter, this.registry);
         const won = kernel.battle.winnerId === player.id;
         const resolution = resolveDaoSuyTribulationV127(this.stateValue.immortal, won, this.stateValue.inheritedOrigins, order);
         const elapsedYears = 0.03;
