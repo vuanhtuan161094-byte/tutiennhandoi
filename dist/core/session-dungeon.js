@@ -7,6 +7,7 @@ import { analyzeBattle, topDamageSkill } from './combat-analytics.js';
 import { V125_DAO_NATURE_DUNGEON_ID } from '../content/dungeons.js';
 import { compareCombatPower } from './personal-power.js';
 import { compileCombatEncounterV1, runCompiledCombatEncounterV2 } from './combat-encounter-compiler.js';
+import { applyCombatSettlementPolicyV1, dungeonDefeatPolicyV1 } from './combat-settlement-policy.js';
 import { ensureCollectionProgressStateV12316 } from './collection-progression-v12316.js';
 import { grantResourcePveRewardsV12329, isResourcePveDungeonV12329, resourcePveVirtualBreakIdV12329, resourcePveVirtualMaterialIdV12329 } from './resource-pve-v12329.js';
 import { recordEconomyActivityV89, recordFirstClearBoundJadeV89 } from './economy-activity-v89.js';
@@ -147,8 +148,11 @@ export function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {
             }
         }
         else {
-            this.stateValue.injury = Math.min(100, this.stateValue.injury + 14 + floor * 2);
-            this.applyCombatDeathPenalty(`dungeon:${dungeonId}:floor:${floor}`);
+            applyCombatSettlementPolicyV1({
+                state: this.stateValue,
+                policy: dungeonDefeatPolicyV1(dungeonId, floor),
+                applyCanonicalDeathPenalty: context => this.applyCombatDeathPenalty(context),
+            });
             // V144: defeat never advances retired V103/V119 technique mastery.
         }
         // V144: phase reading still feeds combat review/skill practice elsewhere; legacy manual mastery is inert.
