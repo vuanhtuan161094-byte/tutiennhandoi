@@ -105,6 +105,15 @@ func set_status_message(message: String) -> void:
 		if _equipment_inventory != null and _equipment_inventory.visible:
 			_equipment_inventory.set_status_message(message)
 
+func set_presentation_active(active: bool) -> void:
+	if is_instance_valid(_hero) and _hero.has_method("set_presentation_active"):
+		_hero.set_presentation_active(active)
+
+func get_character_animation_preset() -> StringName:
+	if is_instance_valid(_hero) and _hero.has_method("get_animation_preset"):
+		return _hero.get_animation_preset()
+	return &""
+
 func _build() -> void:
 	var bg := TextureRect.new()
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
