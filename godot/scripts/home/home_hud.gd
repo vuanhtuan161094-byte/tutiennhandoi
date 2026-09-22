@@ -16,6 +16,10 @@ const MOTION_STILL: StringName = &"still"
 const MOTION_ANIMATED: StringName = &"animated"
 const MOTION_HIDDEN: StringName = &"hidden"
 
+const DEFAULT_HOME_MODE: StringName = MODE_CULTIVATION
+const DEFAULT_MOTION_MODE: StringName = MOTION_STILL
+const DEFAULT_ANIMATION_PRESET_ID: StringName = &"cultivation_01"
+
 const HOME_ART := preload("res://scripts/home/home_art_atlas.gd")
 const HOME_ANIMATION_REGISTRY := preload("res://scripts/home/home_animation_registry.gd")
 const ICON_CHARACTER := preload("res://art/icons/character.svg")
@@ -73,9 +77,9 @@ var rest_mode_button: Button
 var still_mode_button: Button
 var animated_mode_button: Button
 var hidden_mode_button: Button
-var home_presentation_mode: StringName = MODE_CULTIVATION
-var home_motion_mode: StringName = MOTION_STILL
-var home_animation_preset_id: StringName = &"cultivation_01"
+var home_presentation_mode: StringName = DEFAULT_HOME_MODE
+var home_motion_mode: StringName = DEFAULT_MOTION_MODE
+var home_animation_preset_id: StringName = DEFAULT_ANIMATION_PRESET_ID
 
 var cultivation_event_shell: PanelContainer
 var cultivation_event_title: Label
