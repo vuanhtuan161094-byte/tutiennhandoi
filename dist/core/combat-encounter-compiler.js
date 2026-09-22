@@ -48,11 +48,30 @@ export function compileCombatEncounterV1(input) {
 export function runCompiledCombatEncounterV2(encounter, registry) {
     if (encounter?.schema !== 'combat-encounter.v1')
         throw new Error('runCompiledCombatEncounterV2 requires combat-encounter.v1');
-    return runCombatKernelV2({
+    const kernel = runCombatKernelV2({
         registry,
         seed: encounter.seed,
         entities: encounter.entities.map(cloneEntity),
         mode: encounter.mode,
         maxDuration: encounter.maxDuration,
     });
+    const encounterIdentity = {
+        encounterId: encounter.encounterId,
+        activity: encounter.activity,
+        mode: encounter.mode,
+        maxDuration: encounter.maxDuration,
+        metadata: structuredClone(encounter.metadata ?? {}),
+    };
+    return {
+        ...kernel,
+        combatResult: {
+            ...kernel.combatResult,
+            encounter: encounterIdentity,
+            replay: {
+                ...kernel.combatResult.replay,
+                encounterId: encounter.encounterId,
+                activity: encounter.activity,
+            },
+        },
+    };
 }
