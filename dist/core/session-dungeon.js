@@ -1,23 +1,14 @@
-import { applyCharacterToEntity } from './character.js';
 import { cloneBuildFoundationV113 } from './build-foundation-v113.js';
 import { daoNatureTierForRealmV125, gainBattleDaoPracticeFromCastCountsV125, grantDaoNaturePointV125, practiceContentEfficiencyForGapV125 } from './specialization-skill-progression-v125.js';
-import { applyEquipmentToEntity } from './equipment.js';
 import { lockLootItem } from './inventory.js';
 import { recordActiveArtifactBattle, recordArtifactOwnershipYears } from './artifact.js';
 import { buildDungeonGuardian, canChallengeDungeonFloor, grantDungeonGuardianLoot, guardianMechanicForFloor, highestClearedDungeonFloor, markDungeonFloorCleared } from './dungeon.js';
 import { applyCombatPacingV124 } from './combat-pacing-v124.js';
 import { analyzeBattle, topDamageSkill } from './combat-analytics.js';
 import { V125_DAO_NATURE_DUNGEON_ID } from '../content/dungeons.js';
-import { applyDaoToEntity } from './dao.js';
-import { applyIntegrationToEntity, integrationSummary as deriveIntegrationSummary } from './integration.js';
-import { applyGreatVehicleToEntity, greatVehicleSummary as deriveGreatVehicleSummary } from './great-vehicle.js';
-import { applyImmortalToEntity } from './immortal.js';
-import { applyFateEmbryoToEntity, effectiveManifestationCapacity } from './fate-embryo.js';
-import { applyReincarnationArtifactTalents, applyReincarnationCombatTalents, techniquePassiveStrengthMultiplier } from './reincarnation-talents.js';
 import { compareCombatPower } from './personal-power.js';
 import { runCombatKernelV2 } from './combat-kernel-v2.js';
 import { ensureCollectionProgressStateV12316 } from './collection-progression-v12316.js';
-import { applyCollectionEconomyToEntityV12325 } from './gacha-collection-economy-v12325.js';
 import { grantResourcePveRewardsV12329, isResourcePveDungeonV12329, resourcePveVirtualBreakIdV12329, resourcePveVirtualMaterialIdV12329 } from './resource-pve-v12329.js';
 import { recordEconomyActivityV89, recordFirstClearBoundJadeV89 } from './economy-activity-v89.js';
 
@@ -51,19 +42,7 @@ export function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {
         if (!guardianBase)
             throw new Error(`Unknown dungeon guardian entity: ${spec.guardianEntityId}`);
         const seed = mixSeed(this.rootSeed ^ 0x4d595df4, this.actionIndexValue);
-        const characterPlayer = applyCharacterToEntity(this.profile.combatEntity, this.stateValue.character, this.registry, techniquePassiveStrengthMultiplier(this.stateValue.inheritedOrigins), Boolean(this.stateValue.inheritedOrigins['birth.v101.authoritative']));
-        const equippedPlayer = applyEquipmentToEntity(characterPlayer, this.stateValue.equipment, this.registry.equipmentSets);
-        const artifactPlayer = equippedPlayer; // V88 canonical Pháp Bảo is applied below.
-        const collectionPlayer = applyCollectionEconomyToEntityV12325(artifactPlayer, this.stateValue.collectionV12316);
-        const artifactTalentPlayer = applyReincarnationArtifactTalents(collectionPlayer, this.stateValue.inheritedOrigins);
-        const daoPlayer = applyDaoToEntity(artifactTalentPlayer, this.stateValue.dao, this.registry);
-        const integration = deriveIntegrationSummary(this.stateValue.realm, this.stateValue.cultivation, this.stateValue.soul, this.stateValue.dao, this.stateValue.artifacts);
-        const integratedPlayer = applyIntegrationToEntity(daoPlayer, integration);
-        const greatPlayer = applyGreatVehicleToEntity(integratedPlayer, deriveGreatVehicleSummary(this.stateValue.realm, integration, this.stateValue.dao, this.stateValue.factions, this.currentLifeValue.lifeId));
-        const immortalPlayer = applyImmortalToEntity(greatPlayer, this.stateValue.immortal, this.stateValue.realm, effectiveManifestationCapacity(this.stateValue.immortal.manifestationCapacity, this.stateValue.fateEmbryo));
-        const fatePlayer = applyFateEmbryoToEntity(immortalPlayer, this.stateValue.fateEmbryo, this.fateEmbryoSummary());
-        const talentedPlayer = applyReincarnationCombatTalents(fatePlayer, this.stateValue.inheritedOrigins);
-        const playerCombat = { ...talentedPlayer, id: `${this.profile.combatEntity.id}.dungeon.challenge` };
+        const playerCombat = { ...this.personalCombatEntityForState(this.stateValue), id: `${this.profile.combatEntity.id}.dungeon.challenge` };
         const guardian = buildDungeonGuardian(guardianBase, dungeon, floor);
         const readiness = compareCombatPower(playerCombat, guardian);
         const mechanic = guardianMechanicForFloor(dungeon, floor);
