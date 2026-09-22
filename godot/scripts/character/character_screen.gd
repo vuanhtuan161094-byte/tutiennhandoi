@@ -581,9 +581,11 @@ func _on_slot_pressed(slot_id: String, data: Dictionary) -> void:
 	open_equipment_for_slot(slot_id)
 
 func _emit_detail(detail_id: StringName) -> void:
+	close_character_presentation_panel()
 	detail_requested.emit(detail_id)
 
 func open_equipment_for_slot(slot_id: String) -> void:
+	close_character_presentation_panel()
 	if _equipment_inventory == null or _vm.is_empty():
 		return
 	if _detail_sheet != null:
