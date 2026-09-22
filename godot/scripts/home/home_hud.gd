@@ -718,7 +718,7 @@ func _build_home_mode_switch() -> void:
 	home_control_panel.offset_left = -166.0
 	home_control_panel.offset_right = 166.0
 	home_control_panel.offset_top = 198.0
-	home_control_panel.offset_bottom = 444.0
+	home_control_panel.offset_bottom = 470.0
 	home_control_panel.add_theme_stylebox_override(
 		"panel",
 		_flat(Color(0.004, 0.020, 0.033, 0.97), 22, Color(0.65, 0.82, 0.88, 0.42), 1)
@@ -850,7 +850,7 @@ func _refresh_home_preset_list() -> void:
 	if home_preset_list == null:
 		return
 	for child in home_preset_list.get_children():
-		child.queue_free()
+		child.free()
 	for entry in HOME_ANIMATION_REGISTRY.presets_for_mode(home_presentation_mode):
 		var preset_id: StringName = entry.get("id", &"")
 		var button := Button.new()
