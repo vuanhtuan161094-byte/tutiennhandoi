@@ -1,6 +1,6 @@
 {
   "name": "tutien-home-runtime-smoke",
-  "description": "Launch the real Godot Home headlessly, verify canonical bridge connectivity, Home presentation modes, and progressive disclosure.",
+  "description": "Launch the real Godot Home headlessly, verify canonical bridge connectivity, static/animated/hidden heroine presentation, content modes, and progressive disclosure.",
   "target": {
     "mode": "launch",
     "project_path": "../..",
@@ -66,12 +66,59 @@
       }
     },
     {
+      "name": "Home defaults to static presentation",
+      "action": "assert_property",
+      "with": {
+        "selector": "name:HomeMeditationHero",
+        "property": "motion_mode",
+        "operator": "equals",
+        "expected": "still"
+      }
+    },
+    {
       "name": "Rest mode control exists",
       "action": "wait_for_node",
       "with": {
         "selector": "name:RestModeButton",
         "state": "visible",
         "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Animated mode control exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:AnimatedModeButton",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Hidden mode control exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:HiddenModeButton",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Switch Home to animated presentation",
+      "action": "click",
+      "with": {
+        "selector": "name:AnimatedModeButton"
+      }
+    },
+    {
+      "name": "Hero enters animated presentation",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:HomeMeditationHero",
+        "property": "motion_mode",
+        "operator": "equals",
+        "expected_value": "animated",
+        "timeout_ms": 2000,
+        "poll_interval_ms": 25
       }
     },
     {
@@ -89,6 +136,44 @@
         "property": "home_mode",
         "operator": "equals",
         "expected_value": "rest",
+        "timeout_ms": 2000,
+        "poll_interval_ms": 25
+      }
+    },
+    {
+      "name": "Hide Home heroine",
+      "action": "click",
+      "with": {
+        "selector": "name:HiddenModeButton"
+      }
+    },
+    {
+      "name": "Hero enters hidden presentation",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:HomeMeditationHero",
+        "property": "motion_mode",
+        "operator": "equals",
+        "expected_value": "hidden",
+        "timeout_ms": 2000,
+        "poll_interval_ms": 25
+      }
+    },
+    {
+      "name": "Restore Home heroine as static",
+      "action": "click",
+      "with": {
+        "selector": "name:StillModeButton"
+      }
+    },
+    {
+      "name": "Hero returns to static presentation",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:HomeMeditationHero",
+        "property": "motion_mode",
+        "operator": "equals",
+        "expected_value": "still",
         "timeout_ms": 2000,
         "poll_interval_ms": 25
       }
