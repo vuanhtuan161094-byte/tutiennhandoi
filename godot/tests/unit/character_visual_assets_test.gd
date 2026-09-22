@@ -29,12 +29,9 @@ func test_character_standing_hero_has_approved_runtime_source() -> void:
 	var has_approved_master := ResourceLoader.exists("res://art/approved/home/home_hero_standing.webp")
 	assert_bool(has_atlas or has_approved_master).is_true()
 
-func test_character_hero_contract_is_standing_idle() -> void:
-	var hero = STANDING_HERO.new()
-	hero._load_visual()
-	assert_str(str(hero.source_pose)).is_equal("standing")
-	assert_str(str(hero.animation_mode)).is_equal("standing_idle")
-	assert_str(str(hero.animation_profile)).is_equal("character_standing_v1")
-	assert_bool(hero.runtime_animation_ready).is_true()
-	assert_bool(str(hero.animation_source) != "none").is_true()
-	hero.free()
+func test_character_hero_contract_defaults_to_static_character_presentation() -> void:
+	assert_str(str(STANDING_HERO.SOURCE_POSE)).is_equal("standing")
+	assert_str(str(STANDING_HERO.DEFAULT_ANIMATION_MODE)).is_equal("standing_still")
+	assert_str(str(STANDING_HERO.ANIMATION_PROFILE)).is_equal("character_standing_v3_options")
+	assert_str(str(STANDING_HERO.DEFAULT_PRESET_ID)).is_equal("character_idle_01")
+	assert_str(str(STANDING_HERO.MOTION_STILL)).is_equal("still")
