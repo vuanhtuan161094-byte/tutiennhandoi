@@ -45,6 +45,15 @@ func bind(vm: Dictionary) -> void:
 		play_meditation_surge()
 	_was_cultivation_ready = ready
 
+func set_home_mode(mode: StringName) -> void:
+	if is_instance_valid(_hero) and _hero.has_method("set_home_mode"):
+		_hero.set_home_mode(mode)
+
+func get_home_mode() -> StringName:
+	if is_instance_valid(_hero) and _hero.has_method("get_home_mode"):
+		return _hero.get_home_mode()
+	return &"cultivation"
+
 func play_meditation_surge(duration: float = 1.25, intensity: float = 1.0) -> void:
 	if is_instance_valid(_hero) and _hero.has_method("play_surge"):
 		_hero.play_surge(duration, intensity)
