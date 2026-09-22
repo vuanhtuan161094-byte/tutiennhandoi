@@ -210,6 +210,18 @@
       }
     },
     {
+      "name": "Inventory is fully dismissed",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:EquipmentInventoryScreen",
+        "property": "visible",
+        "operator": "equals",
+        "expected_value": false,
+        "timeout_ms": 3000,
+        "poll_interval_ms": 25
+      }
+    },
+    {
       "name": "Weapon slot opens focused inventory flow",
       "action": "click",
       "with": {
@@ -236,6 +248,18 @@
       }
     },
     {
+      "name": "Focused inventory is fully dismissed",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:EquipmentInventoryScreen",
+        "property": "visible",
+        "operator": "equals",
+        "expected_value": false,
+        "timeout_ms": 3000,
+        "poll_interval_ms": 25
+      }
+    },
+    {
       "name": "Open stats detail",
       "action": "click",
       "with": {
@@ -244,12 +268,14 @@
     },
     {
       "name": "Stats title is canonical",
-      "action": "assert_property",
+      "action": "wait_for_property",
       "with": {
         "selector": "name:CharacterDetailTitle",
         "property": "text",
         "operator": "contains",
-        "expected": "Thuộc Tính"
+        "expected_value": "Thuộc Tính",
+        "timeout_ms": 3000,
+        "poll_interval_ms": 25
       }
     },
     {
@@ -257,6 +283,18 @@
       "action": "click",
       "with": {
         "selector": "name:CharacterDetailClose"
+      }
+    },
+    {
+      "name": "Stats detail is fully dismissed",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:CharacterDetailSheet",
+        "property": "visible",
+        "operator": "equals",
+        "expected_value": false,
+        "timeout_ms": 3000,
+        "poll_interval_ms": 25
       }
     },
     {
@@ -268,12 +306,14 @@
     },
     {
       "name": "Profile title is canonical",
-      "action": "assert_property",
+      "action": "wait_for_property",
       "with": {
         "selector": "name:CharacterDetailTitle",
         "property": "text",
         "operator": "contains",
-        "expected": "Hồ Sơ"
+        "expected_value": "Hồ Sơ",
+        "timeout_ms": 3000,
+        "poll_interval_ms": 25
       }
     },
     {
@@ -293,6 +333,18 @@
       }
     },
     {
+      "name": "Profile detail is fully dismissed",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:CharacterDetailSheet",
+        "property": "visible",
+        "operator": "equals",
+        "expected_value": false,
+        "timeout_ms": 3000,
+        "poll_interval_ms": 25
+      }
+    },
+    {
       "name": "Open potential allocation",
       "action": "click",
       "with": {
@@ -301,12 +353,14 @@
     },
     {
       "name": "Potential title appears",
-      "action": "assert_property",
+      "action": "wait_for_property",
       "with": {
         "selector": "name:CharacterDetailTitle",
         "property": "text",
         "operator": "contains",
-        "expected": "Tăng Điểm"
+        "expected_value": "Tăng Điểm",
+        "timeout_ms": 3000,
+        "poll_interval_ms": 25
       }
     },
     {
