@@ -14,7 +14,9 @@ import { createInitialLifeMeta } from '../../dist/core/life.js';
 import { buildWebClientViewPatch } from '../../dist/core/client-shell.js';
 import { createWebClientSave, parseWebClientSave } from '../../dist/core/web-save.js';
 import { LIVE_COMMIT_REAL_SECONDS } from '../../dist/core/realtime-balance.js';
-import { equipmentSetDefinitionV142, grantEquipmentFragmentsV142, grantEquipmentSetFragmentsV142 } from '../../dist/core/equipment-v142.js';
+import { equipmentSetDefinitionV142 } from '../../dist/core/equipment-v142.js';
+import { grantEquipmentFragmentRankV142 } from '../../dist/core/equipment-fragments-v142.js';
+import { grantEquipmentSetFragmentV142 } from '../../dist/core/equipment-set-fragments-v142.js';
 
 const HERE=dirname(fileURLToPath(import.meta.url));
 const BRIDGE_VERSION='godot-bridge.v2';
@@ -110,9 +112,9 @@ class GodotCanonicalRuntime {
   seedQaInventory(){
     this.newGame(161094);
     const state=this.session.stateValue;
-    grantEquipmentFragmentsV142(state,10000,'godot-p2-qa');
+    grantEquipmentFragmentRankV142(state,0,10000,'godot-p2-qa');
     for(const setId of ['set.v142.attire.metal','set.v142.jewelry.huyen_nguyen']){
-      grantEquipmentSetFragmentsV142(state,setId,500,'godot-p2-qa');
+      grantEquipmentSetFragmentV142(state,setId,500,'godot-p2-qa',state.equipment);
     }
     const craft=(slot)=>{
       this.api.perform({type:'craftEquipmentV142',slot,rankIndex:0});
@@ -139,6 +141,9 @@ class GodotCanonicalRuntime {
       fixture:'inventory',
       canonical:true,
       itemCount:Array.isArray(this.session.stateValue?.equipment?.items)?this.session.stateValue.equipment.items.length:0,
+      rank0FragmentBalance:Number(this.session.stateValue?.equipmentFragmentsV142?.byRank?.['resource.equipment.fragment.v142.rank.0']||0),
+      attireSetFragmentBalance:Number(this.session.stateValue?.equipmentSetFragmentsV142?.bySetId?.['set.v142.attire.metal']||0),
+      jewelrySetFragmentBalance:Number(this.session.stateValue?.equipmentSetFragmentsV142?.bySetId?.['set.v142.jewelry.huyen_nguyen']||0),
     };
   }
   prepareQaAscend(){
