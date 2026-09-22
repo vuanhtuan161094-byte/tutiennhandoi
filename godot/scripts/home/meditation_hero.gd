@@ -254,7 +254,7 @@ func _touch_animation_cache(resource_path: String) -> void:
 
 func _trim_animation_cache(current_path: String) -> void:
 	while _animation_cache_order.size() > MAX_ANIMATION_CACHE_RESOURCES:
-		var evict_path := _animation_cache_order.pop_front()
+		var evict_path: String = _animation_cache_order.pop_front()
 		if evict_path == current_path:
 			_animation_cache_order.append(evict_path)
 			continue
