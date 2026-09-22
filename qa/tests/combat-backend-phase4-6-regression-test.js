@@ -66,6 +66,26 @@ test('Phase 4 compiled encounter preserves V2 mechanics when pacing is explicitl
   );
 });
 
+test('Phase 4 compiled result carries encounter identity for transport/replay consumers', () => {
+  const encounter = compileCombatEncounterV1({
+    encounterId: 'qa.phase4.identity',
+    activity: 'qa-activity',
+    seed: 46006,
+    entities: structuredClone([playableMortalCultivator, blackWindWolf]),
+    mode: 'headless',
+    maxDuration: 12,
+    applyPacing: false,
+    metadata: { boss: false, source: 'qa' },
+  });
+  const kernel = runCompiledCombatEncounterV2(encounter, registry);
+  assert.equal(kernel.combatResult.encounter.encounterId, 'qa.phase4.identity');
+  assert.equal(kernel.combatResult.encounter.activity, 'qa-activity');
+  assert.equal(kernel.combatResult.encounter.maxDuration, 12);
+  assert.deepEqual(kernel.combatResult.encounter.metadata, { boss: false, source: 'qa' });
+  assert.equal(kernel.combatResult.replay.encounterId, 'qa.phase4.identity');
+  assert.equal(kernel.combatResult.replay.activity, 'qa-activity');
+});
+
 test('Phase 4 compiler clones encounter entities and metadata instead of mutating caller snapshots', () => {
   const player = structuredClone(playableMortalCultivator);
   const metadata = { nested: { value: 7 } };
@@ -215,9 +235,14 @@ test('Phase 6 activity consumers expose typed result while compatibility battle/
   const dungeon = fs.readFileSync(fileURLToPath(new URL('../../dist/core/session-dungeon.js', import.meta.url)), 'utf8');
   const pvp = fs.readFileSync(fileURLToPath(new URL('../../dist/core/pvp-v91.js', import.meta.url)), 'utf8');
   const hunt = fs.readFileSync(fileURLToPath(new URL('../../dist/core/endless-hunt-combat-kernel-v2.js', import.meta.url)), 'utf8');
+  const session = fs.readFileSync(fileURLToPath(new URL('../../dist/core/session.js', import.meta.url)), 'utf8');
   assert(dungeon.includes('combatResult: kernel.combatResult'));
+  assert(dungeon.includes('combatSettlement'));
   assert(pvp.includes('combatResult: kernel.combatResult'));
   assert(hunt.includes('combatResult: kernel.combatResult'));
+  assert(hunt.includes('combatSettlement: huntSettlement'));
+  assert(session.includes('combatSettlement, chronicleEvent'));
+  assert(session.includes('combatResult: kernel.combatResult, combatSettlement'));
   assert(pvp.includes("engineVersion: 'combat.v2'"), 'new PvP replay records must be engine-versioned');
 });
 
