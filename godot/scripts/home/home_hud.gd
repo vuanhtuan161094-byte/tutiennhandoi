@@ -641,10 +641,15 @@ func _build_home_mode_switch() -> void:
 	margin.add_child(row)
 
 	cultivation_mode_button = _home_mode_button("Tu Luyện", "CultivationModeButton")
+	# Switch presentation on touch-down so the Home responds immediately on
+	# mobile and headless pointer drivers. The later pressed event is harmless
+	# because _request_home_presentation_mode is idempotent for the active mode.
+	cultivation_mode_button.button_down.connect(func(): _request_home_presentation_mode(MODE_CULTIVATION))
 	cultivation_mode_button.pressed.connect(func(): _request_home_presentation_mode(MODE_CULTIVATION))
 	row.add_child(cultivation_mode_button)
 
 	rest_mode_button = _home_mode_button("Nghỉ Ngơi", "RestModeButton")
+	rest_mode_button.button_down.connect(func(): _request_home_presentation_mode(MODE_REST))
 	rest_mode_button.pressed.connect(func(): _request_home_presentation_mode(MODE_REST))
 	row.add_child(rest_mode_button)
 
