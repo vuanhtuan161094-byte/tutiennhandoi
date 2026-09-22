@@ -179,7 +179,7 @@ func _build() -> void:
 
 	var header := Panel.new()
 	header.z_index = 20
-	_anchor(header, 10, 506, 380, 548)
+	_anchor(header, 10, 556, 380, 598)
 	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	header.add_theme_stylebox_override("panel", _flat(Color(0.01, 0.03, 0.05, 0.78), 14, Color(0.70, 0.82, 0.86, 0.14), 1))
 	add_child(header)
@@ -216,14 +216,14 @@ func _build() -> void:
 	var stage := Control.new()
 	stage.name = "CharacterStage"
 	stage.z_index = 5
-	_anchor(stage, 0, 0, 390, 570)
+	_anchor(stage, 0, 0, 390, 646)
 	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(stage)
 
 	_hero_glow = Panel.new()
 	_hero_glow.z_index = -3
-	_anchor(_hero_glow, 48, 6, 342, 554)
-	_hero_glow.pivot_offset = Vector2(147, 274)
+	_anchor(_hero_glow, 44, 6, 346, 626)
+	_hero_glow.pivot_offset = Vector2(151, 310)
 	_hero_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hero_glow.add_theme_stylebox_override("panel", _flat(Color(0.23, 0.68, 0.76, 0.035), 98, Color(0.95, 0.75, 0.31, 0.22), 2))
 	stage.add_child(_hero_glow)
@@ -231,7 +231,7 @@ func _build() -> void:
 	var hero_ground := Panel.new()
 	hero_ground.name = "CharacterGroundShadow"
 	hero_ground.z_index = -2
-	_anchor(hero_ground, 88, 514, 302, 552)
+	_anchor(hero_ground, 86, 584, 304, 624)
 	hero_ground.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hero_ground.add_theme_stylebox_override(
 		"panel",
@@ -243,7 +243,7 @@ func _build() -> void:
 	_hero.name = "CharacterHero"
 	_hero.z_index = 0
 	# Character animation is the stage backdrop. UI remains interactive above it.
-	_anchor(_hero, 24, -8, 366, 560)
+	_anchor(_hero, 18, -8, 372, 636)
 	stage.add_child(_hero)
 
 	var slot_specs := [
@@ -255,7 +255,7 @@ func _build() -> void:
 
 	var path_panel := Panel.new()
 	path_panel.z_index = 12
-	_anchor(path_panel, 70, 466, 320, 502)
+	_anchor(path_panel, 70, 516, 320, 552)
 	path_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	path_panel.add_theme_stylebox_override("panel", _flat(Color(0.01, 0.03, 0.05, 0.72), 14, Color(0.91, 0.74, 0.34, 0.30), 1))
 	stage.add_child(path_panel)
@@ -286,7 +286,7 @@ func _build() -> void:
 
 	var stats_panel := Panel.new()
 	stats_panel.z_index = 20
-	_anchor(stats_panel, 10, 552, 380, 596)
+	_anchor(stats_panel, 10, 602, 380, 646)
 	stats_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stats_panel.add_theme_stylebox_override("panel", _flat(DARK, 15, Color(0.43, 0.67, 0.75, 0.20), 1))
 	add_child(stats_panel)
@@ -303,7 +303,7 @@ func _build() -> void:
 	_potential_button.add_theme_stylebox_override("hover", _flat(Color(0.10, 0.10, 0.07, 0.96), 14, Color(1.0, 0.84, 0.42, 0.76), 2))
 	_potential_button.add_theme_stylebox_override("pressed", _flat(Color(0.16, 0.12, 0.045, 0.98), 14, GOLD_HI, 2))
 	_potential_button.focus_mode = Control.FOCUS_NONE
-	_anchor(_potential_button, 92, 600, 298, 632)
+	_anchor(_potential_button, 92, 650, 298, 682)
 	_potential_button.pressed.connect(_emit_detail.bind(&"potential"))
 	add_child(_potential_button)
 
@@ -319,7 +319,7 @@ func _build() -> void:
 		button.add_theme_stylebox_override("hover", _flat(Color(0.04, 0.08, 0.10, 0.94), 14, Color(0.55, 0.88, 0.91, 0.42), 1))
 		button.add_theme_stylebox_override("pressed", _flat(Color(0.06, 0.11, 0.13, 0.98), 14, CYAN, 2))
 		button.focus_mode = Control.FOCUS_NONE
-		_anchor(button, 20 + i * 119, 636, 132 + i * 119, 674)
+		_anchor(button, 20 + i * 119, 686, 132 + i * 119, 724)
 		button.pressed.connect(_emit_detail.bind(action[1]))
 		add_child(button)
 
@@ -329,7 +329,7 @@ func _build() -> void:
 	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_status.add_theme_font_size_override("font_size", 9)
 	_status.add_theme_color_override("font_color", MUTED)
-	_anchor(_status, 16, 676, 374, 696)
+	_anchor(_status, 16, 726, 374, 746)
 	add_child(_status)
 
 	_build_character_presentation_controls()
