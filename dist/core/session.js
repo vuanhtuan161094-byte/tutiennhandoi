@@ -28,7 +28,6 @@ import { claimOfflineLootCache, cloneInventoryManagementState, explainLootItem, 
 import { activateArtifact, deactivateArtifact, artifactLegacyScore, artifactPower, awakenArtifactSpirit, cloneArtifactInstance, markArtifactLost, markArtifactRecovered, nourishArtifact, recordActiveArtifactBattle, recordArtifactOwnershipYears } from './artifact.js';
 import { DungeonEngine, addDungeonWorker, buildDungeonGuardian, guardianMechanicForFloor, highestClearedDungeonFloor, isDungeonFloorCleared, assignDungeonWorker, clearDungeonWorker } from './dungeon.js';
 import { LifeSettlementEngine, applySettlement, birthSummary, buildReincarnatedState, cloneCurrentLifeMeta, carryPersistentBirthOrigins, cloneMetaProgressState, createInitialLifeMetaForCharacter, createMetaProgressState, rollBirth } from './life.js';
-import { applyCombatPacingV124 } from './combat-pacing-v124.js';
 import { analyzeBattle, topDamageSkill } from './combat-analytics.js';
 import { analyzeCombatMatchup } from './combat-matchup.js';
 import { buildTacticalLoadoutPresets } from './combat-loadout-presets.js';
@@ -1095,11 +1094,9 @@ export class SimulationSession {
         const result = resolveEndlessHuntFight(hunt, playerPowerLog10, seed, luck, loot, mapPowerMultiplier, map.gradeWeights, map.localFloor, map.elementPool, map.maxMonsterElements, realCombat, challengeBoss);
         // V77 has no real ordinary-monster chain. Every floor action is one Boss, so no combat carry state survives the encounter.
         this.stateValue.huntCombatRuntimeV117 = undefined;
-        const practiceCastCounts = {};
-        for (const log of kernelCombat.battle.logs) {
-            if (log.type === 'castStart' && log.actorId === kernelCombat.playerEntity.id && log.skillId)
-                practiceCastCounts[log.skillId] = (practiceCastCounts[log.skillId] ?? 0) + 1;
-        }
+        const practiceCastCounts = {
+            ...(kernelCombat.combatResult.summary.castCountsByActor[kernelCombat.playerEntity.id] ?? {}),
+        };
         const skillPractice = gainBattleDaoPracticeFromCastCountsV125(this.stateValue.character, practiceCastCounts, [...this.registry.skills.values()], practiceContentEfficiencyForGapV125(this.stateValue.realm.maxRealmOrder - map.realmOrder));
         const fateRuntime = this.currentLifeValue.fateRuntime ?? (this.currentLifeValue.fateRuntime = createFateRuntimeState());
         const fateMods = result.won ? fateHuntModifiers(this.currentLifeValue.birth.originsV101?.fate, fateRuntime) : { rewardMultiplier: 1, equipmentChanceBonusPct: 0, notes: [], consumeOpportunityBoost: false };
@@ -1154,7 +1151,7 @@ export class SimulationSession {
             ...realCombat.diagnosis,
             ...fateNotes,
         ];
-        return { seed, won: result.won, rewardContext: 'progression-only', directBossLoot: false, jackpotHit, jackpotChancePctApplied, floor: result.monster.floor, monsterId: result.monster.id, monsterName: result.monster.name, grade: result.monster.gradeName, battleSeconds: result.battleSeconds, damage: formatLogMagnitude({ log10: result.effectiveDamageLog10 }), powerRatio: result.powerRatio, cultivationGain, spiritStones, cultivationPillDrops, injuryPillDropId, injuryPillDropName, economyMaterialDrops: { ...economyMaterialDrops }, economyRareDrops: { ...economyRareDrops }, skillPractice, equipmentDropId, equipmentDropName, spiritualRootRewardsV145, injuryGain: result.injuryGain, bossCleared: result.bossCleared, unlockedFloor: result.unlockedFloor, farmRewardEfficiencyPct: farmReward.pct, bossMechanic, combatEvents, summaryLines, economyAwards, event, state: options.cloneState === false ? this.stateValue : this.state };
+        return { seed, won: result.won, rewardContext: 'progression-only', directBossLoot: false, jackpotHit, jackpotChancePctApplied, floor: result.monster.floor, monsterId: result.monster.id, monsterName: result.monster.name, grade: result.monster.gradeName, battleSeconds: result.battleSeconds, damage: formatLogMagnitude({ log10: result.effectiveDamageLog10 }), powerRatio: result.powerRatio, cultivationGain, spiritStones, cultivationPillDrops, injuryPillDropId, injuryPillDropName, economyMaterialDrops: { ...economyMaterialDrops }, economyRareDrops: { ...economyRareDrops }, skillPractice, equipmentDropId, equipmentDropName, spiritualRootRewardsV145, injuryGain: result.injuryGain, bossCleared: result.bossCleared, unlockedFloor: result.unlockedFloor, farmRewardEfficiencyPct: farmReward.pct, bossMechanic, combatResult: kernelCombat.combatResult, combatSettlement: huntSettlement, combatEvents, summaryLines, economyAwards, event, state: options.cloneState === false ? this.stateValue : this.state };
     }
     equipmentCombatImpact(itemId) {
         const snapshot = this.state;
@@ -1432,6 +1429,7 @@ export class SimulationSession {
         const flow = this.stateValue.flow ?? (this.stateValue.flow = createPlayerFlowState());
         const seed = mixSeed(this.rootSeed ^ 0x71b3c4d5, this.actionIndexValue);
         let wonCombat;
+        let combatResult;
         let summary = choice.resultText;
         let completed = true;
         let combatData = {};
@@ -1453,6 +1451,7 @@ export class SimulationSession {
             });
             const kernel = runCompiledCombatEncounterV2(encounter, this.registry);
             const battle = kernel.battle;
+            combatResult = kernel.combatResult;
             wonCombat = battle.winnerId === playerCombat.id;
             const analytics = analyzeBattle(battle);
             const playerAnalytics = analytics.combatants[playerCombat.id];
@@ -1504,7 +1503,7 @@ export class SimulationSession {
         this.recordPlayerWorldEvent(chronicleEvent);
         this.applyNaturalDeathToState(seed);
         this.actionIndexValue += 1;
-        return { eventId, choiceId, completed, wonCombat, summary, chronicleEvent, state: this.state };
+        return { eventId, choiceId, completed, wonCombat, summary, combatResult, chronicleEvent, state: this.state };
     }
     contentEventAvailable(definition) {
         return isContentEventAvailable(definition, this.stateValue, this.currentLifeValue, this.metaValue);
@@ -4348,7 +4347,7 @@ export class SimulationSession {
         };
         this.historyValue.append(event);
         this.actionIndexValue += 1;
-        return { schema: 'dao-suy-tribulation.v127', won, pressure, resolution, status: statusAfter, battle: kernel.battle, event, state: this.state };
+        return { schema: 'dao-suy-tribulation.v127', won, pressure, resolution, status: statusAfter, battle: kernel.battle, combatResult: kernel.combatResult, event, state: this.state };
     }
 
     refineImmortalEssence(batches = 1) {
