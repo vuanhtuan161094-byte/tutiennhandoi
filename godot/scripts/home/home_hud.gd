@@ -8,6 +8,7 @@ signal character_section_requested(section_id: StringName)
 signal primary_action_requested(action_id: String)
 signal home_mode_requested(mode: StringName)
 signal home_motion_mode_requested(mode: StringName)
+signal home_animation_preset_requested(preset_id: StringName)
 
 const MODE_CULTIVATION: StringName = &"cultivation"
 const MODE_REST: StringName = &"rest"
@@ -16,6 +17,7 @@ const MOTION_ANIMATED: StringName = &"animated"
 const MOTION_HIDDEN: StringName = &"hidden"
 
 const HOME_ART := preload("res://scripts/home/home_art_atlas.gd")
+const HOME_ANIMATION_REGISTRY := preload("res://scripts/home/home_animation_registry.gd")
 const ICON_CHARACTER := preload("res://art/icons/character.svg")
 const ICON_ROOT := preload("res://art/icons/root.svg")
 const ICON_COMBAT := preload("res://art/icons/combat.svg")
@@ -63,6 +65,9 @@ var combat_action_visual: Control
 var combat_subtitle_label: Label
 
 var home_mode_shell: PanelContainer
+var home_presentation_button: Button
+var home_control_panel: PanelContainer
+var home_preset_list: VBoxContainer
 var cultivation_mode_button: Button
 var rest_mode_button: Button
 var still_mode_button: Button
@@ -70,6 +75,7 @@ var animated_mode_button: Button
 var hidden_mode_button: Button
 var home_presentation_mode: StringName = MODE_CULTIVATION
 var home_motion_mode: StringName = MOTION_STILL
+var home_animation_preset_id: StringName = &"cultivation_01"
 
 var cultivation_event_shell: PanelContainer
 var cultivation_event_title: Label
@@ -204,7 +210,10 @@ func set_status_message(message: String) -> void:
 
 func set_home_presentation_mode(mode: StringName) -> void:
 	home_presentation_mode = normalize_home_presentation_mode(mode)
+	if HOME_ANIMATION_REGISTRY.preset_for_mode(home_animation_preset_id, home_presentation_mode).is_empty():
+		home_animation_preset_id = HOME_ANIMATION_REGISTRY.default_preset_id(home_presentation_mode)
 	_refresh_home_mode_buttons()
+	_refresh_home_preset_list()
 
 func get_home_presentation_mode() -> StringName:
 	return home_presentation_mode
@@ -218,6 +227,7 @@ func _request_home_presentation_mode(mode: StringName) -> void:
 		return
 	set_home_presentation_mode(normalized)
 	home_mode_requested.emit(normalized)
+	home_animation_preset_requested.emit(home_animation_preset_id)
 
 func set_home_motion_mode(mode: StringName) -> void:
 	home_motion_mode = normalize_home_motion_mode(mode)
@@ -239,6 +249,28 @@ func _request_home_motion_mode(mode: StringName) -> void:
 		return
 	set_home_motion_mode(normalized)
 	home_motion_mode_requested.emit(normalized)
+
+func set_home_animation_preset(preset_id: StringName) -> void:
+	if HOME_ANIMATION_REGISTRY.preset_for_mode(preset_id, home_presentation_mode).is_empty():
+		return
+	home_animation_preset_id = preset_id
+	_refresh_home_mode_buttons()
+	_refresh_home_preset_list()
+
+func get_home_animation_preset() -> StringName:
+	return home_animation_preset_id
+
+func _request_home_animation_preset(preset_id: StringName) -> void:
+	if preset_id == home_animation_preset_id:
+		return
+	if HOME_ANIMATION_REGISTRY.preset_for_mode(preset_id, home_presentation_mode).is_empty():
+		return
+	set_home_animation_preset(preset_id)
+	home_animation_preset_requested.emit(preset_id)
+
+func close_home_presentation_panel() -> void:
+	if home_control_panel != null:
+		home_control_panel.visible = false
 
 func show_breakthrough(from_realm: String, to_realm: String, steps: int = 1, major: bool = false) -> void:
 	var safe_steps := maxi(1, steps)
@@ -641,74 +673,152 @@ func _build_identity_clusters() -> void:
 	root_col.add_child(injury_badge)
 
 func _build_home_mode_switch() -> void:
+	# Gameplay keeps one compact entry point. Detailed presentation choices live
+	# behind this progressive-disclosure panel so future animation libraries do
+	# not consume permanent Home screen space.
 	home_mode_shell = PanelContainer.new()
-	home_mode_shell.name = "HomeModeSwitch"
-	home_mode_shell.z_index = 18
-	home_mode_shell.anchor_left = 0.5
-	home_mode_shell.anchor_right = 0.5
+	home_mode_shell.name = "HomePresentationTrigger"
+	home_mode_shell.z_index = 24
+	home_mode_shell.anchor_left = 1.0
+	home_mode_shell.anchor_right = 1.0
 	home_mode_shell.anchor_top = 0.0
 	home_mode_shell.anchor_bottom = 0.0
-	home_mode_shell.offset_left = -116.0
-	home_mode_shell.offset_right = 116.0
-	home_mode_shell.offset_top = 414.0
-	home_mode_shell.offset_bottom = 488.0
+	home_mode_shell.offset_left = -126.0
+	home_mode_shell.offset_right = -8.0
+	home_mode_shell.offset_top = 158.0
+	home_mode_shell.offset_bottom = 192.0
 	home_mode_shell.add_theme_stylebox_override(
 		"panel",
-		_flat(Color(0.004, 0.022, 0.035, 0.88), 18, Color(0.58, 0.78, 0.82, 0.24), 1)
+		_flat(Color(0.004, 0.022, 0.035, 0.88), 16, Color(0.58, 0.78, 0.82, 0.24), 1)
 	)
 	add_child(home_mode_shell)
 
+	home_presentation_button = Button.new()
+	home_presentation_button.name = "HomePresentationButton"
+	home_presentation_button.text = "Hiển thị · Tĩnh"
+	home_presentation_button.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	home_presentation_button.focus_mode = Control.FOCUS_NONE
+	home_presentation_button.add_theme_font_size_override("font_size", 9)
+	home_presentation_button.add_theme_color_override("font_color", TEXT)
+	home_presentation_button.add_theme_color_override("font_hover_color", GOLD_HI)
+	home_presentation_button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
+	home_presentation_button.add_theme_stylebox_override("hover", _flat(Color(0.25, 0.70, 0.82, 0.09), 16, Color(0.45, 0.85, 0.94, 0.40), 1))
+	home_presentation_button.add_theme_stylebox_override("pressed", _flat(Color(0.30, 0.76, 0.92, 0.14), 16, CYAN, 1))
+	home_presentation_button.pressed.connect(_toggle_home_presentation_panel)
+	home_mode_shell.add_child(home_presentation_button)
+
+	home_control_panel = PanelContainer.new()
+	home_control_panel.name = "HomePresentationPanel"
+	home_control_panel.visible = false
+	home_control_panel.z_index = 75
+	home_control_panel.anchor_left = 0.5
+	home_control_panel.anchor_right = 0.5
+	home_control_panel.anchor_top = 0.0
+	home_control_panel.anchor_bottom = 0.0
+	home_control_panel.offset_left = -166.0
+	home_control_panel.offset_right = 166.0
+	home_control_panel.offset_top = 198.0
+	home_control_panel.offset_bottom = 444.0
+	home_control_panel.add_theme_stylebox_override(
+		"panel",
+		_flat(Color(0.004, 0.020, 0.033, 0.97), 22, Color(0.65, 0.82, 0.88, 0.42), 1)
+	)
+	add_child(home_control_panel)
+
 	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 4)
-	margin.add_theme_constant_override("margin_right", 4)
-	margin.add_theme_constant_override("margin_top", 4)
-	margin.add_theme_constant_override("margin_bottom", 4)
-	home_mode_shell.add_child(margin)
+	margin.add_theme_constant_override("margin_left", 12)
+	margin.add_theme_constant_override("margin_right", 12)
+	margin.add_theme_constant_override("margin_top", 10)
+	margin.add_theme_constant_override("margin_bottom", 10)
+	home_control_panel.add_child(margin)
 
 	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 3)
+	col.add_theme_constant_override("separation", 7)
 	margin.add_child(col)
 
+	var header := HBoxContainer.new()
+	col.add_child(header)
+	var title := _readable_label("HIỂN THỊ NHÂN VẬT", 11, GOLD_HI)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(title)
+	var close_button := Button.new()
+	close_button.name = "HomePresentationClose"
+	close_button.text = "×"
+	close_button.custom_minimum_size = Vector2(32, 28)
+	close_button.focus_mode = Control.FOCUS_NONE
+	close_button.add_theme_font_size_override("font_size", 16)
+	close_button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
+	close_button.pressed.connect(close_home_presentation_panel)
+	header.add_child(close_button)
+
+	var content_label := _label("HOẠT ĐỘNG", 8, MUTED)
+	col.add_child(content_label)
 	var content_row := HBoxContainer.new()
-	content_row.add_theme_constant_override("separation", 3)
+	content_row.add_theme_constant_override("separation", 4)
 	col.add_child(content_row)
 
-	cultivation_mode_button = _home_mode_button("Tu Luyện", "CultivationModeButton", 108.0)
+	cultivation_mode_button = _home_mode_button("Tu Luyện", "CultivationModeButton", 145.0)
 	cultivation_mode_button.button_down.connect(func(): _request_home_presentation_mode(MODE_CULTIVATION))
-	cultivation_mode_button.pressed.connect(func(): _request_home_presentation_mode(MODE_CULTIVATION))
 	content_row.add_child(cultivation_mode_button)
 
-	rest_mode_button = _home_mode_button("Nghỉ Ngơi", "RestModeButton", 108.0)
+	rest_mode_button = _home_mode_button("Nghỉ Ngơi", "RestModeButton", 145.0)
 	rest_mode_button.button_down.connect(func(): _request_home_presentation_mode(MODE_REST))
-	rest_mode_button.pressed.connect(func(): _request_home_presentation_mode(MODE_REST))
 	content_row.add_child(rest_mode_button)
 
+	var display_label := _label("CHẾ ĐỘ HIỂN THỊ", 8, MUTED)
+	col.add_child(display_label)
 	var motion_row := HBoxContainer.new()
-	motion_row.add_theme_constant_override("separation", 3)
+	motion_row.add_theme_constant_override("separation", 4)
 	col.add_child(motion_row)
 
-	still_mode_button = _home_mode_button("Tĩnh", "StillModeButton", 70.0)
+	still_mode_button = _home_mode_button("Tĩnh", "StillModeButton", 94.0)
 	still_mode_button.button_down.connect(func(): _request_home_motion_mode(MOTION_STILL))
-	still_mode_button.pressed.connect(func(): _request_home_motion_mode(MOTION_STILL))
 	motion_row.add_child(still_mode_button)
 
-	animated_mode_button = _home_mode_button("Động", "AnimatedModeButton", 70.0)
+	animated_mode_button = _home_mode_button("Động", "AnimatedModeButton", 94.0)
 	animated_mode_button.button_down.connect(func(): _request_home_motion_mode(MOTION_ANIMATED))
-	animated_mode_button.pressed.connect(func(): _request_home_motion_mode(MOTION_ANIMATED))
 	motion_row.add_child(animated_mode_button)
 
-	hidden_mode_button = _home_mode_button("Ẩn", "HiddenModeButton", 70.0)
+	hidden_mode_button = _home_mode_button("Ẩn", "HiddenModeButton", 94.0)
 	hidden_mode_button.button_down.connect(func(): _request_home_motion_mode(MOTION_HIDDEN))
-	hidden_mode_button.pressed.connect(func(): _request_home_motion_mode(MOTION_HIDDEN))
 	motion_row.add_child(hidden_mode_button)
 
+	var preset_header := HBoxContainer.new()
+	col.add_child(preset_header)
+	var preset_label := _label("ANIMATION", 8, MUTED)
+	preset_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	preset_header.add_child(preset_label)
+	var preset_hint := _label("chọn trước · bấm Động để chạy", 7, Color(0.66, 0.74, 0.78, 0.88))
+	preset_header.add_child(preset_hint)
+
+	var scroll := ScrollContainer.new()
+	scroll.name = "HomeAnimationPresetScroll"
+	scroll.custom_minimum_size = Vector2(0, 74)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	col.add_child(scroll)
+
+	home_preset_list = VBoxContainer.new()
+	home_preset_list.name = "HomeAnimationPresetList"
+	home_preset_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	home_preset_list.add_theme_constant_override("separation", 3)
+	scroll.add_child(home_preset_list)
+
 	_refresh_home_mode_buttons()
+	_refresh_home_preset_list()
+
+func _toggle_home_presentation_panel() -> void:
+	if home_control_panel == null:
+		return
+	home_control_panel.visible = not home_control_panel.visible
+	if home_control_panel.visible:
+		_refresh_home_preset_list()
 
 func _home_mode_button(caption: String, node_name: String, min_width: float) -> Button:
 	var button := Button.new()
 	button.name = node_name
 	button.text = caption
-	button.custom_minimum_size = Vector2(min_width, 28)
+	button.custom_minimum_size = Vector2(min_width, 30)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.focus_mode = Control.FOCUS_NONE
 	button.add_theme_font_size_override("font_size", 9)
@@ -717,16 +827,43 @@ func _home_mode_button(caption: String, node_name: String, min_width: float) -> 
 	return button
 
 func _refresh_home_mode_buttons() -> void:
-	if cultivation_mode_button == null or rest_mode_button == null:
-		return
-	_apply_home_mode_button_style(cultivation_mode_button, home_presentation_mode == MODE_CULTIVATION, MINT)
-	_apply_home_mode_button_style(rest_mode_button, home_presentation_mode == MODE_REST, GOLD)
+	if home_presentation_button != null:
+		var motion_label := "Tĩnh"
+		if home_motion_mode == MOTION_ANIMATED:
+			motion_label = "Động"
+		elif home_motion_mode == MOTION_HIDDEN:
+			motion_label = "Ẩn"
+		home_presentation_button.text = "Hiển thị · %s" % motion_label
+
+	if cultivation_mode_button != null:
+		_apply_home_mode_button_style(cultivation_mode_button, home_presentation_mode == MODE_CULTIVATION, MINT)
+	if rest_mode_button != null:
+		_apply_home_mode_button_style(rest_mode_button, home_presentation_mode == MODE_REST, GOLD)
 	if still_mode_button != null:
 		_apply_home_mode_button_style(still_mode_button, home_motion_mode == MOTION_STILL, CYAN)
 	if animated_mode_button != null:
 		_apply_home_mode_button_style(animated_mode_button, home_motion_mode == MOTION_ANIMATED, GOLD)
 	if hidden_mode_button != null:
 		_apply_home_mode_button_style(hidden_mode_button, home_motion_mode == MOTION_HIDDEN, VIOLET)
+
+func _refresh_home_preset_list() -> void:
+	if home_preset_list == null:
+		return
+	for child in home_preset_list.get_children():
+		child.queue_free()
+	for entry in HOME_ANIMATION_REGISTRY.presets_for_mode(home_presentation_mode):
+		var preset_id: StringName = entry.get("id", &"")
+		var button := Button.new()
+		button.name = "Preset_%s" % String(preset_id)
+		button.text = str(entry.get("title", String(preset_id)))
+		button.custom_minimum_size = Vector2(0, 30)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.focus_mode = Control.FOCUS_NONE
+		button.add_theme_font_size_override("font_size", 9)
+		var selected := preset_id == home_animation_preset_id
+		_apply_home_mode_button_style(button, selected, GOLD if selected else CYAN)
+		button.button_down.connect(func(): _request_home_animation_preset(preset_id))
+		home_preset_list.add_child(button)
 
 func _apply_home_mode_button_style(button: Button, selected: bool, accent: Color) -> void:
 	button.add_theme_color_override("font_color", GOLD_HI if selected else MUTED)
