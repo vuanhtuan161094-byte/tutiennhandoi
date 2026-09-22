@@ -7,9 +7,13 @@ signal route_requested(route_id: StringName)
 signal character_section_requested(section_id: StringName)
 signal primary_action_requested(action_id: String)
 signal home_mode_requested(mode: StringName)
+signal home_motion_mode_requested(mode: StringName)
 
 const MODE_CULTIVATION: StringName = &"cultivation"
 const MODE_REST: StringName = &"rest"
+const MOTION_STILL: StringName = &"still"
+const MOTION_ANIMATED: StringName = &"animated"
+const MOTION_HIDDEN: StringName = &"hidden"
 
 const HOME_ART := preload("res://scripts/home/home_art_atlas.gd")
 const ICON_CHARACTER := preload("res://art/icons/character.svg")
@@ -61,7 +65,11 @@ var combat_subtitle_label: Label
 var home_mode_shell: PanelContainer
 var cultivation_mode_button: Button
 var rest_mode_button: Button
+var still_mode_button: Button
+var animated_mode_button: Button
+var hidden_mode_button: Button
 var home_presentation_mode: StringName = MODE_CULTIVATION
+var home_motion_mode: StringName = MOTION_STILL
 
 var cultivation_event_shell: PanelContainer
 var cultivation_event_title: Label
@@ -210,6 +218,27 @@ func _request_home_presentation_mode(mode: StringName) -> void:
 		return
 	set_home_presentation_mode(normalized)
 	home_mode_requested.emit(normalized)
+
+func set_home_motion_mode(mode: StringName) -> void:
+	home_motion_mode = normalize_home_motion_mode(mode)
+	_refresh_home_mode_buttons()
+
+func get_home_motion_mode() -> StringName:
+	return home_motion_mode
+
+static func normalize_home_motion_mode(mode: StringName) -> StringName:
+	if mode == MOTION_ANIMATED:
+		return MOTION_ANIMATED
+	if mode == MOTION_HIDDEN:
+		return MOTION_HIDDEN
+	return MOTION_STILL
+
+func _request_home_motion_mode(mode: StringName) -> void:
+	var normalized := normalize_home_motion_mode(mode)
+	if normalized == home_motion_mode:
+		return
+	set_home_motion_mode(normalized)
+	home_motion_mode_requested.emit(normalized)
 
 func show_breakthrough(from_realm: String, to_realm: String, steps: int = 1, major: bool = false) -> void:
 	var safe_steps := maxi(1, steps)
@@ -619,47 +648,67 @@ func _build_home_mode_switch() -> void:
 	home_mode_shell.anchor_right = 0.5
 	home_mode_shell.anchor_top = 0.0
 	home_mode_shell.anchor_bottom = 0.0
-	home_mode_shell.offset_left = -104.0
-	home_mode_shell.offset_right = 104.0
-	home_mode_shell.offset_top = 452.0
-	home_mode_shell.offset_bottom = 486.0
+	home_mode_shell.offset_left = -116.0
+	home_mode_shell.offset_right = 116.0
+	home_mode_shell.offset_top = 414.0
+	home_mode_shell.offset_bottom = 488.0
 	home_mode_shell.add_theme_stylebox_override(
 		"panel",
-		_flat(Color(0.004, 0.022, 0.035, 0.86), 17, Color(0.58, 0.78, 0.82, 0.22), 1)
+		_flat(Color(0.004, 0.022, 0.035, 0.88), 18, Color(0.58, 0.78, 0.82, 0.24), 1)
 	)
 	add_child(home_mode_shell)
 
 	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 3)
-	margin.add_theme_constant_override("margin_right", 3)
-	margin.add_theme_constant_override("margin_top", 3)
-	margin.add_theme_constant_override("margin_bottom", 3)
+	margin.add_theme_constant_override("margin_left", 4)
+	margin.add_theme_constant_override("margin_right", 4)
+	margin.add_theme_constant_override("margin_top", 4)
+	margin.add_theme_constant_override("margin_bottom", 4)
 	home_mode_shell.add_child(margin)
 
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 3)
-	margin.add_child(row)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 3)
+	margin.add_child(col)
 
-	cultivation_mode_button = _home_mode_button("Tu Luyện", "CultivationModeButton")
-	# Switch presentation on touch-down so the Home responds immediately on
-	# mobile and headless pointer drivers. The later pressed event is harmless
-	# because _request_home_presentation_mode is idempotent for the active mode.
+	var content_row := HBoxContainer.new()
+	content_row.add_theme_constant_override("separation", 3)
+	col.add_child(content_row)
+
+	cultivation_mode_button = _home_mode_button("Tu Luyện", "CultivationModeButton", 108.0)
 	cultivation_mode_button.button_down.connect(func(): _request_home_presentation_mode(MODE_CULTIVATION))
 	cultivation_mode_button.pressed.connect(func(): _request_home_presentation_mode(MODE_CULTIVATION))
-	row.add_child(cultivation_mode_button)
+	content_row.add_child(cultivation_mode_button)
 
-	rest_mode_button = _home_mode_button("Nghỉ Ngơi", "RestModeButton")
+	rest_mode_button = _home_mode_button("Nghỉ Ngơi", "RestModeButton", 108.0)
 	rest_mode_button.button_down.connect(func(): _request_home_presentation_mode(MODE_REST))
 	rest_mode_button.pressed.connect(func(): _request_home_presentation_mode(MODE_REST))
-	row.add_child(rest_mode_button)
+	content_row.add_child(rest_mode_button)
+
+	var motion_row := HBoxContainer.new()
+	motion_row.add_theme_constant_override("separation", 3)
+	col.add_child(motion_row)
+
+	still_mode_button = _home_mode_button("Tĩnh", "StillModeButton", 70.0)
+	still_mode_button.button_down.connect(func(): _request_home_motion_mode(MOTION_STILL))
+	still_mode_button.pressed.connect(func(): _request_home_motion_mode(MOTION_STILL))
+	motion_row.add_child(still_mode_button)
+
+	animated_mode_button = _home_mode_button("Động", "AnimatedModeButton", 70.0)
+	animated_mode_button.button_down.connect(func(): _request_home_motion_mode(MOTION_ANIMATED))
+	animated_mode_button.pressed.connect(func(): _request_home_motion_mode(MOTION_ANIMATED))
+	motion_row.add_child(animated_mode_button)
+
+	hidden_mode_button = _home_mode_button("Ẩn", "HiddenModeButton", 70.0)
+	hidden_mode_button.button_down.connect(func(): _request_home_motion_mode(MOTION_HIDDEN))
+	hidden_mode_button.pressed.connect(func(): _request_home_motion_mode(MOTION_HIDDEN))
+	motion_row.add_child(hidden_mode_button)
 
 	_refresh_home_mode_buttons()
 
-func _home_mode_button(caption: String, node_name: String) -> Button:
+func _home_mode_button(caption: String, node_name: String, min_width: float) -> Button:
 	var button := Button.new()
 	button.name = node_name
 	button.text = caption
-	button.custom_minimum_size = Vector2(98, 28)
+	button.custom_minimum_size = Vector2(min_width, 28)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.focus_mode = Control.FOCUS_NONE
 	button.add_theme_font_size_override("font_size", 9)
@@ -670,16 +719,14 @@ func _home_mode_button(caption: String, node_name: String) -> Button:
 func _refresh_home_mode_buttons() -> void:
 	if cultivation_mode_button == null or rest_mode_button == null:
 		return
-	_apply_home_mode_button_style(
-		cultivation_mode_button,
-		home_presentation_mode == MODE_CULTIVATION,
-		MINT
-	)
-	_apply_home_mode_button_style(
-		rest_mode_button,
-		home_presentation_mode == MODE_REST,
-		GOLD
-	)
+	_apply_home_mode_button_style(cultivation_mode_button, home_presentation_mode == MODE_CULTIVATION, MINT)
+	_apply_home_mode_button_style(rest_mode_button, home_presentation_mode == MODE_REST, GOLD)
+	if still_mode_button != null:
+		_apply_home_mode_button_style(still_mode_button, home_motion_mode == MOTION_STILL, CYAN)
+	if animated_mode_button != null:
+		_apply_home_mode_button_style(animated_mode_button, home_motion_mode == MOTION_ANIMATED, GOLD)
+	if hidden_mode_button != null:
+		_apply_home_mode_button_style(hidden_mode_button, home_motion_mode == MOTION_HIDDEN, VIOLET)
 
 func _apply_home_mode_button_style(button: Button, selected: bool, accent: Color) -> void:
 	button.add_theme_color_override("font_color", GOLD_HI if selected else MUTED)
