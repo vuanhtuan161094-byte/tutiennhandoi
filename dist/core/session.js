@@ -67,6 +67,7 @@ import { buildHuntCombatProfileV130 } from './hunt-real-combat-v130.js';
 import { resolveEndlessHuntWithCombatKernelV2 } from './endless-hunt-combat-kernel-v2.js';
 import { deterministicBinomialV77, deterministicJitteredTotalV77, huntVirtualFarmPlayerDpsLog10V77, huntVirtualFarmProfileV77 } from './hunt-virtual-farm-v77.js';
 import { compileCombatEncounterV1, runCompiledCombatEncounterV2 } from './combat-encounter-compiler.js';
+import { applyCombatSettlementPolicyV1, contentEventDefeatPolicyV1, daoSuyDefeatPolicyV1, endlessHuntSettlementPolicyV1 } from './combat-settlement-policy.js';
 import { buildPlayerCombatEntityV1 } from './combat-entity-factory.js';
 import { challengePvpV91, joinPvpV91, pvpViewV91, refreshPvpDefenseV91, replayPvpV91, setPvpTacticalV94, settlePvpSeasonV94, recordPvpRewardIntegrityV94, recordPvpSeasonRewardIntegrityV94 } from './pvp-v91.js';
 import { endlessHuntFarmRecommendationsV123, evaluateHuntBossMechanicV123, huntFarmRewardEfficiencyV123 } from './pve-progression-v123.js';
@@ -1109,15 +1110,20 @@ export class SimulationSession {
         const fateNotes = [...fateMods.notes, ...fateEvent.notes];
         // V180: Boss thật chỉ là progression gate. Mọi tài nguyên Hunt được kết toán
         // qua Săn Ảo theo thời gian; trận Boss không mint loot/economy/first-clear reward.
+        const huntSettlement = applyCombatSettlementPolicyV1({
+            state: this.stateValue,
+            policy: endlessHuntSettlementPolicyV1({
+                won: result.won,
+                injuryGain: result.injuryGain,
+                fateInjuryDelta: fateEvent.injuryDelta,
+            }),
+        });
         if (result.won) {
             cultivationGain = 0;
-            if (fateEvent.injuryDelta > 0)
-                this.stateValue.injury = Math.min(100, this.stateValue.injury + fateEvent.injuryDelta);
             fateNotes.push(...fateOnHuntResult(this.currentLifeValue.birth.originsV101?.fate, fateRuntime, true, result.monster.grade === 'elite' || result.monster.grade === 'boss'));
             recordActiveArtifactBattle(this.stateValue.artifacts, true, this.stateValue.worldTimeYears, result.monster.name);
         }
         else {
-            this.stateValue.injury = Math.min(100, this.stateValue.injury + result.injuryGain + fateEvent.injuryDelta);
             fateNotes.push(...fateOnHuntResult(this.currentLifeValue.birth.originsV101?.fate, fateRuntime, false, result.monster.grade === 'elite' || result.monster.grade === 'boss'));
             recordActiveArtifactBattle(this.stateValue.artifacts, false, this.stateValue.worldTimeYears, result.monster.name);
         }
@@ -1465,8 +1471,13 @@ export class SimulationSession {
             }
             else {
                 this.applyContentEventEffect(choice.combat.onLose, definition, choice);
-                const deathPenalty = this.applyCombatDeathPenalty(`content:${eventId}`);
-                summary = `${choice.combat.loseText ?? `${choice.resultText} Ngươi thất bại trước ${enemyBase.name}.`} ${deathPenalty.applied ? `Thương Thế tăng từ ${deathPenalty.injuryBefore.toFixed(0)} lên ${deathPenalty.injuryAfter.toFixed(0)}; Thọ Nguyên không giảm.` : ''}`.trim();
+                const defeatSettlement = applyCombatSettlementPolicyV1({
+                    state: this.stateValue,
+                    policy: contentEventDefeatPolicyV1(`content:${eventId}`),
+                    applyCanonicalDeathPenalty: context => this.applyCombatDeathPenalty(context),
+                });
+                const deathPenalty = defeatSettlement.canonicalDeathPenaltyResult;
+                summary = `${choice.combat.loseText ?? `${choice.resultText} Ngươi thất bại trước ${enemyBase.name}.`} ${deathPenalty?.applied ? `Thương Thế tăng từ ${deathPenalty.injuryBefore.toFixed(0)} lên ${deathPenalty.injuryAfter.toFixed(0)}; Thọ Nguyên không giảm.` : ''}`.trim();
                 completed = choice.combat.completeOnLoss !== false;
             }
         }
@@ -4321,7 +4332,7 @@ export class SimulationSession {
         this.stateValue.ageYears += elapsedYears;
         advanceDaoSuyByWorldYearsV127(this.stateValue.immortal, order, elapsedYears, this.stateValue.inheritedOrigins);
         if (!won)
-            this.stateValue.injury = Math.min(100, this.stateValue.injury + 18);
+            applyCombatSettlementPolicyV1({ state: this.stateValue, policy: daoSuyDefeatPolicyV1() });
         const statusAfter = daoSuyStatusV127(this.stateValue.immortal, order, this.stateValue.inheritedOrigins);
         const event = {
             id: `dao-suy.tribulation.${this.currentLifeValue.lifeId}.${this.actionIndexValue}`,
