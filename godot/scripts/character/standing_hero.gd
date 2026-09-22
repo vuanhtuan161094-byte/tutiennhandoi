@@ -26,7 +26,9 @@ func _ready() -> void:
 	expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-	pivot_offset = size * Vector2(0.5, 0.68)
+	# Anchor procedural breathing near the feet. Moving around a torso pivot made
+	# the static master look like it was floating instead of standing.
+	pivot_offset = size * Vector2(0.5, 0.92)
 	_base_position = position
 	_base_scale = scale
 	_load_visual()
@@ -86,24 +88,15 @@ func _process(delta: float) -> void:
 			_set_frame(next_frame)
 		return
 
-	# Production standing idle for the approved master:
-	# - body breathing,
-	# - slow center-of-gravity shift,
-	# - tiny counter-motion so the pose does not feel like a floating card.
-	# Hair / sleeves / lower silk remain shader-local to keep face and feet stable.
-	var breath := sin(_time * 1.08)
-	var weight_shift := sin(_time * 0.47 + 0.72)
-	var counter_motion := sin(_time * 0.94 + 1.34)
-	var micro := sin(_time * 0.21 + 1.90)
-
-	position = _base_position + Vector2(
-		weight_shift * 1.20 + counter_motion * 0.20 + micro * 0.16,
-		breath * 0.92
-	)
-	rotation = deg_to_rad(weight_shift * 0.12 + counter_motion * 0.025)
+	# The approved master is a single standing image. Do not translate or rotate
+	# the whole card: that reads as floating. Keep the feet fixed and use only a
+	# tiny breathing deformation; hair/sleeves/silk animate locally in shader.
+	var breath := sin(_time * 1.06)
+	position = _base_position
+	rotation = 0.0
 	scale = Vector2(
-		_base_scale.x * (1.0 + breath * 0.0018 + counter_motion * 0.0006),
-		_base_scale.y * (1.0 + breath * 0.0038)
+		_base_scale.x * (1.0 - breath * 0.00045),
+		_base_scale.y * (1.0 + breath * 0.00135)
 	)
 
 func _set_frame(frame_index: int) -> void:
@@ -149,10 +142,10 @@ void fragment() {
 	float silk_wave = sin(TIME * 0.82 + uv.y * 10.0 + uv.x * 3.2 + 1.4);
 	float breath = sin(TIME * 1.08);
 
-	uv.x += hair_wave * 0.00155 * hair_mask;
-	uv.x += sleeve_wave * 0.00115 * sleeve_mask;
-	uv.x += silk_wave * 0.00235 * silk_mask;
-	uv.y += breath * 0.00095 * torso_mask;
+	uv.x += hair_wave * 0.00195 * hair_mask;
+	uv.x += sleeve_wave * 0.00145 * sleeve_mask;
+	uv.x += silk_wave * 0.00275 * silk_mask;
+	uv.y += breath * 0.00055 * torso_mask;
 
 	vec4 tex = texture(TEXTURE, clamp(uv, vec2(0.001), vec2(0.999)));
 	float shimmer =
