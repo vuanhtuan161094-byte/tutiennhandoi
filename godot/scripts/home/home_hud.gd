@@ -57,7 +57,10 @@ var combat_subtitle_label: Label
 var cultivation_event_shell: PanelContainer
 var cultivation_event_title: Label
 var cultivation_event_subtitle: Label
+var cultivation_gain_label: Label
 var _cultivation_event_tween: Tween
+var _cultivation_gain_tween: Tween
+var _progress_bump_tween: Tween
 
 # Presentation-only interpolation. The canonical runtime still commits Tu Vi in
 # V140 quanta; Home only visualizes the current 15-second quantum continuously.
@@ -71,6 +74,9 @@ var _rate_per_15s := 0.0
 var _cultivation_ready := false
 var _bridge_online := false
 var _has_cultivation_sample := false
+var _gain_pulse_elapsed := 0.0
+var _gain_pulse_anchor_tu_vi := 0.0
+var _gain_pulse_initialized := false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
@@ -230,12 +236,26 @@ func _play_cultivation_event(title: String, subtitle: String, accent: Color, hol
 		_flat(Color(0.005, 0.025, 0.040, 0.90), 22, Color(accent.r, accent.g, accent.b, 0.78), 2)
 	)
 	cultivation_event_shell.visible = true
+	cultivation_event_shell.pivot_offset = Vector2(142.0, 30.0)
 	cultivation_event_shell.modulate = Color(1, 1, 1, 0)
+	cultivation_event_shell.scale = Vector2(0.90, 0.90)
+
+	# Events should land with impact instead of looking like a flat toast.
 	_cultivation_event_tween = create_tween()
-	_cultivation_event_tween.tween_property(cultivation_event_shell, "modulate:a", 1.0, 0.14)
-	_cultivation_event_tween.tween_interval(maxf(0.45, hold))
-	_cultivation_event_tween.tween_property(cultivation_event_shell, "modulate:a", 0.0, 0.28)
-	_cultivation_event_tween.tween_callback(func(): cultivation_event_shell.visible = false)
+	_cultivation_event_tween.set_parallel(true)
+	_cultivation_event_tween.tween_property(cultivation_event_shell, "modulate:a", 1.0, 0.12)
+	_cultivation_event_tween.tween_property(cultivation_event_shell, "scale", Vector2(1.045, 1.045), 0.17).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_cultivation_event_tween.set_parallel(false)
+	_cultivation_event_tween.tween_property(cultivation_event_shell, "scale", Vector2.ONE, 0.09).set_ease(Tween.EASE_OUT)
+	_cultivation_event_tween.tween_interval(maxf(0.40, hold))
+	_cultivation_event_tween.set_parallel(true)
+	_cultivation_event_tween.tween_property(cultivation_event_shell, "modulate:a", 0.0, 0.24)
+	_cultivation_event_tween.tween_property(cultivation_event_shell, "scale", Vector2(0.975, 0.975), 0.24)
+	_cultivation_event_tween.set_parallel(false)
+	_cultivation_event_tween.tween_callback(func():
+		cultivation_event_shell.visible = false
+		cultivation_event_shell.scale = Vector2.ONE
+	)
 
 func _humanize_tribulation(kind: String) -> String:
 	var names := {
@@ -250,11 +270,24 @@ func _process(delta: float) -> void:
 	if not cultivation_animation_active or not _has_cultivation_sample:
 		return
 
+	var safe_delta := maxf(0.0, delta)
+
 	# Never invent more than the next canonical 15-second commit. If the bridge
 	# is delayed/offline the visual counter stops at that boundary.
 	var quantum_ceiling := minf(_display_required_tu_vi, _canonical_tu_vi + _rate_per_15s)
-	display_tu_vi = minf(quantum_ceiling, display_tu_vi + display_rate_per_second * maxf(0.0, delta))
+	display_tu_vi = minf(quantum_ceiling, display_tu_vi + display_rate_per_second * safe_delta)
 	_render_cultivation_display()
+
+	# Player-facing feedback is sampled from the already-authorized display
+	# counter. It never adds Tu Vi; it only visualizes integer gains about once
+	# per second so cultivation feels active instead of silently changing text.
+	_gain_pulse_elapsed += safe_delta
+	if _gain_pulse_elapsed >= 1.0:
+		var gain := cultivation_gain_pulse_amount(_gain_pulse_anchor_tu_vi, display_tu_vi)
+		if gain > 0:
+			_play_cultivation_gain(gain)
+		_gain_pulse_anchor_tu_vi = display_tu_vi
+		_gain_pulse_elapsed = fmod(_gain_pulse_elapsed, 1.0)
 
 func _bind_cultivation_sample(
 	tu_vi: float,
@@ -293,6 +326,14 @@ func _bind_cultivation_sample(
 	if ready:
 		display_tu_vi = minf(_display_required_tu_vi, maxf(display_tu_vi, tu_vi))
 
+	if reset_display or not _gain_pulse_initialized:
+		_gain_pulse_anchor_tu_vi = display_tu_vi
+		_gain_pulse_elapsed = 0.0
+		_gain_pulse_initialized = true
+	elif ready:
+		_gain_pulse_anchor_tu_vi = display_tu_vi
+		_gain_pulse_elapsed = 0.0
+
 	cultivation_animation_active = _bridge_online and not ready and display_rate_per_second > 0.0
 	_render_cultivation_display()
 
@@ -309,6 +350,51 @@ func _render_cultivation_display() -> void:
 		rate_label.text = cultivation_rate_label_from_per_second(display_rate_per_second)
 	else:
 		rate_label.text = "+0 Tu Vi/s"
+
+static func cultivation_gain_pulse_amount(previous: float, current: float) -> int:
+	# Match the integer value the player actually sees in CultivationText.
+	return maxi(0, int(round(current)) - int(round(previous)))
+
+func _play_cultivation_gain(amount: int) -> void:
+	if amount <= 0 or cultivation_gain_label == null:
+		return
+
+	if _cultivation_gain_tween != null and _cultivation_gain_tween.is_valid():
+		_cultivation_gain_tween.kill()
+	if _progress_bump_tween != null and _progress_bump_tween.is_valid():
+		_progress_bump_tween.kill()
+
+	cultivation_gain_label.text = "+%d Tu Vi" % amount
+	cultivation_gain_label.visible = true
+	cultivation_gain_label.modulate = Color(1, 1, 1, 0)
+	cultivation_gain_label.scale = Vector2(0.90, 0.90)
+	cultivation_gain_label.offset_top = -22.0
+	cultivation_gain_label.offset_bottom = 2.0
+	cultivation_gain_label.pivot_offset = Vector2(cultivation_gain_label.size.x * 0.5, cultivation_gain_label.size.y * 0.5)
+
+	_cultivation_gain_tween = create_tween()
+	_cultivation_gain_tween.set_parallel(true)
+	_cultivation_gain_tween.tween_property(cultivation_gain_label, "modulate:a", 1.0, 0.10)
+	_cultivation_gain_tween.tween_property(cultivation_gain_label, "scale", Vector2(1.07, 1.07), 0.13).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_cultivation_gain_tween.tween_property(cultivation_gain_label, "offset_top", -31.0, 0.34).set_ease(Tween.EASE_OUT)
+	_cultivation_gain_tween.tween_property(cultivation_gain_label, "offset_bottom", -7.0, 0.34).set_ease(Tween.EASE_OUT)
+	_cultivation_gain_tween.set_parallel(false)
+	_cultivation_gain_tween.tween_property(cultivation_gain_label, "scale", Vector2.ONE, 0.08)
+	_cultivation_gain_tween.tween_interval(0.26)
+	_cultivation_gain_tween.tween_property(cultivation_gain_label, "modulate:a", 0.0, 0.22)
+	_cultivation_gain_tween.tween_callback(func():
+		cultivation_gain_label.visible = false
+		cultivation_gain_label.scale = Vector2.ONE
+		cultivation_gain_label.offset_top = -22.0
+		cultivation_gain_label.offset_bottom = 2.0
+	)
+
+	# The authoritative total remains the same value; this is only a small
+	# visual confirmation that the displayed integer advanced.
+	progress_text.pivot_offset = progress_text.size * 0.5
+	progress_text.scale = Vector2(1.075, 1.075)
+	_progress_bump_tween = create_tween()
+	_progress_bump_tween.tween_property(progress_text, "scale", Vector2.ONE, 0.20).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 static func cultivation_rate_per_second(rate_per_15s: float, commit_seconds: float = 15.0) -> float:
 	return maxf(0.0, rate_per_15s) / maxf(0.001, commit_seconds)
@@ -561,6 +647,22 @@ func _build_progress() -> void:
 	tap.add_theme_stylebox_override("hover", _flat(Color(0.40, 0.88, 1.0, 0.035), 18, Color(0.45, 0.86, 1.0, 0.24), 1))
 	tap.pressed.connect(func(): cultivation_pressed.emit())
 	shell.add_child(tap)
+
+	cultivation_gain_label = _readable_label("+0 Tu Vi", 13, MINT)
+	cultivation_gain_label.name = "CultivationGainPulse"
+	cultivation_gain_label.visible = false
+	cultivation_gain_label.z_index = 8
+	cultivation_gain_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cultivation_gain_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	cultivation_gain_label.anchor_left = 0.5
+	cultivation_gain_label.anchor_right = 0.5
+	cultivation_gain_label.anchor_top = 0.0
+	cultivation_gain_label.anchor_bottom = 0.0
+	cultivation_gain_label.offset_left = -72.0
+	cultivation_gain_label.offset_right = 72.0
+	cultivation_gain_label.offset_top = -22.0
+	cultivation_gain_label.offset_bottom = 2.0
+	shell.add_child(cultivation_gain_label)
 
 func _build_cultivation_event() -> void:
 	cultivation_event_shell = PanelContainer.new()
