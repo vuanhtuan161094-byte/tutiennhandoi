@@ -131,7 +131,8 @@ func _build() -> void:
 	add_child(veil)
 
 	var header := Panel.new()
-	_anchor(header, 10, 10, 380, 72)
+	header.z_index = 20
+	_anchor(header, 10, 430, 380, 492)
 	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	header.add_theme_stylebox_override("panel", _flat(Color(0.01, 0.03, 0.05, 0.72), 16, Color(0.70, 0.82, 0.86, 0.16), 1))
 	add_child(header)
@@ -163,20 +164,23 @@ func _build() -> void:
 
 	var stage := Control.new()
 	stage.name = "CharacterStage"
-	_anchor(stage, 0, 74, 390, 500)
+	stage.z_index = 0
+	_anchor(stage, 0, 0, 390, 526)
 	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(stage)
 
 	_hero_glow = Panel.new()
-	_anchor(_hero_glow, 92, 60, 298, 394)
-	_hero_glow.pivot_offset = Vector2(103, 167)
+	_hero_glow.z_index = -8
+	_anchor(_hero_glow, 62, 8, 328, 506)
+	_hero_glow.pivot_offset = Vector2(133, 249)
 	_hero_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hero_glow.add_theme_stylebox_override("panel", _flat(Color(0.23, 0.68, 0.76, 0.035), 98, Color(0.95, 0.75, 0.31, 0.22), 2))
 	stage.add_child(_hero_glow)
 
 	var hero_ground := Panel.new()
 	hero_ground.name = "CharacterGroundShadow"
-	_anchor(hero_ground, 116, 350, 274, 382)
+	hero_ground.z_index = -7
+	_anchor(hero_ground, 96, 468, 294, 506)
 	hero_ground.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hero_ground.add_theme_stylebox_override(
 		"panel",
@@ -186,18 +190,21 @@ func _build() -> void:
 
 	_hero = STANDING_HERO_SCRIPT.new()
 	_hero.name = "CharacterHero"
-	_anchor(_hero, 78, 26, 312, 402)
+	_hero.z_index = -6
+	# Character animation is the stage backdrop. UI remains interactive above it.
+	_anchor(_hero, 42, -6, 348, 512)
 	stage.add_child(_hero)
 
 	var slot_specs := [
-		["weapon", "Đạo Binh", EQUIPMENT_SLOT_LEFT_X, 30], ["head", "Đạo Quan", EQUIPMENT_SLOT_LEFT_X, 100], ["gloves", "Hộ Uyển", EQUIPMENT_SLOT_LEFT_X, 170], ["bracelet", "Linh Trạc", EQUIPMENT_SLOT_LEFT_X, 240], ["necklace", "Ngọc Bội", EQUIPMENT_SLOT_LEFT_X, 310],
-		["robe", "Pháp Bào", EQUIPMENT_SLOT_RIGHT_X, 30], ["belt", "Huyền Đái", EQUIPMENT_SLOT_RIGHT_X, 100], ["boots", "Vân Ngoa", EQUIPMENT_SLOT_RIGHT_X, 170], ["ring", "Đạo Giới", EQUIPMENT_SLOT_RIGHT_X, 240], ["talisman", "Hộ Phù", EQUIPMENT_SLOT_RIGHT_X, 310],
+		["weapon", "Đạo Binh", EQUIPMENT_SLOT_LEFT_X, 154], ["head", "Đạo Quan", EQUIPMENT_SLOT_LEFT_X, 220], ["gloves", "Hộ Uyển", EQUIPMENT_SLOT_LEFT_X, 286], ["bracelet", "Linh Trạc", EQUIPMENT_SLOT_LEFT_X, 352], ["necklace", "Ngọc Bội", EQUIPMENT_SLOT_LEFT_X, 418],
+		["robe", "Pháp Bào", EQUIPMENT_SLOT_RIGHT_X, 154], ["belt", "Huyền Đái", EQUIPMENT_SLOT_RIGHT_X, 220], ["boots", "Vân Ngoa", EQUIPMENT_SLOT_RIGHT_X, 286], ["ring", "Đạo Giới", EQUIPMENT_SLOT_RIGHT_X, 352], ["talisman", "Hộ Phù", EQUIPMENT_SLOT_RIGHT_X, 418],
 	]
 	for spec in slot_specs:
 		_add_slot(stage, str(spec[0]), str(spec[1]), float(spec[2]), float(spec[3]))
 
 	var path_panel := Panel.new()
-	_anchor(path_panel, 76, 378, 314, 426)
+	path_panel.z_index = 12
+	_anchor(path_panel, 76, 374, 314, 422)
 	path_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	path_panel.add_theme_stylebox_override("panel", _flat(Color(0.01, 0.03, 0.05, 0.84), 15, Color(0.91, 0.74, 0.34, 0.34), 1))
 	stage.add_child(path_panel)
@@ -227,7 +234,8 @@ func _build() -> void:
 	path_panel.add_child(_path_secondary)
 
 	var stats_panel := Panel.new()
-	_anchor(stats_panel, 10, 506, 380, 568)
+	stats_panel.z_index = 20
+	_anchor(stats_panel, 10, 500, 380, 558)
 	stats_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stats_panel.add_theme_stylebox_override("panel", _flat(DARK, 15, Color(0.43, 0.67, 0.75, 0.20), 1))
 	add_child(stats_panel)
@@ -244,7 +252,7 @@ func _build() -> void:
 	_potential_button.add_theme_stylebox_override("hover", _flat(Color(0.10, 0.10, 0.07, 0.96), 14, Color(1.0, 0.84, 0.42, 0.76), 2))
 	_potential_button.add_theme_stylebox_override("pressed", _flat(Color(0.16, 0.12, 0.045, 0.98), 14, GOLD_HI, 2))
 	_potential_button.focus_mode = Control.FOCUS_NONE
-	_anchor(_potential_button, 72, 576, 318, 620)
+	_anchor(_potential_button, 72, 566, 318, 608)
 	_potential_button.pressed.connect(_emit_detail.bind(&"potential"))
 	add_child(_potential_button)
 
@@ -260,7 +268,7 @@ func _build() -> void:
 		button.add_theme_stylebox_override("hover", _flat(Color(0.04, 0.08, 0.10, 0.94), 14, Color(0.55, 0.88, 0.91, 0.42), 1))
 		button.add_theme_stylebox_override("pressed", _flat(Color(0.06, 0.11, 0.13, 0.98), 14, CYAN, 2))
 		button.focus_mode = Control.FOCUS_NONE
-		_anchor(button, 20 + i * 119, 630, 132 + i * 119, 680)
+		_anchor(button, 20 + i * 119, 616, 132 + i * 119, 664)
 		button.pressed.connect(_emit_detail.bind(action[1]))
 		add_child(button)
 
@@ -270,7 +278,7 @@ func _build() -> void:
 	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_status.add_theme_font_size_override("font_size", 9)
 	_status.add_theme_color_override("font_color", MUTED)
-	_anchor(_status, 16, 686, 374, 714)
+	_anchor(_status, 16, 670, 374, 700)
 	add_child(_status)
 
 	_detail_sheet = CHARACTER_DETAIL_SHEET_SCRIPT.new()
@@ -293,7 +301,8 @@ func _add_slot(stage: Control, slot_id: String, slot_label: String, x: float, y:
 	var slot = EQUIPMENT_SLOT_SCRIPT.new()
 	slot.name = "CharacterSlot_%s" % slot_id
 	slot.setup(slot_id, slot_label)
-	_anchor(slot, x, y, x + 64, y + 66)
+	slot.z_index = 10
+	_anchor(slot, x, y, x + 64, y + 62)
 	slot.slot_pressed.connect(_on_slot_pressed)
 	stage.add_child(slot)
 	_slot_components[slot_id] = slot
