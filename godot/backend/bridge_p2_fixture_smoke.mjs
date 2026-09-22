@@ -119,10 +119,13 @@ try{
   assert(tribulationFixture.home?.cultivation?.ready===true,'Tribulation fixture must fill Tu Vi');
   assert(tribulationFixture.home?.cultivation?.transition==='tribulation','Tribulation fixture must expose canonical transition');
   assert(tribulationFixture.home?.diagnostic?.previewOnly===true,'Tribulation fixture must declare previewOnly');
+  assert(Number(tribulationFixture.result?.greatVehicleClearedFloor)===0,`QA fixture unexpectedly pre-cleared Vạn Đạo Thiên Mạc: floor ${tribulationFixture.result?.greatVehicleClearedFloor}`);
+  assert(Array.isArray(tribulationFixture.result?.milestoneBlockers)&&tribulationFixture.result.milestoneBlockers.length>0,`QA fixture expected canonical milestone blockers, got ${JSON.stringify(tribulationFixture.result?.milestoneBlockers)}`);
+  assert(String(tribulationFixture.result.milestoneBlockers[0]||'').includes('Vạn Đạo Thiên Mạc'),'Expected Vạn Đạo Thiên Mạc blocker before action');
 
   const blocked=await request('/action',{method:'POST',body:{action:'tribulationV140'},allowError:true});
-  assert(blocked.response.ok===false,'QA must not bypass canonical tribulation milestone blocker');
-  assert(String(blocked.data?.error||'').includes('Vạn Đạo Thiên Mạc'),'Expected canonical Great Vehicle milestone blocker');
+  assert(blocked.response.ok===false,`QA must not bypass canonical tribulation milestone blocker; response=${JSON.stringify(blocked.data)}`);
+  assert(String(blocked.data?.error||'').includes('Vạn Đạo Thiên Mạc'),`Expected canonical Great Vehicle milestone blocker, got ${blocked.data?.error||''}`);
 
   const cleared=(await request('/action',{
     method:'POST',
