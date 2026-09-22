@@ -38,7 +38,8 @@ function typedName(log) {
     if (log.type === 'heal') return 'heal.applied';
     if (log.type === 'shieldBreak') return 'shield.broken';
     if (log.type === 'shield') return typeof log.data?.absorbed === 'number' ? 'shield.absorbed' : 'shield.applied';
-    if (log.type === 'status') return 'status.applied';
+    if (log.type === 'status') return log.data?.immune === true ? 'status.resisted' : 'status.applied';
+    if (log.type === 'info' && typeof log.data?.removed === 'number') return 'status.removed';
     if (log.type === 'resource') return 'resource.changed';
     if (log.type === 'break') return 'break.changed';
     if (log.type === 'phase') return 'boss.phase_entered';
@@ -226,7 +227,9 @@ export function buildCombatResultV1(input) {
         summary: {
             castCountsByActor: castCounts(events),
             damageByActor: numericActorMap(analytics, 'damageDealt'),
+            damageBySkillByActor: Object.fromEntries(Object.entries(analytics.combatants).map(([id, row]) => [id, { ...(row.damageBySkill ?? {}) }])),
             healingByActor: numericActorMap(analytics, 'healingDone'),
+            healingBySkillByActor: Object.fromEntries(Object.entries(analytics.combatants).map(([id, row]) => [id, { ...(row.healingBySkill ?? {}) }])),
             shieldAbsorbedByActor: numericActorMap(analytics, 'shieldAbsorbed'),
             dodgesByActor: numericActorMap(analytics, 'dodges'),
             critEventsByActor: numericActorMap(analytics, 'critEvents'),
