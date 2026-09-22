@@ -156,7 +156,7 @@ void fragment() {
 
 	vec4 tex = texture(TEXTURE, clamp(uv, vec2(0.001), vec2(0.999)));
 	float qi = 1.0 + 0.007 * sin(TIME * 0.82 + uv.y * 5.2);
-	float focus = 1.0 + surge * 0.095 * smoothstep(0.74, 0.05, distance(uv, vec2(0.5, 0.58)));
+	float focus = 1.0 + surge * 0.095 * (1.0 - smoothstep(0.05, 0.74, distance(uv, vec2(0.5, 0.58))));
 	tex.rgb *= qi * focus;
 	COLOR = tex;
 }
