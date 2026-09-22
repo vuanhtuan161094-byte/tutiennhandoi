@@ -81,17 +81,17 @@ func play_breakthrough_burst(major: bool = false) -> void:
 
 func play_ling_quang_burst(multiplier: int) -> void:
 	if multiplier >= 9:
-		play_meditation_surge(2.0, 1.55)
+		play_meditation_surge(3.4, 1.55)
 	elif multiplier >= 7:
-		play_meditation_surge(1.75, 1.40)
+		play_meditation_surge(3.0, 1.40)
 	elif multiplier >= 5:
-		play_meditation_surge(1.55, 1.25)
+		play_meditation_surge(2.7, 1.25)
 	elif multiplier >= 4:
-		play_meditation_surge(1.35, 1.10)
+		play_meditation_surge(2.5, 1.10)
 	elif multiplier >= 3:
-		play_meditation_surge(1.15, 0.90)
+		play_meditation_surge(2.3, 0.90)
 	elif multiplier >= 2:
-		play_meditation_surge(0.85, 0.65)
+		play_meditation_surge(2.0, 0.65)
 
 func _build_world() -> void:
 	var bg := TextureRect.new()
@@ -108,21 +108,21 @@ func _build_world() -> void:
 	var wash := ColorRect.new()
 	wash.name = "WorldWash"
 	wash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	wash.color = Color(0.015, 0.050, 0.075, 0.10)
+	wash.color = Color(0.015, 0.050, 0.075, 0.05)
 	wash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	wash.z_index = Z_BACKGROUND + 1
 	add_child(wash)
 
 	var top_shade := ColorRect.new()
 	_anchor_top_wide(top_shade, 0.0, 162.0)
-	top_shade.color = Color(0.0, 0.012, 0.022, 0.31)
+	top_shade.color = Color(0.0, 0.012, 0.022, 0.22)
 	top_shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	top_shade.z_index = Z_BACKGROUND + 2
 	add_child(top_shade)
 
 	var bottom_shade := ColorRect.new()
 	_anchor_bottom_wide(bottom_shade, -276.0, 0.0)
-	bottom_shade.color = Color(0.0, 0.014, 0.025, 0.56)
+	bottom_shade.color = Color(0.0, 0.014, 0.025, 0.44)
 	bottom_shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bottom_shade.z_index = Z_BACKGROUND + 2
 	add_child(bottom_shade)
