@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
-from PIL import Image, ImageChops, ImageDraw, ImageStat
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageStat
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,8 +34,11 @@ class PipelineConfig:
     key_tolerance: float
     key_feather: float
     despill: float
+    matte_close_radius: int
+    matte_blur_radius: float
     alpha_threshold: int
     padding: int
+    frame_width: int
     dedupe_threshold: float
     columns: int
     animation_name: str
@@ -229,17 +232,62 @@ def _chroma_key(
             alpha_scale = (distance - tolerance) / feather
 
         alpha = round(original_alpha * alpha_scale)
-        if despill > 0 and alpha < original_alpha:
+        if despill > 0 and 0.0 < alpha_scale < 1.0:
+            # Recover foreground color from a partially keyed edge instead of
+            # blending it toward gray. This removes white/green background
+            # contamination around hair, skin and translucent fabric.
+            safe_alpha = max(alpha_scale, 1.0 / 255.0)
+            estimated_r = (r - kr * (1.0 - safe_alpha)) / safe_alpha
+            estimated_g = (g - kg * (1.0 - safe_alpha)) / safe_alpha
+            estimated_b = (b - kb * (1.0 - safe_alpha)) / safe_alpha
             edge_strength = (1.0 - alpha_scale) * despill
-            neutral = round((r + g + b) / 3)
-            r = round(r * (1 - edge_strength) + neutral * edge_strength)
-            g = round(g * (1 - edge_strength) + neutral * edge_strength)
-            b = round(b * (1 - edge_strength) + neutral * edge_strength)
+            r = round(r * (1.0 - edge_strength) + max(0.0, min(255.0, estimated_r)) * edge_strength)
+            g = round(g * (1.0 - edge_strength) + max(0.0, min(255.0, estimated_g)) * edge_strength)
+            b = round(b * (1.0 - edge_strength) + max(0.0, min(255.0, estimated_b)) * edge_strength)
         out.append((r, g, b, alpha))
 
     keyed = Image.new("RGBA", rgba.size)
     keyed.putdata(out)
     return keyed
+
+
+def _refine_matte(
+    image: Image.Image,
+    close_radius: int,
+    blur_radius: float,
+) -> Image.Image:
+    """Clean tiny matte holes and soften stair-stepped alpha edges conservatively."""
+    rgba = image.convert("RGBA")
+    alpha = rgba.getchannel("A")
+
+    radius = max(0, int(close_radius))
+    if radius > 0:
+        # Morphological close: fill only very small transparent pinholes such as
+        # background specks between compressed hair strands. Keep the default
+        # radius tiny so genuine large gaps between hair locks remain open.
+        kernel = radius * 2 + 1
+        alpha = alpha.filter(ImageFilter.MaxFilter(kernel))
+        alpha = alpha.filter(ImageFilter.MinFilter(kernel))
+
+    blur = max(0.0, float(blur_radius))
+    if blur > 0.0:
+        alpha = alpha.filter(ImageFilter.GaussianBlur(radius=blur))
+
+    refined = rgba.copy()
+    refined.putalpha(alpha)
+    return refined
+
+
+def _resize_stable_frames(images: list[Image.Image], frame_width: int) -> list[Image.Image]:
+    target_width = max(0, int(frame_width))
+    if target_width <= 0 or not images:
+        return images
+    source_width, source_height = images[0].size
+    if source_width <= target_width:
+        return images
+    target_height = max(1, round(source_height * target_width / source_width))
+    target_size = (target_width, target_height)
+    return [image.resize(target_size, Image.Resampling.LANCZOS) for image in images]
 
 
 def _opaque_bbox(image: Image.Image, alpha_threshold: int) -> tuple[int, int, int, int] | None:
@@ -494,11 +542,17 @@ def _process_sampled_frames(
             config.key_feather,
             config.despill,
         )
+        processed = _refine_matte(
+            processed,
+            config.matte_close_radius,
+            config.matte_blur_radius,
+        )
         keyed.append(processed)
         bboxes.append(_opaque_bbox(processed, config.alpha_threshold))
 
     union = _union_bbox(bboxes, source_size, config.padding)
     stable = [image.crop(union) for image in keyed]
+    stable = _resize_stable_frames(stable, config.frame_width)
     deduped = _dedupe_frames(stable, config.dedupe_threshold)
     if not deduped:
         raise RuntimeError("No frames remained after processing.")
@@ -528,9 +582,12 @@ def _process_sampled_frames(
         "keyTolerance": config.key_tolerance,
         "keyFeather": config.key_feather,
         "despill": config.despill,
+        "matteCloseRadius": config.matte_close_radius,
+        "matteBlurRadius": config.matte_blur_radius,
         "alphaThreshold": config.alpha_threshold,
         "unionCrop": list(union),
         "padding": config.padding,
+        "requestedFrameWidth": config.frame_width,
         "frameSize": list(frame_size),
         "pivotMode": config.pivot,
         "pivotPx": list(pivot),
@@ -610,8 +667,11 @@ def _self_test() -> None:
             key_tolerance=25.0,
             key_feather=20.0,
             despill=0.25,
+            matte_close_radius=1,
+            matte_blur_radius=0.45,
             alpha_threshold=8,
             padding=4,
+            frame_width=0,
             dedupe_threshold=0.4,
             columns=0,
             animation_name="self_test_idle",
@@ -664,9 +724,32 @@ def main() -> None:
     )
     parser.add_argument("--key-tolerance", type=float, default=48.0)
     parser.add_argument("--key-feather", type=float, default=28.0)
-    parser.add_argument("--despill", type=float, default=0.22, help="0..1 neutralize colored fringe.")
+    parser.add_argument(
+        "--despill",
+        type=float,
+        default=0.35,
+        help="0..1 recover foreground color on partially keyed edges; higher removes more key-color fringe.",
+    )
+    parser.add_argument(
+        "--matte-close-radius",
+        type=int,
+        default=1,
+        help="Morphological close radius in pixels for tiny hair/background pinholes. 0 disables.",
+    )
+    parser.add_argument(
+        "--matte-blur-radius",
+        type=float,
+        default=0.55,
+        help="Small Gaussian alpha blur for smoother character edges. 0 disables.",
+    )
     parser.add_argument("--alpha-threshold", type=int, default=8)
     parser.add_argument("--padding", type=int, default=8, help="Transparent padding around union crop.")
+    parser.add_argument(
+        "--frame-width",
+        type=int,
+        default=0,
+        help="Optional stable frame width after crop; 0 preserves source resolution. Uses Lanczos downscale.",
+    )
     parser.add_argument(
         "--dedupe-threshold",
         type=float,
@@ -714,6 +797,12 @@ def main() -> None:
         raise ValueError("--start must be >= 0")
     if args.end is not None and args.end <= args.start:
         raise ValueError("--end must be greater than --start")
+    if args.frame_width < 0:
+        raise ValueError("--frame-width must be >= 0")
+    if args.matte_close_radius < 0:
+        raise ValueError("--matte-close-radius must be >= 0")
+    if args.matte_blur_radius < 0:
+        raise ValueError("--matte-blur-radius must be >= 0")
 
     name = args.name or source.stem
     animation_name = "".join(ch if ch.isalnum() or ch in "_-" else "_" for ch in name).strip("_")
@@ -746,8 +835,11 @@ def main() -> None:
             key_tolerance=args.key_tolerance,
             key_feather=args.key_feather,
             despill=args.despill,
+            matte_close_radius=args.matte_close_radius,
+            matte_blur_radius=args.matte_blur_radius,
             alpha_threshold=args.alpha_threshold,
             padding=args.padding,
+            frame_width=args.frame_width,
             dedupe_threshold=args.dedupe_threshold,
             columns=args.columns,
             animation_name=animation_name,
