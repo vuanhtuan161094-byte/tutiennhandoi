@@ -105,7 +105,7 @@ func _build() -> void:
 	_badge.name = "EnhancementBadge"
 	_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_badge.add_theme_font_size_override("font_size", 8)
+	_badge.add_theme_font_size_override("font_size", 10)
 	_badge.add_theme_color_override("font_color", GOLD_HI)
 	_badge.add_theme_constant_override("outline_size", 3)
 	_badge.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.95))
@@ -117,7 +117,7 @@ func _build() -> void:
 	_set_mark.name = "SetMarker"
 	_set_mark.text = "◆"
 	_set_mark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_set_mark.add_theme_font_size_override("font_size", 7)
+	_set_mark.add_theme_font_size_override("font_size", 9)
 	_set_mark.add_theme_color_override("font_color", CYAN)
 	_anchor(_set_mark, 1, 1, 17, 16)
 	_set_mark.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -127,7 +127,7 @@ func _build() -> void:
 	_label.name = "SlotLabel"
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_label.add_theme_font_size_override("font_size", 8)
+	_label.add_theme_font_size_override("font_size", 10)
 	_label.add_theme_color_override("font_color", TEXT)
 	_label.add_theme_constant_override("outline_size", 2)
 	_label.add_theme_color_override("font_outline_color", Color(0.0, 0.01, 0.02, 0.92))
