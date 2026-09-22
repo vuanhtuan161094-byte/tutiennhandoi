@@ -139,7 +139,7 @@ export function resolveEndlessHuntWithCombatKernelV2(input) {
         playerTimeToKill: won ? battle.duration : Number.POSITIVE_INFINITY,
         enemyTimeToKill: outcome === 'defeat' ? battle.duration : Number.POSITIVE_INFINITY,
         timeoutSeconds, breakPressurePctPerSecond: playerBreak / duration, diagnosis, battle,
-        encounter, playerEntity: playerPrepared, enemyEntity: enemyPrepared,
+        combatResult: kernel.combatResult, encounter, playerEntity: playerPrepared, enemyEntity: enemyPrepared,
     };
 }
 //# sourceMappingURL=endless-hunt-combat-kernel-v2.js.map
