@@ -54,6 +54,15 @@ func get_home_mode() -> StringName:
 		return _hero.get_home_mode()
 	return &"cultivation"
 
+func set_motion_mode(mode: StringName) -> void:
+	if is_instance_valid(_hero) and _hero.has_method("set_motion_mode"):
+		_hero.set_motion_mode(mode)
+
+func get_motion_mode() -> StringName:
+	if is_instance_valid(_hero) and _hero.has_method("get_motion_mode"):
+		return _hero.get_motion_mode()
+	return &"still"
+
 func play_meditation_surge(duration: float = 1.25, intensity: float = 1.0) -> void:
 	if is_instance_valid(_hero) and _hero.has_method("play_surge"):
 		_hero.play_surge(duration, intensity)
