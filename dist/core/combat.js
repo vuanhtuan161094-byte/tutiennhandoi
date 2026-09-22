@@ -136,6 +136,11 @@ export class CombatEngine {
         this.schedule({ time: 0, kind: 'decide', actorId: b.id, targetId: a.id });
         let now = 0;
         while (this.queue.length > 0 && now <= maxDuration && this.livingCount() > 1) {
+            const nextEvent = this.queue[0];
+            if (nextEvent.time > maxDuration) {
+                now = maxDuration;
+                break;
+            }
             const event = this.queue.shift();
             now = event.time;
             this.cleanup(now);
