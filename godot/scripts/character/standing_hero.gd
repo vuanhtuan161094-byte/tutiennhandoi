@@ -8,13 +8,18 @@ const MOTION_HIDDEN: StringName = &"hidden"
 
 const APPROVED_MASTER_PATH := "res://art/approved/home/home_hero_standing.webp"
 
+const DEFAULT_ANIMATION_MODE := "standing_still"
+const ANIMATION_PROFILE := "character_standing_v3_options"
+const SOURCE_POSE := "standing"
+const DEFAULT_PRESET_ID: StringName = &"character_idle_01"
+
 var runtime_animation_ready := false
-var animation_mode := "standing_still"
+var animation_mode := DEFAULT_ANIMATION_MODE
 var animation_source := "none"
-var animation_profile := "character_standing_v3_options"
-var source_pose := "standing"
+var animation_profile := ANIMATION_PROFILE
+var source_pose := SOURCE_POSE
 var current_frame := 0
-var animation_preset_id: StringName = &"character_idle_01"
+var animation_preset_id: StringName = DEFAULT_PRESET_ID
 var motion_mode: StringName = MOTION_STILL
 var presentation_active := false
 
