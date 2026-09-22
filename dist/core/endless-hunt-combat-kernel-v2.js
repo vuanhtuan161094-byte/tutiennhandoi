@@ -1,5 +1,4 @@
-import { runCombatKernelV2 } from './combat-kernel-v2.js';
-import { applyCombatPacingV124 } from './combat-pacing-v124.js';
+import { compileCombatEncounterV1, runCompiledCombatEncounterV2 } from './combat-encounter-compiler.js';
 import { analyzeBattle } from './combat-analytics.js';
 import { combatMaxHp } from './combat-rules.js';
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
@@ -89,9 +88,23 @@ function bossAdjustedPlayerV2(player, bossMechanic) {
 /** Canonical Endless Hunt combat bridge. No expected-value / Power Score winner declaration. */
 export function resolveEndlessHuntWithCombatKernelV2(input) {
     const timeoutSeconds = timeoutFor(input.monster);
-    const playerPrepared = applyCombatPacingV124(bossAdjustedPlayerV2(input.player, input.bossMechanic));
-    const enemyPrepared = applyCombatPacingV124(buildEndlessHuntKernelEnemyV2(input));
-    const kernel = runCombatKernelV2({ registry: input.registry, seed: input.seed, entities: [playerPrepared, enemyPrepared], maxDuration: timeoutSeconds, mode: input.mode ?? 'headless' });
+    const encounter = compileCombatEncounterV1({
+        encounterId: `endless-hunt.${input.monster.id}.${input.seed >>> 0}`,
+        activity: 'endless-hunt',
+        seed: input.seed,
+        entities: [bossAdjustedPlayerV2(input.player, input.bossMechanic), buildEndlessHuntKernelEnemyV2(input)],
+        maxDuration: timeoutSeconds,
+        mode: input.mode ?? 'headless',
+        applyPacing: true,
+        metadata: {
+            monsterId: input.monster.id,
+            grade: input.monster.grade,
+            bossMechanicId: input.bossMechanic?.id ?? '',
+        },
+    });
+    const playerPrepared = encounter.entities[0];
+    const enemyPrepared = encounter.entities[1];
+    const kernel = runCompiledCombatEncounterV2(encounter, input.registry);
     const battle = kernel.battle;
     const analytics = analyzeBattle(battle);
     const playerAnalytics = analytics.combatants[playerPrepared.id];
@@ -126,7 +139,7 @@ export function resolveEndlessHuntWithCombatKernelV2(input) {
         playerTimeToKill: won ? battle.duration : Number.POSITIVE_INFINITY,
         enemyTimeToKill: outcome === 'defeat' ? battle.duration : Number.POSITIVE_INFINITY,
         timeoutSeconds, breakPressurePctPerSecond: playerBreak / duration, diagnosis, battle,
-        playerEntity: playerPrepared, enemyEntity: enemyPrepared,
+        encounter, playerEntity: playerPrepared, enemyEntity: enemyPrepared,
     };
 }
 //# sourceMappingURL=endless-hunt-combat-kernel-v2.js.map
