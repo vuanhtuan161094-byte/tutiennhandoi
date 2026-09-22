@@ -1,22 +1,21 @@
 extends TextureRect
 
-const IDLE_ATLAS_PATH := "res://art/approved/character/standing_idle_atlas.webp"
-const IDLE_ATLAS_PACK_PATH := "res://art/approved/character/standing_idle/standing_idle_atlas.webp"
+const ANIMATION_REGISTRY := preload("res://scripts/character/character_animation_registry.gd")
+
 const APPROVED_MASTER_PATH := "res://art/approved/home/home_hero_standing.webp"
-const COLUMNS := 6
-const ROWS := 5
-const FRAME_COUNT := 30
-const FPS := 12.0
 
 var runtime_animation_ready := false
 var animation_mode := "standing_idle"
 var animation_source := "none"
-var animation_profile := "character_standing_v1"
+var animation_profile := "character_standing_v2_green"
 var source_pose := "standing"
 var current_frame := 0
+var animation_preset_id: StringName = &""
 
-var _atlas_region: AtlasTexture
-var _frame_size := Vector2(200.0, 300.0)
+var _video_sprite: AnimatedSprite2D
+var _video_frames: SpriteFrames
+var _active_animation_name: StringName = &""
+var _presentation_active := false
 var _time := 0.0
 var _base_position := Vector2.ZERO
 var _base_scale := Vector2.ONE
@@ -26,44 +25,52 @@ func _ready() -> void:
 	expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-	# Anchor procedural breathing near the feet. Moving around a torso pivot made
-	# the static master look like it was floating instead of standing.
 	pivot_offset = size * Vector2(0.5, 0.92)
 	_base_position = position
 	_base_scale = scale
-	_load_visual()
+	_build_video_sprite()
+	_load_static_master()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED and is_instance_valid(_video_sprite):
+		_layout_video_sprite()
 
 func has_runtime_animation() -> bool:
 	return runtime_animation_ready
 
-func _load_visual() -> void:
-	var atlas_path := ""
-	for candidate in [IDLE_ATLAS_PATH, IDLE_ATLAS_PACK_PATH]:
-		if ResourceLoader.exists(candidate):
-			atlas_path = candidate
-			break
+func set_presentation_active(active: bool) -> void:
+	if active == _presentation_active:
+		return
+	_presentation_active = active
+	if active:
+		_start_registered_animation()
+	else:
+		_release_registered_animation()
+		_load_static_master()
 
-	# A hand-authored atlas remains the highest-fidelity source when one is
-	# approved later. Character is not blocked on it: the approved standing
-	# master has its own production procedural idle below.
-	if atlas_path != "":
-		var atlas_texture := ResourceLoader.load(atlas_path) as Texture2D
-		if atlas_texture != null:
-			var atlas_size := atlas_texture.get_size()
-			if atlas_size.x >= COLUMNS and atlas_size.y >= ROWS:
-				_frame_size = Vector2(
-					floor(atlas_size.x / float(COLUMNS)),
-					floor(atlas_size.y / float(ROWS))
-				)
-				_atlas_region = AtlasTexture.new()
-				_atlas_region.atlas = atlas_texture
-				texture = _atlas_region
-				animation_source = "atlas_30f"
-				runtime_animation_ready = true
-				_set_frame(0)
-				set_process(true)
-				return
+func get_presentation_active() -> bool:
+	return _presentation_active
 
+func get_animation_preset() -> StringName:
+	return animation_preset_id
+
+func set_animation_preset(preset_id: StringName) -> void:
+	if ANIMATION_REGISTRY.preset(preset_id).is_empty():
+		return
+	animation_preset_id = preset_id
+	if _presentation_active:
+		_start_registered_animation()
+
+func _build_video_sprite() -> void:
+	_video_sprite = AnimatedSprite2D.new()
+	_video_sprite.name = "CharacterVideoBody"
+	_video_sprite.centered = true
+	_video_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	_video_sprite.visible = false
+	_video_sprite.animation_finished.connect(_on_registered_animation_finished)
+	add_child(_video_sprite)
+
+func _load_static_master() -> void:
 	if ResourceLoader.exists(APPROVED_MASTER_PATH):
 		texture = ResourceLoader.load(APPROVED_MASTER_PATH) as Texture2D
 		animation_source = "procedural_approved_master"
@@ -72,42 +79,100 @@ func _load_visual() -> void:
 			material = _standing_idle_material()
 			set_process(true)
 			return
-
+	texture = null
+	material = null
 	animation_source = "none"
 	runtime_animation_ready = false
 	set_process(false)
 
+func _start_registered_animation() -> void:
+	var available := ANIMATION_REGISTRY.available_presets()
+	if available.is_empty():
+		_load_static_master()
+		return
+
+	if animation_preset_id == &"" or ANIMATION_REGISTRY.preset(animation_preset_id).is_empty():
+		animation_preset_id = StringName(available[0].get("id", &""))
+
+	var entry := ANIMATION_REGISTRY.preset(animation_preset_id)
+	var path := str(entry.get("resource_path", ""))
+	if path.is_empty() or not ResourceLoader.exists(path):
+		animation_preset_id = StringName(available[0].get("id", &""))
+		entry = ANIMATION_REGISTRY.preset(animation_preset_id)
+		path = str(entry.get("resource_path", ""))
+
+	_release_registered_animation()
+	var loaded := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE_DEEP)
+	if loaded == null or not loaded is SpriteFrames:
+		_load_static_master()
+		return
+
+	var animation_name: StringName = entry.get("animation_name", &"")
+	var frames := loaded as SpriteFrames
+	if animation_name == &"" or not frames.has_animation(animation_name):
+		_load_static_master()
+		return
+
+	texture = null
+	material = null
+	_video_frames = frames
+	_active_animation_name = animation_name
+	_video_sprite.sprite_frames = frames
+	_video_sprite.visible = true
+	animation_source = "video_spriteframes_v2_green"
+	animation_mode = "standing_video"
+	runtime_animation_ready = true
+	_layout_video_sprite()
+	_video_sprite.play(animation_name)
+	set_process(false)
+
+func _release_registered_animation() -> void:
+	if not is_instance_valid(_video_sprite):
+		return
+	_video_sprite.stop()
+	_video_sprite.visible = false
+	_video_sprite.sprite_frames = null
+	_video_frames = null
+	_active_animation_name = &""
+
+func _on_registered_animation_finished() -> void:
+	if not _presentation_active:
+		return
+	var next_id := ANIMATION_REGISTRY.next_preset_id(animation_preset_id)
+	if next_id == &"":
+		return
+	animation_preset_id = next_id
+	_start_registered_animation()
+
+func _layout_video_sprite() -> void:
+	if not is_instance_valid(_video_sprite) or _video_sprite.sprite_frames == null or _active_animation_name == &"":
+		return
+	if _video_sprite.sprite_frames.get_frame_count(_active_animation_name) <= 0:
+		return
+	var first_texture := _video_sprite.sprite_frames.get_frame_texture(_active_animation_name, 0)
+	if first_texture == null:
+		return
+	var frame_size := first_texture.get_size()
+	if frame_size.x <= 0.0 or frame_size.y <= 0.0 or size.x <= 0.0 or size.y <= 0.0:
+		return
+	var fit_scale := minf(size.x / frame_size.x, size.y / frame_size.y)
+	_video_sprite.scale = Vector2.ONE * fit_scale
+	_video_sprite.position = Vector2(
+		size.x * 0.5,
+		size.y - frame_size.y * fit_scale * 0.5
+	)
+
 func _process(delta: float) -> void:
-	if not visible or not runtime_animation_ready:
+	if not visible or not runtime_animation_ready or _presentation_active:
 		return
-
 	_time += delta
-	if _atlas_region != null:
-		var next_frame := int(floor(_time * FPS)) % FRAME_COUNT
-		if next_frame != current_frame:
-			_set_frame(next_frame)
-		return
-
-	# The approved master is a single standing image. Do not translate or rotate
-	# the whole card: that reads as floating. Keep the feet fixed and use only a
-	# tiny breathing deformation; hair/sleeves/silk animate locally in shader.
+	# Static fallback only. Registered videos contain real articulated motion.
 	var breath := sin(_time * 1.06)
 	position = _base_position
 	rotation = 0.0
 	scale = Vector2(
 		_base_scale.x * (1.0 - breath * 0.00045),
 		_base_scale.y * (1.0 + breath * 0.00135)
-	)
-
-func _set_frame(frame_index: int) -> void:
-	current_frame = clampi(frame_index, 0, FRAME_COUNT - 1)
-	var column := current_frame % COLUMNS
-	var row := floori(float(current_frame) / float(COLUMNS))
-	_atlas_region.region = Rect2(
-		float(column) * _frame_size.x,
-		float(row) * _frame_size.y,
-		_frame_size.x,
-		_frame_size.y
 	)
 
 func _standing_idle_material() -> ShaderMaterial:
@@ -118,9 +183,6 @@ shader_type canvas_item;
 void fragment() {
 	vec2 uv = UV;
 	float lateral = abs(uv.x - 0.5);
-
-	// Keep the face/central silhouette stable. Motion concentrates on long hair,
-	// sleeves and lower robe where subtle secondary motion reads naturally.
 	float hair_mask =
 		smoothstep(0.07, 0.20, uv.y)
 		* (1.0 - smoothstep(0.66, 0.84, uv.y))
