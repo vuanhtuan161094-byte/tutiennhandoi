@@ -23,3 +23,13 @@ func test_home_motion_mode_normalization_accepts_three_modes() -> void:
 func test_registry_defaults_match_hud_defaults() -> void:
 	assert_str(str(REGISTRY.default_preset_id(&"cultivation"))).is_equal("cultivation_01")
 	assert_str(str(REGISTRY.default_preset_id(&"rest"))).is_equal("rest_01")
+
+
+func test_ling_quang_feedback_is_readable_long_enough() -> void:
+	var x2 := HOME_HUD.ling_quang_event_copy(2)
+	var x3 := HOME_HUD.ling_quang_event_copy(3)
+	var x9 := HOME_HUD.ling_quang_event_copy(9)
+	assert_float(float(x2.get("hold", 0.0))).is_greater_equal(HOME_HUD.LING_QUANG_MIN_HOLD_SECONDS)
+	assert_float(float(x3.get("hold", 0.0))).is_greater_equal(2.5)
+	assert_float(float(x9.get("hold", 0.0))).is_greater_equal(3.5)
+	assert_float(HOME_HUD.CULTIVATION_EVENT_FADE_OUT_SECONDS).is_greater_equal(0.35)
