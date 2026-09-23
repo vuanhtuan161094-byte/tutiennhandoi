@@ -9,7 +9,7 @@ import { createPlayableAdventureState, playablePlayerProfile } from '../../dist/
 import { SimulationSession } from '../../dist/core/session.js';
 import { runCombatKernelV2, combatKernelMechanicsProjectionV2 } from '../../dist/core/combat-kernel-v2.js';
 import { buildHuntCombatProfileV130 } from '../../dist/core/hunt-real-combat-v130.js';
-import { buildPlayerCombatEntityV1 } from '../../dist/core/combat-v3-runtime.js';
+import { buildPlayerCombatEntityV1 } from '../../dist/core/combat-kernel-v2.js';
 
 const registry = buildRegistry();
 let passed = 0;
