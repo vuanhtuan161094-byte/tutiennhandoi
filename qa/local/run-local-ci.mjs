@@ -39,11 +39,9 @@ function git(args, fallback = '') {
 const sha = git(['rev-parse', 'HEAD'], 'NO_GIT_SHA');
 const branch = git(['branch', '--show-current'], 'unknown') || 'detached';
 const dirtyText = git(['status', '--porcelain'], '');
-const dirty = Boolean(dirtyText.trim());
-if (requireClean && dirty) {
-  console.error('Local CI --require-clean refused a dirty working tree. Commit/stash changes first.');
-  process.exit(2);
-}
+const dirtyFiles = dirtyText.split(/\r?\n/).map(line => line.trimEnd()).filter(Boolean);
+const dirty = dirtyFiles.length > 0;
+const cleanRefusal = requireClean && dirty;
 
 const now = new Date();
 const stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
@@ -64,6 +62,7 @@ const summary = {
   sha,
   branch,
   dirty,
+  dirtyFiles,
   exactShaEvidence: sha !== 'NO_GIT_SHA' && !dirty,
   node: process.version,
   platform: `${process.platform}-${process.arch}`,
@@ -381,6 +380,20 @@ console.log(`Branch     : ${branch}`);
 console.log(`Node       : ${process.version}`);
 console.log(`Artifacts  : ${runRoot}`);
 if (dirty) console.log('NOTE       : dirty worktree => result is NOT exact-SHA closure evidence.');
+
+if (cleanRefusal) {
+  summary.status = 'fail';
+  summary.error = 'Local CI --require-clean refused a dirty working tree.';
+  banner('LOCAL CI PREFLIGHT FAIL');
+  console.error(summary.error);
+  console.error('Dirty working tree:');
+  for (const line of dirtyFiles) console.error(`  ${line}`);
+  appendLog(`${summary.error}\nDirty working tree:\n${dirtyFiles.map(line => `  ${line}`).join('\n')}\n`);
+  writeSummary();
+  console.log(`\nSummary: ${path.join(runRoot, 'README.md')}`);
+  console.log(`Log    : ${logFile}`);
+  process.exit(2);
+}
 
 let exitCode = 0;
 try {
