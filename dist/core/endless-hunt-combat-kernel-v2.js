@@ -1,4 +1,4 @@
-import { compileCombatEncounterV1, runCompiledCombatEncounterV2, runCompiledCombatEncounterV3 } from './combat-v3-runtime.js';
+import { compileCombatEncounterV1, runCompiledCombatEncounterV2, runCompiledCombatEncounterV3 } from './combat-kernel-v2.js';
 import { analyzeBattle } from './combat-analytics.js';
 import { combatMaxHp } from './combat-rules.js';
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
