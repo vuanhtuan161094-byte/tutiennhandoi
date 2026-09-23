@@ -126,7 +126,7 @@ function resolveEndlessHuntWithCombatKernel(input, runEncounter, kernelLabel) {
     for (const log of battle.logs)
         if (log.type === 'break' && log.actorId === playerPrepared.id && typeof log.data?.breakDamagePct === 'number') playerBreak += Math.max(0, log.data.breakDamagePct);
     const diagnosis = [];
-    if (outcome === 'timeout') diagnosis.push('${kernelLabel} hết giới hạn giao tranh khi cả hai bên vẫn còn HP: tính là không vượt ải.');
+    if (outcome === 'timeout') diagnosis.push(`${kernelLabel} hết giới hạn giao tranh khi cả hai bên vẫn còn HP: tính là không vượt ải.`);
     if (input.monster.grade === 'boss' && input.bossMechanic) {
         const skillText = (input.bossMechanic.skillNames ?? []).join(' · ');
         diagnosis.push(`${input.bossMechanic.name}: cơ chế Boss và bộ kỹ năng đã chạy trực tiếp trong ${kernelLabel}${skillText ? ` (${skillText})` : ''}.`);
