@@ -40,7 +40,7 @@ try{
   const after=(await json('/api/pvp')).pvp;
   check(after.antiReroll?.currentNonce===1&&!after.opponents.some(x=>x.id===opponent.id),'fight consumes ticket and advances matchmaking nonce');
   const replay=(await json(`/api/pvp/replay?fightId=${encodeURIComponent(fight.result.fightId)}`)).replay;
-  check(replay?.verified===true&&replay?.source==='CombatKernelV2','transport replay verifies through CombatKernelV2');
+  check(replay?.verified===true&&replay?.source==='CombatKernelV3'&&replay?.engineVersion==='combat.v3','transport replay verifies new fights through CombatKernelV3');
   check(after.integrity?.ok===true,'transport state ends with valid V94 integrity chain');
   console.log(`\n${passed}/15 V94 Standalone transport checks passed.`);
   process.exit(0);
