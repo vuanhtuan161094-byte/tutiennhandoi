@@ -3,6 +3,7 @@ import {
   FULL_LIFE_ACQUISITION_V160_SCHEMA,
   buildFullLifeAcquisitionAuditV160,
 } from '../../dist/core/full-life-acquisition-v160.js';
+import { ECONOMY_PRODUCTION_V111 } from '../../dist/core/economy-production-v111.js';
 
 let passed = 0;
 const test = (name, fn) => { fn(); passed++; console.log(`✓ ${name}`); };
@@ -13,7 +14,8 @@ test('V160 acquisition audit uses the canonical eight-banner Vạn Tượng econ
   assert.equal(audit.gacha.categoryBannerCount, 8);
   assert.equal(audit.gacha.singleCost, 160);
   assert.equal(audit.gacha.tenCost, 1440);
-  assert(audit.gacha.recurringBoundJadePerDay > 200);
+  const expectedDaily = ECONOMY_PRODUCTION_V111.dailyActivityBoundJade + ECONOMY_PRODUCTION_V111.dailyPvpPaidWins * ECONOMY_PRODUCTION_V111.pvpRewardPerWin + ECONOMY_PRODUCTION_V111.weeklyRecurringBoundJade / 7;
+  assert.equal(audit.gacha.recurringBoundJadePerDay, Number(expectedDaily.toFixed(3)));
 });
 
 test('V160 manual acquisition samples stay inside one nine-manual realm pool', () => {
