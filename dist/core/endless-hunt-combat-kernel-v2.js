@@ -1,4 +1,4 @@
-import { compileCombatEncounterV1, runCompiledCombatEncounterV2 } from './combat-encounter-compiler.js';
+import { compileCombatEncounterV1, runCompiledCombatEncounterV2, runCompiledCombatEncounterV3 } from './combat-encounter-compiler.js';
 import { analyzeBattle } from './combat-analytics.js';
 import { combatMaxHp } from './combat-rules.js';
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
@@ -85,8 +85,8 @@ function bossAdjustedPlayerV2(player, bossMechanic) {
     const severity = bossMechanic.verdict === 'none' ? 1 : bossMechanic.verdict === 'partial' ? .55 : .20;
     return { ...player, stats: { ...player.stats, actionSpeed: Math.max(.25, (player.stats.actionSpeed ?? 1) * (1 - .22 * severity)) } };
 }
-/** Canonical Endless Hunt combat bridge. No expected-value / Power Score winner declaration. */
-export function resolveEndlessHuntWithCombatKernelV2(input) {
+/** Shared Endless Hunt bridge. No expected-value / Power Score winner declaration. */
+function resolveEndlessHuntWithCombatKernel(input, runEncounter, kernelLabel) {
     const timeoutSeconds = timeoutFor(input.monster);
     const encounter = compileCombatEncounterV1({
         encounterId: `endless-hunt.${input.monster.id}.${input.seed >>> 0}`,
@@ -104,7 +104,7 @@ export function resolveEndlessHuntWithCombatKernelV2(input) {
     });
     const playerPrepared = encounter.entities[0];
     const enemyPrepared = encounter.entities[1];
-    const kernel = runCompiledCombatEncounterV2(encounter, input.registry);
+    const kernel = runEncounter(encounter, input.registry);
     const battle = kernel.battle;
     const analytics = analyzeBattle(battle);
     const playerAnalytics = analytics.combatants[playerPrepared.id];
@@ -126,10 +126,10 @@ export function resolveEndlessHuntWithCombatKernelV2(input) {
     for (const log of battle.logs)
         if (log.type === 'break' && log.actorId === playerPrepared.id && typeof log.data?.breakDamagePct === 'number') playerBreak += Math.max(0, log.data.breakDamagePct);
     const diagnosis = [];
-    if (outcome === 'timeout') diagnosis.push('CombatKernel V2 hết giới hạn giao tranh khi cả hai bên vẫn còn HP: tính là không vượt ải.');
+    if (outcome === 'timeout') diagnosis.push('${kernelLabel} hết giới hạn giao tranh khi cả hai bên vẫn còn HP: tính là không vượt ải.');
     if (input.monster.grade === 'boss' && input.bossMechanic) {
         const skillText = (input.bossMechanic.skillNames ?? []).join(' · ');
-        diagnosis.push(`${input.bossMechanic.name}: cơ chế Boss và bộ kỹ năng đã chạy trực tiếp trong CombatKernel V2${skillText ? ` (${skillText})` : ''}.`);
+        diagnosis.push(`${input.bossMechanic.name}: cơ chế Boss và bộ kỹ năng đã chạy trực tiếp trong ${kernelLabel}${skillText ? ` (${skillText})` : ''}.`);
     }
     return {
         outcome, won, battleSeconds: battle.duration, playerHpRemainingPct, enemyHpRemainingPct,
@@ -141,5 +141,13 @@ export function resolveEndlessHuntWithCombatKernelV2(input) {
         timeoutSeconds, breakPressurePctPerSecond: playerBreak / duration, diagnosis, battle,
         combatResult: kernel.combatResult, encounter, playerEntity: playerPrepared, enemyEntity: enemyPrepared,
     };
+}
+
+export function resolveEndlessHuntWithCombatKernelV2(input) {
+    return resolveEndlessHuntWithCombatKernel(input, runCompiledCombatEncounterV2, 'CombatKernel V2');
+}
+
+export function resolveEndlessHuntWithCombatKernelV3(input) {
+    return resolveEndlessHuntWithCombatKernel(input, runCompiledCombatEncounterV3, 'CombatKernel V3');
 }
 //# sourceMappingURL=endless-hunt-combat-kernel-v2.js.map
