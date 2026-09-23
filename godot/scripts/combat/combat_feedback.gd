@@ -6,7 +6,7 @@ class_name CombatFeedback
 ## This adapter intentionally does NOT expose Juice.hitstop(), because that
 ## mutates Engine.time_scale while the external authority can keep advancing.
 
-const SWORD_SLASH_VFX := preload("res://scripts/combat/sword_slash_vfx.gd")
+const SWORD_SLASH_VFX := preload("res://scripts/combat/sword_slash_vfx.gd")\nconst SWORD_NURTURE_VFX := preload("res://scripts/combat/sword_nurture_vfx.gd")
 
 enum ImpactLevel {
 	LIGHT,
