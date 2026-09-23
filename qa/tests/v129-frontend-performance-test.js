@@ -55,8 +55,10 @@ ok('initial static graph stays under 4.40 MiB',()=>assert.ok(bytes<=4.40*1024*10
 // V142 deliberately decomposes the equipment economy into five small domain modules.
 // V149 adds exactly three bounded adapters while preserving the large pre-V149 modules
 // byte-for-byte: economy mutation/read, GameplayFacade authority, and artifact combo/runtime.
-// The hard byte budget remains unchanged; no feature-heavy route becomes eager.
-ok('initial static graph stays at or below 193 modules',()=>assert.ok(graph.length<=193,`initial graph ${graph.length} modules`));
+// Combat V3 adds six bounded eager architecture modules for the canonical entity / encounter /
+// typed-result / settlement / V3 compatibility boundaries. The byte budget remains unchanged;
+// no feature-heavy Hunt or DongFu presentation route becomes eager.
+ok('initial static graph stays at or below 199 modules',()=>assert.ok(graph.length<=199,`initial graph ${graph.length} modules`));
 const hunt=await import('../../modules/hunt-combat-v2.js');
 const dongfu=await import('../../modules/dongfu-pixi-scene-v139.js');
 ok('lazy Hunt module exports full route contract',()=>{for(const k of ['renderHuntCombatV2','mountHuntCombatV2','syncHuntCombatV2','stopHuntCombatV2'])assert.equal(typeof hunt[k],'function',k)});
