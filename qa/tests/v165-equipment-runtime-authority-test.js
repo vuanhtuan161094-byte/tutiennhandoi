@@ -8,7 +8,7 @@ import {
 } from '../../dist/core/equipment-v142.js';
 
 const session = fs.readFileSync('dist/core/session.js', 'utf8');
-const combatFactory = fs.readFileSync('dist/core/combat-entity-factory.js', 'utf8');
+const combatFactory = fs.readFileSync('dist/core/combat-kernel-v2.js', 'utf8');
 const crafting = fs.readFileSync('dist/core/equipment-crafting-v142.js', 'utf8');
 const equipment = fs.readFileSync('dist/core/equipment.js', 'utf8');
 
