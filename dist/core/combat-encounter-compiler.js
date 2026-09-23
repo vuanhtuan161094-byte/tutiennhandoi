@@ -1,5 +1,6 @@
 import { applyCombatPacingV124 } from './combat-pacing-v124.js';
 import { runCombatKernelV2 } from './combat-kernel-v2.js';
+import { runCombatKernelV3 } from './combat-kernel-v3.js';
 
 const MODES = new Set(['realtime', 'headless', 'offline', 'simulation']);
 
@@ -44,17 +45,7 @@ export function compileCombatEncounterV1(input) {
     };
 }
 
-/** Execute a compiled encounter through the frozen CombatKernel V2 oracle. */
-export function runCompiledCombatEncounterV2(encounter, registry) {
-    if (encounter?.schema !== 'combat-encounter.v1')
-        throw new Error('runCompiledCombatEncounterV2 requires combat-encounter.v1');
-    const kernel = runCombatKernelV2({
-        registry,
-        seed: encounter.seed,
-        entities: encounter.entities.map(cloneEntity),
-        mode: encounter.mode,
-        maxDuration: encounter.maxDuration,
-    });
+function bindEncounterIdentity(kernel, encounter) {
     const encounterIdentity = {
         encounterId: encounter.encounterId,
         activity: encounter.activity,
@@ -74,4 +65,32 @@ export function runCompiledCombatEncounterV2(encounter, registry) {
             },
         },
     };
+}
+
+/** Execute a compiled encounter through the frozen CombatKernel V2 oracle. */
+export function runCompiledCombatEncounterV2(encounter, registry) {
+    if (encounter?.schema !== 'combat-encounter.v1')
+        throw new Error('runCompiledCombatEncounterV2 requires combat-encounter.v1');
+    const kernel = runCombatKernelV2({
+        registry,
+        seed: encounter.seed,
+        entities: encounter.entities.map(cloneEntity),
+        mode: encounter.mode,
+        maxDuration: encounter.maxDuration,
+    });
+    return bindEncounterIdentity(kernel, encounter);
+}
+
+/** Execute a compiled encounter through the production CombatKernel V3 boundary. */
+export function runCompiledCombatEncounterV3(encounter, registry) {
+    if (encounter?.schema !== 'combat-encounter.v1')
+        throw new Error('runCompiledCombatEncounterV3 requires combat-encounter.v1');
+    const kernel = runCombatKernelV3({
+        registry,
+        seed: encounter.seed,
+        entities: encounter.entities.map(cloneEntity),
+        mode: encounter.mode,
+        maxDuration: encounter.maxDuration,
+    });
+    return bindEncounterIdentity(kernel, encounter);
 }
