@@ -39,6 +39,6 @@ function state(){const st=createPlayableAdventureState();st.realm.maxRealmOrder=
 }
 const sessionSrc=fs.readFileSync('./dist/core/session.js','utf8'),combatSrc=fs.readFileSync('./modules/hunt-combat-v2.js','utf8'),kernelSrc=fs.readFileSync('./dist/core/endless-hunt-combat-kernel-v2.js','utf8');
 check(sessionSrc.includes('resolveEndlessHuntWithCombatKernelV3')&&kernelSrc.includes('runCompiledCombatEncounterV3'),'V110 keeps Boss victory on the canonical CombatKernel V3 path with no separate V110 resolver');
-check(combatSrc.includes('v110-readiness')&&combatSrc.includes('v110-counter')&&combatSrc.includes('Gợi ý bãi săn theo build hiện tại'),'V110 Săn Yêu UI renders readiness, counter gaps and farm recommendations');
-check(combatSrc.includes('Telemetry')||combatSrc.includes('TELEMETRY'),'V110 UI explicitly says readiness is telemetry, not a fake win probability');
+check(combatSrc.includes('h.productionV110')&&combatSrc.includes('bossIntel.readiness')&&combatSrc.includes('bossCounterHint')&&combatSrc.includes('farmIntel.recommendations')&&combatSrc.includes('Gợi ý bãi săn theo build hiện tại'),'V110 Săn Yêu UI consumes readiness, counter guidance and farm recommendations from current production markup');
+check(combatSrc.includes('Combat Intelligence')&&combatSrc.includes('bossIntel.readiness')&&!combatSrc.includes('win probability')&&!combatSrc.includes('xác suất thắng'),'V110 UI presents readiness as Combat Intelligence rather than a fake win probability');
 console.log(`\nV110 BOSS / HUNT PRODUCTION: ${pass}/${pass} PASS`);
