@@ -45,5 +45,6 @@ for (const token of ['spiritualRootsV131','setRootFocusV131','setRootOriginTarge
 for (const token of ['getSpiritualRootV145','nourishSpiritualRootV145','ascendSpiritualRootV145','allocateSpiritualRootMeridianV145','chooseSpiritualRootInsightV145']) assert.ok(api.includes(token), 'missing V145 API '+token);
 assert.ok(session.includes('settleSpiritualRootHuntV145'), 'Hunt source not wired');
 assert.ok(session.includes('countForOriginMeter: true'), 'virtual Hunt pity source missing');
-assert.ok(session.includes('firstClear: Boolean(result.bossCleared)'), 'Boss first-clear origin source missing');
+assert.ok(session.includes('firstClear: false')&&session.includes('countForOriginMeter: true'), 'Săn Ảo pity must remain the live Hunt Bản Nguyên source');
+assert.ok(session.includes("rewardContext: 'progression-only'")&&session.includes('directBossLoot: false'), 'Boss thật must remain progression-only and cannot mint Bản Nguyên directly');
 console.log('V145 Spiritual Root runtime/source-sink PASS');
