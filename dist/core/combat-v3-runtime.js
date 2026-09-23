@@ -8,9 +8,11 @@ export const COMBAT_V3_COMPAT_EXECUTOR = 'combat-engine.v168-compat';
 /**
  * Phase-7 V3 boundary normalizer.
  *
- * V3 intentionally accepts only the locked combat model. Legacy entities remain
- * available through CombatKernelV2 for historical replay/compatibility, but new
- * V3 production fights cannot silently fall into the old damage path.
+ * Gameplay is frozen during the strangler cutover. Missing combatModel has
+ * historically meant "legacy" inside CombatEngine, so V3 preserves that exact
+ * behavior and makes it explicit instead of silently upgrading formulas.
+ * Unknown future models are rejected. Retirement can remove legacy only after
+ * parity-backed migration of the authored entities themselves.
  */
 export function normalizeCombatEntitiesV3(entities) {
     if (!Array.isArray(entities) || entities.length !== 2)
@@ -22,9 +24,10 @@ export function normalizeCombatEntitiesV3(entities) {
         if (ids.has(entity.id))
             throw new Error(`CombatKernelV3 duplicate entity id: ${entity.id}`);
         ids.add(entity.id);
-        if (entity.combatModel !== 'locked-v1')
-            throw new Error(`CombatKernelV3 rejects unsupported combatModel for ${entity.id}: ${entity.combatModel ?? 'missing'}`);
-        return structuredClone(entity);
+        const combatModel = entity.combatModel ?? 'legacy';
+        if (combatModel !== 'locked-v1' && combatModel !== 'legacy')
+            throw new Error(`CombatKernelV3 rejects unsupported combatModel for ${entity.id}: ${combatModel}`);
+        return { ...structuredClone(entity), combatModel };
     });
 }
 
@@ -50,12 +53,17 @@ export function executeCombatRuntimeCompatV3(input) {
         maxDuration,
         engineVersion: COMBAT_V3_ENGINE_VERSION,
     });
+    const legacyCombatModelEntityIds = entities.filter(entity => entity.combatModel === 'legacy').map(entity => entity.id);
     return {
         engineVersion: COMBAT_V3_ENGINE_VERSION,
         executor: COMBAT_V3_COMPAT_EXECUTOR,
         mode: input.mode,
         battle,
         combatResult,
+        compatibility: {
+            legacyCombatModelEntityIds,
+            hasLegacyCombatModel: legacyCombatModelEntityIds.length > 0,
+        },
         presentationPolicy: input.mode === 'realtime' ? 'timeline-1to1' : 'none',
     };
 }
