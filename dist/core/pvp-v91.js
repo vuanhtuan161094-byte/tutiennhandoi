@@ -1,4 +1,4 @@
-import { compileCombatEncounterV1, runCompiledCombatEncounterV2 } from './combat-encounter-compiler.js';
+import { compileCombatEncounterV1, runCompiledCombatEncounterV2, runCompiledCombatEncounterV3 } from './combat-encounter-compiler.js';
 
 export const PVP_V91_SCHEMA = 'pvp.v91';
 export const PVP_V94_FEATURE_VERSION = 'v94';
@@ -401,7 +401,7 @@ export function challengePvpV91(state, currentEntity, registry, opponentId, now 
     applyPacing: false,
     metadata: { opponentId: opponent.id, ticketId: opponent.ticketId },
   });
-  const kernel = runCompiledCombatEncounterV2(encounter, registry);
+  const kernel = runCompiledCombatEncounterV3(encounter, registry);
   const battle = kernel.battle;
   const won = !battle.draw && battle.winnerId === playerId;
   const lost = !battle.draw && battle.loserId === playerId;
@@ -422,7 +422,7 @@ export function challengePvpV91(state, currentEntity, registry, opponentId, now 
     fightId, atUnixMs: now, opponentId: opponent.id, ticketId: opponent.ticketId, opponentName: opponent.name, opponentBand: opponent.band,
     result: won ? 'win' : lost ? 'loss' : 'draw', ratingBefore, ratingAfter, ratingDelta, baseRatingDelta, ratingFactor: diminished.factor, sameBandStreak: streak, rewardBoundJade: 0,
     tacticalPresetId: pvp.tacticalPresetId, duration: Number(battle.duration ?? 0),
-    replay: { engineVersion: 'combat.v2', seed, ticketId: opponent.ticketId, maxDuration: 120, playerEntity: cloneEntity(playerEntity), opponentEntity: cloneEntity(opponentEntity), winnerId: battle.winnerId, loserId: battle.loserId, draw: Boolean(battle.draw) },
+    replay: { engineVersion: 'combat.v3', seed, ticketId: opponent.ticketId, maxDuration: 120, playerEntity: cloneEntity(playerEntity), opponentEntity: cloneEntity(opponentEntity), winnerId: battle.winnerId, loserId: battle.loserId, draw: Boolean(battle.draw) },
   };
   pvp.history = [entry, ...(pvp.history ?? [])].slice(0, PVP_V91_HISTORY_CAP);
   appendIntegrityEvent(pvp, 'match', { fightId, ticketId: opponent.ticketId, seed, band: opponent.band, result: entry.result, ratingBefore, ratingAfter, ratingDelta, baseRatingDelta, ratingFactor: diminished.factor, sameBandStreak: streak, tacticalPresetId: pvp.tacticalPresetId }, now);
@@ -492,7 +492,10 @@ export function replayPvpV91(state, registry, fightId) {
     applyPacing: false,
     metadata: { fightId, ticketId: replay.ticketId, engineVersion: replay.engineVersion ?? 'combat.v2' },
   });
-  const kernel = runCompiledCombatEncounterV2(encounter, registry);
+  const engineVersion = replay.engineVersion ?? 'combat.v2';
+  const kernel = engineVersion === 'combat.v3'
+    ? runCompiledCombatEncounterV3(encounter, registry)
+    : runCompiledCombatEncounterV2(encounter, registry);
   const verified = Boolean(kernel.battle.draw) === Boolean(replay.draw) && kernel.battle.winnerId === replay.winnerId && kernel.battle.loserId === replay.loserId;
-  return { schema: 'pvp-replay.v94', fightId, verified, source: 'CombatKernelV2', engineVersion: replay.engineVersion ?? 'combat.v2', ticketId: replay.ticketId, seed: replay.seed, integrity, battle: kernel.battle, combatResult: kernel.combatResult };
+  return { schema: 'pvp-replay.v94', fightId, verified, source: engineVersion === 'combat.v3' ? 'CombatKernelV3' : 'CombatKernelV2', engineVersion, ticketId: replay.ticketId, seed: replay.seed, integrity, battle: kernel.battle, combatResult: kernel.combatResult };
 }
