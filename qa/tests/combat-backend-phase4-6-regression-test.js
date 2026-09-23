@@ -5,15 +5,15 @@ import { buildRegistry } from '../../dist/content/registry.js';
 import { lightningSwordCultivator, heavySwordCultivator, playableMortalCultivator, blackWindWolf } from '../../dist/content/entities.js';
 import { applyCombatPacingV124 } from '../../dist/core/combat-pacing-v124.js';
 import { runCombatKernelV2, combatKernelMechanicsProjectionV2 } from '../../dist/core/combat-kernel-v2.js';
-import { compileCombatEncounterV1, runCompiledCombatEncounterV2 } from '../../dist/core/combat-v3-runtime.js';
+import { compileCombatEncounterV1, runCompiledCombatEncounterV2 } from '../../dist/core/combat-kernel-v2.js';
 import {
   applyCombatSettlementPolicyV1,
   contentEventDefeatPolicyV1,
   daoSuyDefeatPolicyV1,
   dungeonDefeatPolicyV1,
   endlessHuntSettlementPolicyV1,
-} from '../../dist/core/combat-v3-runtime.js';
-import { buildCombatResultV1 } from '../../dist/core/combat-v3-runtime.js';
+} from '../../dist/core/combat-kernel-v2.js';
+import { buildCombatResultV1 } from '../../dist/core/combat-kernel-v2.js';
 import { analyzeBattle } from '../../dist/core/combat-analytics.js';
 
 const registry = buildRegistry();
