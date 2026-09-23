@@ -240,7 +240,8 @@ test('Phase 6 activity consumers expose typed result while compatibility battle/
   assert(dungeon.includes('combatSettlement'));
   assert(pvp.includes('combatResult: kernel.combatResult'));
   assert(hunt.includes('combatResult: kernel.combatResult'));
-  assert(hunt.includes('combatSettlement: huntSettlement'));
+  assert.equal(hunt.includes('combatSettlement:'), false, 'Hunt kernel bridge must not own activity settlement');
+  assert(session.includes('combatSettlement: huntSettlement'), 'Session must own Endless Hunt settlement after V3 cutover');
   assert(session.includes('combatSettlement, chronicleEvent'));
   assert(session.includes('combatResult: kernel.combatResult, combatSettlement'));
   assert(pvp.includes("engineVersion: 'combat.v3'"), 'new PvP replay records must be engine-versioned as V3');
