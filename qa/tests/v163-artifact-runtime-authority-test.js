@@ -45,16 +45,20 @@ test('V163 B1 Chí Bảo uses the canonical Collection economy one-slot authorit
 });
 
 test('V163 B1 production combat composes Collection artifact/relic power once and skips legacy direct artifact power', () => {
-  const source = readFileSync(new URL('../../dist/core/session.js', import.meta.url), 'utf8');
-  const start = source.indexOf('personalCombatEntityForState(state) {');
-  const end = source.indexOf('\n    personalCombatEntity()', start);
+  const sessionSource = readFileSync(new URL('../../dist/core/session.js', import.meta.url), 'utf8');
+  const start = sessionSource.indexOf('personalCombatEntityForState(state) {');
+  const end = sessionSource.indexOf('\n    personalCombatEntity()', start);
   assert(start >= 0 && end > start, 'personalCombatEntityForState boundary not found');
-  const body = source.slice(start, end);
-  assert(body.includes('const artifacts = equipped;'));
-  assert(body.includes('applyCollectionEconomyToEntityV12325(artifacts, state.collectionV12316)'));
-  assert.equal((body.match(/applyCollectionEconomyToEntityV12325\(/g) ?? []).length, 1);
-  assert(!body.includes('artifactPower(state.artifacts'));
-  assert(body.includes('state.artifacts'), 'legacy history must remain available to Integration');
+  const sessionBody = sessionSource.slice(start, end);
+  assert(sessionBody.includes('buildPlayerCombatEntityV1({'), 'Session must delegate final CombatEntity composition to the canonical factory');
+  assert.equal((sessionBody.match(/applyCollectionEconomyToEntityV12325\(/g) ?? []).length, 0, 'Session must not duplicate Collection combat composition');
+
+  const factory = readFileSync(new URL('../../dist/core/combat-entity-factory.js', import.meta.url), 'utf8');
+  assert(factory.includes('const equipped = applyEquipmentToEntity(character, state.equipment, registry.equipmentSets);'));
+  assert(factory.includes('const collected = applyCollectionEconomyToEntityV12325(equipped, state.collectionV12316);'));
+  assert.equal((factory.match(/applyCollectionEconomyToEntityV12325\(/g) ?? []).length, 1);
+  assert(!factory.includes('artifactPower(state.artifacts'));
+  assert(factory.includes('state.artifacts'), 'legacy history must remain available to Integration');
 
   const entity = session.personalCombatEntity();
   assert.equal(entity.tags.filter(x => x === 'ArtifactV88').length, 1);
