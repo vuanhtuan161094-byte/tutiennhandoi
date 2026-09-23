@@ -14,7 +14,7 @@ import {
 } from '../../dist/content/entities.js';
 import { battleDaoV2StarterPackage } from '../../dist/content/battle-dao-v2-catalog.js';
 import { compareCombatKernelsV2V3 } from '../../dist/core/combat-parity-v3.js';
-import { runCombatKernelV3, combatKernelMechanicsProjectionV3 } from '../../dist/core/combat-v3-runtime.js';
+import { runCombatKernelV3, combatKernelMechanicsProjectionV3 } from '../../dist/core/combat-kernel-v2.js';
 
 const registry = buildRegistry();
 let passed = 0;
