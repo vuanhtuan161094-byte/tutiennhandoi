@@ -5,7 +5,7 @@ const SWORD_SLASH_VFX := preload("res://scripts/combat/sword_slash_vfx.gd")
 
 
 func test_supports_only_current_slash_family_skill_ids() -> void:
-	var supported := [
+	var supported: Array[String] = [
 		"skill.dao.sword.basic",
 		"skill.dao.sword.flow_slash",
 		"skill.dao.sword.chain",

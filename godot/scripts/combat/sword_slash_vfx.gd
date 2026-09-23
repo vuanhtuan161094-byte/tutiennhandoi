@@ -96,7 +96,7 @@ func _ready() -> void:
 	additive_material.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
 	material = additive_material
 	z_index = 80
-	set_process(false)
+	set_process(_playing)
 
 
 static func supported_skill_ids() -> PackedStringArray:
@@ -290,8 +290,7 @@ func _build_curve_points(
 	if end_point.length_squared() <= 0.001 or reveal <= 0.001:
 		return points
 
-	var direction := end_point.normalized()
-	var normal := direction.orthogonal()
+	var normal := end_point.normalized().orthogonal()
 	var steps := 22
 	var visible_steps := maxi(2, int(ceil(float(steps) * reveal)))
 
