@@ -106,6 +106,20 @@ func sword_slash(
 	return effect
 
 
+func sword_nurture(
+		parent: Node,
+		anchor_global: Vector2,
+		authority_duration: float = 1.5
+	) -> Node2D:
+	if parent == null:
+		return null
+
+	var effect: SwordNurtureVfx = SWORD_NURTURE_VFX.new()
+	parent.add_child(effect)
+	effect.play(anchor_global, authority_duration)
+	return effect
+
+
 func _on_sword_slash_impact(
 		_world_position: Vector2,
 		impact_kind: String,
