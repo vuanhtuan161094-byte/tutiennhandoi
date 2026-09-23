@@ -243,7 +243,7 @@ test('Phase 6 activity consumers expose typed result while compatibility battle/
   assert(hunt.includes('combatSettlement: huntSettlement'));
   assert(session.includes('combatSettlement, chronicleEvent'));
   assert(session.includes('combatResult: kernel.combatResult, combatSettlement'));
-  assert(pvp.includes("engineVersion: 'combat.v2'"), 'new PvP replay records must be engine-versioned');
+  assert(pvp.includes("engineVersion: 'combat.v3'"), 'new PvP replay records must be engine-versioned as V3');
 });
 
 console.log(`\nCOMBAT BACKEND PHASE 4-6 REGRESSION: ${passed}/${passed} PASS`);
