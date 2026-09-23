@@ -15,6 +15,28 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - **V180 is NOT OPEN.** The attempted final cross-system audit did not justify another numbered patch because the existing player-journey gate plus Canonical closure already cover the selected non-UI objective.
 - **Historical web UI closures remain LOCKED, but active implementation work has moved to the Godot presentation client. Godot Home, Character and Kho Đồ / Equipment are the current working surfaces.**
 
+## Combat backend V3 migration — CANDIDATE (2026-09-23)
+
+- Gameplay/balance remains frozen. No new stats, Đạo, formulas, rewards, or progression rules were intentionally added by this migration.
+- Phase 1–3 candidate: regression guards + confirmed bug repairs + canonical `CombatEntityFactory`.
+- Phase 4–6 candidate: `CombatEncounterCompiler`, explicit activity `SettlementPolicy`, and typed `combat-result.v1 / combat-event.v1`.
+- Phase 7 candidate introduces `CombatKernelV3` as the production strangler boundary. It executes the locked V168 `CombatEngine` through `combat-engine.v168-compat` rather than copying the 1,700-line engine. Deep resolver extraction remains a later retirement/internal-cleanup task after full parity proof.
+- Phase 8 adds deterministic V2↔V3 parity coverage for ordinary archetypes, Boss encounters, hard timeout, determinism, and all eight Battle Đạo identities.
+- Phase 9 production cutover:
+  - equipment benchmark / Content Event / Đạo Suy → compiled V3;
+  - Dungeon → compiled V3;
+  - live + representative/offline Endless Hunt/Boss → V3 facade;
+  - new PvP fights → V3;
+  - historical PvP replay remains engine-versioned: missing/`combat.v2` uses V2, new `combat.v3` uses V3.
+- V3 preserves authored legacy combat-model semantics during cutover and exposes that compatibility debt instead of silently upgrading formulas. Unknown future combat models are rejected.
+- V2 remains only as parity/compatibility and historical replay authority. Do not delete it until local Fast + Canonical parity gates are green.
+- New guards are wired into Backend Fast:
+  - `combat-backend-phase1-3-regression-test.js`
+  - `combat-backend-phase4-6-regression-test.js`
+  - `combat-backend-phase7-8-parity-test.js`
+  - `combat-backend-phase9-cutover-test.js`
+- **Status is STATIC / IMPLEMENTATION CANDIDATE, not CLOSED.** Connector environment cannot run `tools/web/TEST_GAME_LOCAL.cmd`; local Mode 5 + Canonical closure are still required before retiring V2 or declaring the migration locked.
+
 ## Godot migration — ACTIVE
 
 - Engine target: **Godot 4.7.2 stable**, primary viewport **390×844**.
