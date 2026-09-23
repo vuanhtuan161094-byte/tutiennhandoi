@@ -113,7 +113,7 @@ test('Phase 3 Dungeon and Content Event cannot own duplicate player-stat composi
 
 test('Phase 2 Hunt practice consumes actual CombatKernel cast counts instead of estimating from duration', () => {
   const sessionSource = fs.readFileSync(fileURLToPath(new URL('../../dist/core/session.js', import.meta.url)), 'utf8');
-  const start = sessionSource.indexOf('const kernelCombat = resolveEndlessHuntWithCombatKernelV2');
+  const start = sessionSource.indexOf('const kernelCombat = resolveEndlessHuntWithCombatKernelV3');
   const end = sessionSource.indexOf('const fateRuntime =', start);
   assert(start >= 0 && end > start, 'Endless Hunt combat/practice slice not found');
   const huntSlice = sessionSource.slice(start, end);
