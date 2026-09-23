@@ -45,10 +45,10 @@ function block(source, start, end) {
   return source.slice(a, b);
 }
 
-test('PvE live Hunt consumes the canonical final personal CombatEntity and CombatKernel V2', () => {
+test('PvE live Hunt consumes the canonical final personal CombatEntity and CombatKernel V3', () => {
   const src = block(sessionSource, 'fightEndlessFloor(options = {})', 'equipmentCombatImpact(itemId)');
   assert(src.includes('this.personalCombatEntity()'), 'live Hunt must consume final personal entity');
-  assert(src.includes('resolveEndlessHuntWithCombatKernelV2'), 'live Hunt must resolve through CombatKernel V2');
+  assert(src.includes('resolveEndlessHuntWithCombatKernelV3'), 'live Hunt must resolve through CombatKernel V3');
   assert(!src.includes('winnerByPowerScore'), 'live Hunt cannot declare winner from generic Power Score');
 });
 
@@ -59,7 +59,7 @@ test('PvP join/defense/challenge all consume the same final personal CombatEntit
     const src = sessionSource.slice(start, start + 900);
     assert(src.includes('this.personalCombatEntity()'), `${signature} must consume final personal entity`);
   }
-  assert(pvpSource.includes('runCombatKernelV2({ registry, seed, entities: [playerEntity, opponentEntity]'), 'PvP challenge must use CombatKernel V2');
+  assert(pvpSource.includes('runCompiledCombatEncounterV3(encounter, registry)'), 'new PvP challenge must use compiled CombatKernel V3');
 });
 
 test('PvP defense snapshot dynamically equals the final personal entity except snapshot identity', () => {
@@ -88,10 +88,10 @@ test('PvP actual replay player dynamically preserves final build payload under b
   assert.equal(replay.pvpTacticalV93?.presetId, 'balanced', 'PvP replay must explicitly identify its tactical wrapper');
 });
 
-test('Offline/virtual Hunt derives TTK from one representative CombatKernel V2 fight and batches O(1)', () => {
+test('Offline/virtual Hunt derives TTK from one representative CombatKernel V3 fight and batches O(1)', () => {
   const src = block(sessionSource, 'resolveEndlessHuntFarmBatchV77(realSeconds', 'endlessHuntSummary()');
   assert(src.includes('const representativePlayer = this.personalCombatEntity()'), 'offline Hunt must use final personal entity');
-  assert(src.includes('resolveEndlessHuntWithCombatKernelV2'), 'offline Hunt must sample CombatKernel V2');
+  assert(src.includes('resolveEndlessHuntWithCombatKernelV3'), 'offline Hunt must sample CombatKernel V3');
   assert(src.includes('seconds / secondsPerKillV129'), 'offline kills must derive from representative CombatKernel TTK');
   assert(!/for\s*\([^)]*kills/.test(src), 'offline Hunt must not loop once per virtual kill');
 });
