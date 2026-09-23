@@ -78,7 +78,7 @@ test('Phase 9 new PvP replay is V3 and historical V2 replay remains deterministi
 });
 
 test('Phase 9 V2 remains compatibility/parity code, not the production Session authority', () => {
-  const compiler = source('../../dist/core/combat-v3-runtime.js');
+  const compiler = source('../../dist/core/combat-kernel-v2.js');
   const parity = source('../../dist/core/combat-parity-v3.js');
   const v2 = source('../../dist/core/combat-kernel-v2.js');
   assert(compiler.includes('runCompiledCombatEncounterV2'));
