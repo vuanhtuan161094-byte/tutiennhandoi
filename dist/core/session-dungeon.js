@@ -6,7 +6,7 @@ import { buildDungeonGuardian, canChallengeDungeonFloor, grantDungeonGuardianLoo
 import { analyzeBattle, topDamageSkill } from './combat-analytics.js';
 import { V125_DAO_NATURE_DUNGEON_ID } from '../content/dungeons.js';
 import { compareCombatPower } from './personal-power.js';
-import { compileCombatEncounterV1, runCompiledCombatEncounterV2 } from './combat-encounter-compiler.js';
+import { compileCombatEncounterV1, runCompiledCombatEncounterV3 } from './combat-encounter-compiler.js';
 import { applyCombatSettlementPolicyV1, dungeonDefeatPolicyV1 } from './combat-settlement-policy.js';
 import { ensureCollectionProgressStateV12316 } from './collection-progression-v12316.js';
 import { grantResourcePveRewardsV12329, isResourcePveDungeonV12329, resourcePveVirtualBreakIdV12329, resourcePveVirtualMaterialIdV12329 } from './resource-pve-v12329.js';
@@ -56,7 +56,7 @@ export function challengeSessionDungeonFloorV141(dungeonId, floor = 1) {
             applyPacing: true,
             metadata: { dungeonId, floor, guardianId: guardian.id },
         });
-        const kernel = runCompiledCombatEncounterV2(encounter, this.registry);
+        const kernel = runCompiledCombatEncounterV3(encounter, this.registry);
         const battle = kernel.battle;
         const analytics = analyzeBattle(battle);
         const playerAnalytics = analytics.combatants[playerCombat.id];
