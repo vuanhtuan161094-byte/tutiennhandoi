@@ -53,7 +53,7 @@ test('V163 B1 production combat composes Collection artifact/relic power once an
   assert(sessionBody.includes('buildPlayerCombatEntityV1({'), 'Session must delegate final CombatEntity composition to the canonical factory');
   assert.equal((sessionBody.match(/applyCollectionEconomyToEntityV12325\(/g) ?? []).length, 0, 'Session must not duplicate Collection combat composition');
 
-  const factory = readFileSync(new URL('../../dist/core/combat-entity-factory.js', import.meta.url), 'utf8');
+  const factory = readFileSync(new URL('../../dist/core/combat-kernel-v2.js', import.meta.url), 'utf8');
   assert(factory.includes('const equipped = applyEquipmentToEntity(character, state.equipment, registry.equipmentSets);'));
   assert(factory.includes('const collected = applyCollectionEconomyToEntityV12325(equipped, state.collectionV12316);'));
   assert.equal((factory.match(/applyCollectionEconomyToEntityV12325\(/g) ?? []).length, 1);
