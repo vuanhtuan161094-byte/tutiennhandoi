@@ -52,6 +52,8 @@ Before editing:
 
 Use `search -> narrow -> read -> patch -> targeted proof`.
 
+For gameplay/system-design discussion, inspect the relevant current backend/runtime authority before answering. Clearly separate **current backend behavior** from **proposed redesign**; do not use conversation memory or an older design as a substitute for current source.
+
 ## 3. Locked authority protection
 
 Anything marked `CLOSED / LOCKED` is read-only unless there is a proven regression or the user explicitly changes scope.
