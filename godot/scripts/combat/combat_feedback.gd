@@ -6,6 +6,8 @@ class_name CombatFeedback
 ## This adapter intentionally does NOT expose Juice.hitstop(), because that
 ## mutates Engine.time_scale while the external authority can keep advancing.
 
+const SWORD_SLASH_VFX := preload("res://scripts/combat/sword_slash_vfx.gd")
+
 enum ImpactLevel {
 	LIGHT,
 	NORMAL,
@@ -81,6 +83,47 @@ func damage_number(
 		"scale": 1.28 if critical else 1.0,
 	}
 	juice.call("damage_number", parent, world_pos, value, options)
+
+
+func sword_slash(
+		parent: Node,
+		skill_id: String,
+		from_global: Vector2,
+		to_global_position: Vector2,
+		target: CanvasItem = null,
+		camera: Camera2D = null
+	) -> Node2D:
+	if parent == null or not SWORD_SLASH_VFX.supports_skill(skill_id):
+		return null
+
+	var effect: SwordSlashVfx = SWORD_SLASH_VFX.new()
+	parent.add_child(effect)
+	effect.impact_requested.connect(
+		_on_sword_slash_impact.bind(target, camera)
+	)
+	effect.play(skill_id, from_global, to_global_position)
+	return effect
+
+
+func _on_sword_slash_impact(
+		_world_position: Vector2,
+		impact_kind: String,
+		target: CanvasItem,
+		camera: Camera2D
+	) -> void:
+	var level := ImpactLevel.NORMAL
+	match impact_kind:
+		"light":
+			level = ImpactLevel.LIGHT
+		"heavy":
+			level = ImpactLevel.HEAVY
+		"break":
+			level = ImpactLevel.BREAK
+
+	if target != null:
+		flash_hit(target, level)
+	if camera != null:
+		shake(camera, level)
 
 
 func _juice() -> Node:
