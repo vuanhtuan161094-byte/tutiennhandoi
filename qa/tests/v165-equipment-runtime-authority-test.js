@@ -8,13 +8,16 @@ import {
 } from '../../dist/core/equipment-v142.js';
 
 const session = fs.readFileSync('dist/core/session.js', 'utf8');
+const combatFactory = fs.readFileSync('dist/core/combat-entity-factory.js', 'utf8');
 const crafting = fs.readFileSync('dist/core/equipment-crafting-v142.js', 'utf8');
 const equipment = fs.readFileSync('dist/core/equipment.js', 'utf8');
 
 // State authority: V142 progression lives inside the single canonical state.equipment channel.
 assert.match(session, /craftRankedEquipmentV142\(this\.stateValue, this\.stateValue\.equipment/);
 assert.match(session, /equipmentCraftingSummaryV142\(this\.stateValue, this\.stateValue\.equipment\)/);
-assert.match(session, /applyEquipmentToEntity/);
+assert.match(session, /buildPlayerCombatEntityV1/);
+assert.match(combatFactory, /applyEquipmentToEntity\(character, state\.equipment, registry\.equipmentSets\)/);
+assert.equal((combatFactory.match(/applyEquipmentToEntity\(/g) ?? []).length, 1, 'canonical player factory must compose equipment exactly once');
 
 // Save/load authority: restore must enforce the same +15 cap and retired-lane rules as live V142 mutation.
 const restoreFixture = {
