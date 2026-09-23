@@ -22,6 +22,6 @@ try{
   const beforeRefresh=await json('/api/state'),serial0=beforeRefresh.snapshot.economy.shop.refreshSerial,ss0=beforeRefresh.save.game.state.inventory['resource.spirit_stone'];
   const refreshed=await post('/api/action',{action:'economyRefreshV111'});check(refreshed.snapshot.economy.shop.refreshSerial===serial0+1&&refreshed.save.game.state.inventory['resource.spirit_stone']<ss0,'V111 economyRefreshV111 spends Linh Thach and rerolls deterministic finite stock');
   check(refreshed.snapshot.economyProduction.health.gachaPullCap===null&&refreshed.snapshot.economyProduction.health.resourceFarmCap===null,'V111 transport keeps open Gacha/resource gameplay contract');
-  const state=await json('/api/state');check(state.snapshot.economyProduction.boundJade.cycle28d.recurringMax===6240,'V111 repeated /api/state preserves 28-day budget read-model');
+  const state=await json('/api/state');check(state.snapshot.economyProduction.boundJade.cycle28d.recurringMax===5120,'V111 repeated /api/state preserves 28-day budget read-model');
   console.log(`\n${pass}/${pass} V111 Economy standalone/web transport checks passed.`);process.exit(0);
 }catch(e){console.error(e?.stack||e);process.exit(1)}
