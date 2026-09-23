@@ -8,7 +8,7 @@ const sessionDungeon = fs.readFileSync('dist/core/session-dungeon.js', 'utf8');
 
 assert.match(session, /from '\.\/equipment-hunt-v142\.js'/, 'Session phải nối V142 Hunt fragment bridge.');
 assert.match(session, /from '\.\/equipment-crafting-v142\.js'/, 'Session phải nối V142 crafting.');
-assert.ok(session.includes('settleRealHuntEquipmentFragmentsV142(this.stateValue'), 'Real Hunt phải settlement thành mảnh V142.');
+assert.ok(session.includes("rewardContext: 'progression-only'") && session.includes('directBossLoot: false'), 'Boss thật phải là progression-only, không mint mảnh V142 trực tiếp.');
 assert.ok(session.includes('settleVirtualHuntEquipmentFragmentsV142(this.stateValue'), 'Săn Ảo phải settlement thành mảnh V142.');
 assert.ok(session.includes('equipmentFragmentPreviewV142: fragmentPreviewV142'), 'Preview Săn Ảo phải hiện telemetry mảnh V142.');
 assert.ok(session.includes('craftEquipmentV142(slot, rankIndex)'), 'Session phải có craft V142.');
@@ -24,13 +24,15 @@ assert.ok(virtualStart >= 0 && virtualEnd > virtualStart);
 assert.ok(!virtualBlock.includes('buildEquipmentInstance('), 'Săn Ảo V142 không được materialize trang bị hoàn chỉnh.');
 assert.ok(!virtualBlock.includes('overflowEquipmentRolls * 2'), 'Săn Ảo V142 không được đổi lượt dư thành Tinh Hoa trang bị cũ.');
 
-const realStart = session.indexOf('const equipmentEventV142 = rng.chance(equipmentChancePct);');
-const realEnd = session.indexOf('// V85: new PvE drops', realStart);
+const realStart = session.indexOf('fightEndlessFloor(options = {})');
+const realEnd = session.indexOf('equipmentCombatImpact(itemId)', realStart);
 const realBlock = session.slice(realStart, realEnd);
 assert.ok(realStart >= 0 && realEnd > realStart);
-assert.ok(realBlock.includes('settleRealHuntEquipmentFragmentsV142'));
-assert.ok(!realBlock.includes('buildEquipmentInstance('), 'Real Hunt V142 không được rơi nguyên món.');
-assert.ok(!realBlock.includes('equipmentGradesByDepth'), 'Real Hunt không còn Grade ladder cũ.');
+assert.ok(realBlock.includes("rewardContext: 'progression-only'"));
+assert.ok(realBlock.includes('directBossLoot: false'));
+assert.ok(!realBlock.includes('settleRealHuntEquipmentFragmentsV142('), 'Boss thật không được mint mảnh V142 trực tiếp; mảnh đến từ Săn Ảo.');
+assert.ok(!realBlock.includes('buildEquipmentInstance('), 'Boss thật V142 không được rơi nguyên món.');
+assert.ok(!realBlock.includes('equipmentGradesByDepth'), 'Boss thật không được khôi phục Grade ladder cũ.');
 
 assert.match(equipment, /import \{[^\n]*equipmentSetPowerV142[^\n]*\} from '\.\/equipment-v142\.js';/, 'equipmentPower phải import Set V142.');
 assert.ok(equipment.includes('const v142SetPower = equipmentSetPowerV142(state);'), 'Set V142 phải đi vào combat power thật.');
