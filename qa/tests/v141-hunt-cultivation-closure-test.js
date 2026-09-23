@@ -112,7 +112,7 @@ test('Preview và settlement Săn Ảo dùng cùng hard floor 0.25s; 24h không 
 
 test('Settlement Săn Ảo lấy TTK từ CombatKernel V2 đại diện, không lấy preview Power Score', () => {
   const session = fs.readFileSync(new URL('../../dist/core/session.js', import.meta.url), 'utf8');
-  assert(session.includes('const representativeCombat = resolveEndlessHuntWithCombatKernelV2'));
+  assert(session.includes('const representativeCombat = resolveEndlessHuntWithCombatKernelV3'));
   assert(session.includes('const secondsPerKillV129 = representativeCombat.won'));
   assert(session.includes("mode: 'simulation'"));
   assert(session.includes('this.fateSpiritStoneGainV4(deterministicJitteredTotalV77'));
