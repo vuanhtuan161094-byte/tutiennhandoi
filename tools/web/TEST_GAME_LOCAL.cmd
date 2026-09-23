@@ -57,6 +57,8 @@ echo.
 echo GitHub Actions KHONG duoc su dung boi launcher nay.
 echo Ket qua se nam trong artifacts\local-ci\
 echo.
+set "LAST_RUN="
+if exist "artifacts\local-ci\LAST_RUN.txt" del /q "artifacts\local-ci\LAST_RUN.txt" >nul 2>&1
 node qa\local\run-local-ci.mjs %MODE% %EXTRA%
 set "RC=%ERRORLEVEL%"
 echo.
