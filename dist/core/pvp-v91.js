@@ -1,4 +1,4 @@
-import { compileCombatEncounterV1, runCompiledCombatEncounterV2, runCompiledCombatEncounterV3 } from './combat-v3-runtime.js';
+import { compileCombatEncounterV1, runCompiledCombatEncounterV2, runCompiledCombatEncounterV3 } from './combat-kernel-v2.js';
 
 export const PVP_V91_SCHEMA = 'pvp.v91';
 export const PVP_V94_FEATURE_VERSION = 'v94';
