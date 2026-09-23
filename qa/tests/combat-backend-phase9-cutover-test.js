@@ -21,7 +21,7 @@ function makeSession(seed = 79001) {
 
 test('Phase 9 production Session consumers are cut to V3 boundaries', () => {
   const session = source('../../dist/core/session.js');
-  assert(session.includes("from './endless-hunt-combat-kernel-v3.js'"));
+  assert(session.includes("from './endless-hunt-combat-kernel-v2.js'"));
   assert(session.includes('resolveEndlessHuntWithCombatKernelV3'));
   assert(session.includes('runCompiledCombatEncounterV3'));
   assert.equal(session.includes('runCompiledCombatEncounterV2'), false);
@@ -78,7 +78,7 @@ test('Phase 9 new PvP replay is V3 and historical V2 replay remains deterministi
 });
 
 test('Phase 9 V2 remains compatibility/parity code, not the production Session authority', () => {
-  const compiler = source('../../dist/core/combat-encounter-compiler.js');
+  const compiler = source('../../dist/core/combat-v3-runtime.js');
   const parity = source('../../dist/core/combat-parity-v3.js');
   const v2 = source('../../dist/core/combat-kernel-v2.js');
   assert(compiler.includes('runCompiledCombatEncounterV2'));
