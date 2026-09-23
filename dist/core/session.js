@@ -63,9 +63,9 @@ import './save-stability.js';
 import { applyBirthCombatOrigins, birthLuckFlatFromOrigins, birthLootMultiplierFromOrigins, writeBirthModifiersToOrigins } from './birth-randomness.js';
 import { applyEndlessLifeLegacy, bestEndlessHuntFarmFloors, bossReady, cloneEndlessHuntState, createEndlessHuntState, endlessHuntDisplay, endlessHuntFloorEfficiency, ensureEndlessHuntMonster, ensureMajorHuntMapUnlocked, generateEndlessHuntMonster, highestUnlockedLocalFloor, isEndlessHuntFloorCleared, isEndlessHuntFloorUnlocked, recordEndlessHuntFloorStats, resolveEndlessHuntFight, selectEndlessHuntFloor } from './endless-hunt.js';
 import { buildHuntCombatProfileV130 } from './hunt-real-combat-v130.js';
-import { resolveEndlessHuntWithCombatKernelV2 } from './endless-hunt-combat-kernel-v2.js';
+import { resolveEndlessHuntWithCombatKernelV3 } from './endless-hunt-combat-kernel-v2.js';
 import { deterministicBinomialV77, deterministicJitteredTotalV77, huntVirtualFarmPlayerDpsLog10V77, huntVirtualFarmProfileV77 } from './hunt-virtual-farm-v77.js';
-import { compileCombatEncounterV1, runCompiledCombatEncounterV2 } from './combat-encounter-compiler.js';
+import { compileCombatEncounterV1, runCompiledCombatEncounterV3 } from './combat-encounter-compiler.js';
 import { applyCombatSettlementPolicyV1, contentEventDefeatPolicyV1, daoSuyDefeatPolicyV1, endlessHuntSettlementPolicyV1 } from './combat-settlement-policy.js';
 import { buildPlayerCombatEntityV1 } from './combat-entity-factory.js';
 import { challengePvpV91, joinPvpV91, pvpViewV91, refreshPvpDefenseV91, replayPvpV91, setPvpTacticalV94, settlePvpSeasonV94, recordPvpRewardIntegrityV94, recordPvpSeasonRewardIntegrityV94 } from './pvp-v91.js';
@@ -922,7 +922,7 @@ export class SimulationSession {
         const representativeMob = generateEndlessHuntMonster(shadow, mixSeed(this.rootSeed ^ 0x12977f41, farm.floor * 131), 0, 1, { common: 100, enhanced: 0, elite: 0 }, map.localFloor, map.elementPool, map.maxMonsterElements, false);
         const representativePlayer = this.personalCombatEntity();
         const representativeMatchup = secretRealmElementMatchup(representativePlayer, representativeMob.elements);
-        const representativeCombat = resolveEndlessHuntWithCombatKernelV2({
+        const representativeCombat = resolveEndlessHuntWithCombatKernelV3({
             registry: this.registry,
             player: representativePlayer,
             monster: representativeMob,
@@ -1089,7 +1089,7 @@ export class SimulationSession {
             initialBattleDaoStateV2: huntRuntime?.battleDaoStateV2 ? structuredClone(huntRuntime.battleDaoStateV2) : personalEntityBase.initialBattleDaoStateV2,
         };
         const mapPowerMultiplier = (map.powerByGrade[activeMonster.grade] ?? map.powerMultiplier) * elementMatchup.enemyPowerMultiplier;
-        const kernelCombat = resolveEndlessHuntWithCombatKernelV2({ registry: this.registry, player: personalEntity, monster: activeMonster, enemyStatMultiplier: mapPowerMultiplier, seed, bossMechanic });
+        const kernelCombat = resolveEndlessHuntWithCombatKernelV3({ registry: this.registry, player: personalEntity, monster: activeMonster, enemyStatMultiplier: mapPowerMultiplier, seed, bossMechanic });
         const realCombat = { won: kernelCombat.won, outcome: kernelCombat.outcome, battleSeconds: kernelCombat.battleSeconds, playerHpRemainingPct: kernelCombat.playerHpRemainingPct, enemyHpRemainingPct: kernelCombat.enemyHpRemainingPct, playerDamageLog10: kernelCombat.playerDamageLog10, enemyDamageLog10: kernelCombat.enemyDamageLog10, playerDpsLog10: kernelCombat.playerDpsLog10, enemyDpsLog10: kernelCombat.enemyDpsLog10, enemyHpLog10: kernelCombat.enemyHpLog10, playerHpLog10: kernelCombat.playerHpLog10, breakPressurePctPerSecond: kernelCombat.breakPressurePctPerSecond, diagnosis: kernelCombat.diagnosis };
         const result = resolveEndlessHuntFight(hunt, playerPowerLog10, seed, luck, loot, mapPowerMultiplier, map.gradeWeights, map.localFloor, map.elementPool, map.maxMonsterElements, realCombat, challengeBoss);
         // V77 has no real ordinary-monster chain. Every floor action is one Boss, so no combat carry state survives the encounter.
@@ -1197,7 +1197,7 @@ export class SimulationSession {
                 applyPacing: false,
                 metadata: { kind: 'equipment-offense' },
             });
-            const offenseBattle = runCompiledCombatEncounterV2(offenseEncounter, this.registry).battle;
+            const offenseBattle = runCompiledCombatEncounterV3(offenseEncounter, this.registry).battle;
             const offenseAnalytics = analyzeBattle(offenseBattle);
             const oa = offenseAnalytics.combatants[offenseId];
             const dps = Math.max(0, oa?.damageDealt ?? 0) / Math.max(1, Math.min(durationSeconds, offenseBattle.duration));
@@ -1218,7 +1218,7 @@ export class SimulationSession {
                 applyPacing: false,
                 metadata: { kind: 'equipment-survival' },
             });
-            const survivalBattle = runCompiledCombatEncounterV2(survivalEncounter, this.registry).battle;
+            const survivalBattle = runCompiledCombatEncounterV3(survivalEncounter, this.registry).battle;
             const final = survivalBattle.finalState[survivalId];
             const maxHp = Math.max(1, buildHuntCombatProfileV130(entity, this.registry).maxHp);
             const hpPct = Math.max(0, Math.min(100, (final?.hp ?? 0) / maxHp * 100));
@@ -1450,7 +1450,7 @@ export class SimulationSession {
                 applyPacing: true,
                 metadata: { eventId, choiceId, enemyId: enemy.id },
             });
-            const kernel = runCompiledCombatEncounterV2(encounter, this.registry);
+            const kernel = runCompiledCombatEncounterV3(encounter, this.registry);
             const battle = kernel.battle;
             combatResult = kernel.combatResult;
             wonCombat = battle.winnerId === playerCombat.id;
@@ -4324,7 +4324,7 @@ export class SimulationSession {
             applyPacing: true,
             metadata: { guardianId: guardian.id, pressure },
         });
-        const kernel = runCompiledCombatEncounterV2(encounter, this.registry);
+        const kernel = runCompiledCombatEncounterV3(encounter, this.registry);
         const won = kernel.battle.winnerId === player.id;
         const resolution = resolveDaoSuyTribulationV127(this.stateValue.immortal, won, this.stateValue.inheritedOrigins, order);
         const elapsedYears = 0.03;
