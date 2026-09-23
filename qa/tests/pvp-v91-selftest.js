@@ -62,7 +62,7 @@ check(s.pvpV91(now+3).history.length===1,'fight is added to history');
 check(s.pvpV91(now+3).history[0].replayable===true,'history exposes replay');
 const replayBefore=JSON.stringify(s.snapshot()), replay=s.replayPvpV91(fight.fightId), replayAfter=JSON.stringify(s.snapshot());
 check(replay.verified===true,'replay deterministically verifies');
-check(replay.source==='CombatKernelV2','replay uses CombatKernelV2');
+check(replay.source==='CombatKernelV3'&&replay.engineVersion==='combat.v3','new replay uses versioned CombatKernelV3');
 check(replayBefore===replayAfter,'replay is save-pure');
 check(gameplayBefore===JSON.stringify(stripped(s.state)),'fight does not mutate non-PvP gameplay state');
 const cloned=cloneAdventureState(s.state);cloned.pvpV91.rating+=500;
