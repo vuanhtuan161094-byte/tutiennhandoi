@@ -65,9 +65,9 @@ import { applyEndlessLifeLegacy, bestEndlessHuntFarmFloors, bossReady, cloneEndl
 import { buildHuntCombatProfileV130 } from './hunt-real-combat-v130.js';
 import { resolveEndlessHuntWithCombatKernelV3 } from './endless-hunt-combat-kernel-v2.js';
 import { deterministicBinomialV77, deterministicJitteredTotalV77, huntVirtualFarmPlayerDpsLog10V77, huntVirtualFarmProfileV77 } from './hunt-virtual-farm-v77.js';
-import { compileCombatEncounterV1, runCompiledCombatEncounterV3 } from './combat-v3-runtime.js';
-import { applyCombatSettlementPolicyV1, contentEventDefeatPolicyV1, daoSuyDefeatPolicyV1, endlessHuntSettlementPolicyV1 } from './combat-v3-runtime.js';
-import { buildPlayerCombatEntityV1 } from './combat-v3-runtime.js';
+import { compileCombatEncounterV1, runCompiledCombatEncounterV3 } from './combat-kernel-v2.js';
+import { applyCombatSettlementPolicyV1, contentEventDefeatPolicyV1, daoSuyDefeatPolicyV1, endlessHuntSettlementPolicyV1 } from './combat-kernel-v2.js';
+import { buildPlayerCombatEntityV1 } from './combat-kernel-v2.js';
 import { challengePvpV91, joinPvpV91, pvpViewV91, refreshPvpDefenseV91, replayPvpV91, setPvpTacticalV94, settlePvpSeasonV94, recordPvpRewardIntegrityV94, recordPvpSeasonRewardIntegrityV94 } from './pvp-v91.js';
 import { endlessHuntFarmRecommendationsV123, evaluateHuntBossMechanicV123, huntFarmRewardEfficiencyV123 } from './pve-progression-v123.js';
 import { buildHuntProductionV110 } from './hunt-production-v110.js';
