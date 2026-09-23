@@ -913,7 +913,7 @@ export class SimulationSession {
             return { schema: 'endless-hunt-farm-batch.v77', floor: farm.floor, realSeconds: seconds, kills: 0, eliteKills: 0, spiritStones: 0, demonCores: 0, demonCoreResourceId: '', equipmentRolls: 0, equipmentDropIds: [], equipmentDropNames: [], overflowEquipmentRolls: 0, farm, summaryLines: [farm.available ? 'Chưa đủ thời gian tạo một lượt săn.' : 'Hạ Boss tầng đầu tiên để mở bãi farm ảo.'] };
         }
         // V129 parity: offline/virtual farming derives throughput from one representative ordinary
-        // monster resolved by the same CombatKernel V2 used by live Hunt/PvP. The batch remains O(1):
+        // monster resolved by the same CombatKernel V3 used by live Hunt/PvP. The batch remains O(1):
         // one deterministic representative encounter establishes TTK, then rewards are aggregated.
         const map = realmMapDefinitionForFloor(farm.floor);
         const shadow = cloneEndlessHuntState(hunt);
