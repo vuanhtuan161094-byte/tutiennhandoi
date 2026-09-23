@@ -1,5 +1,5 @@
 import { runCombatKernelV2, combatKernelMechanicsProjectionV2 } from './combat-kernel-v2.js';
-import { runCombatKernelV3, combatKernelMechanicsProjectionV3 } from './combat-kernel-v3.js';
+import { runCombatKernelV3, combatKernelMechanicsProjectionV3 } from './combat-v3-runtime.js';
 
 function stable(value) {
     if (Array.isArray(value))
