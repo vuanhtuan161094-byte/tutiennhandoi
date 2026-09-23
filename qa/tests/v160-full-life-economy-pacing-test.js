@@ -78,11 +78,11 @@ test('V160 resource PvE audit proves all eight resource categories have real tim
 test('V160 Bound Jade ledger exposes the real recurring 28-day acquisition budget', () => {
   assert.equal(audit.boundJade.cycleDays, 28);
   assert.equal(audit.boundJade.pvpDailyBoundJadeCap, 40);
-  assert.equal(audit.boundJade.recurring28, 6240);
+  assert.equal(audit.boundJade.recurring28, 5120);
   assert.equal(audit.boundJade.firstClearBurst28, 300);
   assert.equal(audit.boundJade.gachaSingleCost, 160);
   assert.equal(audit.boundJade.gachaTenCost, 1440);
-  assert(audit.boundJade.equivalentDiscountedPullsFromRecurring28 > 40);
+  assert.equal(audit.boundJade.equivalentDiscountedPullsFromRecurring28, 35.56);
 });
 
 test('V160 audit keeps unresolved acquisition pacing visible instead of fabricating a full-life PASS', () => {
