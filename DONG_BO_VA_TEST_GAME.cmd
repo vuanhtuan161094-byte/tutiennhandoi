@@ -49,7 +49,11 @@ if errorlevel 1 (
   git commit -m "assets(godot): sync approved local animation assets"
   if errorlevel 1 goto :fail
 
-  echo [6/7] Rebase safely onto latest origin/main and push...
+  echo [6/7] Normalize tracked worktree, rebase safely, and push...
+  rem All intended local asset changes are already committed above.
+  rem Discard any tracked drift left by Windows tools/line-ending rewrites before rebase.
+  git reset --hard HEAD
+  if errorlevel 1 goto :fail
   git fetch origin main
   if errorlevel 1 goto :fail
   git rebase origin/main
