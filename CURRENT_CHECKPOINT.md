@@ -13,29 +13,35 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - Do not reopen locked runtime systems without a proven regression.
 - **All selected non-UI runtime/authority work is CLOSED / LOCKED through V179.**
 - **V180 is NOT OPEN.** The attempted final cross-system audit did not justify another numbered patch because the existing player-journey gate plus Canonical closure already cover the selected non-UI objective.
-- **Historical web UI closures remain LOCKED, but active implementation work has moved to the Godot presentation client. Godot Home, Character and Kho Đồ / Equipment are the current working surfaces.**
+- **Historical web UI closures remain LOCKED. The user has paused further Combat/Sword VFX work; current requested engineering priority is backend. Do not resume VFX unless explicitly requested.**
 
-## Combat backend V3 migration — CANDIDATE (2026-09-23)
+## Combat backend V3 migration — CLOSED / LOCKED (2026-09-24)
 
-- Gameplay/balance remains frozen. No new stats, Đạo, formulas, rewards, or progression rules were intentionally added by this migration.
-- Phase 1–3 candidate: regression guards + confirmed bug repairs + canonical `CombatEntityFactory`.
-- Phase 4–6 candidate: `CombatEncounterCompiler`, explicit activity `SettlementPolicy`, and typed `combat-result.v1 / combat-event.v1`.
-- Phase 7 candidate introduces `CombatKernelV3` as the production strangler boundary. It executes the locked V168 `CombatEngine` through `combat-engine.v168-compat` rather than copying the 1,700-line engine. Deep resolver extraction remains a later retirement/internal-cleanup task after full parity proof.
-- Phase 8 adds deterministic V2↔V3 parity coverage for ordinary archetypes, Boss encounters, hard timeout, determinism, and all eight Battle Đạo identities.
-- Phase 9 production cutover:
-  - equipment benchmark / Content Event / Đạo Suy → compiled V3;
-  - Dungeon → compiled V3;
-  - live + representative/offline Endless Hunt/Boss → V3 facade;
-  - new PvP fights → V3;
-  - historical PvP replay remains engine-versioned: missing/`combat.v2` uses V2, new `combat.v3` uses V3.
-- V3 preserves authored legacy combat-model semantics during cutover and exposes that compatibility debt instead of silently upgrading formulas. Unknown future combat models are rejected.
-- V2 remains only as parity/compatibility and historical replay authority. Do not delete it until local Fast + Canonical parity gates are green.
-- New guards are wired into Backend Fast:
+- Exact verified runtime SHA: `00f944feeebe99778beec0c1d727060e47dfc5ec`.
+- Closure evidence from the user-local one-click gate:
+  - `V140 BACKEND CLOSURE: 134/134 PASS`;
+  - `V140 FRONTEND CLOSURE: 34/34 PASS`;
+  - `FULL CLEAN + CANONICAL: PASS`;
+  - exact SHA reported: `00f944f`.
+- Closure record: `docs/runtime/COMBAT_BACKEND_V3_CLOSURE_20260924.md`.
+- Gameplay/balance remained frozen. No new stats, Đạo, formulas, rewards, or progression rules were intentionally added by this migration.
+- Production structural boundary:
+  - canonical `CombatEntityFactory`;
+  - `CombatEncounterCompiler`;
+  - explicit activity settlement policy;
+  - typed `combat-result.v1 / combat-event.v1`;
+  - production `CombatKernelV3` facade.
+- Production consumers are cut to V3 for new fights: equipment benchmark/intelligence, Content Event, Đạo Suy, Dungeon, Endless Hunt/Boss including representative/offline TTK sampling, and new PvP fights.
+- Historical PvP replay remains engine-versioned: missing/`combat.v2` replays use the frozen V2 compatibility oracle; `combat.v3` replays use V3.
+- V3 intentionally executes the locked V168 `CombatEngine` through `combat-engine.v168-compat`. Deep decomposition of the old engine is **not required for this closure** and must not be used as a reason to reopen balance.
+- V2 remains only for deterministic parity/oracle coverage, historical replay compatibility, and narrow compatibility aliases. Do not delete it while those obligations remain.
+- Regression/parity guards remain wired into Backend Fast:
   - `combat-backend-phase1-3-regression-test.js`
   - `combat-backend-phase4-6-regression-test.js`
   - `combat-backend-phase7-8-parity-test.js`
   - `combat-backend-phase9-cutover-test.js`
-- **Status is STATIC / IMPLEMENTATION CANDIDATE, not CLOSED.** Connector environment cannot run `tools/web/TEST_GAME_LOCAL.cmd`; local Mode 5 + Canonical closure are still required before retiring V2 or declaring the migration locked.
+- V150 Bảo Khí is suppressed from the live player-facing Combat stream; stale V2 production metadata/read-model labels were normalized to V3.
+- **Status: CLOSED / LOCKED.** Reopen only for a proven regression, an explicitly requested new combat feature, or a separately scoped internal-engine refactor with parity proof.
 
 ## Godot migration — ACTIVE
 
@@ -71,13 +77,11 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 
 ### Immediate next action
 
-1. Sync local checkout from `main`.
-2. Run `KIEM_TRA_GAME.cmd`; P0/P1/P2 remain static candidates until this local gate succeeds.
-3. For deterministic presentation review, run `CHOI_GAME_QA.cmd` and use F2–F8 fixtures; this uses `godot/.runtime/qa-fixture-save.json`, not the production bridge save.
-4. Review actual 390×844 Home (seated meditation), Character/Kho Đồ safe-area, and forced ×2/×3/×4/Đột Phá/Độ Kiếp states.
-5. Fix only proven import/parse/runtime/visual defects; do not alter locked V160–V179 gameplay authority to satisfy presentation QA.
-6. After base Kho Đồ art is visually stable, design rarity-frame and enhancement animation assets/VFX.
-7. Do **not** jump to Pháp Bảo until the user changes priority or the current item/Kho Đồ slice is visually satisfactory.
+1. Combat Backend V3 is closed; do not reopen it for cleanup-only work.
+2. Do not continue Sword/Combat VFX unless the user explicitly returns to that scope.
+3. For any next backend task, refresh `main`, inspect the current runtime authority, and open only a proven defect or an explicitly requested system slice.
+4. Godot presentation candidates and their visual QA remain preserved, but they are not the forced next task while backend work is the user's priority.
+5. Keep V160–V179 gameplay authority locked unless a regression is proven.
 
 ## UI/UX phase
 
