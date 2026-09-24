@@ -1,0 +1,41 @@
+{
+  "schema": "tutien.home-cultivation-animation-v2",
+  "status": "approved-source / runtime-candidate",
+  "frameSize": [
+    176,
+    264
+  ],
+  "sampleFps": 5,
+  "sourceWindowSeconds": 13,
+  "sourceHashes": {
+    "1000017860.mp4": "f7146298da4b681cebfe3cb483d2c02b4c4fa6085416a51a514fd3cecccd56af",
+    "1000017861.mp4": "df2eebdf989facc0017f4490361e5d11d4fff61b113e5add798ae354c6b9bc98"
+  },
+  "runtime": {
+    "spriteFrames": "res://art/approved/home/animation_v2/home_cultivation_v2.tres",
+    "atlases": [
+      {
+        "path": "res://art/approved/home/animation_v2/home_cultivation_v2_1_atlas.webp",
+        "sha256": "efe5681626b79e9aae6ee30f427f95cf7ec33bb3430bdff41374b42eabc81529",
+        "frames": 65
+      },
+      {
+        "path": "res://art/approved/home/animation_v2/home_cultivation_v2_2_atlas.webp",
+        "sha256": "3804036b999aff34c0ee36dd23561a5a946a519c027b44aaf4afe1aaba1c3276",
+        "frames": 65
+      }
+    ],
+    "animations": {
+      "cultivation_01": {
+        "frameEntries": 128,
+        "pingPongBaked": true,
+        "loop": false
+      },
+      "cultivation_02": {
+        "frameEntries": 128,
+        "pingPongBaked": true,
+        "loop": false
+      }
+    }
+  }
+}

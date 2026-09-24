@@ -1,0 +1,48 @@
+{
+  "schema": "tutien.home-animation-v3",
+  "frameSize": [
+    384,
+    576
+  ],
+  "staticSize": [
+    640,
+    960
+  ],
+  "fps": 8,
+  "sourceWindowSeconds": 13,
+  "quality": "lossless WebP; 384x576 animation; 640x960 static; strict connected background removal; still-first; no runtime upscaling at 390x844 target",
+  "files": {
+    "home_cultivation_still.webp": {
+      "bytes": 620858,
+      "sha256": "a24b15adfdfaa43f847e0485062269c766fb20eb4c08be373dea8b3b9c43d9d6"
+    },
+    "home_cultivation_v3.tres": {
+      "bytes": 48954,
+      "sha256": "2a03f7e8c7f4a8e3909c38a22b83add4dd4a7427feadc11856f45d1489c7a03d"
+    },
+    "home_cultivation_v3_1_atlas.webp": {
+      "bytes": 15503322,
+      "sha256": "088095fb875dea00385af8d80b087755dfecb9f1a0123f1107bc85c6303fce64"
+    },
+    "home_cultivation_v3_2_atlas.webp": {
+      "bytes": 16753218,
+      "sha256": "1c01839acc17fe6b93ea6f06fecb8817d4a674b40dfc49501b69fecce993f3d3"
+    },
+    "home_rest_still.webp": {
+      "bytes": 637510,
+      "sha256": "15bfa81c428e0733ce0e59431c13a298a97b923f8bb6ae75720ffbeec1840007"
+    },
+    "home_rest_v3.tres": {
+      "bytes": 54010,
+      "sha256": "6a0f48314de7858b19fdc0bae83297aaab1e0442d67d7273f4728fb67a9f8ff3"
+    },
+    "home_rest_v3_a_atlas.webp": {
+      "bytes": 15755044,
+      "sha256": "76564c3d6e387557b0d046bfc341e37ac2a99d6e7c7727e3068656fc8611d592"
+    },
+    "home_rest_v3_b_atlas.webp": {
+      "bytes": 14053076,
+      "sha256": "b8f18a87a1cef4aba65e60e826d240cf9e4b1af3eb826ba1c924218dbc400a8b"
+    }
+  }
+}

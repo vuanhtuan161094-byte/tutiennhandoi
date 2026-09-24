@@ -1,0 +1,2854 @@
+[gd_resource type="SpriteFrames" load_steps=210 format=3]
+
+[ext_resource type="Texture2D" path="res://art/approved/home/animation_v3/home_rest_v3_a_atlas.webp" id="1_RestA"]
+
+[ext_resource type="Texture2D" path="res://art/approved/home/animation_v3/home_rest_v3_b_atlas.webp" id="2_RestB"]
+
+[sub_resource type="AtlasTexture" id="RestA_000"]
+atlas = ExtResource("1_RestA")
+region = Rect2(0, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_001"]
+atlas = ExtResource("1_RestA")
+region = Rect2(384, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_002"]
+atlas = ExtResource("1_RestA")
+region = Rect2(768, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_003"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1152, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_004"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1536, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_005"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1920, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_006"]
+atlas = ExtResource("1_RestA")
+region = Rect2(2304, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_007"]
+atlas = ExtResource("1_RestA")
+region = Rect2(2688, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_008"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3072, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_009"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3456, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_010"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3840, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_011"]
+atlas = ExtResource("1_RestA")
+region = Rect2(4224, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_012"]
+atlas = ExtResource("1_RestA")
+region = Rect2(4608, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_013"]
+atlas = ExtResource("1_RestA")
+region = Rect2(0, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_014"]
+atlas = ExtResource("1_RestA")
+region = Rect2(384, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_015"]
+atlas = ExtResource("1_RestA")
+region = Rect2(768, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_016"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1152, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_017"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1536, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_018"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1920, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_019"]
+atlas = ExtResource("1_RestA")
+region = Rect2(2304, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_020"]
+atlas = ExtResource("1_RestA")
+region = Rect2(2688, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_021"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3072, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_022"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3456, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_023"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3840, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_024"]
+atlas = ExtResource("1_RestA")
+region = Rect2(4224, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_025"]
+atlas = ExtResource("1_RestA")
+region = Rect2(4608, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_026"]
+atlas = ExtResource("1_RestA")
+region = Rect2(0, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_027"]
+atlas = ExtResource("1_RestA")
+region = Rect2(384, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_028"]
+atlas = ExtResource("1_RestA")
+region = Rect2(768, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_029"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1152, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_030"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1536, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_031"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1920, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_032"]
+atlas = ExtResource("1_RestA")
+region = Rect2(2304, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_033"]
+atlas = ExtResource("1_RestA")
+region = Rect2(2688, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_034"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3072, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_035"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3456, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_036"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3840, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_037"]
+atlas = ExtResource("1_RestA")
+region = Rect2(4224, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_038"]
+atlas = ExtResource("1_RestA")
+region = Rect2(4608, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_039"]
+atlas = ExtResource("1_RestA")
+region = Rect2(0, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_040"]
+atlas = ExtResource("1_RestA")
+region = Rect2(384, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_041"]
+atlas = ExtResource("1_RestA")
+region = Rect2(768, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_042"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1152, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_043"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1536, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_044"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1920, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_045"]
+atlas = ExtResource("1_RestA")
+region = Rect2(2304, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_046"]
+atlas = ExtResource("1_RestA")
+region = Rect2(2688, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_047"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3072, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_048"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3456, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_049"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3840, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_050"]
+atlas = ExtResource("1_RestA")
+region = Rect2(4224, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_051"]
+atlas = ExtResource("1_RestA")
+region = Rect2(4608, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_052"]
+atlas = ExtResource("1_RestA")
+region = Rect2(0, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_053"]
+atlas = ExtResource("1_RestA")
+region = Rect2(384, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_054"]
+atlas = ExtResource("1_RestA")
+region = Rect2(768, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_055"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1152, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_056"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1536, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_057"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1920, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_058"]
+atlas = ExtResource("1_RestA")
+region = Rect2(2304, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_059"]
+atlas = ExtResource("1_RestA")
+region = Rect2(2688, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_060"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3072, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_061"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3456, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_062"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3840, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_063"]
+atlas = ExtResource("1_RestA")
+region = Rect2(4224, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_064"]
+atlas = ExtResource("1_RestA")
+region = Rect2(4608, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_065"]
+atlas = ExtResource("1_RestA")
+region = Rect2(0, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_066"]
+atlas = ExtResource("1_RestA")
+region = Rect2(384, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_067"]
+atlas = ExtResource("1_RestA")
+region = Rect2(768, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_068"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1152, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_069"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1536, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_070"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1920, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_071"]
+atlas = ExtResource("1_RestA")
+region = Rect2(2304, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_072"]
+atlas = ExtResource("1_RestA")
+region = Rect2(2688, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_073"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3072, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_074"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3456, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_075"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3840, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_076"]
+atlas = ExtResource("1_RestA")
+region = Rect2(4224, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_077"]
+atlas = ExtResource("1_RestA")
+region = Rect2(4608, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_078"]
+atlas = ExtResource("1_RestA")
+region = Rect2(0, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_079"]
+atlas = ExtResource("1_RestA")
+region = Rect2(384, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_080"]
+atlas = ExtResource("1_RestA")
+region = Rect2(768, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_081"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1152, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_082"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1536, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_083"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1920, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_084"]
+atlas = ExtResource("1_RestA")
+region = Rect2(2304, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_085"]
+atlas = ExtResource("1_RestA")
+region = Rect2(2688, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_086"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3072, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_087"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3456, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_088"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3840, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_089"]
+atlas = ExtResource("1_RestA")
+region = Rect2(4224, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_090"]
+atlas = ExtResource("1_RestA")
+region = Rect2(4608, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_091"]
+atlas = ExtResource("1_RestA")
+region = Rect2(0, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_092"]
+atlas = ExtResource("1_RestA")
+region = Rect2(384, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_093"]
+atlas = ExtResource("1_RestA")
+region = Rect2(768, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_094"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1152, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_095"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1536, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_096"]
+atlas = ExtResource("1_RestA")
+region = Rect2(1920, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_097"]
+atlas = ExtResource("1_RestA")
+region = Rect2(2304, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_098"]
+atlas = ExtResource("1_RestA")
+region = Rect2(2688, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_099"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3072, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_100"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3456, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_101"]
+atlas = ExtResource("1_RestA")
+region = Rect2(3840, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_102"]
+atlas = ExtResource("1_RestA")
+region = Rect2(4224, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestA_103"]
+atlas = ExtResource("1_RestA")
+region = Rect2(4608, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_000"]
+atlas = ExtResource("2_RestB")
+region = Rect2(0, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_001"]
+atlas = ExtResource("2_RestB")
+region = Rect2(384, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_002"]
+atlas = ExtResource("2_RestB")
+region = Rect2(768, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_003"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1152, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_004"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1536, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_005"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1920, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_006"]
+atlas = ExtResource("2_RestB")
+region = Rect2(2304, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_007"]
+atlas = ExtResource("2_RestB")
+region = Rect2(2688, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_008"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3072, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_009"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3456, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_010"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3840, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_011"]
+atlas = ExtResource("2_RestB")
+region = Rect2(4224, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_012"]
+atlas = ExtResource("2_RestB")
+region = Rect2(4608, 0, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_013"]
+atlas = ExtResource("2_RestB")
+region = Rect2(0, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_014"]
+atlas = ExtResource("2_RestB")
+region = Rect2(384, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_015"]
+atlas = ExtResource("2_RestB")
+region = Rect2(768, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_016"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1152, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_017"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1536, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_018"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1920, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_019"]
+atlas = ExtResource("2_RestB")
+region = Rect2(2304, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_020"]
+atlas = ExtResource("2_RestB")
+region = Rect2(2688, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_021"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3072, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_022"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3456, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_023"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3840, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_024"]
+atlas = ExtResource("2_RestB")
+region = Rect2(4224, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_025"]
+atlas = ExtResource("2_RestB")
+region = Rect2(4608, 576, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_026"]
+atlas = ExtResource("2_RestB")
+region = Rect2(0, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_027"]
+atlas = ExtResource("2_RestB")
+region = Rect2(384, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_028"]
+atlas = ExtResource("2_RestB")
+region = Rect2(768, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_029"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1152, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_030"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1536, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_031"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1920, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_032"]
+atlas = ExtResource("2_RestB")
+region = Rect2(2304, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_033"]
+atlas = ExtResource("2_RestB")
+region = Rect2(2688, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_034"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3072, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_035"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3456, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_036"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3840, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_037"]
+atlas = ExtResource("2_RestB")
+region = Rect2(4224, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_038"]
+atlas = ExtResource("2_RestB")
+region = Rect2(4608, 1152, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_039"]
+atlas = ExtResource("2_RestB")
+region = Rect2(0, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_040"]
+atlas = ExtResource("2_RestB")
+region = Rect2(384, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_041"]
+atlas = ExtResource("2_RestB")
+region = Rect2(768, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_042"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1152, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_043"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1536, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_044"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1920, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_045"]
+atlas = ExtResource("2_RestB")
+region = Rect2(2304, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_046"]
+atlas = ExtResource("2_RestB")
+region = Rect2(2688, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_047"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3072, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_048"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3456, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_049"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3840, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_050"]
+atlas = ExtResource("2_RestB")
+region = Rect2(4224, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_051"]
+atlas = ExtResource("2_RestB")
+region = Rect2(4608, 1728, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_052"]
+atlas = ExtResource("2_RestB")
+region = Rect2(0, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_053"]
+atlas = ExtResource("2_RestB")
+region = Rect2(384, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_054"]
+atlas = ExtResource("2_RestB")
+region = Rect2(768, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_055"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1152, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_056"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1536, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_057"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1920, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_058"]
+atlas = ExtResource("2_RestB")
+region = Rect2(2304, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_059"]
+atlas = ExtResource("2_RestB")
+region = Rect2(2688, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_060"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3072, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_061"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3456, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_062"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3840, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_063"]
+atlas = ExtResource("2_RestB")
+region = Rect2(4224, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_064"]
+atlas = ExtResource("2_RestB")
+region = Rect2(4608, 2304, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_065"]
+atlas = ExtResource("2_RestB")
+region = Rect2(0, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_066"]
+atlas = ExtResource("2_RestB")
+region = Rect2(384, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_067"]
+atlas = ExtResource("2_RestB")
+region = Rect2(768, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_068"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1152, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_069"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1536, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_070"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1920, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_071"]
+atlas = ExtResource("2_RestB")
+region = Rect2(2304, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_072"]
+atlas = ExtResource("2_RestB")
+region = Rect2(2688, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_073"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3072, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_074"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3456, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_075"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3840, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_076"]
+atlas = ExtResource("2_RestB")
+region = Rect2(4224, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_077"]
+atlas = ExtResource("2_RestB")
+region = Rect2(4608, 2880, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_078"]
+atlas = ExtResource("2_RestB")
+region = Rect2(0, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_079"]
+atlas = ExtResource("2_RestB")
+region = Rect2(384, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_080"]
+atlas = ExtResource("2_RestB")
+region = Rect2(768, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_081"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1152, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_082"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1536, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_083"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1920, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_084"]
+atlas = ExtResource("2_RestB")
+region = Rect2(2304, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_085"]
+atlas = ExtResource("2_RestB")
+region = Rect2(2688, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_086"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3072, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_087"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3456, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_088"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3840, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_089"]
+atlas = ExtResource("2_RestB")
+region = Rect2(4224, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_090"]
+atlas = ExtResource("2_RestB")
+region = Rect2(4608, 3456, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_091"]
+atlas = ExtResource("2_RestB")
+region = Rect2(0, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_092"]
+atlas = ExtResource("2_RestB")
+region = Rect2(384, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_093"]
+atlas = ExtResource("2_RestB")
+region = Rect2(768, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_094"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1152, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_095"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1536, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_096"]
+atlas = ExtResource("2_RestB")
+region = Rect2(1920, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_097"]
+atlas = ExtResource("2_RestB")
+region = Rect2(2304, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_098"]
+atlas = ExtResource("2_RestB")
+region = Rect2(2688, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_099"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3072, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_100"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3456, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_101"]
+atlas = ExtResource("2_RestB")
+region = Rect2(3840, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_102"]
+atlas = ExtResource("2_RestB")
+region = Rect2(4224, 4032, 384, 576)
+
+[sub_resource type="AtlasTexture" id="RestB_103"]
+atlas = ExtResource("2_RestB")
+region = Rect2(4608, 4032, 384, 576)
+
+[resource]
+animations = [
+{
+"frames": [
+{
+"duration": 1.0,
+"texture": SubResource("RestA_000")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_001")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_002")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_003")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_004")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_005")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_006")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_007")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_008")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_009")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_010")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_011")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_012")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_013")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_014")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_015")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_016")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_017")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_018")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_019")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_020")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_021")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_022")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_023")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_024")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_025")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_026")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_027")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_028")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_029")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_030")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_031")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_032")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_033")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_034")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_035")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_036")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_037")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_038")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_039")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_040")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_041")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_042")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_043")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_042")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_041")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_040")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_039")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_038")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_037")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_036")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_035")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_034")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_033")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_032")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_031")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_030")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_029")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_028")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_027")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_026")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_025")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_024")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_023")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_022")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_021")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_020")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_019")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_018")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_017")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_016")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_015")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_014")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_013")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_012")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_011")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_010")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_009")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_008")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_007")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_006")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_005")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_004")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_003")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_002")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_001")
+}
+],
+"loop": false,
+"name": &"idle_relaxed_01",
+"speed": 8.000000
+},
+{
+"frames": [
+{
+"duration": 1.0,
+"texture": SubResource("RestA_000")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_001")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_002")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_003")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_004")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_005")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_006")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_007")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_008")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_009")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_010")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_011")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_012")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_013")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_014")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_015")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_016")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_017")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_018")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_019")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_020")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_021")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_022")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_023")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_024")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_025")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_026")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_027")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_028")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_029")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_030")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_031")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_032")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_033")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_034")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_035")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_036")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_037")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_038")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_039")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_040")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_041")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_042")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_043")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_044")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_045")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_046")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_047")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_048")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_049")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_050")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_051")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_052")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_053")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_054")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_055")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_056")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_057")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_058")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_059")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_060")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_061")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_062")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_063")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_064")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_065")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_066")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_067")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_068")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_069")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_070")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_071")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_072")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_073")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_074")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_075")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_076")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_077")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_078")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_079")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_080")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_081")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_082")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_083")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_084")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_085")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_086")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_087")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_088")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_089")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_090")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_091")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_092")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_093")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_094")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_095")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_096")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_097")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_098")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_099")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_100")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_101")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_102")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_103")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_102")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_101")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_100")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_099")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_098")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_097")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_096")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_095")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_094")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_093")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_092")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_091")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_090")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_089")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_088")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_087")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_086")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_085")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_084")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_083")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_082")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_081")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_080")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_079")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_078")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_077")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_076")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_075")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_074")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_073")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_072")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_071")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_070")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_069")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_068")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_067")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_066")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_065")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_064")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_063")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_062")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_061")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_060")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_059")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_058")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_057")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_056")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_055")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_054")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_053")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_052")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_051")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_050")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_049")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_048")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_047")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_046")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_045")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_044")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_043")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_042")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_041")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_040")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_039")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_038")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_037")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_036")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_035")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_034")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_033")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_032")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_031")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_030")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_029")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_028")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_027")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_026")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_025")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_024")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_023")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_022")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_021")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_020")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_019")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_018")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_017")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_016")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_015")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_014")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_013")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_012")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_011")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_010")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_009")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_008")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_007")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_006")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_005")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_004")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_003")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_002")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestA_001")
+}
+],
+"loop": false,
+"name": &"idle_relaxed_02",
+"speed": 8.000000
+},
+{
+"frames": [
+{
+"duration": 1.0,
+"texture": SubResource("RestB_000")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_001")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_002")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_003")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_004")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_005")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_006")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_007")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_008")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_009")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_010")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_011")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_012")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_013")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_014")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_015")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_016")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_017")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_018")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_019")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_020")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_021")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_022")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_023")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_024")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_025")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_026")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_027")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_028")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_029")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_030")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_031")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_032")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_033")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_034")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_035")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_036")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_037")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_038")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_039")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_040")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_041")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_042")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_043")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_044")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_045")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_046")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_047")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_048")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_049")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_050")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_051")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_052")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_053")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_054")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_055")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_056")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_057")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_058")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_059")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_060")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_061")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_062")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_063")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_064")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_065")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_066")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_067")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_068")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_069")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_070")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_071")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_072")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_073")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_074")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_075")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_076")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_077")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_078")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_079")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_080")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_081")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_082")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_083")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_084")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_085")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_086")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_087")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_088")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_089")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_090")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_091")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_092")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_093")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_094")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_095")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_096")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_097")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_098")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_099")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_100")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_101")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_102")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_103")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_102")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_101")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_100")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_099")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_098")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_097")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_096")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_095")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_094")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_093")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_092")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_091")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_090")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_089")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_088")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_087")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_086")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_085")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_084")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_083")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_082")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_081")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_080")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_079")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_078")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_077")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_076")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_075")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_074")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_073")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_072")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_071")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_070")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_069")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_068")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_067")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_066")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_065")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_064")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_063")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_062")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_061")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_060")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_059")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_058")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_057")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_056")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_055")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_054")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_053")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_052")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_051")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_050")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_049")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_048")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_047")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_046")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_045")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_044")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_043")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_042")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_041")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_040")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_039")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_038")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_037")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_036")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_035")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_034")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_033")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_032")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_031")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_030")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_029")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_028")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_027")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_026")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_025")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_024")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_023")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_022")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_021")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_020")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_019")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_018")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_017")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_016")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_015")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_014")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_013")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_012")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_011")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_010")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_009")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_008")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_007")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_006")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_005")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_004")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_003")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_002")
+},
+{
+"duration": 1.0,
+"texture": SubResource("RestB_001")
+}
+],
+"loop": false,
+"name": &"idle_relaxed_03",
+"speed": 8.000000
+}
+]

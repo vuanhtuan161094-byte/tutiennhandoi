@@ -1,0 +1,46 @@
+{
+  "schema": "tutien.home-animation-v2",
+  "status": "approved-source / runtime-candidate",
+  "frameSize": [
+    176,
+    264
+  ],
+  "sampleFps": 5.0,
+  "sourceWindowSeconds": 13.0,
+  "sourceHashes": {
+    "1000017853.mp4": "1bcfe3d7e535b620f9b89d85e215d96a5d4126e7d580024f8ae9486c2fa4364e",
+    "1000017854.mp4": "1bcfe3d7e535b620f9b89d85e215d96a5d4126e7d580024f8ae9486c2fa4364e",
+    "1000017855.mp4": "b6679ead8841db1449b0f8435b37f046d43fa4c3adc5a3717eafa94d5dab7b74"
+  },
+  "note": "1000017853.mp4 and 1000017854.mp4 are byte-identical. Runtime storage is deduplicated; three visible idle variants are authored as short A, long A, and long B.",
+  "runtime": {
+    "spriteFrames": "res://art/approved/home/animation_v2/home_idle_v2.tres",
+    "atlasA": {
+      "path": "res://art/approved/home/animation_v2/home_idle_v2_a_atlas.webp",
+      "sha256": "2730875070577e1b1b6c82dfa04f53b8b5d8472714e61aeb2506c6c3966420b0",
+      "frames": 65
+    },
+    "atlasB": {
+      "path": "res://art/approved/home/animation_v2/home_idle_v2_b_atlas.webp",
+      "sha256": "3cc92cb43dc6f9ea7e0087144bb06e183b277a6472de974a59c7ed318807369b",
+      "frames": 65
+    },
+    "animations": {
+      "idle_relaxed_01": {
+        "frameEntries": 55,
+        "pingPongBaked": true,
+        "loop": false
+      },
+      "idle_relaxed_02": {
+        "frameEntries": 129,
+        "pingPongBaked": true,
+        "loop": false
+      },
+      "idle_relaxed_03": {
+        "frameEntries": 129,
+        "pingPongBaked": true,
+        "loop": false
+      }
+    }
+  }
+}
