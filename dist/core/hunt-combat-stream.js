@@ -412,7 +412,7 @@ export function buildEndlessHuntCombatStreamFromKernel(input) {
                 push(log.time, 'trigger', actor, log.message, { target, confidantRuntime: 'confidant.v87', confidantEvent: typeof log.data?.confidantEvent === 'string' ? log.data.confidantEvent : undefined, confidantId: typeof log.data?.confidantId === 'string' ? log.data.confidantId : undefined, abilityName: typeof log.data?.abilityName === 'string' ? log.data.abilityName : undefined, oncePerBattle: log.data?.oncePerBattle === true });
             }
             else if (log.data?.artifactRuntime === 'artifact.v88') {
-                push(log.time, 'trigger', actor, log.message, { target, artifactRuntime: 'artifact.v88', artifactEvent: typeof log.data?.artifactEvent === 'string' ? log.data.artifactEvent : undefined, artifactId: typeof log.data?.artifactId === 'string' ? log.data.artifactId : undefined, abilityName: typeof log.data?.abilityName === 'string' ? log.data.abilityName : undefined, baoQi: typeof log.data?.baoQi === 'number' ? Number(log.data.baoQi) : undefined, baoQiMax: typeof log.data?.baoQiMax === 'number' ? Number(log.data.baoQiMax) : undefined, baoQiCost: typeof log.data?.baoQiCost === 'number' ? Number(log.data.baoQiCost) : undefined, oncePerBattle: log.data?.oncePerBattle === true });
+                push(log.time, 'trigger', actor, log.message, { target, artifactRuntime: 'artifact.v88', artifactEvent: typeof log.data?.artifactEvent === 'string' ? log.data.artifactEvent : undefined, artifactId: typeof log.data?.artifactId === 'string' ? log.data.artifactId : undefined, abilityName: typeof log.data?.abilityName === 'string' ? log.data.abilityName : undefined, oncePerBattle: log.data?.oncePerBattle === true });
             }
             continue;
         }
@@ -473,10 +473,11 @@ export function buildEndlessHuntCombatStreamFromKernel(input) {
         }
         if (log.type === 'resource') {
             const data = log.data || {};
-            if (data.artifactRuntime === 'artifact.v88' && typeof data.baoQi === 'number') {
-                push(log.time, 'resource', actor, log.message, { target: 'player', skillId: log.skillId, skillName: skill?.name, resourceId: 'artifactBaoQiV88', resourceName: 'Bảo Khí', resourceValue: Number(data.baoQi), resourceMax: typeof data.baoQiMax === 'number' ? Number(data.baoQiMax) : 100, resourceDelta: typeof data.baoQiGain === 'number' ? Number(data.baoQiGain) : undefined, artifactRuntime: 'artifact.v88', artifactEvent: 'baoQi', baoQi: Number(data.baoQi), baoQiMax: typeof data.baoQiMax === 'number' ? Number(data.baoQiMax) : 100 });
+            // V150 retired Bảo Khí from the live player-facing Artifact contract.
+            // Historical/compatibility CombatEngine logs may still contain the field,
+            // but presentation adapters must not revive it as an active resource.
+            if (data.artifactRuntime === 'artifact.v88' && typeof data.baoQi === 'number')
                 continue;
-            }
             if (data.v2DaoProjection === true) {
                 for (const [resourceId, meta] of Object.entries(RESOURCE_META)) {
                     if (typeof data[resourceId] !== 'number')
