@@ -367,10 +367,11 @@ export function buildEndlessHuntCombatStream(input) {
     return events.sort((a, b) => a.time - b.time || a.seq - b.seq).slice(0, 180).map((event, index) => ({ ...event, seq: index }));
 }
 /**
- * K2 canonical presentation adapter. Mechanics are already settled by CombatKernelV2;
+ * Canonical presentation adapter for typed/structured kernel output.
+ * Mechanics are already settled by the production CombatKernel V3 boundary;
  * this function only reshapes the real battle log for the portrait/web renderer.
  */
-export function buildEndlessHuntCombatStreamFromKernelV2(input) {
+export function buildEndlessHuntCombatStreamFromKernel(input) {
     const { registry, battle, result } = input;
     const events = [];
     let seq = 0;
@@ -523,4 +524,10 @@ export function buildEndlessHuntCombatStreamFromKernelV2(input) {
     push(battle.duration + .001, 'battleEnd', result.won ? 'player' : 'enemy', result.won ? `${result.monster.name} bị hạ.` : `${result.monster.name} vẫn đứng vững.`, { target: result.won ? 'enemy' : 'player' });
     return events.sort((a, b) => a.time - b.time || a.seq - b.seq).map((event, index) => ({ ...event, seq: index }));
 }
+
+/**
+ * Compatibility alias for callers outside the production Session cutover.
+ * New production code should use buildEndlessHuntCombatStreamFromKernel().
+ */
+export const buildEndlessHuntCombatStreamFromKernelV2 = buildEndlessHuntCombatStreamFromKernel;
 //# sourceMappingURL=hunt-combat-stream.js.map
