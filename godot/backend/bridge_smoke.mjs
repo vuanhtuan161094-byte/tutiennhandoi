@@ -27,17 +27,29 @@ async function request(path,{method='GET',body}={}){
   if(!response.ok)throw new Error(`${method} ${path} -> ${response.status}: ${data?.error||'unknown error'}`);
   return data;
 }
-async function waitHealth(timeoutMs=12000){
+async function waitHealth(proc,timeoutMs=30000){
   const deadline=Date.now()+timeoutMs;
   let last='';
   while(Date.now()<deadline){
+    if(proc?.child?.exitCode!==null){
+      const logs=proc?.logs?.()||'';
+      throw new Error(
+        `Bridge exited before health (exit=${proc.child.exitCode})`+
+        (logs?`\n--- bridge logs ---\n${logs}`:'')
+      );
+    }
     try{
       const health=await request('/health');
       if(health.ok)return health;
     }catch(error){last=error?.message||String(error);}
     await sleep(180);
   }
-  throw new Error('Bridge health timeout'+(last?`: ${last}`:''));
+  const logs=proc?.logs?.()||'';
+  throw new Error(
+    'Bridge health timeout'+
+    (last?`: ${last}`:'')+
+    (logs?`\n--- bridge logs ---\n${logs}`:'')
+  );
 }
 function start(savePath){
   const child=spawn(process.execPath,[SERVER,String(PORT)],{
@@ -52,6 +64,7 @@ function start(savePath){
   let logs='';
   child.stdout.on('data',chunk=>{logs+=chunk.toString();});
   child.stderr.on('data',chunk=>{logs+=chunk.toString();});
+  child.on('error',error=>{logs+=`[bridge spawn error] ${error?.stack||error}\n`;});
   return {child,logs:()=>logs};
 }
 async function stop(proc){
@@ -102,7 +115,7 @@ let first;
 let second;
 try{
   first=start(savePath);
-  const health=await waitHealth();
+  const health=await waitHealth(first);
   assert(health.bridgeVersion===EXPECTED_VERSION,'Health bridge version mismatch');
   assert(health.authority==='canonical-dist','Health authority must be canonical-dist');
   assert(health.qaMode===false,'Canonical diagnostic smoke must keep P2 QA mode disabled');
@@ -170,7 +183,7 @@ try{
   await sleep(250);
 
   second=start(savePath);
-  await waitHealth();
+  await waitHealth(second);
   const restored=await request('/home');
   validateHome(restored);
   validateCharacter(await request('/character'));
