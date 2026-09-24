@@ -1,6 +1,6 @@
 # COMBAT BACKEND AUDIT & V3 MIGRATION PLAN — 2026-09-22
 
-Status: **AUDIT COMPLETE / REFACTOR PROPOSED / NO RUNTIME AUTHORITY CHANGE YET**
+Status: **IMPLEMENTED / PRODUCTION CUTOVER CLOSED / LOCKED 2026-09-24**
 
 Repository: `vuanhtuan161094-byte/tutiennhandoi`  
 Branch: `main`  
@@ -668,8 +668,21 @@ Balance/formulas are changed only when a separate balance issue is proven and in
 
 ## 13. Verification status
 
-This document is based on static audit of current `main` source.
+The original 2026-09-22 document began as a static audit. The proposed migration has since been implemented and closed.
 
-No executable backend/Godot change is included in this audit commit, and no local QA PASS is claimed from the connector session.
+Exact verified runtime SHA: `00f944feeebe99778beec0c1d727060e47dfc5ec`.
 
-The first executable Combat repair slice must run the repository's active local gates before it can be considered closed.
+User-local closure evidence:
+
+- `V140 BACKEND CLOSURE: 134/134 PASS`
+- `V140 FRONTEND CLOSURE: 34/34 PASS`
+- `FULL CLEAN + CANONICAL: PASS`
+- exact SHA reported by the local gate: `00f944f`
+
+Production new-fight consumers now use the CombatKernel V3 boundary. V2 remains intentionally available only as the frozen deterministic parity oracle and historical `combat.v2` PvP replay compatibility path.
+
+The V3 facade still executes the locked V168 CombatEngine through `combat-engine.v168-compat`; this was the deliberate strangler-migration decision. Internal engine decomposition is a separate optional maintenance scope, not an incomplete requirement of this closure.
+
+Canonical closure record: `docs/runtime/COMBAT_BACKEND_V3_CLOSURE_20260924.md`.
+
+**Disposition: CLOSED / LOCKED.**
