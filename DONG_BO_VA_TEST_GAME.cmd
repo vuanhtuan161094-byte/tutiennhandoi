@@ -15,20 +15,15 @@ if errorlevel 1 goto :nogit
 git rev-parse --is-inside-work-tree >nul 2>&1
 if errorlevel 1 goto :notrepo
 
-echo [1/7] Fetch origin/main...
-git fetch origin main
-if errorlevel 1 goto :fail
-
-echo [2/7] Switch to main...
+echo [1/8] Switch to main...
 git switch main >nul 2>&1
 if errorlevel 1 goto :fail
 
-echo [3/7] Align tracked files to origin/main...
-git reset --hard origin/main
+echo [2/8] Fetch origin/main...
+git fetch origin main
 if errorlevel 1 goto :fail
 
-echo [4/7] Stage approved local animation assets only...
-set "FOUND="
+echo [3/8] Stage approved local animation assets...
 for %%P in (
   "godot/art/approved/character/animation_v2"
   "godot/art/approved/character/standing_idle_atlas.webp"
@@ -36,57 +31,70 @@ for %%P in (
   "godot/art/approved/home/animation_v3"
 ) do (
   if exist "%%~P" (
-    echo       staging %%~P
     git add -A -- "%%~P"
     if errorlevel 1 goto :fail
-    set "FOUND=1"
   )
 )
 
 git diff --cached --quiet
 if errorlevel 1 (
-  echo [5/7] Commit local approved assets...
+  echo [4/8] Commit approved local asset changes...
   git commit -m "assets(godot): sync approved local animation assets"
   if errorlevel 1 goto :fail
-
-  echo [6/7] Normalize tracked worktree, rebase safely, and push...
-  rem All intended local asset changes are already committed above.
-  rem Discard any tracked drift left by Windows tools/line-ending rewrites before rebase.
-  git reset --hard HEAD
-  if errorlevel 1 goto :fail
-  git fetch origin main
-  if errorlevel 1 goto :fail
-  git rebase origin/main
-  if errorlevel 1 goto :rebasefail
-  git push origin main
-  if errorlevel 1 goto :fail
 ) else (
-  echo [5/7] No new approved local assets to commit.
-  echo [6/7] Nothing to push.
+  echo [4/8] No new approved local asset changes.
 )
 
-echo [7/7] Require clean tree, then run Local CI FULL CLEAN...
-for /f "delims=" %%S in ('git status --short') do (
+echo [5/8] Normalize tracked drift after fetch...
+rem Intended approved changes are committed. Anything else tracked is local drift.
+git reset --hard HEAD
+if errorlevel 1 goto :fail
+
+for /f %%N in ('git rev-list --count origin/main..HEAD') do set "AHEAD=%%N"
+if not defined AHEAD set "AHEAD=0"
+
+if "!AHEAD!"=="0" (
+  echo [6/8] Local main has no unpublished commits; align to origin/main...
+  git reset --hard origin/main
+  if errorlevel 1 goto :fail
+) else (
+  echo [6/8] Rebase !AHEAD! unpublished commit^(s^) onto origin/main, then push...
+  git rebase origin/main
+  if errorlevel 1 goto :rebasefail
+  rem Re-normalize in case Windows tooling rewrote tracked command files.
+  git reset --hard HEAD
+  if errorlevel 1 goto :fail
+  git push origin main
+  if errorlevel 1 goto :fail
+)
+
+echo [7/8] Verify exact clean checkout...
+git reset --hard HEAD >nul
+if errorlevel 1 goto :fail
+set "DIRTY="
+for /f "delims=" %%S in ('git status --short') do set "DIRTY=1"
+if defined DIRTY (
   echo.
-  echo [ERROR] Working tree is still dirty:
+  echo [ERROR] Working tree still contains unclassified local files:
   git status --short
   echo.
-  echo Only approved animation asset paths are auto-synced.
-  echo Unknown local files are preserved and must be classified before exact-SHA QA.
+  echo Approved animation assets are auto-synced. Known generated helpers are ignored.
+  echo Unknown files are preserved instead of being deleted automatically.
   pause
   exit /b 1
 )
 
+echo [8/8] Run Local CI FULL CLEAN...
 call "tools\web\TEST_GAME_LOCAL.cmd" full --require-clean
 set "RC=%ERRORLEVEL%"
 exit /b %RC%
 
 :rebasefail
 echo.
-echo [ERROR] Rebase failed. No force push will be used.
+echo [ERROR] Rebase failed. No force push was used.
 git status --short
 echo.
-echo Resolve the conflict or send this output for review.
+echo Send this output for review; do not delete local assets.
 pause
 exit /b 1
 
