@@ -121,6 +121,16 @@ test('Phase 2 Hunt practice consumes actual CombatKernel cast counts instead of 
   assert.equal(huntSlice.includes('estimateBattleDaoCastCountsV125'), false, 'Hunt must not estimate casts from battle duration');
 });
 
+
+test('Phase 2 live Combat presentation cannot revive retired V150 Bảo Khí', () => {
+  const streamSource = fs.readFileSync(fileURLToPath(new URL('../../dist/core/hunt-combat-stream.js', import.meta.url)), 'utf8');
+  assert.equal(streamSource.includes("resourceId: 'artifactBaoQiV88'"), false, 'live Hunt stream must not expose retired Artifact Bảo Khí as a resource');
+  assert.equal(streamSource.includes("resourceName: 'Bảo Khí'"), false, 'live Hunt stream must not label any active resource as Bảo Khí');
+  const artifactSource = fs.readFileSync(fileURLToPath(new URL('../../dist/core/artifact-v88.js', import.meta.url)), 'utf8');
+  assert(artifactSource.includes('baoQiEnabled:false'), 'V150 Artifact authority must keep Bảo Khí disabled');
+  assert(artifactSource.includes('baoQiRemovedV150:true'), 'V150 compatibility metadata must explicitly mark Bảo Khí retired');
+});
+
 test('Phase 2 Content Event defeat copy matches Luân Hồi V4 no-lifespan-loss policy', () => {
   const sessionSource = fs.readFileSync(fileURLToPath(new URL('../../dist/core/session.js', import.meta.url)), 'utf8');
   const start = sessionSource.indexOf('    resolveContentEvent(eventId, choiceId)');
