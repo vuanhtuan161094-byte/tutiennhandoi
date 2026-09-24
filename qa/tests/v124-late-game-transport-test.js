@@ -11,8 +11,8 @@ try{
   check(xp?.v115?.schema==='build-progression.v115','V124 transports long-term build progression guidance');
   check(xp?.v116?.schema==='late-game-economy.v140'&&!xp?.v116?.catalyst,'V124 transports V140 late-game economy guidance without realm catalyst');
   check(xp?.v117?.schema==='content-loop.v117'&&Array.isArray(xp.v117.rules)&&xp.v117.rules.some(x=>x.includes('Không giới hạn lượt đánh')),'V124 transports uncapped active/semi-idle/idle content-loop rules');
-  check(xp?.v118?.engine==='CombatKernel V2','V124 transports PvE readiness on the canonical combat engine');
-  check(xp?.v119?.engine==='CombatKernel V2'&&xp.v119.rules?.unlimitedMatches===true,'V124 transports PvP production rules without a parallel resolver or match cap');
+  check(xp?.v118?.engine==='CombatKernel V3','V124 transports PvE readiness on the canonical combat engine');
+  check(xp?.v119?.engine==='CombatKernel V3'&&xp.v119.rules?.unlimitedMatches===true,'V124 transports PvP production rules without a parallel resolver or match cap');
   check(xp?.progression?.productionVerifiedThroughRealmOrder===117&&xp.progression?.immortalPlusProvisional===false,'V124 marks the authored progression path through Sáng Thế Chủ as production-verified');
   console.log(`\nV124 LATE-GAME STANDALONE/ANDROID TRANSPORT: ${pass}/${pass} PASS`);process.exit(0);
 }catch(e){console.error(e?.stack||e);process.exit(1)}
