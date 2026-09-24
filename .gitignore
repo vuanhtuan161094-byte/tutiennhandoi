@@ -46,3 +46,9 @@ KHOI_PHUC_LOCAL_1_LAN.cmd
 
 # Godot local bridge saves / QA fixture state
 godot/.runtime/
+
+# Local asset-tool helper output (runtime assets themselves are tracked under godot/art/approved)
+CHARACTER_ANIMATION_V2_MANIFEST.json
+CHARACTER_ANIMATION_V2_OPTIONS_MANIFEST.json
+INSTALL.txt
+README_INSTALL.txt
