@@ -73,7 +73,7 @@ import { endlessHuntFarmRecommendationsV123, evaluateHuntBossMechanicV123, huntF
 import { buildHuntProductionV110 } from './hunt-production-v110.js';
 import { huntEquipmentFragmentPreviewV142, settleRealHuntEquipmentFragmentsV142, settleVirtualHuntEquipmentFragmentsV142 } from './equipment-hunt-v142.js';
 import { craftRankedEquipmentV142, engraveRankedEquipmentSetV142, equipmentCraftingSummaryV142, mergeRankedEquipmentV142, refineRankedEquipmentFragmentsV142 } from './equipment-crafting-v142.js';
-import { buildEndlessHuntCombatStreamFromKernelV2 } from './hunt-combat-stream.js';
+import { buildEndlessHuntCombatStreamFromKernel } from './hunt-combat-stream.js';
 import { formatLogMagnitude } from './endless-number.js';
 import { SeededRng } from './rng.js';
 import { advanceBloodlineGrade, bloodlineProgressSummary, BODY_ESSENCE_RESOURCE_ID, BLOODLINE_ESSENCE_RESOURCE_ID, BLOODLINE_PROTECTION_RESOURCE_ID, implantBloodline, physiqueProgressSummary, progressPhysique, purifyBloodline, swapBloodline, trueBloodResourceId } from './origin-progression-v102.js';
@@ -897,7 +897,7 @@ export class SimulationSession {
     }
     /**
      * V129 farm resolver: batch/offline delta only. One representative ordinary monster is resolved
-     * through CombatKernel V2 to establish TTK; rewards are then aggregated without per-kill encounters.
+     * through CombatKernel V3 to establish TTK; rewards are then aggregated without per-kill encounters.
      */
     resolveEndlessHuntFarmBatchV77(realSeconds, options = {}) {
         if (!this.stateValue.alive)
@@ -1073,7 +1073,7 @@ export class SimulationSession {
         const legacy = Math.max(0, this.metaValue.endless?.legacyPowerLog10 ?? 0);
         const canonicalSkills = this.canonicalActiveSkillIds();
         const huntSkillMultiplier = 1 + Math.min(.5, Math.max(0, canonicalSkills.filter(id => id !== 'skill.basic_strike').length) * .10);
-        const playerPowerLog10 = Math.log10(baseScore * huntSkillMultiplier); // telemetry only; CombatKernel V2 declares the actual winner
+        const playerPowerLog10 = Math.log10(baseScore * huntSkillMultiplier); // telemetry only; CombatKernel V3 declares the actual winner
         const map = realmMapDefinitionForFloor(hunt.selectedFloor);
         const mapRealm = [...this.registry.realms.values()].find(r => r.order === map.realmOrder) ?? this.registry.realm(this.stateValue.realm.realmId);
         const farmReward = huntFarmRewardEfficiencyV123(map.localFloor, highestUnlockedLocalFloor(hunt, map.majorRealmIndex));
@@ -1126,7 +1126,7 @@ export class SimulationSession {
         }
         recordHuntEconomyTelemetry(this.stateValue.economy, { won: result.won, boss: result.monster.grade === 'boss', spiritStones, materialDrops: economyMaterialDrops, rareDrops: economyRareDrops });
         recordEndlessHuntFloorStats(hunt, result.monster.floor, { won: result.won, battleSeconds: result.battleSeconds, cultivationGain, spiritStones, equipmentDrops: equipmentDropId ? 1 : 0, pillDrops: cultivationPillDrops + (injuryPillDropId ? 1 : 0), bossWin: result.won && result.monster.grade === 'boss' });
-        const combatEvents = options.emitCombatEvents === false ? [] : buildEndlessHuntCombatStreamFromKernelV2({ registry: this.registry, battle: kernelCombat.battle, result, playerId: kernelCombat.playerEntity.id, enemyId: kernelCombat.enemyEntity.id, bossMechanic });
+        const combatEvents = options.emitCombatEvents === false ? [] : buildEndlessHuntCombatStreamFromKernel({ registry: this.registry, battle: kernelCombat.battle, result, playerId: kernelCombat.playerEntity.id, enemyId: kernelCombat.enemyEntity.id, bossMechanic });
         const significance = result.won ? (result.monster.grade === 'boss' ? 34 : result.monster.grade === 'elite' ? 18 : result.monster.grade === 'enhanced' ? 11 : 6) : 18;
         const openedText = result.bossCleared && result.unlockedFloor ? `; mở tầng ${zoneFloorForMapFloor(result.unlockedFloor)} ${realmMapDefinitionForFloor(result.unlockedFloor).zoneName}` : '';
         const farmOpenedText = result.bossCleared ? `; bãi Săn Ảo tầng ${map.zoneFloor} đã mở` : '';
@@ -1168,7 +1168,7 @@ export class SimulationSession {
     }
     /**
      * Alpha.22 on-demand build intelligence. This intentionally does NOT run for every inventory row.
-     * It equips the candidate only on a cloned state and runs CombatKernel V2 against two fixed
+     * It equips the candidate only on a cloned state and runs CombatKernel V3 against two fixed
      * 45s benchmarks so the UI can explain trade-offs without inventing a single "Power Score" verdict.
      */
     equipmentBuildIntelligence(itemId) {
@@ -1256,7 +1256,7 @@ export class SimulationSession {
         const dpsDelta = pct(after.dps, before.dps), survivalDelta = pct(after.survivalScore, before.survivalScore), breakDelta = pct(after.breakPressure, before.breakPressure), spiritPoints = after.spiritSustainPct - before.spiritSustainPct;
         const verdicts = [];
         if (Math.abs(dpsDelta) >= .5)
-            verdicts.push({ tone: dpsDelta > 0 ? 'up' : 'down', label: `DPS ${dpsDelta > 0 ? '↑' : '↓'} ${Math.abs(dpsDelta).toFixed(1)}%`, detail: 'Đo bằng CombatKernel V2 trong 45s với rotation hiện tại.' });
+            verdicts.push({ tone: dpsDelta > 0 ? 'up' : 'down', label: `DPS ${dpsDelta > 0 ? '↑' : '↓'} ${Math.abs(dpsDelta).toFixed(1)}%`, detail: 'Đo bằng CombatKernel V3 trong 45s với rotation hiện tại.' });
         if (Math.abs(survivalDelta) >= .5)
             verdicts.push({ tone: survivalDelta > 0 ? 'up' : 'down', label: `Sống sót ${survivalDelta > 0 ? '↑' : '↓'} ${Math.abs(survivalDelta).toFixed(1)}%`, detail: `Áp lực chuẩn: ${after.survivalSeconds.toFixed(1)}s · HP cuối ${after.survivalHpPct.toFixed(0)}%.` });
         if (Math.abs(breakDelta) >= 1)
@@ -1269,7 +1269,7 @@ export class SimulationSession {
             verdicts.push({ tone: 'neutral', label: 'Build gần như ngang', detail: 'Benchmark không thấy khác biệt đủ lớn; xem delta stat và Set để chọn theo mục tiêu build.' });
         return {
             schema: 'equipment-build-intelligence.v1', candidateItemId: item.id, replacedItemId, alreadyEquipped: replacedItemId === item.id,
-            benchmark: { engine: 'CombatKernel V2', durationSeconds, offenseTarget: 'Mộc Nhân Chuẩn', survivalTarget: 'Áp Lực Chuẩn', note: 'Benchmark cố định để so cùng build; không phải dự đoán một Boss cụ thể.' },
+            benchmark: { engine: 'CombatKernel V3', durationSeconds, offenseTarget: 'Mộc Nhân Chuẩn', survivalTarget: 'Áp Lực Chuẩn', note: 'Benchmark cố định để so cùng build; không phải dự đoán một Boss cụ thể.' },
             build: { daoBindings: daoBindings.map(id => ({ id, label: daoLabel[id] ?? id })), primaryRoots: primaryRoots.map(id => ({ id, label: rootLabel[id] ?? id })), markNames, domains: domains.slice(0, 24) },
             metrics: { dps: metric(before.dps, after.dps), survival: metric(before.survivalScore, after.survivalScore), breakPressure: metric(before.breakPressure, after.breakPressure), controlPressure: metric(before.controlPressure, after.controlPressure), spiritSustain: { beforePct: Number(before.spiritSustainPct.toFixed(2)), afterPct: Number(after.spiritSustainPct.toFixed(2)), deltaPoints: Number(spiritPoints.toFixed(2)) }, survivalDetail: { beforeSeconds: Number(before.survivalSeconds.toFixed(2)), afterSeconds: Number(after.survivalSeconds.toFixed(2)), beforeHpPct: Number(before.survivalHpPct.toFixed(2)), afterHpPct: Number(after.survivalHpPct.toFixed(2)) } },
             setChanges, matchedSetChanges: matchedSetChanges.map(x => x.mechanicId), verdicts: verdicts.slice(0, 6),
@@ -4344,7 +4344,7 @@ export class SimulationSession {
             message: won
                 ? `Vượt Suy Kiếp, Đạo Suy ${resolution.before.toFixed(1)} → ${statusAfter.value.toFixed(1)}.`
                 : `Suy Kiếp thất bại, Đạo Suy ${resolution.before.toFixed(1)} → ${statusAfter.value.toFixed(1)}; Thương Thế tăng.`,
-            tags: ['DaoSuy', 'SuyKiep', 'CombatKernelV2', won ? 'Victory' : 'Defeat'],
+            tags: ['DaoSuy', 'SuyKiep', 'CombatKernelV3', won ? 'Victory' : 'Defeat'],
             data: { won, daoSuyBefore: resolution.before, daoSuyAfter: statusAfter.value, guardianId: guardian.id, pressure, battleSeed: seed },
         };
         this.historyValue.append(event);
