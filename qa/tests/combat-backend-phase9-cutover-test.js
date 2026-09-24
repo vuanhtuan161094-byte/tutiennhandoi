@@ -6,6 +6,7 @@ import { createPlayableAdventureState, playablePlayerProfile } from '../../dist/
 import { adventureEnemies } from '../../dist/content/entities.js';
 import { thanhHaWorld } from '../../dist/content/world.js';
 import { SimulationSession } from '../../dist/core/session.js';
+import { pvpProductionSummaryV119 } from '../../dist/core/pvp-production-v119.js';
 
 const registry = buildRegistry();
 let passed = 0;
@@ -26,6 +27,10 @@ test('Phase 9 production Session consumers are cut to V3 boundaries', () => {
   assert(session.includes('runCompiledCombatEncounterV3'));
   assert.equal(session.includes('runCompiledCombatEncounterV2'), false);
   assert.equal(session.includes('resolveEndlessHuntWithCombatKernelV2'), false);
+  assert(session.includes('buildEndlessHuntCombatStreamFromKernel'));
+  assert.equal(session.includes('buildEndlessHuntCombatStreamFromKernelV2'), false);
+  assert.equal(session.includes("'CombatKernel V2'"), false);
+  assert.equal(session.includes("'CombatKernelV2'"), false);
 
   const dungeon = source('../../dist/core/session-dungeon.js');
   assert(dungeon.includes('runCompiledCombatEncounterV3'));
@@ -46,6 +51,14 @@ test('Phase 9 PvP new fights use V3 while replay retains explicit V2 compatibili
   assert(replay.includes('runCompiledCombatEncounterV3'));
   assert(replay.includes('runCompiledCombatEncounterV2'));
   assert(replay.includes("replay.engineVersion ?? 'combat.v2'"));
+});
+
+test('Phase 9 production metadata reports V3 while historical replay remains explicit V2 compatibility', () => {
+  const summary = pvpProductionSummaryV119({ rewards: { dailyWinCap: 5, boundJadePerWin: 8 } });
+  assert.equal(summary.engine, 'CombatKernel V3');
+  assert.equal(summary.historicalReplayEngine, 'CombatKernel V2');
+  assert(summary.policy.includes('CombatKernel V3'));
+  assert(summary.policy.includes('combat.v2'));
 });
 
 test('Phase 9 new PvP replay is V3 and historical V2 replay remains deterministic', () => {
