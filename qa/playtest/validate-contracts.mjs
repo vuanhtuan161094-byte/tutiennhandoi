@@ -40,6 +40,17 @@ if (workflow.includes('capture-combat-runtime.mjs') || workflow.includes('captur
   fail('Manual Game CI must not run the heavyweight visual showcase');
 }
 
+const localCiSource = await readFile('qa/local/run-local-ci.mjs', 'utf8');
+if (!localCiSource.includes("if (mode === 'browser' || mode === 'full') await runBrowser")) {
+  fail('Local Full gate must include representative runtime browser smoke');
+}
+if (!localCiSource.includes("if (mode === 'visual') await runVisual")) {
+  fail('Deep visual diagnostics must remain available as an explicit visual-only mode');
+}
+if (localCiSource.includes("if (mode === 'visual' || mode === 'full') await runVisual")) {
+  fail('Local Full/Full Clean must not run heavyweight deep visual diagnostics');
+}
+
 const scenarios = await readJson('qa/playtest/scenarios.json');
 if (scenarios.schema !== 'tutien-ai-playtest.scenarios.v1') fail('Unexpected playtest scenario schema');
 if (!Array.isArray(scenarios.scenarios) || scenarios.scenarios.length !== 4) fail('Runtime smoke must stay at four representative journeys');
