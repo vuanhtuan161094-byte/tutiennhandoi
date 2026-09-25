@@ -527,3 +527,15 @@ Evidence:
 - Heavy web visual capture (Home/Character baseline + four Combat viewports/showcase) remains available as explicit **VISUAL** mode and is no longer forced on every Full Clean.
 - Contract validation now guards this split so later changes cannot silently put heavyweight visual diagnostics back into Full/Full Clean.
 - This QA infrastructure cleanup happened after Sword F gameplay closure and does not alter the exact verified Sword gameplay SHA `edf479ff465c262d105020d96dc23a31ba7b66c1`.
+
+
+## Fist Dao five-stat migration — OPEN (2026-09-25)
+
+- Opened only after Sword A–F closure and validation of the lightweight Local Full gate.
+- Canonical audit: `docs/runtime/FIST_DAO_FIVE_STAT_MIGRATION_AUDIT_20260925.md`.
+- Current production has 10 Quyền skills, 8 passives, core **Quyền Thế** (`fistForce`, cap 5) and separate passive **Liên Kình** stack.
+- Audit found a real missing mechanic: p4 **Hùng Kình Hộ Thể** is authored as Defense per Liên Kình but currently has no canonical runtime consumer.
+- Legacy `low/medium/high` CN costs resolve against Chân Nguyên Chuẩn, not Max CN, so LL remains a meaningful larger resource pool; no forced flat-CN rewrite is required.
+- Five-stat identity before coefficient tuning: CL primary; TP for heavy/counter; TPH for combo/counter; LL resource capacity; TT utility only.
+- Old Fist Main-Dao damage calibration (1.10 mid / 0.84 endgame) must be benchmarked rather than silently retained or removed.
+- Status: **AUDIT OPEN / PRODUCTION SCALING UNCHANGED**. Next Q1: repair p4 + terminology guard, then build a deterministic pre-migration Quyền benchmark.
