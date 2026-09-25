@@ -210,7 +210,7 @@ testCase('Thái Hư Kiếm Vực is realm-gated at Tiên Vương, not granted on
   const at = combatSource.indexOf("skill.id === 'skill.dao.sword.ultimate' && (actor.combatBuildV117?.realmOrder ?? 0) >= 78");
   assert.ok(at >= 0, 'missing Tiên Vương realm gate for Sword Domain');
   const block = combatSource.slice(at, at + 650);
-  assert.ok(block.includes('swordQiBefore ?? 0) >= 5');
+  assert.ok(block.includes('swordQiBefore ?? 0) >= 5'));
   assert.ok(!block.includes('tier >= 1000'), 'Sword Domain must not be a mastery-only unlock');
 });
 

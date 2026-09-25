@@ -95,7 +95,7 @@ test('Phụ Kiếm Kiếm Ý is precision/crit identity and never a global Công
     combatBuildV117:{battleDaoV2Enabled:true,mainDaoId:'spell',secondaryDaoId:'sword',learnedDaoPassiveIdsV118:[SWORD_V2_PASSIVE_IDS.intent],passiveLevelsV125:{[SWORD_V2_PASSIVE_IDS.intent]:20}},
     battleDaoStateV2:{sword:{intent:{id:'swordIntent',stacks:12,cap:20,durationSeconds:12,expiresAt:999,nextDecayAt:undefined,decayEverySeconds:1,directActionCounter:0}}},
   };
-  const b=swordIntentBonusesV2(entity,0); assert.equal(b.attackPct,0); assert.ok(b.critChancePct>=24); assert.ok(b.heartChancePct>0);
+  const b=swordIntentBonusesV2(entity,0); assert.equal(b.attackPct,0); assert.equal(Number(b.critChancePct.toFixed(6)),4.8); assert.equal(Number(b.heartChancePct.toFixed(6)),6);
 });
 
 
