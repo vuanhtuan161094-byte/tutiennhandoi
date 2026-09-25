@@ -549,3 +549,19 @@ Evidence:
   - all Quyền passives Lv20 and all mastery tiers 1000;
   - diagnostic only: no target bands and no Quyền five-stat damage coefficients are locked yet.
 - Current status: **Q1 CANDIDATE / LOCAL FAST + BASELINE BENCHMARK PENDING**.
+
+
+## Fist Dao unified production contract — 2026-09-26
+
+- Quyền design is no longer managed as isolated audit notes. Unified authority: `docs/runtime/FIST_DAO_PRODUCTION_CONTRACT_20260926.md`.
+- Locked identity: close-range pressure / Break / counter bruiser.
+- Separate resources remain mandatory: **Quyền Thế** (short-cycle core 0–5) vs **Liên Kình** (long-cycle passive stack).
+- CC is explicitly assigned:
+  - Chấn Mạch: interrupt + 0.35s BodyControl stagger;
+  - successful Hồi Thân counter: 0.40s BodyControl stagger;
+  - Trấn Nhạc: soft Mobility/recovery pressure;
+  - no root/silence/suppression/long stun.
+- Five-stat families locked: CL primary; TP heavy/counter; TPH combo/counter; LL resource; TT utility only.
+- The old p1 text claiming Max HP/Defense per Liên Kình is classified as stale duplicate copy; p4 remains the dedicated Defense-per-stack passive.
+- Candidate internal benchmark bands: Trọng Quyền 100%, Liên Hoàn 92–98%, Phản Quyền 85–92%.
+- Status: **DESIGN LOCK / IMPLEMENTATION OPEN**. Next production write must follow Q1→Q2→Q3→Q4→Q5 from the unified contract.

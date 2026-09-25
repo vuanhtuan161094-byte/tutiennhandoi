@@ -179,3 +179,22 @@ Q5 — tune only from evidence, then Fast + Full Clean closure.
 - no Sword retune;
 - no visual/VFX work;
 - no migration of the other six remaining Dao.
+
+
+## 10. Production contract supersession — 2026-09-26
+
+The piecemeal audit above is superseded for design intent by:
+
+`docs/runtime/FIST_DAO_PRODUCTION_CONTRACT_20260926.md`
+
+Important correction discovered during consolidation:
+
+- p1 Liên Kình Quyết old copy also claimed Max HP / Defense per stack, but canonical runtime did not implement those lines;
+- the production contract treats those p1 defensive lines as stale duplicate copy because p4 Hùng Kình Hộ Thể is the dedicated Defense-per-stack passive;
+- therefore Q1 should remove the stale p1 defensive text rather than silently add a second overlapping Defense/Max-HP engine.
+
+CC is now explicitly part of the Quyền production contract:
+- Chấn Mạch = short interrupt/stagger;
+- Hồi Thân = successful-counter stagger;
+- Trấn Nhạc = non-disabling soft control;
+- no root/silence/suppression/long stun.
