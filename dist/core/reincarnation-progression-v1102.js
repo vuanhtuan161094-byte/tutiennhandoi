@@ -327,6 +327,30 @@ export function applyCorePotentialStats(stats,runtime){
   };
 }
 
+/**
+ * F compatibility bridge for the canonical player entity.
+ *
+ * Legacy production systems authored CL/TP/TPH/LL bonuses on the derived fields
+ * attack/physique/mobility/maxSpirit. Mirror those four values back into the
+ * five-stat snapshot after the full player composition pipeline.
+ *
+ * TT is intentionally NOT rebuilt from Accuracy: direct Accuracy/Control/Resolve
+ * bonuses remain derived combat bonuses and must not silently mint Thần Thức.
+ */
+export function syncPrimaryStatsV5FromDerivedV5(stats){
+  const current=stats?.primaryStatsV5??{};
+  return {
+    ...stats,
+    primaryStatsV5:{
+      power:Math.max(0,Number(stats?.attack??current.power)||0),
+      body:Math.max(0,Number(stats?.physique??current.body??((Number(stats?.maxHp)||0)/20))||0),
+      agility:Math.max(0,Number(stats?.mobility??current.agility)||0),
+      spirit:Math.max(0,Number(stats?.maxSpirit??current.spirit)||0),
+      sense:Math.max(0,Number(current.sense??stats?.accuracy)||0),
+    },
+  };
+}
+
 export function rechargeReincarnationEnergy(state,nowUnixMs=Date.now()){ const now=Math.max(state.lastUpdatedUnixMs,Math.floor(nowUnixMs)),elapsed=Math.max(0,now-state.lastUpdatedUnixMs),perMs=REINCARNATION_ENERGY_RECHARGE_PER_24H/(24*60*60*1000); return {current:Math.min(REINCARNATION_ENERGY_CAP,state.current+elapsed*perMs),lastUpdatedUnixMs:now}; }
 export function reincarnationEnergyCostForRealmOrder(realmOrder){ return depthConfigForRealmOrder(realmOrder).energyCost; }
 export function trialBonusPctForRatio(ratio){ const r=Math.max(0,Number(ratio)||0); if(r<.8)return 0;if(r<1)return 10;if(r<1.25)return 20;if(r<1.5)return 35;if(r<2)return 50;if(r<3)return 65;if(r<4)return 80;if(r<5)return 90;return 100; }

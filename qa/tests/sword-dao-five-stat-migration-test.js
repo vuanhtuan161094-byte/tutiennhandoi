@@ -8,6 +8,7 @@ import {
   clonePermanentCorePotentialStateV5,
   createLifeCorePotentialState,
   spendLifeCorePotential,
+  syncPrimaryStatsV5FromDerivedV5,
 } from '../../dist/core/reincarnation-progression-v1102.js';
 import { COMBAT_RULES, controlContestDurationMultiplierV5, fiveStatSkillPowerV5 } from '../../dist/core/combat-rules.js';
 import { contestedDodgeChancePctV5, evadeChancePct } from '../../dist/core/stats.js';
@@ -190,6 +191,27 @@ testCase('F5 PvP synthetic scaling preserves five-stat Sword damage parity',()=>
     const after=fiveStatSkillPowerV5(scaled.stats,scaling,baseline);
     assert.equal(Number((after/before).toFixed(6)),1.44);
   }
+});
+
+
+testCase('F5 canonical player bridge keeps legacy CL/TP/TPH/LL progression without minting TT from Accuracy',()=>{
+  const synced=syncPrimaryStatsV5FromDerivedV5({
+    attack:180,physique:70,mobility:95,maxSpirit:140,accuracy:260,controlPower:210,resolve:190,
+    primaryStatsV5:{power:100,body:50,agility:60,spirit:80,sense:75},
+  });
+  assert.deepEqual(synced.primaryStatsV5,{power:180,body:70,agility:95,spirit:140,sense:75});
+  const flow=fiveStatSkillPowerV5(synced,{power:1.35,agility:.50},1);
+  assert.equal(Number(flow.toFixed(6)),290.5);
+  const myriad=fiveStatSkillPowerV5(synced,{power:1.60,sense:2.00},1);
+  assert.equal(Number(myriad.toFixed(6)),438);
+  assert.notEqual(synced.primaryStatsV5.sense,synced.accuracy,'direct Accuracy must not become TT');
+});
+
+testCase('F5 canonical player factory synchronizes five-stat snapshot after Alchemy and all legacy stat layers',()=>{
+  const src=fs.readFileSync(new URL('../../dist/core/combat-kernel-v2.js',import.meta.url),'utf8');
+  const alchemyAt=src.indexOf('const finalEntity = applyAlchemyStatBonuses');
+  const syncAt=src.indexOf('syncPrimaryStatsV5FromDerivedV5(finalEntity.stats)');
+  assert(alchemyAt>=0&&syncAt>alchemyAt,'five-stat bridge must run after the final legacy player stat layer');
 });
 
 console.log(`\nSWORD DAO F FIVE-STAT MIGRATION: ${passed}/${passed} PASS`);

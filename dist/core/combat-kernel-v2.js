@@ -12,6 +12,7 @@ import { applyGreatVehicleToEntity, greatVehicleSummary as deriveGreatVehicleSum
 import { applyImmortalToEntity } from './immortal.js';
 import { applyBirthCombatOrigins } from './birth-randomness.js';
 import { activeAlchemyBuff, applyAlchemyStatBonuses, emptyAlchemyAllocation, ensureAlchemyV112State } from './alchemy-v112.js';
+import { syncPrimaryStatsV5FromDerivedV5 } from './reincarnation-progression-v1102.js';
 const CRITICAL = new Set([
     'boss.phase_entered',
     'boss.counter_opened',
@@ -427,7 +428,8 @@ export function buildPlayerCombatEntityV1(input) {
     const permanent = { ...emptyAlchemyAllocation(), ...(alchemyPermanentStats ?? {}) };
     const buff = activeAlchemyBuff(alchemy, state.worldTimeYears);
     const finalEntity = applyAlchemyStatBonuses(born, lifeBonus, permanent, buff);
-    return { ...finalEntity, combatBuildV117: { ...(finalEntity.combatBuildV117 ?? {}), realmOrder: Math.max(0, Number(state.realm?.maxRealmOrder ?? 0) || 0) } };
+    const fiveStatEntity = { ...finalEntity, stats: syncPrimaryStatsV5FromDerivedV5(finalEntity.stats) };
+    return { ...fiveStatEntity, combatBuildV117: { ...(fiveStatEntity.combatBuildV117 ?? {}), realmOrder: Math.max(0, Number(state.realm?.maxRealmOrder ?? 0) || 0) } };
 }
 
 /* Activity settlement boundary. */
