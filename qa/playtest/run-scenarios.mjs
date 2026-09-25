@@ -6,10 +6,10 @@ const args = new Map();
 for (let i = 2; i < process.argv.length; i += 2) args.set(process.argv[i], process.argv[i + 1]);
 
 const baseUrl = String(args.get('--base') || process.env.TUTIEN_PLAYTEST_BASE_URL || 'http://127.0.0.1:4173').replace(/\/$/, '');
-const outDir = resolve(args.get('--out') || process.env.TUTIEN_PLAYTEST_OUT_DIR || 'artifacts/ai-playtest');
+const outDir = resolve(args.get('--out') || process.env.TUTIEN_PLAYTEST_OUT_DIR || 'artifacts/runtime-smoke');
 const chromePath = args.get('--chrome') || process.env.CHROME_PATH || process.env.GOOGLE_CHROME_BIN || 'google-chrome';
 const cdpPort = Number(args.get('--cdp-port') || process.env.TUTIEN_PLAYTEST_CDP_PORT || 9333);
-const profileDir = resolve('.tmp/ai-playtest-chrome-profile');
+const profileDir = resolve('.tmp/runtime-smoke-chrome-profile');
 const config = JSON.parse(await readFile(args.get('--scenarios') || 'qa/playtest/scenarios.json', 'utf8'));
 
 if (config.schema !== 'tutien-ai-playtest.scenarios.v1') throw new Error(`Unsupported scenario schema: ${config.schema}`);
@@ -412,7 +412,7 @@ try {
   }
 } catch (error) {
   report.fatalError = String(error?.stack || error);
-  console.error(`[ai-playtest] ${error?.stack || error}`);
+  console.error(`[browser-smoke] ${error?.stack || error}`);
   console.error(chromeLog.slice(-5000));
 } finally {
   active.id = null;
@@ -425,8 +425,8 @@ try {
 
 const failed = Boolean(report.fatalError) || report.scenarios.some(scenario => scenario.status !== 'PASS');
 if (failed) {
-  console.error(`AI PLAYTEST FAIL · ${report.scenarios.filter(s => s.status !== 'PASS').map(s => s.id).join(', ') || 'fatal'}`);
+  console.error(`BROWSER SMOKE FAIL · ${report.scenarios.filter(s => s.status !== 'PASS').map(s => s.id).join(', ') || 'fatal'}`);
   process.exitCode = 1;
 } else {
-  console.log(`AI PLAYTEST PASS · ${report.scenarios.length}/${report.scenarios.length} scenarios · ${outDir}`);
+  console.log(`BROWSER SMOKE PASS · ${report.scenarios.length}/${report.scenarios.length} scenarios · ${outDir}`);
 }

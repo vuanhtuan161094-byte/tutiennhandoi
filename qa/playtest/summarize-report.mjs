@@ -1,26 +1,26 @@
 import { appendFile, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
-const reportPath = resolve(process.argv[2] || 'artifacts/ai-playtest/playtest-report.json');
+const reportPath = resolve(process.argv[2] || 'artifacts/runtime-smoke/playtest-report.json');
 let report;
 try {
   report = JSON.parse(await readFile(reportPath, 'utf8'));
 } catch (error) {
-  console.error(`AI PLAYTEST SUMMARY FAIL · report unavailable: ${reportPath}`);
+  console.error(`BROWSER SMOKE SUMMARY FAIL · report unavailable: ${reportPath}`);
   console.error(error?.message || error);
   process.exit(1);
 }
 
 if (report.schema !== 'tutien-ai-playtest.report.v1') {
-  console.error(`AI PLAYTEST SUMMARY FAIL · unsupported report schema: ${report.schema}`);
+  console.error(`BROWSER SMOKE SUMMARY FAIL · unsupported report schema: ${report.schema}`);
   process.exit(1);
 }
 if (report.mockOrReconstruction !== false) {
-  console.error('AI PLAYTEST SUMMARY FAIL · proof must come from the actual runtime');
+  console.error('BROWSER SMOKE SUMMARY FAIL · proof must come from the actual runtime');
   process.exit(1);
 }
 if (!Array.isArray(report.scenarios) || report.scenarios.length < 4) {
-  console.error('AI PLAYTEST SUMMARY FAIL · expected at least four scenarios');
+  console.error('BROWSER SMOKE SUMMARY FAIL · expected at least four scenarios');
   process.exit(1);
 }
 
@@ -70,7 +70,7 @@ const summary = {
 await writeFile(resolve(dirname(reportPath), 'health-summary.json'), JSON.stringify(summary, null, 2));
 
 const markdown = [
-  '## AI Browser Playtest',
+  '## Runtime Browser Smoke',
   '',
   `Candidate: \`${sha || 'unknown'}\``,
   '',
@@ -87,8 +87,8 @@ const markdown = [
 
 if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, markdown);
 console.log(failures.length
-  ? `AI PLAYTEST STRICT FAIL · scenarios=${rows.length} · issues=${failures.length}`
-  : `AI PLAYTEST STRICT PASS · scenarios=${rows.length} · runtimeErrors=0 · networkFailures=0 · missingImages=0 · overflow=0`);
+  ? `BROWSER SMOKE STRICT FAIL · scenarios=${rows.length} · issues=${failures.length}`
+  : `BROWSER SMOKE STRICT PASS · scenarios=${rows.length} · runtimeErrors=0 · networkFailures=0 · missingImages=0 · overflow=0`);
 
 if (failures.length) {
   for (const failure of failures) console.error(`- ${failure}`);
