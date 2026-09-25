@@ -1,4 +1,4 @@
-export const fistCoreV2 = { dao: 'fist', name: "Quyền Thế", mainOnly: true, summary: "Mỗi root action Quyền gây sát thương +1 Quyền Thế (0–5). Mỗi tầng +3% damage Skill Quyền và +4% Phá Thế. 5 tầng mở Trọng Thế: Active Quyền gây sát thương kế tiếp +35% damage/+35% Phá Thế rồi tiêu 3 tầng." };
+export const fistCoreV2 = { dao: 'fist', name: "Quyền Thế", mainOnly: true, summary: "Quyền Thế là nhịp tích lực 0–5. Mỗi tầng đang giữ +3% damage Skill Quyền và +4% Phá Thế. Đạt 5 mở Trọng Thế; chỉ Băng Sơn Trọng Quyền, Trấn Nhạc Áp Quyền, Phá Quân Quyết hoặc Cửu Thiên Trấn Ngục Quyền mới nhận +35% hiệu quả/+35% Phá Thế và tiêu Quyền Thế theo kỹ năng." };
 export const fistPassiveStackV2 = { dao: 'fist', id: 'fistPassiveStack', name: "Liên Kình", cap: 20, durationSeconds: 12, decayEverySeconds: 1, carryAcrossHuntKill: true, summary: 'Passive 1 mở stack này; giết quái không reset, nhận stack mới refresh duration, hết duration mới decay dần.' };
 export const fistPassivesV2 = [
     { id: 'passive.v2.fist.p1', dao: 'fist', name: "Liên Kình Quyết", realm: 'mundane', summary: "Mở Liên Kình: mỗi root damaging action nối tiếp nhận +1 tầng.", lv1: "10 tầng +5% Phá Thế; 20 tầng +8% damage trực tiếp.", lv20: "10 tầng +10% Phá Thế; 20 tầng +15% damage trực tiếp." },
@@ -8,7 +8,7 @@ export const fistPassivesV2 = [
     { id: 'passive.v2.fist.p5', dao: 'fist', name: "Quyền Tâm Vô Cực", realm: 'heaven', summary: "Tăng giới hạn Liên Kình.", lv1: "+2 cap.", lv20: "+10 cap." },
     { id: 'passive.v2.fist.p6', dao: 'fist', name: "Áp Thế Chân Ý", realm: 'immortal', summary: "Cứ mỗi 10 Liên Kình tăng Phá Thế.", lv1: "+4% / 10 tầng.", lv20: "+12% / 10 tầng." },
     { id: 'passive.v2.fist.p7', dao: 'fist', name: "Trọng Kình Lăng Thiên", realm: 'extreme', summary: "Khi Liên Kình ≥20 tăng damage trực tiếp.", lv1: "+10% damage.", lv20: "+35% damage." },
-    { id: 'passive.v2.fist.p8', dao: 'fist', name: "Liên Kình Bất Tuyệt", realm: 'breaker', summary: "Khi Liên Kình đạt cap nhận bonus lớn và gây damage duy trì trạng thái đỉnh.", lv1: "+10% damage; damage refresh 1 giây.", lv20: "+30% damage; +20% Nộ gain; damage refresh 2 giây." },
+    { id: 'passive.v2.fist.p8', dao: 'fist', name: "Liên Kình Bất Tuyệt", realm: 'breaker', summary: "Khi Liên Kình đạt cap nhận bonus lớn và gây damage duy trì trạng thái đỉnh.", lv1: "+10% damage; damaging root refresh 1 giây.", lv20: "+30% damage; +20% Thanh Tuyệt Kỹ gain; damaging root refresh 2 giây." },
 ];
 export const fistSkillMasteryV2 = [
     { dao: 'fist', skillId: 'skill.dao.fist.basic', milestones: { 100: "20% xác suất ra quyền bồi 55%.", 250: "Quyền bồi sinh thêm +1 Quyền Thế.", 500: "Ở 5 Quyền Thế, mỗi Basic thứ 3 tạo shockwave 65%.", 750: "Hit Basic liên tiếp giảm 0,15s Recovery Basic kế tiếp.", 1000: "Cực Ý · Tam Điệp Kình: mỗi Basic thứ 3 thành 3 hit 100% + 65% + 65%." } },

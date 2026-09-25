@@ -260,6 +260,18 @@ testCase('Q2 canonical Fist CC statuses and CombatKernel hooks are present',()=>
  assert(combat.includes("tier >= 1000 && lowHpAtCounter"));
 });
 
+testCase('Q2 player-facing core/skill copy matches locked payoff and CC semantics',()=>{
+ const fistSrc=fs.readFileSync(new URL('../../dist/content/fist-dao-v2.js',import.meta.url),'utf8');
+ assert(fistSrc.includes('chỉ Băng Sơn Trọng Quyền, Trấn Nhạc Áp Quyền, Phá Quân Quyết hoặc Cửu Thiên Trấn Ngục Quyền'));
+ assert(!fistSrc.includes('Active Quyền gây sát thương kế tiếp +35%'));
+ const byId=Object.fromEntries(battleDaoSkillsV118.filter(x=>x.dao==='fist').map(x=>[x.id,x]));
+ assert(byId['skill.dao.fist.shock'].description.includes('ngắt cast/channel'));
+ assert(byId['skill.dao.fist.counter'].description.includes('counter thành công'));
+ assert(byId['skill.dao.fist.pressure'].description.includes('Trấn Áp'));
+ const combatSrc=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
+ assert(combatSrc.includes("fistCc: immune ? 'shock_immune' : 'shock_interrupt'"));
+});
+
 testCase('Q2 p1 stale HP/Defense duplicate copy is retired; p4 owns Defense stacking',()=>{
  const src=fs.readFileSync(new URL('../../dist/content/fist-dao-v2.js',import.meta.url),'utf8');
  const p1=src.split("\n").find(line=>line.includes("passive.v2.fist.p1"))??'';

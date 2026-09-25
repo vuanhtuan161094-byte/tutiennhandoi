@@ -427,8 +427,14 @@ export class CombatEngine {
             }
             if (skill.id === 'skill.dao.fist.shock' && landed) {
                 if (v2.targetCastingBefore) {
+                    const immune = target.controlImmunityUntil > now || this.activeStatusDefinitions(target, now).some(status => status.controlImmunity);
                     this.applyStatus(actor, target, 'status.fist.shock_stagger', .35, 1, now, skill.id);
-                    this.log(now, 'counterWindow', `${actor.name} dùng Chấn Mạch cắt nhịp ${target.name}.`, actor.id, target.id, skill.id, { fistCc: 'shock_interrupt', baseDuration: .35 });
+                    this.log(now, 'counterWindow', immune
+                        ? `${actor.name} dùng Chấn Mạch nhưng ${target.name} đang Bất Khuất.`
+                        : `${actor.name} dùng Chấn Mạch cắt nhịp ${target.name}.`, actor.id, target.id, skill.id, {
+                        fistCc: immune ? 'shock_immune' : 'shock_interrupt',
+                        baseDuration: .35,
+                    });
                 }
                 if (tier >= 500 && !v2.targetBrokenBefore && target.breakDebuffUntil > now) {
                     target.pendingSetFlagsV117['fistV2ShockExposeUntil'] = Math.max(target.pendingSetFlagsV117['fistV2ShockExposeUntil'] ?? 0, now + 4);
