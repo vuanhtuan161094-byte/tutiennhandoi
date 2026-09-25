@@ -169,6 +169,17 @@ export function scalePvpEntityV91(anchorEntity, scale, id, name) {
   for (const key of SCALE_LINEAR_KEYS) if (Number.isFinite(Number(stats[key]))) stats[key] = Math.max(1, Number(stats[key]) * linear);
   for (const key of SCALE_SQRT_KEYS) if (Number.isFinite(Number(stats[key]))) stats[key] = Math.max(0.01, Number(stats[key]) * sqrt);
   if (Number.isFinite(Number(stats.spiritStandard))) stats.spiritStandard = Math.max(0.01, Number(stats.spiritStandard) * sqrt);
+  if (stats.primaryStatsV5 && typeof stats.primaryStatsV5 === 'object') {
+    const primary = { ...stats.primaryStatsV5 };
+    // PvP band scaling is a synthetic combat handicap, not a respec. Keep every
+    // current Sword damage source (CL/TPH/TT) on the same linear damage scale so
+    // matchmaking does not favor one Sword build merely because F3 uses hybrid primaries.
+    for (const key of ['power', 'body', 'agility', 'sense']) {
+      if (Number.isFinite(Number(primary[key]))) primary[key] = Math.max(0.01, Number(primary[key]) * linear);
+    }
+    if (Number.isFinite(Number(primary.spirit))) primary.spirit = Math.max(0.01, Number(primary.spirit) * sqrt);
+    stats.primaryStatsV5 = primary;
+  }
   return normalizeEntityIdentity(entity, id, name);
 }
 

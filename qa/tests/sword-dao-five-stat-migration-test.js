@@ -11,6 +11,7 @@ import {
 } from '../../dist/core/reincarnation-progression-v1102.js';
 import { COMBAT_RULES, controlContestDurationMultiplierV5, fiveStatSkillPowerV5 } from '../../dist/core/combat-rules.js';
 import { contestedDodgeChancePctV5, evadeChancePct } from '../../dist/core/stats.js';
+import { scalePvpEntityV91 } from '../../dist/core/pvp-v91.js';
 import { battleDaoSkillsV118 } from '../../dist/content/battle-dao-skill-pack-v118.js';
 
 let passed=0;
@@ -161,6 +162,34 @@ testCase('F1 legacy potential compatibility shell delegates to five-axis authori
   const payload=legacy.legacyPotentialMigrationPayloadV127({lifetimeEarned:9,unspent:999,allocations:{power:999}});
   assert.equal(payload.refundedUnspent,9);
   assert.equal(payload.migratedTotal,9);
+});
+
+
+testCase('F5 PvP synthetic scaling preserves five-stat Sword damage parity',()=>{
+  const base={
+    id:'pvp.f5.base',name:'F5',combatModel:'locked-v1',tags:['Sword'],
+    stats:{
+      attack:100,defense:100,maxHp:2000,maxSpirit:100,mobility:100,accuracy:100,controlPower:100,resolve:100,
+      primaryStatsV5:{power:100,body:100,agility:100,spirit:100,sense:100},
+    },
+    skillIds:[],triggers:[],aiProfile:{name:'none',rules:[]},
+  };
+  const scaled=scalePvpEntityV91(base,1.44,'pvp.f5.scaled','F5 scaled');
+  assert.equal(Number(scaled.stats.primaryStatsV5.power.toFixed(6)),144);
+  assert.equal(Number(scaled.stats.primaryStatsV5.body.toFixed(6)),144);
+  assert.equal(Number(scaled.stats.primaryStatsV5.agility.toFixed(6)),144);
+  assert.equal(Number(scaled.stats.primaryStatsV5.sense.toFixed(6)),144);
+  assert.equal(Number(scaled.stats.primaryStatsV5.spirit.toFixed(6)),120);
+  const profiles=[
+    [{power:3.0},1],
+    [{power:1.35,agility:.50},1],
+    [{power:1.60,sense:2.00},1],
+  ];
+  for(const [scaling,baseline] of profiles){
+    const before=fiveStatSkillPowerV5(base.stats,scaling,baseline);
+    const after=fiveStatSkillPowerV5(scaled.stats,scaling,baseline);
+    assert.equal(Number((after/before).toFixed(6)),1.44);
+  }
 });
 
 console.log(`\nSWORD DAO F FIVE-STAT MIGRATION: ${passed}/${passed} PASS`);
