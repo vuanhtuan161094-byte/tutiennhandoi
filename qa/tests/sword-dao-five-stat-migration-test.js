@@ -37,6 +37,18 @@ testCase('F1 old permanent Potential is fully refunded once',()=>{
   assert.deepEqual(clonePermanentCorePotentialStateV5(migrated),migrated);
 });
 
+testCase('F1 migration never invents Potential beyond lifetimeEarned authority',()=>{
+  const forgedOld={unspent:999,lifetimeEarned:12,allocations:{power:500,body:500,defense:500}};
+  const migrated=cloneLifeCorePotentialState(forgedOld);
+  assert.equal(migrated.lifetimeEarned,12);
+  assert.equal(migrated.unspent,12);
+  assert.deepEqual(migrated.allocations,{power:0,body:0,agility:0,spirit:0,sense:0});
+  const forgedV5={axisVersion:5,unspent:999,lifetimeEarned:7,allocations:{power:5,body:5,agility:5,spirit:5,sense:5}};
+  const canonical=clonePermanentCorePotentialStateV5(forgedV5);
+  assert.equal(canonical.lifetimeEarned,7);
+  assert.equal(Object.values(canonical.allocations).reduce((a,b)=>a+b,0)+canonical.unspent,7);
+});
+
 testCase('F1 five allocation ids are exact and old Defense can no longer be spent',()=>{
   assert.deepEqual(CORE_POTENTIAL_AXIS_IDS_V5,['power','body','agility','spirit','sense']);
   let state={...createLifeCorePotentialState(),unspent:5,lifetimeEarned:5};
