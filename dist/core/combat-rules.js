@@ -11,6 +11,7 @@ export const COMBAT_RULES = {
     controlChainLimitSeconds: 5,
     controlChainResetGapSeconds: 1,
     controlImmunitySeconds: 3,
+    controlPressureResetSeconds: 8,
     breakDebuffSeconds: 5,
     breakStableSeconds: 3,
     breakDefenseReductionPct: 30,

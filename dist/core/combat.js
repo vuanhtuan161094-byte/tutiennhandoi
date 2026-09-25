@@ -77,6 +77,7 @@ export class CombatEngine {
             activeCounterWindow: undefined,
             dodgePressure: 0,
             controlPressure: {},
+            controlPressureLastAt: {},
             poise: 100,
             lastBreakDamageAt: -Infinity,
             breakDebuffUntil: 0,
@@ -1310,9 +1311,12 @@ export class CombatEngine {
             if (def.group === 'BodyControl' || def.group === 'SpiritControl') {
                 const src = effectiveStats(source, this.registry, now);
                 const dst = effectiveStats(target, this.registry, now);
-                const pressure = target.controlPressure[def.group] ?? 0;
+                const pressureKey = def.group;
+                const lastPressureAt = target.controlPressureLastAt[pressureKey] ?? -Infinity;
+                const pressure = now - lastPressureAt >= COMBAT_RULES.controlPressureResetSeconds ? 0 : (target.controlPressure[pressureKey] ?? 0);
                 duration *= controlContestDurationMultiplierV5(src.controlPower, dst.resolve, pressure);
-                target.controlPressure[def.group] = pressure + 1;
+                target.controlPressure[pressureKey] = pressure + 1;
+                target.controlPressureLastAt[pressureKey] = now;
                 if (def.disablesActions && target.casting) {
                     this.log(now, 'info', `${target.name} bị ngắt thi pháp ${this.registry.skill(target.casting.skillId).name}.`, source.id, target.id, skillId);
                     target.casting = undefined;
@@ -1342,9 +1346,11 @@ export class CombatEngine {
             const src = effectiveStats(source, this.registry, now);
             const dst = effectiveStats(target, this.registry, now);
             const pressureKey = def.group ?? def.controlKind ?? 'Control';
-            const pressure = target.controlPressure[pressureKey] ?? 0;
+            const lastPressureAt = target.controlPressureLastAt[pressureKey] ?? -Infinity;
+            const pressure = now - lastPressureAt >= COMBAT_RULES.controlPressureResetSeconds ? 0 : (target.controlPressure[pressureKey] ?? 0);
             duration *= controlContestDurationMultiplierV5(src.controlPower, dst.resolve, pressure);
             target.controlPressure[pressureKey] = pressure + 1;
+            target.controlPressureLastAt[pressureKey] = now;
             const reduction = controlDurationReductionPct(dst);
             duration = effectiveControlDuration(duration, reduction);
         }
