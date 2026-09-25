@@ -15,7 +15,7 @@ import { contestedDodgeChancePctV5, effectiveStats, evadeChancePct } from '../..
 import { scalePvpEntityV91 } from '../../dist/core/pvp-v91.js';
 import { battleDaoSkillsV118 } from '../../dist/content/battle-dao-skill-pack-v118.js';
 import { buildRegistry } from '../../dist/content/registry.js';
-import { buildHuntCombatProfileV130 } from '../../dist/core/hunt-real-combat-v130.js';
+import { buildHuntCombatProfileV130, huntPreviewPlayerDpsLog10V130 } from '../../dist/core/hunt-real-combat-v130.js';
 
 let passed=0;
 const testCase=(name,fn)=>{fn();passed++;console.log(`✓ ${name}`);};
@@ -286,6 +286,26 @@ testCase('F5 legacy NPCs snapshot five primary stats once so runtime Mobility/Ac
   assert.equal(effective.primaryStatsV5.sense,65);
   const src=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
   assert(src.includes('const snapshottedStats = ensurePrimaryStatsV5SnapshotV5(def.stats)'));
+});
+
+
+testCase('F5 Săn Ảo preview uses five-stat sustained profile while settlement remains CombatKernel V3',()=>{
+  const registry=buildRegistry();
+  const make=(skillId,agility,sense)=>({
+    id:`farm.preview.${agility}.${sense}`,name:'farm preview',combatModel:'locked-v1',tags:['Sword'],
+    stats:{attack:100,defense:100,maxHp:2000,physique:100,maxSpirit:100,spiritStandard:100,spiritRegenStandardPctPerSecond:2,
+      mobility:agility,accuracy:sense,controlPower:sense,resolve:sense,actionSpeed:1,critChancePct:0,critPowerPerLayer:.5,heartChancePct:0,armorPenPct:0,
+      primaryStatsV5:{power:100,body:100,agility,spirit:100,sense}},
+    skillIds:[skillId],triggers:[],aiProfile:{name:'preview',rules:[{skillId,priority:100,conditions:[{type:'always'}]}]},
+    combatBuildV117:{skillPracticeTierV125:{},skillLevelsV12317:{},skillGradesV12317:{}},
+  });
+  const flow='skill.dao.sword.flow_slash';
+  assert(huntPreviewPlayerDpsLog10V130(make(flow,120,70),registry)>huntPreviewPlayerDpsLog10V130(make(flow,40,70),registry));
+  const myriad='skill.dao.sword.myriad';
+  assert(huntPreviewPlayerDpsLog10V130(make(myriad,80,120),registry)>huntPreviewPlayerDpsLog10V130(make(myriad,80,40),registry));
+  const sessionSrc=fs.readFileSync(new URL('../../dist/core/session.js',import.meta.url),'utf8');
+  assert(sessionSrc.includes('huntPreviewPlayerDpsLog10V130(player, this.registry)'));
+  assert(sessionSrc.includes('resolveEndlessHuntWithCombatKernelV3({'),'Săn Ảo/Boss settlement authority must remain CombatKernel V3');
 });
 
 console.log(`\nSWORD DAO F FIVE-STAT MIGRATION: ${passed}/${passed} PASS`);

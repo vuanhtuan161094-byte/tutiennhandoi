@@ -62,7 +62,7 @@ import { combatPowerBreakdown, compareCombatPower, statProvenanceV129, summarize
 import './save-stability.js';
 import { applyBirthCombatOrigins, birthLuckFlatFromOrigins, birthLootMultiplierFromOrigins, writeBirthModifiersToOrigins } from './birth-randomness.js';
 import { applyEndlessLifeLegacy, bestEndlessHuntFarmFloors, bossReady, cloneEndlessHuntState, createEndlessHuntState, endlessHuntDisplay, endlessHuntFloorEfficiency, ensureEndlessHuntMonster, ensureMajorHuntMapUnlocked, generateEndlessHuntMonster, highestUnlockedLocalFloor, isEndlessHuntFloorCleared, isEndlessHuntFloorUnlocked, recordEndlessHuntFloorStats, resolveEndlessHuntFight, selectEndlessHuntFloor } from './endless-hunt.js';
-import { buildHuntCombatProfileV130 } from './hunt-real-combat-v130.js';
+import { buildHuntCombatProfileV130, huntPreviewPlayerDpsLog10V130 } from './hunt-real-combat-v130.js';
 import { resolveEndlessHuntWithCombatKernelV3 } from './endless-hunt-combat-kernel-v2.js';
 import { deterministicBinomialV77, deterministicJitteredTotalV77, huntVirtualFarmPlayerDpsLog10V77, huntVirtualFarmProfileV77 } from './hunt-virtual-farm-v77.js';
 import { compileCombatEncounterV1, runCompiledCombatEncounterV3 } from './combat-kernel-v2.js';
@@ -884,7 +884,7 @@ export class SimulationSession {
         const player = playerOverride ?? this.personalCombatEntity();
         const matchup = secretRealmElementMatchup(player, mob.elements);
         const mobHpLog10 = mob.hpLog10 + Math.log10(Math.max(.05, (map.powerByGrade.common ?? map.powerMultiplier) * matchup.enemyPowerMultiplier));
-        const playerDpsLog10 = huntVirtualFarmPlayerDpsLog10V77(player);
+        const playerDpsLog10 = huntPreviewPlayerDpsLog10V130(player, this.registry);
         const eliteChancePct = Math.min(4.5, 1.25 + map.zone * .28 + Math.log10(1 + map.localFloor) * .22);
         const base = huntVirtualFarmProfileV77({ floor: farmFloor, playerDpsLog10, mobHpLog10, eliteChancePct });
         const spiritStonesPerKill = Math.max(1, Math.round((1.8 + Math.pow(Math.max(1, map.localFloor), .56) * .42) * map.rewardDepthMultiplier * economyBandScale(map.majorRealmIndex)));
