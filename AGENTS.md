@@ -21,7 +21,7 @@ For any production/runtime/UI/asset change:
 
 Current operating mode:
 - GitHub Actions is **manual-only** to avoid automatic artifact/storage consumption.
-- Web/runtime candidates use `tools/web/TEST_GAME_LOCAL.cmd`; closure evidence starts from Mode 5 — FULL CLEAN on a clean checkout.
+- Web/runtime candidates use `tools/web/TEST_GAME_LOCAL.cmd`; closure evidence starts from Mode 5 — FULL CLEAN on a clean checkout. FULL/FULL CLEAN means Fast + representative runtime browser smoke; heavyweight deep visual diagnostics remain explicit/on-demand via Visual mode.
 - Godot candidates use `KIEM_TRA_GAME.cmd`.
 - Canonical closure can be run locally with the backend/frontend closure runners when needed.
 - Manual GitHub Actions may be used only when explicitly desired and account storage is available.

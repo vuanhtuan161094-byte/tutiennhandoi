@@ -43,7 +43,7 @@ Rules:
 
 Current default is local:
 - `tools/web/TEST_GAME_LOCAL.cmd` for web/runtime;
-- Mode 5 — FULL CLEAN for clean exact-candidate proof;
+- Mode 5 — FULL CLEAN for clean exact-candidate proof (Fast + representative runtime browser smoke; heavyweight deep visual diagnostics are separate/on-demand);
 - `KIEM_TRA_GAME.cmd` for Godot.
 
 Manual GitHub Actions remains available as an optional exact-SHA gate when account storage is available.
