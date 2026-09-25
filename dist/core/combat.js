@@ -1,5 +1,5 @@
 import { SeededRng } from './rng.js';
-import { adjustedRecoveryTime, critLayers, critMultiplier, effectiveStats, evadeChancePct } from './stats.js';
+import { adjustedRecoveryTime, contestedDodgeChancePctV5, critLayers, critMultiplier, effectiveStats, evadeChancePct } from './stats.js';
 import './ai.js';
 import { tacticalIdentity } from './combat-roles.js';
 import { addResourceV117, createFiveElementCombatStateV117, finishSkillActionRuntimeV117, onMitigationEventV117, rootUnlockedV117, setMechanicV117, updateElementTimersV117 } from './five-element-combat-v117.js';
@@ -12,7 +12,7 @@ import './skill-heart-method-v12317.js';
 import { addPoisonSeedStageV2, battleDaoV2BreakMultiplier, battleDaoV2Enabled, battleDaoV2HealShieldMultiplier, battleDaoV2IncomingDamageMultiplier, battleDaoV2OutgoingMultiplier, consumePoisonSeedStageV2, createBattleDaoRuntimeStateV2, claimDamagingFollowUpV2, finishRemainingDaoActionV2, onBattleDaoV2HpDamageTaken, onBattleDaoV2Mitigation, v2ResourceProjection, recordDamageOutcomeV2, resolveSwordIntentAfterRootV2, swordIntentBonusesV2, swordQiGenerateAfterActionV2, swordV2CapstoneFollowUp, swordV2ChannelProfile, swordV2CritHeartBonusPct, swordV2DirectDamageMultiplier, swordV2EffectsForSkill, syncBattleDaoV2Timers } from './battle-dao-v2-runtime.js';
 import { cloneTechniqueCombatRuntimeV119, initializeTechniqueCombatStateV119, techniqueCooldownReductionPctV119, techniqueDamageReductionAdjustmentPctV119, techniqueDeferredDamagePctV119, techniqueHealingReceivedMultiplierV119, techniqueInterruptResistPctV119, techniqueRecoveryMultiplierV119, techniqueSpiritOverflowToGaugePctV119, techniqueSpiritRegenMultiplierV119 } from './technique-runtime-v119.js';
 import './boss-gameplay-v2.js';
-import { COMBAT_RULES, actionSpeedMultiplier, combatMaxHp, combatSpiritStandard, combineBoundedPct, combinedHeartCritMultiplier, controlDurationReductionPct, cooldownProfile, critLayerName, critProfile, defenseFactor, dodgeProfile, effectiveControlDuration, elementAffinity, elementResistanceMultiplier, fiveElementBreakMultiplier, fiveElementCounter, fiveElementDamageMultiplier, heartProfile, rawElementalDamage, totalDamageReductionPct } from './combat-rules.js';
+import { COMBAT_RULES, actionSpeedMultiplier, combatMaxHp, combatSpiritStandard, combineBoundedPct, combinedHeartCritMultiplier, controlContestDurationMultiplierV5, controlDurationReductionPct, cooldownProfile, critLayerName, critProfile, defenseFactor, dodgeProfile, effectiveControlDuration, elementAffinity, elementResistanceMultiplier, fiveElementBreakMultiplier, fiveElementCounter, fiveElementDamageMultiplier, heartProfile, rawElementalDamage, totalDamageReductionPct } from './combat-rules.js';
 import { handleCombatDecisionV141 } from './combat-decision.js';
 function simpleSetParamV12318(entity, mechanic, key) {
     return setMechanicV117(entity, mechanic)?.params[key] ?? 0;
@@ -855,9 +855,8 @@ export class CombatEngine {
         const srcStats = effectiveStats(source, this.registry, now);
         const dstStats = effectiveStats(target, this.registry, now);
         const heart = heartProfile(srcStats);
-        const dodge = dodgeProfile(dstStats);
         const standGround = (target.pendingSetFlagsV117['earthBodyStandUntil'] ?? 0) > now;
-        const effectiveDodgeChance = standGround ? 0 : dodge.chancePct;
+        const effectiveDodgeChance = standGround ? 0 : contestedDodgeChancePctV5(dstStats.mobility, srcStats.accuracy, dstStats.dodgeChancePct ?? 0, target.dodgePressure);
         // V129: Hội Tâm is an authored precision event. It is rolled even on Tất Trúng skills;
         // Tất Trúng only skips the Dodge check, never Crit/Hội Tâm.
         if (ctx.canHeart && this.rng.chance(heart.chancePct)) {
@@ -867,12 +866,14 @@ export class CombatEngine {
         if (ctx.unavoidable || !ctx.canDodge)
             return { hit: true, heart: false, failedDodge: false };
         if (this.rng.chance(effectiveDodgeChance)) {
+            target.dodgePressure += 1;
             this.log(now, 'dodge', `${target.name} Né Tránh công kích (${effectiveDodgeChance.toFixed(1)}%).`, source.id, target.id, ctx.skillId, { dodgeChancePct: effectiveDodgeChance });
             target.pendingSetFlagsV117['techniqueAfterDodgeUntil'] = now + 3;
             this.fireTriggers(target, source, 'OnDodge', ctx.sourceTag, now, ctx.procCoefficient);
             this.fireTriggers(source, target, 'OnTargetDodge', ctx.sourceTag, now, ctx.procCoefficient);
             return { hit: false, heart: false, failedDodge: false };
         }
+        target.dodgePressure = Math.max(0, target.dodgePressure - 0.65);
         return { hit: true, heart: false, failedDodge: true };
     }
     usesLockedCombat(source, target) {
@@ -1310,8 +1311,7 @@ export class CombatEngine {
                 const src = effectiveStats(source, this.registry, now);
                 const dst = effectiveStats(target, this.registry, now);
                 const pressure = target.controlPressure[def.group] ?? 0;
-                const contest = src.controlPower / Math.max(1, src.controlPower + dst.resolve * (1 + pressure * 0.35));
-                duration *= 0.35 + 1.3 * contest;
+                duration *= controlContestDurationMultiplierV5(src.controlPower, dst.resolve, pressure);
                 target.controlPressure[def.group] = pressure + 1;
                 if (def.disablesActions && target.casting) {
                     this.log(now, 'info', `${target.name} bị ngắt thi pháp ${this.registry.skill(target.casting.skillId).name}.`, source.id, target.id, skillId);
@@ -1339,7 +1339,13 @@ export class CombatEngine {
                 this.log(now, 'status', `${target.name} đang Bất Khuất, miễn ${def.name}.`, source.id, target.id, skillId, { immune: true });
                 return;
             }
-            const reduction = controlDurationReductionPct(effectiveStats(target, this.registry, now));
+            const src = effectiveStats(source, this.registry, now);
+            const dst = effectiveStats(target, this.registry, now);
+            const pressureKey = def.group ?? def.controlKind ?? 'Control';
+            const pressure = target.controlPressure[pressureKey] ?? 0;
+            duration *= controlContestDurationMultiplierV5(src.controlPower, dst.resolve, pressure);
+            target.controlPressure[pressureKey] = pressure + 1;
+            const reduction = controlDurationReductionPct(dst);
             duration = effectiveControlDuration(duration, reduction);
         }
         if (duration <= 0)

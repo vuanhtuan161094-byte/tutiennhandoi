@@ -102,10 +102,7 @@ export function critLayers(critChancePct, roll01) {
 export function critMultiplier(layers, critPowerPerLayer) {
     return 1 + Math.max(0, layers) * Math.max(0, critPowerPerLayer);
 }
-/**
- * Deprecated compatibility view. v0.95 combat uses direct Né instead of Mobility-vs-Accuracy.
- * This function remains for old callers but is no longer used by CombatEngine.
- */
+/** F five-stat Dodge contest base: Mobility vs Accuracy with anti-streak pressure. */
 export function evadeChancePct(mobility, accuracy, dodgePressure) {
     const m = Math.max(1, mobility);
     const a = Math.max(1, accuracy);
@@ -114,6 +111,9 @@ export function evadeChancePct(mobility, accuracy, dodgePressure) {
     const raw = 15 + 50 * (centered / (1 + Math.abs(centered)));
     const pressurePenalty = Math.min(35, Math.max(0, dodgePressure) * 7);
     return Math.max(2, Math.min(65, raw - pressurePenalty));
+}
+export function contestedDodgeChancePctV5(mobility, accuracy, directDodgeChancePct = 0, dodgePressure = 0) {
+    return combineBoundedPct(evadeChancePct(mobility, accuracy, dodgePressure), Math.max(0, Number(directDodgeChancePct) || 0), 75);
 }
 export function adjustedCastTime(baseCastTime, actionSpeed) {
     return adjustedActionTime(baseCastTime, actionSpeed);
