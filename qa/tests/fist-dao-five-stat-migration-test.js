@@ -6,6 +6,7 @@ import { createBattleDaoRuntimeStateV2, createRootActionV2, finishFistCoreAction
 import { effectiveStats } from '../../dist/core/stats.js';
 import { fiveStatSkillPowerV5 } from '../../dist/core/combat-rules.js';
 import { canUseBattleDaoSkillV118 } from '../../dist/core/battle-dao-combat-v118.js';
+import { tacticalIdentity } from '../../dist/core/combat-roles.js';
 import { FIST_Q1_PROFILES, validateFistQ1Profiles } from '../benchmarks/fist-dao-q1-premigration-benchmark.js';
 
 let passed=0;
@@ -237,6 +238,23 @@ testCase('Q2 Liên Kình p8 peak hold is refreshed by damaging roots, never by p
  finishRemainingDaoActionV2(e,{id:'target',hp:100,baseStats:{maxHp:100}},basic,action,10,()=>false);
  assert.equal(e.battleDaoStateV2.fist.stack.expiresAt,12);
  assert.equal(e.battleDaoStateV2.fist.stack.nextDecayAt,undefined);
+});
+
+testCase('Q2 tactical metadata exposes Chấn Mạch interrupt/control and Trấn Nhạc soft-control setup',()=>{
+ const registry=buildRegistry();
+ const shock=registry.skill('skill.dao.fist.shock');
+ const pressure=registry.skill('skill.dao.fist.pressure');
+ const counter=registry.skill('skill.dao.fist.counter');
+ const shockRoles=tacticalIdentity(shock,registry).roles;
+ const pressureRoles=tacticalIdentity(pressure,registry).roles;
+ const counterRoles=tacticalIdentity(counter,registry).roles;
+ assert(shockRoles.includes('Interrupt'));
+ assert(shockRoles.includes('Control'));
+ assert(shockRoles.includes('Break'));
+ assert(pressureRoles.includes('Control'));
+ assert(pressureRoles.includes('Setup'));
+ assert(pressureRoles.includes('Break'));
+ assert(counterRoles.includes('Counter'));
 });
 
 testCase('Q2 canonical Fist CC statuses and CombatKernel hooks are present',()=>{
