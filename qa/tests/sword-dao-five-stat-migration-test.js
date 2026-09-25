@@ -16,6 +16,7 @@ import { scalePvpEntityV91 } from '../../dist/core/pvp-v91.js';
 import { battleDaoSkillsV118 } from '../../dist/content/battle-dao-skill-pack-v118.js';
 import { buildRegistry } from '../../dist/content/registry.js';
 import { buildHuntCombatProfileV130, huntPreviewPlayerDpsLog10V130 } from '../../dist/core/hunt-real-combat-v130.js';
+import { swordV2ChannelProfile } from '../../dist/core/battle-dao-v2-runtime.js';
 
 let passed=0;
 const testCase=(name,fn)=>{fn();passed++;console.log(`✓ ${name}`);};
@@ -112,15 +113,15 @@ testCase('F4 Control Pressure resets after exactly 8 seconds of no same-group co
 testCase('F3 Sword has exactly the locked 10 five-stat scaling profiles',()=>{
   const expected=new Map([
     ['skill.dao.sword.basic',{scaling:{power:2.70},baseline:1.00}],
-    ['skill.dao.sword.flow_slash',{scaling:{power:1.35,agility:.50},baseline:1.55}],
+    ['skill.dao.sword.flow_slash',{scaling:{power:1.35,agility:1.55},baseline:1.55}],
     ['skill.dao.sword.nurture',{scaling:{power:1.50},baseline:.45}],
-    ['skill.dao.sword.break_mark',{scaling:{power:2.10,sense:.90},baseline:1.35}],
-    ['skill.dao.sword.chain',{scaling:{power:1.00,agility:.75},baseline:2.16}],
-    ['skill.dao.sword.counter',{scaling:{power:1.20,agility:.50},baseline:1.80}],
+    ['skill.dao.sword.break_mark',{scaling:{power:1.60,sense:2.00},baseline:1.35}],
+    ['skill.dao.sword.chain',{scaling:{power:1.00,agility:1.85},baseline:2.16}],
+    ['skill.dao.sword.counter',{scaling:{power:1.20,agility:1.50},baseline:1.80}],
     ['skill.dao.sword.sever',{scaling:{power:3.00},baseline:2.20}],
-    ['skill.dao.sword.finisher',{scaling:{power:3.00},baseline:2.45}],
-    ['skill.dao.sword.myriad',{scaling:{power:1.60,sense:2.00},baseline:3.72}],
-    ['skill.dao.sword.ultimate',{scaling:{power:3.00},baseline:6.80}],
+    ['skill.dao.sword.finisher',{scaling:{power:2.10,sense:2.00},baseline:2.45}],
+    ['skill.dao.sword.myriad',{scaling:{power:1.60,sense:8.00},baseline:3.72}],
+    ['skill.dao.sword.ultimate',{scaling:{power:2.10,sense:2.00},baseline:6.80}],
   ]);
   const sword=battleDaoSkillsV118.filter(x=>x.runtimeV117?.daoBinding==='sword');
   assert.equal(sword.length,10);
@@ -138,13 +139,27 @@ testCase('F3 normalized five-stat power reproduces contract totals at baseline h
   const stats={attack:100,mobility:80,accuracy:70,primaryStatsV5:{power:100,body:50,agility:80,spirit:60,sense:70}};
   const flow=battleDaoSkillsV118.find(x=>x.id==='skill.dao.sword.flow_slash');
   const flowPower=fiveStatSkillPowerV5(stats,flow.fiveStatScalingV5,flow.fiveStatBaselineCoefficientV5);
-  assert.equal(Number((flowPower*1.55).toFixed(6)),175); // 1.35*100 + .50*80
+  assert.equal(Number((flowPower*1.55).toFixed(6)),259); // 1.35*100 + 1.55*80
   const myriad=battleDaoSkillsV118.find(x=>x.id==='skill.dao.sword.myriad');
   const myriadPower=fiveStatSkillPowerV5(stats,myriad.fiveStatScalingV5,myriad.fiveStatBaselineCoefficientV5);
-  assert.equal(Number((myriadPower*.62*6).toFixed(6)),300); // 1.60*100 + 2.00*70
+  assert.equal(Number((myriadPower*.62*6).toFixed(6)),720); // 1.60*100 + 8.00*70
   const ultimate=battleDaoSkillsV118.find(x=>x.id==='skill.dao.sword.ultimate');
   const ultPower=fiveStatSkillPowerV5(stats,ultimate.fiveStatScalingV5,ultimate.fiveStatBaselineCoefficientV5);
-  assert.equal(Number((ultPower*6.8).toFixed(6)),300);
+  assert.equal(Number((ultPower*6.8).toFixed(6)),350); // 2.10*100 + 2.00*70
+});
+
+testCase('F6 Vạn Kiếm Cực Ý uses fourteen channel hits and the authored 150% final hit',()=>{
+  const skill=battleDaoSkillsV118.find(x=>x.id==='skill.dao.sword.myriad');
+  const entity={
+    combatBuildV117:{battleDaoV2Enabled:true,mainDaoId:'sword',skillPracticeTierV125:{[skill.id]:1000}},
+    battleDaoStateV2:{sword:{core:{swordQi:4}}},
+  };
+  const profile=swordV2ChannelProfile(entity,skill,{battleDaoV2:{swordQiBefore:4}});
+  assert.equal(profile.hitCountOverride,14);
+  assert.equal(profile.lastHitMultiplier,1.5);
+  const src=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
+  assert(src.includes('lastHitMultiplier: swordChannel.lastHitMultiplier'));
+  assert(src.includes('channel.resolvedHits >= channel.totalHits'));
 });
 
 testCase('F3 CombatKernel consumes primaryStatsV5 scaling for root and bounded follow-up hits',()=>{

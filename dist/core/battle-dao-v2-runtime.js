@@ -519,7 +519,7 @@ export function swordV2ChannelProfile(entity, skill, action) {
     if (tier >= 750)
         out.durationMultiplier = 2.6 / 3;
     if (tier >= 1000 && qi >= 4)
-        out.hitCountOverride = 10;
+        out.hitCountOverride = 14;
     else if (tier >= 500 && qi >= 4)
         out.hitCountOverride = 8;
     if (tier >= 100)

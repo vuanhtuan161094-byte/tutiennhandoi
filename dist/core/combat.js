@@ -297,6 +297,8 @@ export class CombatEngine {
                 totalHits,
                 cooldownDamageBonusPct,
                 runtimeV117: runtimeAction,
+                lastHitMultiplier: swordChannel.lastHitMultiplier,
+                resolvedHits: 0,
             };
             const stats = effectiveStats(actor, this.registry, now);
             const totalChannelCost = combatSpiritStandard(stats) * Math.max(0, skill.channel.spiritCostStandardPctPerSecond ?? 0) / 100 * channelDuration
@@ -356,7 +358,14 @@ export class CombatEngine {
             }
             actor.spirit = Math.max(0, actor.spirit - spiritCost);
         }
-        this.resolveEffects(actor, target, skill.channel.effects, 'ActiveHit', now, skill.id, channel.cooldownDamageBonusPct, channel.runtimeV117);
+        channel.resolvedHits = (channel.resolvedHits ?? 0) + 1;
+        const lastHitMultiplier = channel.resolvedHits >= channel.totalHits ? Math.max(0, Number(channel.lastHitMultiplier) || 1) : 1;
+        const effects = lastHitMultiplier === 1
+            ? skill.channel.effects
+            : skill.channel.effects.map(effect => effect.type === 'damage'
+                ? { ...effect, coefficient: Math.max(0, Number(effect.coefficient) || 0) * lastHitMultiplier }
+                : effect);
+        this.resolveEffects(actor, target, effects, 'ActiveHit', now, skill.id, channel.cooldownDamageBonusPct, channel.runtimeV117);
     }
     handleChannelEnd(actor, target, skillId, token, now) {
         const channel = actor.channeling;
