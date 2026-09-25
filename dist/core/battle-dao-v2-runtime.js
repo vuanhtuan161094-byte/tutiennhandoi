@@ -140,6 +140,14 @@ export function syncBattleDaoV2Timers(entity, now) {
             }
         }
     }
+    const fistCore = entity.battleDaoStateV2?.fist?.core;
+    if (fistCore) {
+        const domainActive = (fistCore.fistDomainUntil ?? 0) > now;
+        fistCore.fistForceCap = domainActive ? 7 : 5;
+        if (!domainActive && (fistCore.fistDomainUntil ?? 0) > 0)
+            fistCore.fistDomainUntil = 0;
+        fistCore.fistForce = Math.min(fistCore.fistForceCap, Math.max(0, fistCore.fistForce));
+    }
     for (const dao of ['fist', 'body', 'spell', 'poison', 'artifact', 'formation', 'mind'])
         syncGenericStack(entity, dao, now);
 }
@@ -526,6 +534,237 @@ export function swordV2ChannelProfile(entity, skill, action) {
         out.lastHitMultiplier = 1.5;
     return out;
 }
+const FIST_V2_PAYOFF_SKILLS = new Set([
+    'skill.dao.fist.heavy',
+    'skill.dao.fist.pressure',
+    'skill.dao.fist.finisher',
+    'skill.dao.fist.ultimate',
+]);
+export function prepareFistCoreActionV2(entity, target, skill, action, now = 0) {
+    if (!battleDaoV2Enabled(entity) || entity.combatBuildV117?.mainDaoId !== 'fist' || skillRuntimeV117(skill).daoBinding !== 'fist')
+        return 0;
+    syncBattleDaoV2Timers(entity, now);
+    const core = holderV2(entity, 'fist')?.core;
+    const v2 = action?.battleDaoV2;
+    if (!core || !v2)
+        return 0;
+    const tier = entity.combatBuildV117?.skillPracticeTierV125?.[skill.id] ?? 0;
+    const before = Math.max(0, Math.floor(core.fistForce));
+    v2.fistForceBefore = before;
+    v2.fistForceCapAtStart = core.fistForceCap;
+    v2.fistDomainActiveAtStart = (core.fistDomainUntil ?? 0) > now;
+    v2.targetBrokenBefore = Boolean(target?.breakDebuffUntil && target.breakDebuffUntil > now);
+    v2.targetCastingBefore = Boolean(target?.casting || target?.channeling);
+    if ((core.fistDamageBuffUntil ?? 0) > now)
+        action.effectBonusPct += Math.max(0, core.fistDamageBuffPct ?? 0);
+    const heavyPayoff = FIST_V2_PAYOFF_SKILLS.has(skill.id) && before >= 5;
+    if (heavyPayoff) {
+        action.effectBonusPct += 35;
+        action.breakBonusPct += 35;
+        v2.fistHeavyPayoff = true;
+    }
+    let wanted = 0;
+    if (skill.id === 'skill.dao.fist.heavy')
+        wanted = tier >= 500 && before >= 5 ? 3 : 2;
+    else if (skill.id === 'skill.dao.fist.shock' && tier >= 1000 && before >= 5)
+        wanted = 2;
+    else if (skill.id === 'skill.dao.fist.pressure' && before >= 5)
+        wanted = tier >= 1000 ? 2 : 3;
+    else if (skill.id === 'skill.dao.fist.finisher')
+        wanted = Math.min(before, v2.fistDomainActiveAtStart ? 7 : 5);
+    else if (skill.id === 'skill.dao.fist.ultimate')
+        wanted = before;
+    wanted = Math.max(0, Math.min(before, Math.floor(wanted)));
+    if (wanted > 0) {
+        core.fistForce = Math.max(0, before - wanted);
+        v2.fistForceSpent = wanted;
+    }
+    return wanted;
+}
+export function fistV2ActionTuning(entity, skill, target, action) {
+    const out = { castMultiplier: 1, recoveryMultiplier: 1, cooldownOverride: undefined, extraEffectBonusPct: 0, extraBreakBonusPct: 0, extraArmorPenPct: 0, critHeartPowerMultiplier: 1 };
+    if (!battleDaoV2Enabled(entity) || entity.combatBuildV117?.mainDaoId !== 'fist' || skillRuntimeV117(skill).daoBinding !== 'fist')
+        return out;
+    const tier = entity.combatBuildV117?.skillPracticeTierV125?.[skill.id] ?? 0;
+    const before = Math.max(0, Math.floor(action?.battleDaoV2?.fistForceBefore ?? entity.battleDaoStateV2?.fist?.core?.fistForce ?? 0));
+    const spent = Math.max(0, Math.floor(action?.battleDaoV2?.fistForceSpent ?? 0));
+    if (skill.id === 'skill.dao.fist.nurture') {
+        if (tier >= 750)
+            out.castMultiplier = 1.05 / 1.5;
+        else if (tier >= 100)
+            out.castMultiplier = 1.30 / 1.5;
+    }
+    if (skill.id === 'skill.dao.fist.triple' && tier >= 750 && before >= 5)
+        out.cooldownOverride = 2.4;
+    if (skill.id === 'skill.dao.fist.shock') {
+        if (tier >= 750)
+            out.recoveryMultiplier = .65 / .8;
+        if (tier >= 100)
+            out.extraBreakBonusPct += 20;
+        if (tier >= 250 && !action?.battleDaoV2?.targetBrokenBefore)
+            out.extraBreakBonusPct += 15;
+    }
+    if (skill.id === 'skill.dao.fist.heavy') {
+        if (tier >= 750)
+            out.castMultiplier = .75 / 1;
+        if (tier >= 250 && spent >= 2)
+            out.extraBreakBonusPct += 20;
+    }
+    if (skill.id === 'skill.dao.fist.counter' && tier >= 750)
+        out.recoveryMultiplier = .50 / .7;
+    if (skill.id === 'skill.dao.fist.chain_heavy' && tier >= 750)
+        out.recoveryMultiplier = .70 / .9;
+    if (skill.id === 'skill.dao.fist.pressure') {
+        if (tier >= 750)
+            out.castMultiplier = .70 / .9;
+        if (tier >= 100)
+            out.extraBreakBonusPct += 15;
+        if (tier >= 250 && action?.battleDaoV2?.targetBrokenBefore)
+            out.extraEffectBonusPct += 15;
+    }
+    if (skill.id === 'skill.dao.fist.finisher') {
+        if (tier >= 750)
+            out.recoveryMultiplier = .80 / 1.05;
+        if (tier >= 250 && action?.battleDaoV2?.targetBrokenBefore)
+            out.extraEffectBonusPct += 20;
+        if (tier >= 500 && spent >= 4)
+            out.extraArmorPenPct += 15;
+        if (tier >= 1000 && spent >= 5)
+            out.critHeartPowerMultiplier = 1.5;
+    }
+    if (skill.id === 'skill.dao.fist.ultimate' && tier >= 750)
+        out.recoveryMultiplier = 1.10 / 1.4;
+    return out;
+}
+export function fistV2EffectsForSkill(entity, skill, action, chance, baseEffects = skill.effects) {
+    if (!battleDaoV2Enabled(entity) || entity.combatBuildV117?.mainDaoId !== 'fist' || skillRuntimeV117(skill).daoBinding !== 'fist')
+        return baseEffects;
+    const tier = entity.combatBuildV117?.skillPracticeTierV125?.[skill.id] ?? 0;
+    const before = Math.max(0, Math.floor(action?.battleDaoV2?.fistForceBefore ?? entity.battleDaoStateV2?.fist?.core?.fistForce ?? 0));
+    const spent = Math.max(0, Math.floor(action?.battleDaoV2?.fistForceSpent ?? 0));
+    const damage = baseEffects.filter(e => e.type === 'damage');
+    const other = baseEffects.filter(e => e.type !== 'damage');
+    const d0 = damage[0];
+    if (!d0)
+        return baseEffects;
+    const baseBreak = d0.breakDamagePct ?? d0.stabilityDamage ?? 0;
+    if (skill.id === 'skill.dao.fist.basic') {
+        const core = entity.battleDaoStateV2?.fist?.core;
+        if (core)
+            core.basicActionCounter = (core.basicActionCounter ?? 0) + 1;
+        const third = Boolean(core && core.basicActionCounter % 3 === 0);
+        const arr = [cloneDamage(d0, 1.0)];
+        if (tier >= 1000 && third) {
+            arr.push(cloneDamage(d0, .65), cloneDamage(d0, .65));
+            action.battleDaoV2.fistBasicFollowUp = true;
+        }
+        else if (tier >= 500 && before >= 5 && third) {
+            arr.push(cloneDamage(d0, .65));
+            action.battleDaoV2.fistBasicFollowUp = true;
+        }
+        else if (tier >= 100 && (chance?.(20) ?? false)) {
+            arr.push(cloneDamage(d0, .55));
+            action.battleDaoV2.fistBasicFollowUp = true;
+        }
+        return [...arr, ...other];
+    }
+    if (skill.id === 'skill.dao.fist.triple') {
+        if (tier >= 1000)
+            return [cloneDamage(d0, .55), cloneDamage(d0, .55), cloneDamage(d0, .55), cloneDamage(d0, 1.10, baseBreak * 1.25), ...other];
+        const arr = [cloneDamage(d0, .55), cloneDamage(d0, .55), cloneDamage(d0, tier >= 100 ? .55 * 1.2 : .55)];
+        if (tier >= 250 && before >= 3)
+            arr.push(cloneDamage(d0, tier >= 500 ? .70 : .40));
+        return [...arr, ...other];
+    }
+    if (skill.id === 'skill.dao.fist.shock') {
+        const extreme = tier >= 1000 && before >= 5 && spent >= 2;
+        return [cloneDamage(d0, 1.65 * (extreme ? 1.4 : 1), baseBreak * (extreme ? 1.4 : 1)), ...other];
+    }
+    if (skill.id === 'skill.dao.fist.nurture')
+        return [cloneDamage(d0, .35), ...other];
+    if (skill.id === 'skill.dao.fist.heavy') {
+        if (tier >= 1000)
+            return [cloneDamage(d0, 2.65, baseBreak), cloneDamage(d0, 1.30, baseBreak * 1.35), ...other];
+        const arr = [cloneDamage(d0, 2.65 * (tier >= 100 ? 1.15 : 1), baseBreak)];
+        if (tier >= 500 && before >= 5 && spent >= 3)
+            arr.push(cloneDamage(d0, .80));
+        return [...arr, ...other];
+    }
+    if (skill.id === 'skill.dao.fist.counter')
+        return [cloneDamage(d0, 1.75 * (tier >= 100 ? 1.2 : 1), baseBreak), ...other];
+    if (skill.id === 'skill.dao.fist.chain_heavy') {
+        if (tier >= 1000)
+            return [cloneDamage(d0, .85), cloneDamage(d0, .85), cloneDamage(d0, .85), cloneDamage(d0, .85), cloneDamage(d0, 1.25, baseBreak), ...other];
+        const arr = [cloneDamage(d0, .85), cloneDamage(d0, .85), cloneDamage(d0, tier >= 100 ? .85 * 1.2 : .85, tier >= 250 && before >= 3 ? baseBreak * 1.2 : baseBreak)];
+        if (tier >= 500 && before >= 5)
+            arr.push(cloneDamage(d0, .75));
+        return [...arr, ...other];
+    }
+    if (skill.id === 'skill.dao.fist.pressure') {
+        const extreme = tier >= 1000 && before >= 5 && spent >= 2;
+        return [cloneDamage(d0, 2.15, baseBreak * (extreme ? 1.5 : 1)), ...other];
+    }
+    if (skill.id === 'skill.dao.fist.finisher') {
+        const c = 2.6 * (tier >= 100 ? (1 + spent * .05) : 1);
+        return [cloneDamage(d0, c, baseBreak), ...other];
+    }
+    if (skill.id === 'skill.dao.fist.ultimate') {
+        let c = tier >= 100 ? 7.0 : 6.4;
+        if (tier >= 250)
+            c += before * .12;
+        const arr = [cloneDamage(d0, c, baseBreak)];
+        if (tier >= 500 && before >= 5)
+            arr.push(cloneDamage(d0, 1.60));
+        return [...arr, ...other];
+    }
+    return baseEffects;
+}
+export function finishFistCoreActionV2(entity, skill, action, now = 0) {
+    if (!battleDaoV2Enabled(entity) || entity.combatBuildV117?.mainDaoId !== 'fist' || skillRuntimeV117(skill).daoBinding !== 'fist')
+        return { generated: 0, openedDomain: false };
+    syncBattleDaoV2Timers(entity, now);
+    const core = holderV2(entity, 'fist')?.core;
+    const v2 = action?.battleDaoV2;
+    if (!core || !v2)
+        return { generated: 0, openedDomain: false };
+    const tier = entity.combatBuildV117?.skillPracticeTierV125?.[skill.id] ?? 0;
+    const landed = (v2.directDamagingHitCount ?? 0) > 0;
+    const beforeGain = core.fistForce;
+    let gain = 0;
+    if (skill.id === 'skill.dao.fist.basic' && landed)
+        gain = 1 + (tier >= 250 && v2.fistBasicFollowUp ? 1 : 0);
+    else if (skill.id === 'skill.dao.fist.triple' && landed)
+        gain = 1;
+    else if (skill.id === 'skill.dao.fist.shock' && landed)
+        gain = 1;
+    else if (skill.id === 'skill.dao.fist.nurture') {
+        const start = Math.max(0, Math.floor(v2.fistForceBefore ?? 0));
+        if (tier >= 1000 && start <= 1)
+            gain = Math.max(0, core.fistForceCap - core.fistForce);
+        else
+            gain = tier >= 250 ? 3 : 2;
+    }
+    else if (skill.id === 'skill.dao.fist.counter' && landed)
+        gain = tier >= 500 ? 3 : 2;
+    else if (skill.id === 'skill.dao.fist.chain_heavy' && landed)
+        gain = 1;
+    else if (skill.id === 'skill.dao.fist.pressure' && landed && (v2.fistForceSpent ?? 0) <= 0)
+        gain = 1;
+    const domainBonus = v2.fistDomainActiveAtStart && (landed || skill.id === 'skill.dao.fist.nurture') ? 1 : 0;
+    const totalGain = gain + domainBonus;
+    if (totalGain > 0)
+        core.fistForce = Math.min(core.fistForceCap, core.fistForce + totalGain);
+    if (skill.id === 'skill.dao.fist.chain_heavy' && tier >= 1000 && landed)
+        core.fistForce = Math.max(2, core.fistForce);
+    let openedDomain = false;
+    if (skill.id === 'skill.dao.fist.ultimate' && tier >= 1000) {
+        core.fistDomainUntil = Math.max(core.fistDomainUntil ?? 0, now + 4);
+        core.fistForceCap = 7;
+        openedDomain = true;
+    }
+    return { generated: Math.max(0, core.fistForce - beforeGain), requestedGain: totalGain, openedDomain, fistForce: core.fistForce, fistForceCap: core.fistForceCap, fistDomainUntil: core.fistDomainUntil ?? 0 };
+}
+
 export function swordV2GaugeMultiplier(entity, now) { return 1 + swordIntentBonusesV2(entity, now).gaugeGainPct / 100; }
 export function swordV2DirectDamageMultiplier(entity, now) { return 1 + swordIntentBonusesV2(entity, now).directDamagePct / 100; }
 export function swordV2CritHeartBonusPct(entity, now) { return swordIntentBonusesV2(entity, now).critHeartDamagePct; }
@@ -861,16 +1100,11 @@ export function prepareRemainingDaoCoreActionV2(entity, target, skill, action, n
     const damaging = skillDomainsV117(skill).includes('Damage');
     const active = skillSlotClassV117(skill) === 'active';
     if (dao === 'fist') {
-        const c = holderV2(entity, 'fist')?.core;
-        if (!c)
-            return;
-        d.fistForceBefore = c.fistForce;
-        if (c.fistForce >= 5 && active && damaging) {
-            action.effectBonusPct += 35;
-            action.breakBonusPct += 35;
-            c.fistForce = Math.max(0, c.fistForce - 3);
-            d.fistForceSpent = 3;
-        }
+        // Q2: Quyền Thế is owned by prepareFistCoreActionV2/finishFistCoreActionV2.
+        // Keep this branch mutation-free so generic Remaining-Dao handling cannot double-spend it.
+        void d;
+        void damaging;
+        void active;
     }
     else if (dao === 'body') {
         const c = holderV2(entity, 'body')?.core;
@@ -953,13 +1187,7 @@ export function finishRemainingDaoActionV2(entity, target, skill, action, now, c
     const damaging = (action.battleDaoV2?.directDamagingHitCount ?? 0) > 0;
     const active = skillSlotClassV117(skill) === 'active';
     if (main && dao === 'fist') {
-        const c = holderV2(entity, 'fist')?.core;
-        if (c && damaging) {
-            const before = c.fistForce;
-            c.fistForce = Math.min(c.fistForceCap, c.fistForce + 1);
-            if (c.fistForce > before)
-                out.notices.push({ message: `${entity.name} tích Quyền Thế ${c.fistForce}/${c.fistForceCap}.`, data: { fistForce: c.fistForce } });
-        }
+        // Q2: explicit per-skill Quyền Thế generation is finalized by finishFistCoreActionV2.
     }
     if (main && dao === 'spell') {
         const c = holderV2(entity, 'spell')?.core;

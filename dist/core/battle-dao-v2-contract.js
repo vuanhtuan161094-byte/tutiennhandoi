@@ -50,7 +50,7 @@ export const REMAINING_DAO_V2_DEFAULTS = {
     formation: { nurtureCap: 100, integrityCap: 100, passiveStackCap: 20, passiveDurationSeconds: 12 },
     mind: { echoEvery: 3, echoCoefficient: .35, passiveStackCap: 20, passiveDurationSeconds: 12 },
 };
-export function createFistCoreStateV2() { return { fistForce: 0, fistForceCap: REMAINING_DAO_V2_DEFAULTS.fist.coreCap }; }
+export function createFistCoreStateV2() { return { fistForce: 0, fistForceCap: REMAINING_DAO_V2_DEFAULTS.fist.coreCap, fistDomainUntil: 0, basicActionCounter: 0, fistDamageBuffUntil: 0, fistDamageBuffPct: 0 }; }
 export function createBodyCoreStateV2() { return { counterForce: 0, counterForceCap: REMAINING_DAO_V2_DEFAULTS.body.coreCap }; }
 export function createSpellCoreStateV2() { return { lawWheelForms: [], lawWheelCap: REMAINING_DAO_V2_DEFAULTS.spell.coreCap }; }
 export function createPoisonCoreStateV2() { return { poisonSeedStage: 0, poisonSeedCap: REMAINING_DAO_V2_DEFAULTS.poison.coreCap }; }
