@@ -224,20 +224,23 @@ function normalizedFiveAllocationV5(raw){
   for(const key of CORE_POTENTIAL_AXIS_IDS_V5) out[key]=nonNegativeIntV5(raw?.[key]);
   return out;
 }
-function migratedFiveBudgetV5(value){
-  const legacyAlloc=value?.allocations??{};
-  const spent=['power','body','defense','agility','spirit','sense'].reduce((sum,key)=>sum+nonNegativeIntV5(legacyAlloc[key]),0);
-  const rawUnspent=nonNegativeIntV5(value?.unspent);
-  return Math.max(nonNegativeIntV5(value?.lifetimeEarned),spent+rawUnspent);
+function earnedFiveBudgetV5(value){ return nonNegativeIntV5(value?.lifetimeEarned); }
+function canonicalFiveAllocationsV5(raw, earned){
+  const requested=normalizedFiveAllocationV5(raw), allocations=emptyCorePotentialAllocationV5();
+  let remaining=Math.max(0,earned);
+  for(const key of CORE_POTENTIAL_AXIS_IDS_V5){
+    const kept=Math.min(requested[key],remaining);
+    allocations[key]=kept;
+    remaining-=kept;
+  }
+  return { allocations, unspent:remaining };
 }
 export function clonePermanentCorePotentialStateV5(value){
+  const lifetimeEarned=earnedFiveBudgetV5(value);
   if(value?.axisVersion===CORE_POTENTIAL_AXIS_VERSION_V5){
-    const allocations=normalizedFiveAllocationV5(value?.allocations);
-    const spent=CORE_POTENTIAL_AXIS_IDS_V5.reduce((sum,key)=>sum+allocations[key],0);
-    const lifetimeEarned=Math.max(nonNegativeIntV5(value?.lifetimeEarned),spent+nonNegativeIntV5(value?.unspent));
-    return { axisVersion:CORE_POTENTIAL_AXIS_VERSION_V5, unspent:Math.max(0,lifetimeEarned-spent), lifetimeEarned, allocations };
+    const canonical=canonicalFiveAllocationsV5(value?.allocations,lifetimeEarned);
+    return { axisVersion:CORE_POTENTIAL_AXIS_VERSION_V5, unspent:canonical.unspent, lifetimeEarned, allocations:canonical.allocations };
   }
-  const lifetimeEarned=migratedFiveBudgetV5(value);
   return { axisVersion:CORE_POTENTIAL_AXIS_VERSION_V5, unspent:lifetimeEarned, lifetimeEarned, allocations:emptyCorePotentialAllocationV5() };
 }
 const NEW_NODE_IDS = new Set(reincarnationTreeNodesV136.map(x=>x.id));
@@ -250,13 +253,11 @@ export function reincarnationTreeRuntimeModifierV136(origins,key){ return Math.m
 export function createLifeCorePotentialState(){ return { axisVersion:CORE_POTENTIAL_AXIS_VERSION_V5, unspent:0, lifetimeEarned:0, allocations:emptyCorePotentialAllocationV5(), awardedMilestones:[] }; }
 export function cloneLifeCorePotentialState(value){
   const awardedMilestones=[...new Set(value?.awardedMilestones??[])];
+  const lifetimeEarned=earnedFiveBudgetV5(value);
   if(value?.axisVersion===CORE_POTENTIAL_AXIS_VERSION_V5){
-    const allocations=normalizedFiveAllocationV5(value?.allocations);
-    const spent=CORE_POTENTIAL_AXIS_IDS_V5.reduce((sum,key)=>sum+allocations[key],0);
-    const lifetimeEarned=Math.max(nonNegativeIntV5(value?.lifetimeEarned),spent+nonNegativeIntV5(value?.unspent));
-    return { axisVersion:CORE_POTENTIAL_AXIS_VERSION_V5, unspent:Math.max(0,lifetimeEarned-spent), lifetimeEarned, allocations, awardedMilestones };
+    const canonical=canonicalFiveAllocationsV5(value?.allocations,lifetimeEarned);
+    return { axisVersion:CORE_POTENTIAL_AXIS_VERSION_V5, unspent:canonical.unspent, lifetimeEarned, allocations:canonical.allocations, awardedMilestones };
   }
-  const lifetimeEarned=migratedFiveBudgetV5(value);
   return { axisVersion:CORE_POTENTIAL_AXIS_VERSION_V5, unspent:lifetimeEarned, lifetimeEarned, allocations:emptyCorePotentialAllocationV5(), awardedMilestones };
 }
 export function createReincarnationProgressStateV1102(nowUnixMs=0){ return { energy:{current:REINCARNATION_ENERGY_CAP,lastUpdatedUnixMs:nowUnixMs}, permanentPotential:clonePermanentCorePotentialStateV5(), alchemyPermanentStats:emptyLegacyThreeStatAllocation(), alchemyLegacy:{highestRank:1,highestTurn:1,bestMasteryByRecipe:{},knownRecipeIds:[]}, tree:{lifetimePointsEarned:0,sharedSpentPoints:0,ranks:{},highestAchievementTierByTree:{},cultivationR3:true}, fateBuild:createFateBuildStateV4(), highestRealmOrderV4:0, bestCombatPowerByRealmOrderV4:{}, rewardHistory:[] }; }
