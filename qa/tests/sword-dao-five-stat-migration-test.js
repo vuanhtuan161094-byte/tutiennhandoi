@@ -14,6 +14,8 @@ import { COMBAT_RULES, controlContestDurationMultiplierV5, fiveStatSkillPowerV5 
 import { contestedDodgeChancePctV5, evadeChancePct } from '../../dist/core/stats.js';
 import { scalePvpEntityV91 } from '../../dist/core/pvp-v91.js';
 import { battleDaoSkillsV118 } from '../../dist/content/battle-dao-skill-pack-v118.js';
+import { buildRegistry } from '../../dist/content/registry.js';
+import { buildHuntCombatProfileV130 } from '../../dist/core/hunt-real-combat-v130.js';
 
 let passed=0;
 const testCase=(name,fn)=>{fn();passed++;console.log(`✓ ${name}`);};
@@ -231,6 +233,35 @@ testCase('F5 runtime Attack multipliers still scale the full hybrid Sword skill 
   assert.equal(Number(myriadBuffed.toFixed(6)),354);
   assert.equal(buffed.primaryStatsV5.agility,80);
   assert.equal(buffed.primaryStatsV5.sense,70);
+});
+
+
+testCase('F5 Hunt V130 preview responds to Sword TPH/TT scaling instead of Attack-only legacy math',()=>{
+  const registry=buildRegistry();
+  const make=(skillId,primary)=>({
+    id:`hunt.preview.${skillId}.${primary.agility}.${primary.sense}`,
+    name:'F5 Hunt Preview',
+    combatModel:'locked-v1',
+    tags:['Sword'],
+    stats:{
+      attack:100,defense:100,maxHp:2000,physique:100,maxSpirit:100,spiritStandard:100,spiritRegenStandardPctPerSecond:2,
+      mobility:primary.agility,accuracy:primary.sense,controlPower:primary.sense,resolve:primary.sense,
+      actionSpeed:1,critChancePct:0,critPowerPerLayer:.5,heartChancePct:0,
+      primaryStatsV5:{power:100,body:100,agility:primary.agility,spirit:100,sense:primary.sense},
+    },
+    skillIds:[skillId],
+    triggers:[],
+    aiProfile:{name:'F5 preview',rules:[{skillId,priority:100,conditions:[{type:'always'}]}]},
+    combatBuildV117:{skillPracticeTierV125:{},skillLevelsV12317:{},skillGradesV12317:{}},
+  });
+  const flowId='skill.dao.sword.flow_slash';
+  const flowLow=buildHuntCombatProfileV130(make(flowId,{agility:40,sense:70}),registry);
+  const flowHigh=buildHuntCombatProfileV130(make(flowId,{agility:120,sense:70}),registry);
+  assert(flowHigh.rawDamagePerSecond>flowLow.rawDamagePerSecond,'higher TPH must raise Lưu Quang preview damage at equal Attack');
+  const myriadId='skill.dao.sword.myriad';
+  const myriadLow=buildHuntCombatProfileV130(make(myriadId,{agility:80,sense:40}),registry);
+  const myriadHigh=buildHuntCombatProfileV130(make(myriadId,{agility:80,sense:120}),registry);
+  assert(myriadHigh.rawDamagePerSecond>myriadLow.rawDamagePerSecond,'higher TT must raise Vạn Kiếm preview damage at equal Attack');
 });
 
 console.log(`\nSWORD DAO F FIVE-STAT MIGRATION: ${passed}/${passed} PASS`);

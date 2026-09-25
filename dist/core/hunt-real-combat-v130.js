@@ -1,4 +1,4 @@
-import { COMBAT_RULES, combatMaxHp, combatSpiritStandard, combineBoundedPct, cooldownProfile, critProfile, heartProfile } from './combat-rules.js';
+import { COMBAT_RULES, combatMaxHp, combatSpiritStandard, combineBoundedPct, cooldownProfile, critProfile, fiveStatSkillPowerV5, heartProfile } from './combat-rules.js';
 import { skillPracticeProfileFromTierV125 } from './specialization-skill-progression-v125.js';
 import { battleDaoSkillGrowthProfileV126 } from './battle-dao-skill-growth-v126.js';
 import { tacticalIdentity } from './combat-roles.js';
@@ -54,7 +54,7 @@ function skillTotals(skill, entity) {
     const practice = skillPracticeProfileFromTierV125(tier);
     const growth = battleDaoSkillGrowthProfileV126(skill, tier);
     const effectMult = 1 + (practice.effectBonusPct + (growth?.effectBonusPct ?? 0)) / 100;
-    let damageCoeff = 0, heal = 0, shield = 0, breakPct = 0, control = 0;
+    let damageCoeff = 0, elementalAttackCoeff = 0, heal = 0, shield = 0, breakPct = 0, control = 0;
     const scan = (effects, channelHits = 1) => {
         for (const e of effects) {
             if (e.type === 'damage') {
@@ -94,10 +94,11 @@ function skillTotals(skill, entity) {
             elemental[seal.element] = (elemental[seal.element] ?? 0) + seal.coefficient;
         for (const [element, coefficient] of Object.entries(elemental)) {
             const affinity = entity.stats.elementalAffinities?.[element];
-            damageCoeff += Math.max(0, coefficient ?? 0) * Math.max(0, Math.min(100, affinity?.pct ?? 0)) / 100 * Math.max(0, affinity?.evolutionMultiplier ?? 1);
+            elementalAttackCoeff += Math.max(0, coefficient ?? 0) * Math.max(0, Math.min(100, affinity?.pct ?? 0)) / 100 * Math.max(0, affinity?.evolutionMultiplier ?? 1);
         }
     }
     damageCoeff *= effectMult;
+    elementalAttackCoeff *= effectMult;
     heal *= effectMult;
     shield *= effectMult;
     // V145: Linh Căn no longer modifies authored elemental skill packages.
@@ -116,7 +117,7 @@ function skillTotals(skill, entity) {
     const practiceMultiplier = 1 - clamp(practice.spiritCostReductionPct, 0, 95) / 100;
     const growthMultiplier = 1 - clamp(growth?.spiritCostReductionPct ?? 0, 0, 95) / 100;
     const cost = Math.max(0, authored * (1 - baseEfficiency / 100) * practiceMultiplier * growthMultiplier);
-    return { damageCoeff, heal, shield, breakPct, control, cost, cycle, gate: conditionFactor(skill.id, entity) };
+    return { damageCoeff, elementalAttackCoeff, heal, shield, breakPct, control, cost, cycle, gate: conditionFactor(skill.id, entity) };
 }
 export function buildHuntCombatProfileV130(entity, registry) {
     const maxHp = combatMaxHp(entity.stats), attack = safe(entity.stats.attack), defense = safe(entity.stats.defense);
@@ -127,25 +128,27 @@ export function buildHuntCombatProfileV130(entity, registry) {
     const regenPerSecond = standard * Math.max(0, entity.stats.spiritRegenStandardPctPerSecond ?? 0) / 100;
     const startingSpirit = Math.max(0, entity.stats.maxSpirit);
     const horizon = 60;
-    let desiredActions = 0, damageCoeff = 0, healPerSecond = 0, shieldPerSecond = 0, breakPressure = 0, controlPressure = 0, spiritDemand = 0;
+    let desiredActions = 0, rawDamagePerSecond = 0, healPerSecond = 0, shieldPerSecond = 0, breakPressure = 0, controlPressure = 0, spiritDemand = 0;
     for (const id of orderedIds) {
         const skill = registry.skill(id);
         if (id === basic)
             continue;
-        const t = skillTotals(skill, entity);
-        const rate = t.gate / t.cycle;
+        const totals = skillTotals(skill, entity);
+        const rate = totals.gate / totals.cycle;
+        const skillPower = fiveStatSkillPowerV5(entity.stats, skill.fiveStatScalingV5, skill.fiveStatBaselineCoefficientV5);
+        const rawPerCast = skillPower * totals.damageCoeff + attack * totals.elementalAttackCoeff;
         desiredActions += rate;
-        damageCoeff += t.damageCoeff * rate;
-        healPerSecond += t.heal * rate;
-        shieldPerSecond += t.shield * rate;
-        breakPressure += t.breakPct * rate;
-        controlPressure += t.control * rate;
-        spiritDemand += t.cost * rate;
+        rawDamagePerSecond += rawPerCast * rate;
+        healPerSecond += totals.heal * rate;
+        shieldPerSecond += totals.shield * rate;
+        breakPressure += totals.breakPct * rate;
+        controlPressure += totals.control * rate;
+        spiritDemand += totals.cost * rate;
     }
     const speed = clamp(entity.stats.actionSpeed ?? 1, .25, 3);
     const actionBudget = Math.max(.45, .92 * speed); // decisions/second after cast/recovery occupancy
     const actionScale = desiredActions > actionBudget ? actionBudget / desiredActions : 1;
-    damageCoeff *= actionScale;
+    rawDamagePerSecond *= actionScale;
     healPerSecond *= actionScale;
     shieldPerSecond *= actionScale;
     breakPressure *= actionScale;
@@ -154,16 +157,21 @@ export function buildHuntCombatProfileV130(entity, registry) {
     const availableSpiritPerSecond = regenPerSecond + startingSpirit / horizon;
     const spiritSustain = spiritDemand <= 1e-9 ? 1 : clamp(availableSpiritPerSecond / spiritDemand, .25, 1);
     // Only paid skills are throttled by CN. Basic fills the freed action budget.
-    damageCoeff *= spiritSustain;
+    rawDamagePerSecond *= spiritSustain;
     healPerSecond *= spiritSustain;
     shieldPerSecond *= spiritSustain;
     breakPressure *= spiritSustain;
     controlPressure *= spiritSustain;
     const usedRate = desiredActions * actionScale * spiritSustain;
     const basicSkill = basic && registry.skills.has(basic) ? registry.skill(basic) : undefined;
-    const basicCoeff = basicSkill ? skillTotals(basicSkill, entity).damageCoeff : 1.05;
-    damageCoeff += Math.max(0, actionBudget - usedRate) * basicCoeff;
-    damageCoeff *= expectedCritMultiplier(entity);
+    let basicRawPerCast = attack * 1.05;
+    if (basicSkill) {
+        const basicTotals = skillTotals(basicSkill, entity);
+        const basicPower = fiveStatSkillPowerV5(entity.stats, basicSkill.fiveStatScalingV5, basicSkill.fiveStatBaselineCoefficientV5);
+        basicRawPerCast = basicPower * basicTotals.damageCoeff + attack * basicTotals.elementalAttackCoeff;
+    }
+    rawDamagePerSecond += Math.max(0, actionBudget - usedRate) * basicRawPerCast;
+    rawDamagePerSecond *= expectedCritMultiplier(entity);
     const roles = new Set();
     for (const id of orderedIds) {
         const skill = registry.skill(id);
@@ -179,7 +187,9 @@ export function buildHuntCombatProfileV130(entity, registry) {
         armorPenPct: clamp(entity.stats.armorPenPct ?? 0, 0, 100),
         damageReductionPct: clamp(entity.stats.damageReductionPct ?? 0, 0, 80),
         dodgePct: clamp(entity.stats.dodgeChancePct ?? 0, 0, 100),
-        actionSpeed: speed, damageCoeffPerSecond: Math.max(.1, damageCoeff),
+        actionSpeed: speed,
+        rawDamagePerSecond: Math.max(attack * .1, rawDamagePerSecond),
+        damageCoeffPerSecond: Math.max(.1, rawDamagePerSecond / attack),
         healPerSecond: Math.max(0, healPerSecond) * (1 + Math.max(-90, entity.stats.healingEffectivenessPct ?? 0) / 100),
         shieldPerSecond: Math.max(0, shieldPerSecond), lifeStealPct: clamp(entity.stats.lifeStealPct ?? 0, 0, 60),
         breakPressure: Math.max(0, breakPressure), controlPressure: Math.max(0, controlPressure), spiritSustain,
@@ -262,7 +272,7 @@ export function resolveHuntRealCombatV130(input) {
     const controlSuppression = clamp(profile.controlPressure * .055, 0, monster.grade === 'boss' ? .12 : .22);
     enemyOutgoingMult *= 1 - controlSuppression;
     const playerDefenseFactor = defenseFactorLog(playerAttackLog, enemyDefenseLog, profile.armorPenPct);
-    const playerDpsLog = playerAttackLog + Math.log10(profile.damageCoeffPerSecond * playerDefenseFactor * playerOutgoingMult);
+    const playerDpsLog = log10(profile.rawDamagePerSecond) + Math.log10(playerDefenseFactor * playerOutgoingMult);
     const enemyDefenseFactor = defenseFactorLog(enemyAttackLog, playerDefenseLog, 0);
     const incomingAvoid = (1 - profile.damageReductionPct / 100) * (1 - profile.dodgePct / 100 * .72); // deterministic expected dodge; never full immunity
     const enemyDpsLog = enemyAttackLog + Math.log10(monsterAttackRate(monster) * enemyDefenseFactor * enemyOutgoingMult * Math.max(.05, incomingAvoid));
