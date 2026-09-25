@@ -436,10 +436,11 @@ export class CombatEngine {
                 }
             }
             if (skill.id === 'skill.dao.fist.counter' && landed) {
+                const lowHpAtCounter = actor.hp / combatMaxHp(actor.baseStats) <= .30;
                 this.applyStatus(actor, target, 'status.fist.counter_stagger', .40, 1, now, skill.id);
                 if (tier >= 250)
                     this.applyHeal(actor, actor, combatMaxHp(actor.baseStats) * .04, now, skill.id);
-                if (tier >= 1000 && actor.hp / combatMaxHp(actor.baseStats) <= .30)
+                if (tier >= 1000 && lowHpAtCounter)
                     this.applyDirectShield(actor, actor, { type: 'shield', capacity: 0, stability: 100, maxHpPct: 12, duration: 3 }, now, skill.id);
             }
             if (skill.id === 'skill.dao.fist.pressure' && landed) {
