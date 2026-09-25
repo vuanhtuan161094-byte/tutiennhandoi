@@ -84,15 +84,23 @@ test('Each listed source forms one ordered before→after chain and zero-delta s
   }
 });
 
-test('Three root stats expose Life + Reincarnation allocations and exact per-point conversion', () => {
+test('Five root stats expose Life + Reincarnation allocations and authored per-point conversion', () => {
   const s=session();
-  s.stateValue.character.corePotential.life.allocations={power:7,body:5,defense:3};
-  s.stateValue.character.corePotential.permanent={power:2,body:1,defense:4};
+  s.stateValue.character.corePotential.life={
+    axisVersion:5,
+    unspent:0,
+    lifetimeEarned:25,
+    allocations:{power:7,body:5,agility:4,spirit:3,sense:6},
+    awardedMilestones:[],
+  };
+  s.stateValue.character.corePotential.permanent={power:2,body:1,agility:3,spirit:4,sense:5};
   const p=s.personalPowerSummary(), roots=Object.fromEntries(p.statProvenance.rootStats.map(x=>[x.id,x]));
+  assert.deepEqual(Object.keys(roots),['power','body','agility','spirit','sense']);
   assert.equal(roots.power.totalPoints,9); assert.equal(roots.power.combatContribution,9);
-  assert.equal(roots.body.totalPoints,6); assert.equal(roots.body.combatContribution,6);
-  assert.equal(roots.defense.totalPoints,7); assert.equal(roots.defense.combatContribution,21);
-  assert.equal(roots.defense.lifePoints,3); assert.equal(roots.defense.permanentPoints,4);
+  assert.equal(roots.body.totalPoints,6); assert.match(roots.body.perPointText,/\+20 Khí Huyết.*\+1 Phòng/);
+  assert.equal(roots.agility.totalPoints,7); assert.match(roots.agility.perPointText,/Mobility/);
+  assert.equal(roots.spirit.totalPoints,7); assert.match(roots.spirit.perPointText,/Max Chân Nguyên/);
+  assert.equal(roots.sense.totalPoints,11); assert.match(roots.sense.perPointText,/Chính Xác.*Khống Chế.*Định Lực/);
 });
 
 console.log(`V129 STAT PROVENANCE: ${passed}/${passed} PASS`);

@@ -135,7 +135,7 @@ testCase('F3 Sword has exactly the locked 10 five-stat scaling profiles',()=>{
 });
 
 testCase('F3 normalized five-stat power reproduces contract totals at baseline hit shape',()=>{
-  const stats={attack:999,mobility:999,accuracy:999,primaryStatsV5:{power:100,body:50,agility:80,spirit:60,sense:70}};
+  const stats={attack:100,mobility:80,accuracy:70,primaryStatsV5:{power:100,body:50,agility:80,spirit:60,sense:70}};
   const flow=battleDaoSkillsV118.find(x=>x.id==='skill.dao.sword.flow_slash');
   const flowPower=fiveStatSkillPowerV5(stats,flow.fiveStatScalingV5,flow.fiveStatBaselineCoefficientV5);
   assert.equal(Number((flowPower*1.55).toFixed(6)),175); // 1.35*100 + .50*80

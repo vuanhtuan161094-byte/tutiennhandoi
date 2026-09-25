@@ -25,7 +25,7 @@ function normalize(rawMutator) {
   return cloned;
 }
 
-test('V170 B1 Permanent Potential restore never invents lifetimeEarned from forged allocations', () => {
+test('V170/F Permanent Potential restore never invents lifetimeEarned and fully refunds legacy three-axis saves', () => {
   const meta = normalize(raw => {
     raw.reincarnationProgress.permanentPotential = {
       lifetimeEarned: 5,
@@ -34,12 +34,13 @@ test('V170 B1 Permanent Potential restore never invents lifetimeEarned from forg
     };
   });
   const p = meta.reincarnationProgress.permanentPotential;
-  assert.equal(p.lifetimeEarned, 5);
-  assert.equal(p.allocations.power + p.allocations.body + p.allocations.defense + p.unspent, 5);
-  assert.deepEqual(p.allocations, { power: 5, body: 0, defense: 0 });
+  assert.equal(p.axisVersion,5);
+  assert.equal(p.lifetimeEarned,5);
+  assert.equal(p.unspent,5);
+  assert.deepEqual(p.allocations,{power:0,body:0,agility:0,spirit:0,sense:0});
 });
 
-test('V170 B1 valid Permanent Potential allocation is preserved exactly', () => {
+test('V170/F legacy valid three-axis allocation also receives the locked one-time full refund', () => {
   const meta = normalize(raw => {
     raw.reincarnationProgress.permanentPotential = {
       lifetimeEarned: 10,
@@ -47,10 +48,11 @@ test('V170 B1 valid Permanent Potential allocation is preserved exactly', () => 
       allocations: { power: 3, body: 2, defense: 1 },
     };
   });
-  assert.deepEqual(meta.reincarnationProgress.permanentPotential, {
-    lifetimeEarned: 10,
-    unspent: 4,
-    allocations: { power: 3, body: 2, defense: 1 },
+  assert.deepEqual(meta.reincarnationProgress.permanentPotential,{
+    axisVersion:5,
+    lifetimeEarned:10,
+    unspent:10,
+    allocations:{power:0,body:0,agility:0,spirit:0,sense:0},
   });
 });
 
