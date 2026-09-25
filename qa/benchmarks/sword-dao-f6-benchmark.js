@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { buildRegistry } from '../../dist/content/registry.js';
 import { battleDaoV2Catalog } from '../../dist/content/battle-dao-v2-catalog.js';
 import { battleDaoAutoRotationV127 } from '../../dist/core/battle-dao-rotation-v127.js';
@@ -302,7 +303,7 @@ export function runSwordF6Benchmark({duration=SWORD_F6_DURATION_SECONDS,seeds=SW
       'All 8 Sword passives are Lv20; all Sword skill mastery tiers are 1000.',
       'Baseline CN regeneration is 2 CN/s via spiritStandard=100 and regen=2%/s.',
       'Current event schema exposes final CN but not CN after every skill payment; min-CN is intentionally not fabricated.',
-      'qiSpentEstimate = generated + refunded - finalQi; Domain cap-clamp loss can make this a conservative estimate.',
+      'qiSpentEstimate = generated + refunded - finalQi; Domain cap-clamp loss can make this overstate true spend.',
     ],
     aggregates,
     runs,
@@ -339,7 +340,7 @@ function printSummary(report){
   console.table(rows);
 }
 
-const invoked=process.argv[1]&&path.resolve(process.argv[1])===path.resolve(new URL(import.meta.url).pathname);
+const invoked=process.argv[1]&&path.resolve(process.argv[1])===path.resolve(fileURLToPath(import.meta.url));
 if(invoked){
   const opts=parseCli(process.argv.slice(2));
   const problems=validateSwordF6Profiles();
