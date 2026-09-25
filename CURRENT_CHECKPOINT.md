@@ -102,6 +102,15 @@ Read this first. Do not reconstruct project state from old chats or memory witho
   - production Session no longer uses Attack-only V77 preview: `8595cbbd837aea39b9fc3ad39eb2f8d7fff4b3e4`.
 - Static consumer result: Dungeon first-clear, Hunt Boss and Săn Ảo/offline settlement all resolve through CombatKernel V3; Boss authoring does not rescale player five-stat state; `offline.js` does not mutate combat stats.
 - No further Dungeon/Boss/offline balance-coefficient patch is justified before F6 runtime evidence.
+- User-local Mode 5 FULL CLEAN on `41b3d6f464a4030f4c4d93a0c9851d0b5e7d61a4`: **FAIL at Backend Fast, 29/33 PASS**. Earlier active phases 19/19 passed; Godot `KIEM_TRA_GAME.cmd` was reported OK.
+- Four Backend Fast failures were classified:
+  - `v129-stat-provenance-test.js`: stale three-axis Potential expectation;
+  - `v170-reincarnation-meta-runtime-authority-test.js`: stale preserve-old-3-axis expectation, conflicting with locked full-refund migration;
+  - `sword-dao-five-stat-migration-test.js`: invalid normalization fixture set Attack 999 while CL was 100, accidentally exercising runtime Attack multiplier;
+  - `v148-confidant-v129-balance-test.js`: stale per-archetype ordering assertion; aggregate role envelope still held.
+- QA/launcher alignment commit: `58fe07247a092d5ba3bda06294b4071962aa27b4`. This commit changes tests and the F6 Windows launcher only; no production gameplay coefficients were changed.
+- F6 launcher now logs to `qa/output/sword-f6-benchmark.log`, searches PATH plus `E:\node24\node-v*-win-x64\node.exe`, and pauses on success/failure when double-clicked.
+- Next proof order: update to current HEAD → FAST → if green, FULL CLEAN → F6 benchmark.
 
 ## Godot migration — ACTIVE
 
