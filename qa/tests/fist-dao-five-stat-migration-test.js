@@ -209,6 +209,8 @@ testCase('Q2 canonical Fist CC statuses and CombatKernel hooks are present',()=>
  assert(combat.includes("'status.fist.counter_stagger', .40"));
  assert(combat.includes("statusRecoveryMultiplier"));
  assert(combat.includes("fistV2ShockExposeUntil"));
+ assert(combat.includes("const lowHpAtCounter = actor.hp / combatMaxHp(actor.baseStats) <= .30"));
+ assert(combat.includes("tier >= 1000 && lowHpAtCounter"));
 });
 
 testCase('Q2 p1 stale HP/Defense duplicate copy is retired; p4 owns Defense stacking',()=>{

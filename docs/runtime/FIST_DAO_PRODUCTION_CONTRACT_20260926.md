@@ -464,3 +464,31 @@ Q4 — deterministic three-archetype benchmark and tuning.
 Q5 — Fast + Full Clean closure.
 
 Do not reopen Sword and do not mix Tri Kỷ rebalance into this slice.
+
+
+## 11. Q2 implementation candidate — 2026-09-26
+
+Status: **Q2 CODE COMPLETE / LOCAL QA PENDING**
+
+Candidate chain:
+
+- `2913eaab49c8fe90b7dd6f381783b35556b04926` — explicit Quyền Thế runtime core, spend/generate ownership and Quyền Vực state;
+- `c68cf40679b60d6bda630931c8547dea2c40358f` — 10-skill five-stat metadata, Fist CC statuses, stale p1 defensive copy retirement;
+- `bddd5104a5c67a0bc80bfcea6a51eca82fdf9198` — resource gates and mastery tuning in decision authority;
+- `5308e63f5c245d5946d98dd548c88b03c581c40e` — mastery hit packages, CC/soft-control/Defense-shred finish hooks and Cửu Thiên Quyền Vực;
+- `c4d4bb8e7b55462a7afb01beb5671340abd3a0c9` — targeted Q1/Q2 production-contract guard;
+- `1aef6da7739ec2cd35eae6323b642a15f320a8e4` — low-HP counter shield gate snapshots HP before its mastery heal.
+
+Q2 implementation decisions:
+
+- Quyền Thế +3% Skill Quyền damage / +4% Break per point is snapshotted on the root Fist action **before spend**. It is no longer a generic Dao-wide multiplier, preventing leakage into non-Fist damage and preventing Heavy/Finisher from losing the force they just cashed out.
+- Heavy requires >=2 Quyền Thế; at 5 it spends 3 for Trọng Thế. Finisher requires >=1 and spends all authored available force. Cực Ý Pressure at 5 spends 2 by its explicit mastery exception.
+- Trọng Thế is consumed only by Heavy / Pressure / Finisher / Ultimate. Triple / Counter / Chain do not accidentally burn it.
+- Chấn Mạch interrupt uses canonical BodyControl through the existing Control↔Resolve / pressure / chain-safety path.
+- Hồi Thân uses the same canonical BodyControl path for its 0.40s counter stagger.
+- Trấn Nhạc soft control modifies Mobility and **recovery only**; it does not grant hidden Action Speed/cast-speed penalties.
+- Hùng Kình p4 remains the dedicated Defense-per-Liên-Kình passive; p1 no longer duplicates defensive text.
+- Cửu Thiên Quyền Vực is 4s, cap 7, and gives +1 additional Quyền Thế on each successful root Fist action while active.
+- Q1 “pre-migration” benchmark is now historical-only and refuses to run against migrated Q2 content; Q4 will own the post-migration balance harness.
+
+No claim of Q2 PASS is allowed until the user runs Backend FAST on the exact candidate.

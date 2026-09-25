@@ -548,7 +548,15 @@ Evidence:
   - 12 seeds × 180s, CombatKernel V3;
   - all Quyền passives Lv20 and all mastery tiers 1000;
   - diagnostic only: no target bands and no Quyền five-stat damage coefficients are locked yet.
-- Current status: **Q1 CANDIDATE / LOCAL FAST + BASELINE BENCHMARK PENDING**.
+- Q1 baseline harness is now historical-only after Q2 began; do not execute it on current migrated content.
+- Q2 production implementation is present through `1aef6da7739ec2cd35eae6323b642a15f320a8e4`:
+  - explicit Quyền Thế spending/generation + Trọng Thế scope;
+  - five-stat metadata for all 10 Quyền skills;
+  - mastery hit/cast/recovery/resource behavior;
+  - Chấn Mạch Interrupt, Hồi Thân stagger, Trấn Nhạc soft control + mastery Defense shred;
+  - Cửu Thiên Quyền Vực cap 7 / 4s;
+  - Q1/Q2 targeted contract test wired in Backend Fast.
+- Current status: **Q2 CANDIDATE / LOCAL FAST PENDING**. Q3 parity/Auto is NOT opened yet.
 
 
 ## Fist Dao unified production contract — 2026-09-26
