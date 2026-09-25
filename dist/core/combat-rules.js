@@ -138,6 +138,20 @@ export function controlContestDurationMultiplierV5(controlPower, resolve, pressu
     const contest = control / Math.max(1, control + effectiveResolve);
     return 0.35 + 1.30 * contest;
 }
+export function fiveStatSkillPowerV5(stats, scaling, baselineCoefficient = 1) {
+    if (!scaling)
+        return Math.max(0, Number(stats?.attack) || 0);
+    const primary = stats?.primaryStatsV5 ?? {
+        power: Math.max(0, Number(stats?.attack) || 0),
+        body: Math.max(0, Number(stats?.physique) || 0),
+        agility: Math.max(0, Number(stats?.mobility) || 0),
+        spirit: Math.max(0, Number(stats?.maxSpirit) || 0),
+        sense: Math.max(0, Number(stats?.accuracy) || 0),
+    };
+    const weighted = ['power','body','agility','spirit','sense'].reduce((sum,key)=>
+        sum + Math.max(0, Number(primary[key]) || 0) * Math.max(0, Number(scaling[key]) || 0), 0);
+    return weighted / Math.max(0.0001, Number(baselineCoefficient) || 1);
+}
 export function trueEssenceEfficiencyPct(stats) {
     return clamp(stats.spiritEfficiencyPct ?? 0, 0, COMBAT_RULES.spiritEfficiencyCapPct);
 }

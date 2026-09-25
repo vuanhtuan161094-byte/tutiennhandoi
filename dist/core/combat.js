@@ -12,27 +12,13 @@ import './skill-heart-method-v12317.js';
 import { addPoisonSeedStageV2, battleDaoV2BreakMultiplier, battleDaoV2Enabled, battleDaoV2HealShieldMultiplier, battleDaoV2IncomingDamageMultiplier, battleDaoV2OutgoingMultiplier, consumePoisonSeedStageV2, createBattleDaoRuntimeStateV2, claimDamagingFollowUpV2, finishRemainingDaoActionV2, onBattleDaoV2HpDamageTaken, onBattleDaoV2Mitigation, v2ResourceProjection, recordDamageOutcomeV2, resolveSwordIntentAfterRootV2, swordIntentBonusesV2, swordQiGenerateAfterActionV2, swordV2CapstoneFollowUp, swordV2ChannelProfile, swordV2CritHeartBonusPct, swordV2DirectDamageMultiplier, swordV2EffectsForSkill, syncBattleDaoV2Timers } from './battle-dao-v2-runtime.js';
 import { cloneTechniqueCombatRuntimeV119, initializeTechniqueCombatStateV119, techniqueCooldownReductionPctV119, techniqueDamageReductionAdjustmentPctV119, techniqueDeferredDamagePctV119, techniqueHealingReceivedMultiplierV119, techniqueInterruptResistPctV119, techniqueRecoveryMultiplierV119, techniqueSpiritOverflowToGaugePctV119, techniqueSpiritRegenMultiplierV119 } from './technique-runtime-v119.js';
 import './boss-gameplay-v2.js';
-import { COMBAT_RULES, actionSpeedMultiplier, combatMaxHp, combatSpiritStandard, combineBoundedPct, combinedHeartCritMultiplier, controlContestDurationMultiplierV5, controlDurationReductionPct, cooldownProfile, critLayerName, critProfile, defenseFactor, dodgeProfile, effectiveControlDuration, elementAffinity, elementResistanceMultiplier, fiveElementBreakMultiplier, fiveElementCounter, fiveElementDamageMultiplier, heartProfile, rawElementalDamage, totalDamageReductionPct } from './combat-rules.js';
+import { COMBAT_RULES, actionSpeedMultiplier, combatMaxHp, combatSpiritStandard, combineBoundedPct, combinedHeartCritMultiplier, controlContestDurationMultiplierV5, controlDurationReductionPct, fiveStatSkillPowerV5, cooldownProfile, critLayerName, critProfile, defenseFactor, dodgeProfile, effectiveControlDuration, elementAffinity, elementResistanceMultiplier, fiveElementBreakMultiplier, fiveElementCounter, fiveElementDamageMultiplier, heartProfile, rawElementalDamage, totalDamageReductionPct } from './combat-rules.js';
 import { handleCombatDecisionV141 } from './combat-decision.js';
 function simpleSetParamV12318(entity, mechanic, key) {
     return setMechanicV117(entity, mechanic)?.params[key] ?? 0;
 }
 function fateOutgoingDamageMultiplierV4(source,target){ const fate=source?.combatBuildV117?.fateV4??{},general=Math.max(0,Number(fate.damagePct)||0),bossPct=Math.max(0,Number(fate.bossDamagePct)||0),boss=target?.tags?.some(tag=>['boss','dungeonguardian','bosslike'].includes(String(tag).toLowerCase())); return (1+general/100)*(boss?1+bossPct/100:1); }
-function swordFiveStatPowerV5(stats, scaling, baselineCoefficient) {
-    if (!scaling)
-        return Math.max(0, Number(stats.attack) || 0);
-    const primary = stats.primaryStatsV5 ?? {
-        power: Math.max(0, Number(stats.attack) || 0),
-        agility: Math.max(0, Number(stats.mobility) || 0),
-        sense: Math.max(0, Number(stats.accuracy) || 0),
-    };
-    const weighted = Math.max(0, Number(primary.power) || 0) * Math.max(0, Number(scaling.power) || 0)
-        + Math.max(0, Number(primary.body) || 0) * Math.max(0, Number(scaling.body) || 0)
-        + Math.max(0, Number(primary.agility) || 0) * Math.max(0, Number(scaling.agility) || 0)
-        + Math.max(0, Number(primary.spirit) || 0) * Math.max(0, Number(scaling.spirit) || 0)
-        + Math.max(0, Number(primary.sense) || 0) * Math.max(0, Number(scaling.sense) || 0);
-    return weighted / Math.max(0.0001, Number(baselineCoefficient) || 1);
-}
+
 export class CombatEngine {
     registry;
     seed;
@@ -984,7 +970,7 @@ export class CombatEngine {
         const didCrit = critLayerCount > 0;
         if (didCrit)
             this.log(now, 'crit', `${source.name} ${critLayerName(critLayerCount)}.`, source.id, target.id, ctx.skillId, { rawCritPct: crit.rawPct, guaranteedLayers: crit.guaranteedLayers, nextLayerChancePct: crit.nextLayerChancePct, critLayers: critLayerCount, damagePctPerLayer: crit.damagePctPerLayer });
-        const skillPowerV5 = swordFiveStatPowerV5(srcStats, ctx.fiveStatScalingV5, ctx.fiveStatBaselineCoefficientV5);
+        const skillPowerV5 = fiveStatSkillPowerV5(srcStats, ctx.fiveStatScalingV5, ctx.fiveStatBaselineCoefficientV5);
         const hpPart = Math.min(combatMaxHp(target.baseStats) * Math.max(0, ctx.targetMaxHpPct ?? 0) / 100, skillPowerV5 * Math.max(0, ctx.targetMaxHpAttackCapCoefficient ?? 0));
         let raw = skillPowerV5 * Math.max(0, ctx.coefficient) + hpPart + Math.max(0, Number(ctx.flatDamage ?? 0));
         const elemental = ctx.elementalCoefficients ?? {};
