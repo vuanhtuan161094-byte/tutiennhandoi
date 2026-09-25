@@ -131,10 +131,14 @@ export const REINCARNATION_PERMANENT_POTENTIAL_BASE_PCT_V127 = 3;
 export const REINCARNATION_PERMANENT_POTENTIAL_MAX_PCT_V127 = 10;
 export const REINCARNATION_TRIAL_MAX_BONUS_PCT_V127 = 120;
 
+export const CORE_POTENTIAL_AXIS_VERSION_V5 = 5;
+export const CORE_POTENTIAL_AXIS_IDS_V5 = Object.freeze(['power','body','agility','spirit','sense']);
 export const corePotentialDefinitions = [
-  { id: 'power', name: 'Công Lực', description: 'Tăng trực tiếp Công Lực gốc của nhân vật.', perPoint: ['Công Lực +1'] },
-  { id: 'body', name: 'Thể Phách', description: 'Tăng trực tiếp Thể Phách gốc; Sinh Mệnh chuẩn lấy từ Thể Phách.', perPoint: ['Thể Phách +1', 'Sinh Mệnh chuẩn +20'] },
-  { id: 'defense', name: 'Phòng Ngự', description: 'Tăng trực tiếp Phòng Ngự gốc của nhân vật.', perPoint: ['Phòng Ngự +3'] },
+  { id: 'power', name: 'Công Lực', description: 'Nguồn công kích gốc; không tự sinh Bạo Kích/Bạo Thương.', perPoint: ['Công Lực +1'] },
+  { id: 'body', name: 'Thể Phách', description: 'Tăng sinh tồn gốc và Phòng Ngự dẫn xuất.', perPoint: ['Thể Phách +1', 'Sinh Mệnh chuẩn +20', 'Phòng Ngự +1'] },
+  { id: 'agility', name: 'Thân Pháp', description: 'Tăng Mobility cho đối kháng Né; không tăng Tốc Độ Hành Động.', perPoint: ['Thân Pháp +1', 'Mobility +1'] },
+  { id: 'spirit', name: 'Linh Lực', description: 'Tăng dung lượng Chân Nguyên; không tự tăng hồi/CDR/hiệu suất.', perPoint: ['Linh Lực +1', 'Chân Nguyên tối đa +1'] },
+  { id: 'sense', name: 'Thần Thức', description: 'Tăng Chính Xác, Khống Chế và Định Lực.', perPoint: ['Thần Thức +1', 'Chính Xác +1', 'Khống Chế +1', 'Định Lực +1'] },
 ];
 
 // R3/V4: các node 20 cấp dùng cùng cost curve nặng; người chơi có thể đầu tư nhiều nhánh.
@@ -212,7 +216,30 @@ export const reincarnationTreeNodesV136 = [
 export const starterReincarnationTreeNodes = reincarnationTreeNodesV136;
 
 const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
-const emptyAllocation = () => ({ power:0, body:0, defense:0 });
+const emptyCorePotentialAllocationV5 = () => ({ power:0, body:0, agility:0, spirit:0, sense:0 });
+const emptyLegacyThreeStatAllocation = () => ({ power:0, body:0, defense:0 });
+const nonNegativeIntV5 = value => Math.max(0, Math.floor(Number(value) || 0));
+function normalizedFiveAllocationV5(raw){
+  const out=emptyCorePotentialAllocationV5();
+  for(const key of CORE_POTENTIAL_AXIS_IDS_V5) out[key]=nonNegativeIntV5(raw?.[key]);
+  return out;
+}
+function migratedFiveBudgetV5(value){
+  const legacyAlloc=value?.allocations??{};
+  const spent=['power','body','defense','agility','spirit','sense'].reduce((sum,key)=>sum+nonNegativeIntV5(legacyAlloc[key]),0);
+  const rawUnspent=nonNegativeIntV5(value?.unspent);
+  return Math.max(nonNegativeIntV5(value?.lifetimeEarned),spent+rawUnspent);
+}
+export function clonePermanentCorePotentialStateV5(value){
+  if(value?.axisVersion===CORE_POTENTIAL_AXIS_VERSION_V5){
+    const allocations=normalizedFiveAllocationV5(value?.allocations);
+    const spent=CORE_POTENTIAL_AXIS_IDS_V5.reduce((sum,key)=>sum+allocations[key],0);
+    const lifetimeEarned=Math.max(nonNegativeIntV5(value?.lifetimeEarned),spent+nonNegativeIntV5(value?.unspent));
+    return { axisVersion:CORE_POTENTIAL_AXIS_VERSION_V5, unspent:Math.max(0,lifetimeEarned-spent), lifetimeEarned, allocations };
+  }
+  const lifetimeEarned=migratedFiveBudgetV5(value);
+  return { axisVersion:CORE_POTENTIAL_AXIS_VERSION_V5, unspent:lifetimeEarned, lifetimeEarned, allocations:emptyCorePotentialAllocationV5() };
+}
 const NEW_NODE_IDS = new Set(reincarnationTreeNodesV136.map(x=>x.id));
 export const REINCARNATION_TREE_RUNTIME_ORIGIN_PREFIX_V136 = 'reincarnation.tree.v127.';
 const TREE_RUNTIME_KEYS_V136 = [...new Set(reincarnationTreeNodesV136.flatMap(x=>[x.modifierKey,...(x.additionalModifiers??[]).map(m=>m.modifierKey)]))];
@@ -220,16 +247,21 @@ export function reincarnationTreeRuntimeOriginKeyV136(key){ return `${REINCARNAT
 export function syncReincarnationTreeRuntimeOriginsV136(origins,tree){ for(const key of TREE_RUNTIME_KEYS_V136) origins[reincarnationTreeRuntimeOriginKeyV136(key)] = nodeModifierValue(tree,key,reincarnationTreeNodesV136); }
 export function reincarnationTreeRuntimeModifierV136(origins,key){ return Math.max(0,Number(origins?.[reincarnationTreeRuntimeOriginKeyV136(key)]??0)||0); }
 
-export function createLifeCorePotentialState(){ return { unspent:0, lifetimeEarned:0, allocations:emptyAllocation(), awardedMilestones:[] }; }
+export function createLifeCorePotentialState(){ return { axisVersion:CORE_POTENTIAL_AXIS_VERSION_V5, unspent:0, lifetimeEarned:0, allocations:emptyCorePotentialAllocationV5(), awardedMilestones:[] }; }
 export function cloneLifeCorePotentialState(value){
-  const a={...emptyAllocation(),...(value?.allocations??{})}; for(const k of Object.keys(a)) a[k]=Math.max(0,Math.floor(Number(a[k])||0));
-  const spent=a.power+a.body+a.defense, earned=Math.max(spent,Math.floor(Number(value?.lifetimeEarned)||0));
-  return { unspent:Math.max(0,Math.floor(Number(value?.unspent)||Math.max(0,earned-spent))), lifetimeEarned:earned, allocations:a, awardedMilestones:[...new Set(value?.awardedMilestones??[])] };
+  const awardedMilestones=[...new Set(value?.awardedMilestones??[])];
+  if(value?.axisVersion===CORE_POTENTIAL_AXIS_VERSION_V5){
+    const allocations=normalizedFiveAllocationV5(value?.allocations);
+    const spent=CORE_POTENTIAL_AXIS_IDS_V5.reduce((sum,key)=>sum+allocations[key],0);
+    const lifetimeEarned=Math.max(nonNegativeIntV5(value?.lifetimeEarned),spent+nonNegativeIntV5(value?.unspent));
+    return { axisVersion:CORE_POTENTIAL_AXIS_VERSION_V5, unspent:Math.max(0,lifetimeEarned-spent), lifetimeEarned, allocations, awardedMilestones };
+  }
+  const lifetimeEarned=migratedFiveBudgetV5(value);
+  return { axisVersion:CORE_POTENTIAL_AXIS_VERSION_V5, unspent:lifetimeEarned, lifetimeEarned, allocations:emptyCorePotentialAllocationV5(), awardedMilestones };
 }
-export function createReincarnationProgressStateV1102(nowUnixMs=0){ return { energy:{current:REINCARNATION_ENERGY_CAP,lastUpdatedUnixMs:nowUnixMs}, permanentPotential:{unspent:0,lifetimeEarned:0,allocations:emptyAllocation()}, alchemyPermanentStats:emptyAllocation(), alchemyLegacy:{highestRank:1,highestTurn:1,bestMasteryByRecipe:{},knownRecipeIds:[]}, tree:{lifetimePointsEarned:0,sharedSpentPoints:0,ranks:{},highestAchievementTierByTree:{},cultivationR3:true}, fateBuild:createFateBuildStateV4(), highestRealmOrderV4:0, bestCombatPowerByRealmOrderV4:{}, rewardHistory:[] }; }
+export function createReincarnationProgressStateV1102(nowUnixMs=0){ return { energy:{current:REINCARNATION_ENERGY_CAP,lastUpdatedUnixMs:nowUnixMs}, permanentPotential:clonePermanentCorePotentialStateV5(), alchemyPermanentStats:emptyLegacyThreeStatAllocation(), alchemyLegacy:{highestRank:1,highestTurn:1,bestMasteryByRecipe:{},knownRecipeIds:[]}, tree:{lifetimePointsEarned:0,sharedSpentPoints:0,ranks:{},highestAchievementTierByTree:{},cultivationR3:true}, fateBuild:createFateBuildStateV4(), highestRealmOrderV4:0, bestCombatPowerByRealmOrderV4:{}, rewardHistory:[] }; }
 export function cloneReincarnationProgressStateV1102(value,nowUnixMs=0){
-  const base=createReincarnationProgressStateV1102(nowUnixMs), p={...emptyAllocation(),...(value?.permanentPotential?.allocations??{})}; for(const k of Object.keys(p)) p[k]=Math.max(0,Math.floor(Number(p[k])||0));
-  const spent=p.power+p.body+p.defense, earned=Math.max(spent,Math.floor(Number(value?.permanentPotential?.lifetimeEarned)||0));
+  const base=createReincarnationProgressStateV1102(nowUnixMs), permanentPotential=clonePermanentCorePotentialStateV5(value?.permanentPotential);
 const rawRanks={...(value?.tree?.ranks??{})};
   const isR3=value?.tree?.cultivationR3===true;
   const ranks={};
@@ -241,7 +273,7 @@ const rawRanks={...(value?.tree?.ranks??{})};
     ranks[id]=clamp(Math.floor(Number(raw)||0),0,def.maxRank);
   }
   const pending=value?.pendingTrial?{...value.pendingTrial,offenseBest:value.pendingTrial.offenseBest?{...value.pendingTrial.offenseBest}:undefined,survivalBest:value.pendingTrial.survivalBest?{...value.pendingTrial.survivalBest}:undefined,finalizedReward:value.pendingTrial.finalizedReward?{...value.pendingTrial.finalizedReward}:undefined}:undefined;
-  return { energy:{current:clamp(Number(value?.energy?.current??base.energy.current)||0,0,REINCARNATION_ENERGY_CAP),lastUpdatedUnixMs:Math.max(0,Math.floor(Number(value?.energy?.lastUpdatedUnixMs??nowUnixMs)))}, permanentPotential:{unspent:Math.max(0,Math.floor(Number(value?.permanentPotential?.unspent)||Math.max(0,earned-spent))),lifetimeEarned:earned,allocations:p}, alchemyPermanentStats:{...emptyAllocation(),...(value?.alchemyPermanentStats??{})}, alchemyLegacy:{highestRank:Math.max(1,Math.min(9,Math.floor(Number(value?.alchemyLegacy?.highestRank)||1))),highestTurn:Math.max(1,Math.min(9,Math.floor(Number(value?.alchemyLegacy?.highestTurn)||1))),bestMasteryByRecipe:{...(value?.alchemyLegacy?.bestMasteryByRecipe??{})},knownRecipeIds:[...new Set(value?.alchemyLegacy?.knownRecipeIds??[])]}, tree:{lifetimePointsEarned:Math.max(0,Math.floor(Number(value?.tree?.lifetimePointsEarned)||0)),sharedSpentPoints:Math.max(0,Math.floor(Number(value?.tree?.sharedSpentPoints)||0)),ranks,highestAchievementTierByTree:{...(value?.tree?.highestAchievementTierByTree??{})},cultivationR3:true}, fateBuild:cloneFateBuildStateV4(value?.fateBuild??base.fateBuild), highestRealmOrderV4:clamp(Math.floor(Number(value?.highestRealmOrderV4)||0),0,117), bestCombatPowerByRealmOrderV4:Object.fromEntries(Object.entries(value?.bestCombatPowerByRealmOrderV4??{}).map(([k,v])=>[String(clamp(Math.floor(Number(k)||0),0,117)),Math.max(0,Number(v)||0)])), rewardHistory:(value?.rewardHistory??[]).map(x=>({...x})) };
+  return { energy:{current:clamp(Number(value?.energy?.current??base.energy.current)||0,0,REINCARNATION_ENERGY_CAP),lastUpdatedUnixMs:Math.max(0,Math.floor(Number(value?.energy?.lastUpdatedUnixMs??nowUnixMs)))}, permanentPotential, alchemyPermanentStats:{...emptyLegacyThreeStatAllocation(),...(value?.alchemyPermanentStats??{})}, alchemyLegacy:{highestRank:Math.max(1,Math.min(9,Math.floor(Number(value?.alchemyLegacy?.highestRank)||1))),highestTurn:Math.max(1,Math.min(9,Math.floor(Number(value?.alchemyLegacy?.highestTurn)||1))),bestMasteryByRecipe:{...(value?.alchemyLegacy?.bestMasteryByRecipe??{})},knownRecipeIds:[...new Set(value?.alchemyLegacy?.knownRecipeIds??[])]}, tree:{lifetimePointsEarned:Math.max(0,Math.floor(Number(value?.tree?.lifetimePointsEarned)||0)),sharedSpentPoints:Math.max(0,Math.floor(Number(value?.tree?.sharedSpentPoints)||0)),ranks,highestAchievementTierByTree:{...(value?.tree?.highestAchievementTierByTree??{})},cultivationR3:true}, fateBuild:cloneFateBuildStateV4(value?.fateBuild??base.fateBuild), highestRealmOrderV4:clamp(Math.floor(Number(value?.highestRealmOrderV4)||0),0,117), bestCombatPowerByRealmOrderV4:Object.fromEntries(Object.entries(value?.bestCombatPowerByRealmOrderV4??{}).map(([k,v])=>[String(clamp(Math.floor(Number(k)||0),0,117)),Math.max(0,Number(v)||0)])), rewardHistory:(value?.rewardHistory??[]).map(x=>({...x})) };
 }
 
 export function depthInfoForRealmOrder(realmOrder){
@@ -253,21 +285,30 @@ export function lifePotentialGainForRealmOrderV127(order){ const o=clamp(Math.fl
 export function lifePotentialMilestonesThroughRealmOrder(realmOrder){ const max=clamp(Math.floor(Number(realmOrder)||0),0,117),out=[]; for(let order=0;order<=max;order++) out.push({key:`realm.${order}`,amount:lifePotentialGainForRealmOrderV127(order),info:depthInfoForRealmOrder(order)}); return out; }
 export function ensureLifePotentialForRealm(state,realmOrder,gainPct=0){ const next=cloneLifeCorePotentialState(state),awarded=new Set(next.awardedMilestones); let gain=0; for(const m of lifePotentialMilestonesThroughRealmOrder(realmOrder)){ if(awarded.has(m.key)) continue; awarded.add(m.key); gain+=Math.max(0,Math.round(m.amount*(1+Math.max(-95,gainPct)/100))); } if(gain>0){next.unspent+=gain;next.lifetimeEarned+=gain;} next.awardedMilestones=[...awarded]; return next; }
 export function grantLifeCorePotential(state,amount){ const next=cloneLifeCorePotentialState(state),gain=Math.max(0,Math.floor(Number(amount)||0)); if(gain>0){next.unspent+=gain;next.lifetimeEarned+=gain;} return next; }
-export function spendLifeCorePotential(state,id,points=1){ if(!['power','body','defense'].includes(id)) throw new Error('Thuộc tính Tiềm Năng không hợp lệ.'); const next=cloneLifeCorePotentialState(state),n=Math.max(1,Math.floor(points)); if(next.unspent<n) throw new Error(`Không đủ Điểm Tiềm Năng Đời: cần ${n}, hiện có ${next.unspent}.`); next.unspent-=n; next.allocations[id]+=n; return next; }
-export function spendPermanentCorePotential(state,id,points=1){ if(!['power','body','defense'].includes(id)) throw new Error('Thuộc tính Tiềm Năng không hợp lệ.'); const next={unspent:Math.max(0,Math.floor(state.unspent)),lifetimeEarned:Math.max(0,Math.floor(state.lifetimeEarned)),allocations:{...emptyAllocation(),...state.allocations}},n=Math.max(1,Math.floor(points)); if(next.unspent<n) throw new Error(`Không đủ Điểm Tiềm Năng Luân Hồi: cần ${n}, hiện có ${next.unspent}.`); next.unspent-=n; next.allocations[id]+=n; return next; }
+export function spendLifeCorePotential(state,id,points=1){ if(!CORE_POTENTIAL_AXIS_IDS_V5.includes(id)) throw new Error('Thuộc tính Tiềm Năng không hợp lệ.'); const next=cloneLifeCorePotentialState(state),n=Math.max(1,Math.floor(points)); if(next.unspent<n) throw new Error(`Không đủ Điểm Tiềm Năng Đời: cần ${n}, hiện có ${next.unspent}.`); next.unspent-=n; next.allocations[id]+=n; return next; }
+export function spendPermanentCorePotential(state,id,points=1){ if(!CORE_POTENTIAL_AXIS_IDS_V5.includes(id)) throw new Error('Thuộc tính Tiềm Năng không hợp lệ.'); const next=clonePermanentCorePotentialStateV5(state),n=Math.max(1,Math.floor(points)); if(next.unspent<n) throw new Error(`Không đủ Điểm Tiềm Năng Luân Hồi: cần ${n}, hiện có ${next.unspent}.`); next.unspent-=n; next.allocations[id]+=n; return next; }
 export const CORE_POTENTIAL_SOFT_CAP_MAX_PCT_V4=35;
 export const CORE_POTENTIAL_HALF_SATURATION_V4=4500;
 export function corePotentialPercentBonusV4(points){ const p=Math.max(0,Number(points)||0); return CORE_POTENTIAL_SOFT_CAP_MAX_PCT_V4*p/(p+CORE_POTENTIAL_HALF_SATURATION_V4); }
 export function applyCorePotentialStats(stats,runtime){
   if(!runtime) return {...stats};
-  const life=cloneLifeCorePotentialState(runtime.life).allocations, permanent={...emptyAllocation(),...(runtime.permanent??{})};
-  const power=life.power+Math.max(0,permanent.power||0),body=life.body+Math.max(0,permanent.body||0),defense=life.defense+Math.max(0,permanent.defense||0);
-  const resonance=1+corePotentialPercentBonusV4(power+body+defense)/100;
-  const attack=Math.max(0,(Number(stats.attack)||0)+power)*resonance;
-  const finalDefense=Math.max(0,(Number(stats.defense)||0)+defense*3)*resonance;
+  const life=cloneLifeCorePotentialState(runtime.life).allocations;
+  const permanent=normalizedFiveAllocationV5(runtime.permanent);
+  const totals=Object.fromEntries(CORE_POTENTIAL_AXIS_IDS_V5.map(key=>[key,life[key]+permanent[key]]));
   const basePhysique=Number.isFinite(stats.physique)?Math.max(0,stats.physique):Math.max(0,(Number(stats.maxHp)||0)/20);
-  const physique=(basePhysique+body)*resonance;
-  return {...stats,attack,defense:finalDefense,physique,maxHp:physique*20};
+  const physique=basePhysique+totals.body;
+  return {
+    ...stats,
+    attack:Math.max(0,(Number(stats.attack)||0)+totals.power),
+    defense:Math.max(0,(Number(stats.defense)||0)+totals.body),
+    physique,
+    maxHp:physique*20,
+    mobility:Math.max(0,(Number(stats.mobility)||0)+totals.agility),
+    maxSpirit:Math.max(0,(Number(stats.maxSpirit)||0)+totals.spirit),
+    accuracy:Math.max(0,(Number(stats.accuracy)||0)+totals.sense),
+    controlPower:Math.max(0,(Number(stats.controlPower)||0)+totals.sense),
+    resolve:Math.max(0,(Number(stats.resolve)||0)+totals.sense),
+  };
 }
 
 export function rechargeReincarnationEnergy(state,nowUnixMs=Date.now()){ const now=Math.max(state.lastUpdatedUnixMs,Math.floor(nowUnixMs)),elapsed=Math.max(0,now-state.lastUpdatedUnixMs),perMs=REINCARNATION_ENERGY_RECHARGE_PER_24H/(24*60*60*1000); return {current:Math.min(REINCARNATION_ENERGY_CAP,state.current+elapsed*perMs),lastUpdatedUnixMs:now}; }
