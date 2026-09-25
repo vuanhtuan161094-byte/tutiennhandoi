@@ -6,7 +6,7 @@ import { daoCastTimeMultiplierV118, daoSpiritCostMultiplierV118, prepareBattleDa
 import { skillPracticeProfileFromTierV125 } from './specialization-skill-progression-v125.js';
 import { battleDaoSkillGrowthProfileV126 } from './battle-dao-skill-growth-v126.js';
 import { skillProgressEffectBonusFromRuntimeV12317, skillSecondaryEffectBonusPctV12317 } from './skill-heart-method-v12317.js';
-import { battleDaoV2Enabled, battleDaoV2SpiritCostMultiplier, createRootActionV2, prepareRemainingDaoCoreActionV2, prepareSwordCoreActionV2, swordQiSpendBeforeActionV2, swordV2ActionTuning } from './battle-dao-v2-runtime.js';
+import { battleDaoV2Enabled, battleDaoV2SpiritCostMultiplier, createRootActionV2, fistV2ActionTuning, prepareFistCoreActionV2, prepareRemainingDaoCoreActionV2, prepareSwordCoreActionV2, swordQiSpendBeforeActionV2, swordV2ActionTuning } from './battle-dao-v2-runtime.js';
 import { techniqueBloodSacrificeCapPctV119, techniqueBreakLimitExtraPctV119, techniqueBurnBloodEfficiencyV119, techniqueCastMultiplierV119, techniqueCooldownReturnInternalSecondsV119, techniqueCooldownReturnPctV119, techniqueCooldownReturnSpiritCostPctV119, techniqueEquippedMasteryV119, techniqueGuidingReturnInternalSecondsV119, techniqueGuidingReturnRestoreStandardPctV119, techniqueShieldConsumeEffectBonusPctV119, techniqueShieldConsumePctV119, techniqueSpiritCostMultiplierV119 } from './technique-runtime-v119.js';
 import { bossDangerMetaV81 } from './boss-gameplay-v2.js';
 import { combatMaxHp, combatSpiritStandard, skillTrueEssenceCost } from './combat-rules.js';
@@ -190,6 +190,14 @@ export function handleCombatDecisionV141(actor, target, now) {
             prepared.action.critHeartPowerMultiplier = Math.max(prepared.action.critHeartPowerMultiplier ?? 1, swordTuning.critHeartPowerMultiplier ?? 1);
             prepared.action.castTimeMultiplier *= swordTuning.castMultiplier;
             prepared.action.recoveryMultiplier *= swordTuning.recoveryMultiplier;
+            prepareFistCoreActionV2(actor, target, skill, prepared.action, now);
+            const fistTuning = fistV2ActionTuning(actor, skill, target, prepared.action);
+            prepared.action.effectBonusPct += fistTuning.extraEffectBonusPct;
+            prepared.action.breakBonusPct += fistTuning.extraBreakBonusPct;
+            prepared.action.armorPenBonusPct = (prepared.action.armorPenBonusPct ?? 0) + fistTuning.extraArmorPenPct;
+            prepared.action.critHeartPowerMultiplier = Math.max(prepared.action.critHeartPowerMultiplier ?? 1, fistTuning.critHeartPowerMultiplier ?? 1);
+            prepared.action.castTimeMultiplier *= fistTuning.castMultiplier;
+            prepared.action.recoveryMultiplier *= fistTuning.recoveryMultiplier;
             prepareRemainingDaoCoreActionV2(actor, target, skill, prepared.action, now);
         }
         const spentElement = Object.values(prepared.action.spentResources ?? {}).reduce((sum, value) => sum + Math.max(0, Number(value ?? 0)), 0);
@@ -199,6 +207,9 @@ export function handleCombatDecisionV141(actor, target, now) {
         const swordTuningForCooldown = swordV2ActionTuning(actor, skill, target, prepared.action);
         if (swordTuningForCooldown.cooldownOverride !== undefined)
             cooldown.actualCooldown = Math.max(skill.minimumCooldown ?? 0, swordTuningForCooldown.cooldownOverride);
+        const fistTuningForCooldown = fistV2ActionTuning(actor, skill, target, prepared.action);
+        if (fistTuningForCooldown.cooldownOverride !== undefined)
+            cooldown.actualCooldown = Math.max(skill.minimumCooldown ?? 0, fistTuningForCooldown.cooldownOverride);
         // Locked: cooldown begins when the skill starts, not when channel/recovery ends.
         actor.cooldownUntil[skill.id] = now + cooldown.actualCooldown;
         const castTime = adjustedCastTime(skill.castTime * skillCastTimeMultiplierFromRuntimeV117(actor, skill) * daoCastTimeMultiplierV118(actor, skill) * techniqueCastMultiplierV119(actor, skill, now) * prepared.action.castTimeMultiplier, stats.actionSpeed);

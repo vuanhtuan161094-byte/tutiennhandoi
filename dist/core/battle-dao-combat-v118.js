@@ -213,6 +213,13 @@ export function canUseBattleDaoSkillV118(entity, skill) {
                 return c.artifactSources > 1;
             return true;
         }
+        if (dao === 'fist') {
+            const force = Math.max(0, Number(state?.fist?.core?.fistForce) || 0);
+            if (skill.id === 'skill.dao.fist.heavy')
+                return force + 1e-9 >= 2;
+            if (skill.id === 'skill.dao.fist.finisher')
+                return force + 1e-9 >= 1;
+        }
         return true;
     }
     const strength = daoStrengthV118(entity, r?.daoBinding);

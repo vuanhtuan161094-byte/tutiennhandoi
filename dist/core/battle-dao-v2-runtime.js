@@ -1008,12 +1008,12 @@ export function battleDaoV2MainDamageTuningV129(entity, main) {
 }
 /** @deprecated Compatibility alias. Runtime calibration is owned by V129 progression-aware shared-kernel tuning. */
 export const BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V82 = BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V108;
-export function battleDaoV2OutgoingMultiplier(entity, target, now, sourceTag) {
+export function battleDaoV2OutgoingMultiplier(entity, target, now, sourceTag, skillId) {
     if (!battleDaoV2Enabled(entity))
         return 1;
     let pct = remainingDaoPassiveBonusesV2(entity, now).directDamagePct;
     const main = entity.combatBuildV117?.mainDaoId;
-    if (main === 'fist') {
+    if (main === 'fist' && String(skillId ?? '').startsWith('skill.dao.fist.')) {
         const n = holderV2(entity, 'fist')?.core?.fistForce ?? 0;
         pct += n * 3;
     }
@@ -1056,12 +1056,12 @@ export function battleDaoV2OutgoingMultiplier(entity, target, now, sourceTag) {
     const identityTuning = battleDaoV2MainDamageTuningV129(entity, main);
     return Math.max(0, 1 + pct / 100) * identityTuning;
 }
-export function battleDaoV2BreakMultiplier(entity, now) {
+export function battleDaoV2BreakMultiplier(entity, now, skillId) {
     if (!battleDaoV2Enabled(entity))
         return 1;
     let pct = remainingDaoPassiveBonusesV2(entity, now).breakPct;
     const main = entity.combatBuildV117?.mainDaoId;
-    if (main === 'fist')
+    if (main === 'fist' && String(skillId ?? '').startsWith('skill.dao.fist.'))
         pct += (holderV2(entity, 'fist')?.core?.fistForce ?? 0) * 4;
     if (main === 'formation') {
         const c = holderV2(entity, 'formation')?.core;
