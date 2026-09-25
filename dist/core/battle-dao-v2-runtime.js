@@ -36,7 +36,7 @@ function baseSword(entity, now) {
     const intent = eligible && entity.combatBuildV117?.learnedDaoPassiveIdsV118?.includes(SWORD_V2_PASSIVE_IDS.intent) ? baseIntent(now) : undefined;
     if (!core && !intent)
         return undefined;
-    return { core, intent, basicActionCounter: 0, swordDamageBuffUntil: 0, swordDamageBuffPct: 0, swordDomainUntil: 0 };
+    return { core, intent, basicActionCounter: 0, swordDamageBuffUntil: 0, swordDamageBuffPct: 0, swordDomainUntil: 0, overflowIntentReadyAt: 0 };
 }
 function genericStack(entity, dao, now) {
     if (!canLearnDaoPassiveV2Runtime(entity, dao) || !entity.combatBuildV117?.learnedDaoPassiveIdsV118?.includes(`passive.v2.${dao}.p1`))
@@ -152,22 +152,13 @@ export function swordIntentBonusesV2(entity, now) {
     if (!st || st.stacks <= 0)
         return out;
     const p1 = lv(entity, SWORD_V2_PASSIVE_IDS.intent);
-    out.critChancePct = st.stacks * scale(p1, 1, 2);
+    out.critChancePct = st.stacks * scale(p1, .20, .40);
     if (st.stacks >= 10)
-        out.heartChancePct = scale(p1, 5, 10);
+        out.heartChancePct = scale(p1, 3, 6);
     if (st.stacks >= 20)
-        out.armorPenPct = scale(p1, 10, 20);
-    if (hasLearnedPassiveV2(entity, SWORD_V2_PASSIVE_IDS.breakTruth))
-        out.armorPenPct += st.stacks * scale(lv(entity, SWORD_V2_PASSIVE_IDS.breakTruth), .15, .5);
+        out.armorPenPct = scale(p1, 4, 8);
     if (hasLearnedPassiveV2(entity, SWORD_V2_PASSIVE_IDS.majesty))
-        out.directDamagePct += Math.floor(st.stacks / 10) * scale(lv(entity, SWORD_V2_PASSIVE_IDS.majesty), 4, 12);
-    if (st.stacks >= 20 && hasLearnedPassiveV2(entity, SWORD_V2_PASSIVE_IDS.killingHeart))
-        out.critHeartDamagePct += scale(lv(entity, SWORD_V2_PASSIVE_IDS.killingHeart), 10, 35);
-    if (st.stacks >= st.cap && hasLearnedPassiveV2(entity, SWORD_V2_PASSIVE_IDS.undyingIntent)) {
-        const l = lv(entity, SWORD_V2_PASSIVE_IDS.undyingIntent);
-        out.directDamagePct += scale(l, 10, 30);
-        out.gaugeGainPct += scale(l, 0, 20);
-    }
+        out.directDamagePct += Math.floor(st.stacks / 10) * scale(lv(entity, SWORD_V2_PASSIVE_IDS.majesty), 1, 3);
     return out;
 }
 function refreshIntent(entity, now) {
@@ -191,32 +182,52 @@ function addIntent(entity, amount, now) {
         refreshIntent(entity, now);
     return st.stacks - before;
 }
-export function resolveSwordIntentAfterRootV2(entity, action, now, chance) {
+export function resolveSwordIntentAfterRootV2(entity, target, skill, action, now, chance) {
     const v2 = action.battleDaoV2;
-    const st = entity.battleDaoStateV2?.sword?.intent;
-    if (!v2 || !st || v2.directDamagingHitCount <= 0)
-        return { gained: 0, stacks: st?.stacks ?? 0 };
+    const sword = entity.battleDaoStateV2?.sword;
+    const st = sword?.intent;
+    const core = sword?.core;
+    if (!v2 || !st || entity.combatBuildV117?.mainDaoId !== 'sword')
+        return { gained: 0, refundedQi: 0, stacks: st?.stacks ?? 0 };
+    const spent = Math.max(0, Math.floor(v2.swordQiSpent ?? 0));
     let gained = 0;
-    st.directActionCounter++;
-    if (st.directActionCounter >= 3) {
-        const n = Math.floor(st.directActionCounter / 3);
-        st.directActionCounter %= 3;
-        gained += addIntent(entity, n, now);
-    }
-    if (v2.heartHitCount > 0)
+    if (spent >= 3)
+        gained += addIntent(entity, 2, now);
+    else if (spent >= 1)
         gained += addIntent(entity, 1, now);
-    if (hasLearnedPassiveV2(entity, SWORD_V2_PASSIVE_IDS.nourish)) {
-        const pct = scale(lv(entity, SWORD_V2_PASSIVE_IDS.nourish), 10, 30);
-        if (chance(pct))
+    if (spent > 0 && hasLearnedPassiveV2(entity, SWORD_V2_PASSIVE_IDS.endure)) {
+        refreshIntent(entity, now);
+        if (spent >= 3) {
+            const hold = scale(lv(entity, SWORD_V2_PASSIVE_IDS.endure), 1, 2.5);
+            st.expiresAt += hold;
+            st.nextDecayAt = undefined;
+        }
+    }
+    if ((v2.swordQiOverflow ?? 0) > 0 && hasLearnedPassiveV2(entity, SWORD_V2_PASSIVE_IDS.nourish) && (sword.overflowIntentReadyAt ?? 0) <= now) {
+        const level = lv(entity, SWORD_V2_PASSIVE_IDS.nourish);
+        if (chance(scale(level, 40, 100))) {
             gained += addIntent(entity, 1, now);
+            sword.overflowIntentReadyAt = now + scale(level, 8, 6);
+        }
     }
-    if (st.stacks >= st.cap && hasLearnedPassiveV2(entity, SWORD_V2_PASSIVE_IDS.undyingIntent)) {
-        const l = lv(entity, SWORD_V2_PASSIVE_IDS.undyingIntent);
-        const hold = scale(l, 1, 2);
-        st.expiresAt = Math.max(st.expiresAt, now + hold);
-        st.nextDecayAt = undefined;
+    let refundedQi = 0;
+    if (core && spent > 0 && core.swordQi < core.swordQiCap) {
+        const causedBreak = !v2.targetBrokenBefore && Boolean(target?.breakDebuffUntil && target.breakDebuffUntil > now);
+        const breakOrFinisher = skillDomainsV117(skill).some(x => x === 'Break' || x === 'Finisher' || x === 'PháThế');
+        if (spent >= 2 && causedBreak && breakOrFinisher && hasLearnedPassiveV2(entity, SWORD_V2_PASSIVE_IDS.breakTruth)) {
+            const pct = scale(lv(entity, SWORD_V2_PASSIVE_IDS.breakTruth), 25, 100);
+            if (chance(pct))
+                refundedQi = 1;
+        }
+        if (refundedQi <= 0 && spent <= 2 && hasLearnedPassiveV2(entity, SWORD_V2_PASSIVE_IDS.limitless)) {
+            const pct = scale(lv(entity, SWORD_V2_PASSIVE_IDS.limitless), 8, 24);
+            if (chance(pct))
+                refundedQi = 1;
+        }
+        if (refundedQi > 0)
+            core.swordQi = Math.min(core.swordQiCap, core.swordQi + refundedQi);
     }
-    return { gained, stacks: st.stacks };
+    return { gained, refundedQi, stacks: st.stacks };
 }
 export function createRootActionV2(actor, skill, token) {
     const id = `${actor.id}:${skill.id}:${token}`;
@@ -244,7 +255,7 @@ export function recordDamageOutcomeV2(action, sourceTag, outcome) {
         v2.critHitCount++;
     v2.hpDamage += Math.max(0, outcome.hpDamage);
 }
-export function prepareSwordCoreActionV2(entity, skill, action, now) {
+export function prepareSwordCoreActionV2(entity, skill, action, now, target) {
     if (!battleDaoV2Enabled(entity) || entity.combatBuildV117?.mainDaoId !== 'sword' || skillRuntimeV117(skill).daoBinding !== 'sword')
         return;
     const sword = entity.battleDaoStateV2?.sword;
@@ -252,6 +263,10 @@ export function prepareSwordCoreActionV2(entity, skill, action, now) {
         return;
     const qi = sword.core.swordQi;
     action.battleDaoV2.swordQiBefore = qi;
+    action.battleDaoV2.targetBrokenBefore = Boolean(target?.breakDebuffUntil && target.breakDebuffUntil > now);
+    const intent = sword.intent;
+    action.battleDaoV2.swordIntentAtStart = intent?.stacks ?? 0;
+    action.battleDaoV2.swordIntentCapAtStart = intent?.cap ?? 20;
     action.effectBonusPct += qi * 4;
     action.breakBonusPct += qi * 3;
     if (sword.swordDamageBuffUntil > now)
@@ -325,12 +340,12 @@ export function swordQiGenerateAfterActionV2(entity, skill, action) {
     action.battleDaoV2.swordQiOverflow = Math.max(0, before + gain - core.swordQiCap);
     return core.swordQi - before;
 }
-export function swordV2ActionTuning(entity, skill) {
-    const out = { castMultiplier: 1, recoveryMultiplier: 1, cooldownOverride: undefined, extraEffectBonusPct: 0, extraBreakBonusPct: 0 };
+export function swordV2ActionTuning(entity, skill, target, action) {
+    const out = { castMultiplier: 1, recoveryMultiplier: 1, cooldownOverride: undefined, extraEffectBonusPct: 0, extraBreakBonusPct: 0, extraArmorPenPct: 0, extraCritHeartDamagePct: 0 };
     if (!battleDaoV2Enabled(entity) || entity.combatBuildV117?.mainDaoId !== 'sword' || skillRuntimeV117(skill).daoBinding !== 'sword')
         return out;
     const tier = entity.combatBuildV117?.skillPracticeTierV125?.[skill.id] ?? 0;
-    const qi = entity.battleDaoStateV2?.sword?.core?.swordQi ?? 0;
+    const qi = action?.battleDaoV2?.swordQiBefore ?? entity.battleDaoStateV2?.sword?.core?.swordQi ?? 0;
     if (skill.id === 'skill.dao.sword.nurture') {
         if (tier >= 750)
             out.castMultiplier = 1.1 / 1.5;
@@ -354,12 +369,50 @@ export function swordV2ActionTuning(entity, skill) {
     if (skill.id === 'skill.dao.sword.break_mark') {
         if (tier >= 100)
             out.extraBreakBonusPct += 20;
-        if (tier >= 250)
+        if (tier >= 250 && !action?.battleDaoV2?.targetBrokenBefore)
             out.extraBreakBonusPct += 15;
     }
     if (skill.id === 'skill.dao.sword.sever' && tier >= 100)
         out.extraBreakBonusPct += 15;
+    const spent = Math.max(0, Math.floor(action?.battleDaoV2?.swordQiSpent ?? 0));
+    const intent = entity.battleDaoStateV2?.sword?.intent;
+    const intentStacks = intent?.stacks ?? 0;
+    const atIntentCap = (action?.battleDaoV2?.swordIntentAtStart ?? 0) >= (action?.battleDaoV2?.swordIntentCapAtStart ?? Number.POSITIVE_INFINITY);
+    const domains = skillDomainsV117(skill);
+    const breakOrFinisher = domains.some(x => x === 'Break' || x === 'Finisher' || x === 'PháThế');
+    if (spent > 0 && breakOrFinisher && hasLearnedPassiveV2(entity, SWORD_V2_PASSIVE_IDS.breakTruth)) {
+        const level = lv(entity, SWORD_V2_PASSIVE_IDS.breakTruth);
+        out.extraBreakBonusPct += spent * scale(level, 2, 4);
+        out.extraArmorPenPct += spent * scale(level, .5, 1.25);
+    }
+    if (spent >= 3 && intentStacks >= 20 && action?.battleDaoV2?.targetBrokenBefore && hasLearnedPassiveV2(entity, SWORD_V2_PASSIVE_IDS.killingHeart)) {
+        const level = lv(entity, SWORD_V2_PASSIVE_IDS.killingHeart);
+        out.extraEffectBonusPct += scale(level, 8, 15);
+        out.extraCritHeartDamagePct += scale(level, 10, 20);
+    }
+    if (spent >= 3 && hasLearnedPassiveV2(entity, SWORD_V2_PASSIVE_IDS.majesty))
+        out.extraEffectBonusPct += scale(lv(entity, SWORD_V2_PASSIVE_IDS.majesty), 2, 5);
+    if (atIntentCap && spent >= 2 && breakOrFinisher && hasLearnedPassiveV2(entity, SWORD_V2_PASSIVE_IDS.undyingIntent)) {
+        const level = lv(entity, SWORD_V2_PASSIVE_IDS.undyingIntent);
+        out.extraEffectBonusPct += scale(level, 5, 10);
+        out.extraBreakBonusPct += scale(level, 4, 8);
+    }
     return out;
+}
+export function swordV2CapstoneFollowUp(entity, skill, action) {
+    if (!battleDaoV2Enabled(entity) || entity.combatBuildV117?.mainDaoId !== 'sword' || !hasLearnedPassiveV2(entity, SWORD_V2_PASSIVE_IDS.undyingIntent))
+        return undefined;
+    const v2 = action?.battleDaoV2;
+    const spent = Math.max(0, Math.floor(v2?.swordQiSpent ?? 0));
+    const atCap = (v2?.swordIntentAtStart ?? 0) >= (v2?.swordIntentCapAtStart ?? Number.POSITIVE_INFINITY);
+    if (!atCap || spent <= 0)
+        return undefined;
+    const level = lv(entity, SWORD_V2_PASSIVE_IDS.undyingIntent);
+    if (['skill.dao.sword.flow_slash', 'skill.dao.sword.chain', 'skill.dao.sword.counter'].includes(skill.id) && spent <= 2)
+        return { id: 'passive.v2.sword.undying_intent.fast', coefficient: scale(level, .20, .30), breakDamagePct: 0, label: 'Ý Hóa Kiếm' };
+    if (skill.id === 'skill.dao.sword.myriad')
+        return { id: 'passive.v2.sword.undying_intent.myriad', coefficient: .62 * scale(level, .40, .70), breakDamagePct: 4, label: 'Vạn Kiếm · Ý Hóa' };
+    return undefined;
 }
 function cloneDamage(effect, coefficient, breakPct) { return { ...effect, coefficient, ...(breakPct !== undefined ? { breakDamagePct: breakPct } : {}) }; }
 export function swordV2EffectsForSkill(entity, skill, action, chance) {

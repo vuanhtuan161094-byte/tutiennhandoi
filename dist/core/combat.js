@@ -9,7 +9,7 @@ import { skillPracticeProfileFromTierV125 } from './specialization-skill-progres
 import { elementSealDamageCoefficientV133 } from './element-seal-v133.js';
 import { battleDaoSkillGrowthProfileV126 } from './battle-dao-skill-growth-v126.js';
 import './skill-heart-method-v12317.js';
-import { addPoisonSeedStageV2, battleDaoV2BreakMultiplier, battleDaoV2Enabled, battleDaoV2HealShieldMultiplier, battleDaoV2IncomingDamageMultiplier, battleDaoV2OutgoingMultiplier, consumePoisonSeedStageV2, createBattleDaoRuntimeStateV2, claimDamagingFollowUpV2, finishRemainingDaoActionV2, onBattleDaoV2HpDamageTaken, onBattleDaoV2Mitigation, v2ResourceProjection, recordDamageOutcomeV2, resolveSwordIntentAfterRootV2, swordIntentBonusesV2, swordQiGenerateAfterActionV2, swordV2ChannelProfile, swordV2CritHeartBonusPct, swordV2DirectDamageMultiplier, swordV2EffectsForSkill, syncBattleDaoV2Timers } from './battle-dao-v2-runtime.js';
+import { addPoisonSeedStageV2, battleDaoV2BreakMultiplier, battleDaoV2Enabled, battleDaoV2HealShieldMultiplier, battleDaoV2IncomingDamageMultiplier, battleDaoV2OutgoingMultiplier, consumePoisonSeedStageV2, createBattleDaoRuntimeStateV2, claimDamagingFollowUpV2, finishRemainingDaoActionV2, onBattleDaoV2HpDamageTaken, onBattleDaoV2Mitigation, v2ResourceProjection, recordDamageOutcomeV2, resolveSwordIntentAfterRootV2, swordIntentBonusesV2, swordQiGenerateAfterActionV2, swordV2CapstoneFollowUp, swordV2ChannelProfile, swordV2CritHeartBonusPct, swordV2DirectDamageMultiplier, swordV2EffectsForSkill, syncBattleDaoV2Timers } from './battle-dao-v2-runtime.js';
 import { cloneTechniqueCombatRuntimeV119, initializeTechniqueCombatStateV119, techniqueCooldownReductionPctV119, techniqueDamageReductionAdjustmentPctV119, techniqueDeferredDamagePctV119, techniqueHealingReceivedMultiplierV119, techniqueInterruptResistPctV119, techniqueRecoveryMultiplierV119, techniqueSpiritOverflowToGaugePctV119, techniqueSpiritRegenMultiplierV119 } from './technique-runtime-v119.js';
 import './boss-gameplay-v2.js';
 import { COMBAT_RULES, actionSpeedMultiplier, combatMaxHp, combatSpiritStandard, combineBoundedPct, combinedHeartCritMultiplier, controlDurationReductionPct, cooldownProfile, critLayerName, critProfile, defenseFactor, dodgeProfile, effectiveControlDuration, elementAffinity, elementResistanceMultiplier, fiveElementBreakMultiplier, fiveElementCounter, fiveElementDamageMultiplier, heartProfile, rawElementalDamage, totalDamageReductionPct } from './combat-rules.js';
@@ -388,12 +388,6 @@ export class CombatEngine {
         if (remaining.followUp && target.alive) {
             this.schedule({ time: now + remaining.followUp.delay, kind: 'v2FollowUp', actorId: actor.id, targetId: target.id, skillId: skill.id, v2FollowUp: { coefficient: remaining.followUp.coefficient, breakDamagePct: remaining.followUp.breakDamagePct, sourceSkillId: skill.id, label: remaining.followUp.label, claim: remaining.followUp.claim } });
         }
-        const intent = resolveSwordIntentAfterRootV2(actor, action, now, pct => this.rng.chance(pct));
-        if (intent.gained > 0) {
-            const intentState = actor.battleDaoStateV2?.sword?.intent;
-            const intentBonus = swordIntentBonusesV2(actor, now);
-            this.log(now, 'resource', `${actor.name} lĩnh ngộ +${intent.gained} Kiếm Ý (${intent.stacks}).`, actor.id, actor.id, skill.id, { swordIntentGain: intent.gained, swordIntent: intent.stacks, swordIntentCap: intentState?.cap ?? 20, swordIntentDurationSeconds: intentState?.durationSeconds ?? 12, swordIntentCritChancePct: intentBonus.critChancePct, swordIntentHeartChancePct: intentBonus.heartChancePct, swordIntentArmorPenPct: intentBonus.armorPenPct, swordIntentDirectDamagePct: intentBonus.directDamagePct, swordIntentCritHeartDamagePct: intentBonus.critHeartDamagePct, swordIntentGaugeGainPct: intentBonus.gaugeGainPct, rootActionId: v2.rootActionId });
-        }
         if (actor.combatBuildV117?.mainDaoId !== 'sword' || skillRuntimeV117(skill).daoBinding !== 'sword')
             return;
         const sword = actor.battleDaoStateV2?.sword;
@@ -419,11 +413,16 @@ export class CombatEngine {
         }
         // Skill-authored Kiếm Khí follow-ups are bounded to the root follow-up budget.
         const spentQi = v2.swordQiSpent ?? 0;
-        const intrinsic = skill.id === 'skill.dao.sword.flow_slash' && spentQi >= 2
+        let intrinsic = skill.id === 'skill.dao.sword.flow_slash' && spentQi >= 2
             ? { id: 'intrinsic.v2.sword.flow_qi_slash', coefficient: .40, breakDamagePct: 8, label: 'Kiếm Khí Trảm' }
             : skill.id === 'skill.dao.sword.counter' && spentQi >= 1 && v2.directDamagingHitCount > 0
                 ? { id: 'intrinsic.v2.sword.counter_qi_return', coefficient: .40, breakDamagePct: 6, label: 'Hồi Phong Kiếm Ảnh' }
                 : undefined;
+        const capstoneFollowUp = swordV2CapstoneFollowUp(actor, skill, action);
+        if (intrinsic && capstoneFollowUp)
+            intrinsic = { ...intrinsic, coefficient: intrinsic.coefficient + capstoneFollowUp.coefficient, breakDamagePct: intrinsic.breakDamagePct + capstoneFollowUp.breakDamagePct, label: `${intrinsic.label} · Ý Hóa` };
+        else if (!intrinsic && capstoneFollowUp)
+            intrinsic = capstoneFollowUp;
         if (intrinsic && v2.directDamagingHitCount > 0 && target.alive) {
             const followUp = claimDamagingFollowUpV2(action, { kind: 'intrinsic', id: intrinsic.id });
             if (followUp) {
@@ -434,7 +433,14 @@ export class CombatEngine {
         const generated = swordQiGenerateAfterActionV2(actor, skill, action);
         if (generated > 0) {
             v2.swordQiGenerated = generated;
-            this.log(now, 'resource', `${actor.name} ngưng tụ +${generated} Kiếm Khí (${core.swordQi}/${core.swordQiCap}).`, actor.id, actor.id, skill.id, { swordQiGenerated: generated, swordQi: core.swordQi, swordQiCap: core.swordQiCap, rootActionId: v2.rootActionId });
+            this.log(now, 'resource', `${actor.name} ngưng tụ +${generated} Kiếm Khí (${core.swordQi}/${core.swordQiCap}).`, actor.id, actor.id, skill.id, { swordQiGenerated: generated, swordQiOverflow: v2.swordQiOverflow ?? 0, swordQi: core.swordQi, swordQiCap: core.swordQiCap, rootActionId: v2.rootActionId });
+        }
+        const intent = resolveSwordIntentAfterRootV2(actor, target, skill, action, now, pct => this.rng.chance(pct));
+        if (intent.gained > 0 || intent.refundedQi > 0) {
+            const intentState = actor.battleDaoStateV2?.sword?.intent;
+            const intentBonus = swordIntentBonusesV2(actor, now);
+            const refundText = intent.refundedQi > 0 ? ` · hoàn ${intent.refundedQi} Khí` : '';
+            this.log(now, 'resource', `${actor.name} vận Kiếm Ý: +${intent.gained} Ý${refundText}.`, actor.id, actor.id, skill.id, { swordIntentGain: intent.gained, swordIntent: intent.stacks, swordIntentCap: intentState?.cap ?? 20, swordQiRefunded: intent.refundedQi, swordQi: core.swordQi, swordQiCap: core.swordQiCap, swordIntentDurationSeconds: intentState?.durationSeconds ?? 12, swordIntentCritChancePct: intentBonus.critChancePct, swordIntentHeartChancePct: intentBonus.heartChancePct, swordIntentArmorPenPct: intentBonus.armorPenPct, swordIntentDirectDamagePct: intentBonus.directDamagePct, rootActionId: v2.rootActionId });
         }
         if (skill.id === 'skill.dao.sword.ultimate' && tier >= 1000) {
             sword.swordDomainUntil = now + 4;
@@ -840,6 +846,8 @@ export class CombatEngine {
             cooldownDamageBonusPct,
             runtimeEffectBonusPct: Math.max(0, runtimeAction?.effectBonusPct ?? 0),
             runtimeBreakBonusPct: Math.max(0, runtimeAction?.breakBonusPct ?? 0),
+            runtimeArmorPenBonusPct: Math.max(0, runtimeAction?.armorPenBonusPct ?? 0),
+            runtimeCritHeartBonusPct: Math.max(0, runtimeAction?.critHeartDamageBonusPct ?? 0),
         };
     }
     rollHit(source, target, ctx, now) {
@@ -994,11 +1002,11 @@ export class CombatEngine {
         const breakMarkUntil = target.pendingSetFlagsV117['swordV2BreakMarkUntil'] ?? 0;
         if (breakMarkUntil > now)
             raw *= 1 + (target.pendingSetFlagsV117['swordV2BreakMarkPct'] ?? 0) / 100;
-        const swordCritHeartBonus = swordV2CritHeartBonusPct(source, now);
+        const swordCritHeartBonus = swordV2CritHeartBonusPct(source, now) + Math.max(0, ctx.runtimeCritHeartBonusPct ?? 0);
         raw *= combinedHeartCritMultiplier(hitRoll.heart, critLayerCount, heart.damagePct + (hitRoll.heart ? swordCritHeartBonus : 0), crit.damagePctPerLayer + (didCrit ? swordCritHeartBonus : 0));
         let damage = raw;
         if (!ctx.trueDamage) {
-            damage *= defenseFactor(srcStats.attack, dstStats.defense, srcStats.armorPenPct ?? 0);
+            damage *= defenseFactor(srcStats.attack, dstStats.defense, (srcStats.armorPenPct ?? 0) + Math.max(0, ctx.runtimeArmorPenBonusPct ?? 0));
             const techniqueDr = techniqueDamageReductionAdjustmentPctV119(target, now);
             const adjustedReduction = Math.max(-80, Math.min(80, totalDamageReductionPct(dstStats) + techniqueDr));
             damage *= adjustedReduction >= 0 ? 1 - adjustedReduction / 100 : 1 + (-adjustedReduction) / 100;

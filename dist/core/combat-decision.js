@@ -176,15 +176,17 @@ export function handleCombatDecisionV141(actor, target, now) {
             this.log(now, 'resource', notice.message, actor.id, actor.id, skill.id, notice.data);
         if (battleDaoV2Enabled(actor)) {
             prepared.action.battleDaoV2 = createRootActionV2(actor, skill, this.castToken + 1);
-            prepareSwordCoreActionV2(actor, skill, prepared.action, now);
+            prepareSwordCoreActionV2(actor, skill, prepared.action, now, target);
             const swordSpent = swordQiSpendBeforeActionV2(actor, skill, target, now);
             if (swordSpent > 0) {
                 prepared.action.battleDaoV2.swordQiSpent = swordSpent;
                 this.log(now, 'resource', `${actor.name} vận ${skill.name}, tiêu ${swordSpent} Kiếm Khí.`, actor.id, actor.id, skill.id, { swordQiSpent: swordSpent, swordQi: actor.battleDaoStateV2?.sword?.core?.swordQi ?? 0, swordQiCap: actor.battleDaoStateV2?.sword?.core?.swordQiCap ?? 5 });
             }
-            const swordTuning = swordV2ActionTuning(actor, skill);
+            const swordTuning = swordV2ActionTuning(actor, skill, target, prepared.action);
             prepared.action.effectBonusPct += swordTuning.extraEffectBonusPct;
             prepared.action.breakBonusPct += swordTuning.extraBreakBonusPct;
+            prepared.action.armorPenBonusPct = (prepared.action.armorPenBonusPct ?? 0) + swordTuning.extraArmorPenPct;
+            prepared.action.critHeartDamageBonusPct = (prepared.action.critHeartDamageBonusPct ?? 0) + swordTuning.extraCritHeartDamagePct;
             prepared.action.castTimeMultiplier *= swordTuning.castMultiplier;
             prepared.action.recoveryMultiplier *= swordTuning.recoveryMultiplier;
             prepareRemainingDaoCoreActionV2(actor, target, skill, prepared.action, now);
@@ -193,7 +195,7 @@ export function handleCombatDecisionV141(actor, target, now) {
         if (spentElement > 0 && (techniqueEquippedMasteryV119(actor, 'technique.v119.secret.steal_heaven') >= 40 || techniqueEquippedMasteryV119(actor, 'technique.v119.secret.hidden_edge') >= 40))
             actor.pendingSetFlagsV117['techniqueAfterDaoSpendUntil'] = Math.max(actor.pendingSetFlagsV117['techniqueAfterDaoSpendUntil'] ?? 0, now + 4);
         const cooldown = this.cooldownFor(actor, skill, now);
-        const swordTuningForCooldown = swordV2ActionTuning(actor, skill);
+        const swordTuningForCooldown = swordV2ActionTuning(actor, skill, target, prepared.action);
         if (swordTuningForCooldown.cooldownOverride !== undefined)
             cooldown.actualCooldown = Math.max(skill.minimumCooldown ?? 0, swordTuningForCooldown.cooldownOverride);
         // Locked: cooldown begins when the skill starts, not when channel/recovery ends.
