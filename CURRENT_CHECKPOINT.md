@@ -65,6 +65,13 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - Exact local Mode 5 FULL CLEAN evidence supplied by the user on 2026-09-25: **30/30 steps PASS**, Backend Fast **31/31 PASS**, Frontend Fast **20/20 PASS**, deterministic browser playtest **4/4 PASS**, strict browser summary PASS, visual workflow/baseline + Combat visual **390×844 / 360×800 / 412×915 / 430×932 PASS**, exact-SHA evidence YES, dirty=false.
 - **F — 5-stat migration is now OPEN as a separate slice.** CL/TP/TPH/LL/TT design is frozen in the Sword contract, but runtime still uses the current legacy Attack/Defense combat authority. Do not display the new scaling as production truth until F closes.
 - F rules are now locked in `docs/runtime/SWORD_DAO_FIVE_STAT_MIGRATION_AUDIT_20260925.md`: full refund old 3-axis Potential; five axes `power/body/agility/spirit/sense`; old shared resonance retired; Mobility↔Accuracy Dodge contest with 75% final cap; Control↔Resolve duration contest followed by existing CDR; Defense keeps `A/(A+D)`. F1/F2 implementation may proceed.
+- F1/F2 candidate implemented on `main`:
+  - five-axis Potential state + one-time full refund + exact per-point derivation: `c0be270af7d523eb03924cabf4e3b1bd1cfbe390`;
+  - Session/read restore wiring: `a9346c92035ab53a56a95465ee538907587c91cf`;
+  - five-stat provenance + Dodge hard-cap/Control contest helpers: `4f1123bf0bc0b6b9db68eb6d12c713dce5e1f7b0`;
+  - locked CombatEngine now uses Mobility↔Accuracy Dodge and Control↔Resolve: `bd3dc46eb4b158a48dbe4e7cb004d2c5dee4b47a`;
+  - targeted F migration guard wired into Backend Fast: `b7a38af683fcb4583a3c0bf7c83a79d0807b37bf`.
+- **F1/F2 status: IMPLEMENTED / QA PENDING.** Do not open F3 Sword scaling as production truth until this candidate passes local Fast/Full Clean or failures are classified and fixed.
 
 ## Godot migration — ACTIVE
 
