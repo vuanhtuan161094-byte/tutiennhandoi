@@ -1,6 +1,6 @@
 # SWORD DAO PRODUCTION CONTRACT — 2026-09-25
 
-Status: **DESIGN LOCK FOR IMPLEMENTATION / A–E ONLY / F DEFERRED**
+Status: **A–E CLOSED / LOCKED · F OPEN FOR 5-STAT MIGRATION**
 
 Repository: `vuanhtuan161094-byte/tutiennhandoi`  
 Branch: `main`
@@ -277,4 +277,14 @@ After F, rerun Sword balance using production runtime rather than design simulat
 
 ## 15. Verification
 
-A–E are not CLOSED until executable tests are run on the exact candidate. Connector-authored commits are candidates only until local Fast/Full Clean evidence is supplied.
+A–E closure evidence:
+
+- exact verified SHA: `ba54c9e05af69347a898ac35c9d57838efc803b3`;
+- user-local Mode 5 FULL CLEAN: **30/30 steps PASS**;
+- Backend Fast: **31/31 PASS**;
+- Frontend Fast: **20/20 PASS**;
+- deterministic browser playtest: **4/4 PASS**;
+- strict browser summary + visual proof: PASS;
+- exact-SHA evidence: YES; working tree dirty: false.
+
+A–E are therefore **CLOSED / LOCKED**. F is a separate migration slice. Current F audit and unresolved gameplay decisions are recorded in `docs/runtime/SWORD_DAO_FIVE_STAT_MIGRATION_AUDIT_20260925.md`.

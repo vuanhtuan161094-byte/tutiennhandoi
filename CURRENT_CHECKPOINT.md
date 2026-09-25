@@ -43,11 +43,11 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - V150 Bảo Khí is suppressed from the live player-facing Combat stream; stale V2 production metadata/read-model labels were normalized to V3.
 - **Status: CLOSED / LOCKED.** Reopen only for a proven regression, an explicitly requested new combat feature, or a separately scoped internal-engine refactor with parity proof.
 
-## Sword Dao Production V1 — A–E IMPLEMENTED / QA PENDING (2026-09-25)
+## Sword Dao Production V1 — A–E CLOSED / LOCKED · F OPEN (2026-09-25)
 
 - User explicitly reopened Sword backend gameplay as a new feature slice after Combat Backend V3 closure.
 - Canonical design contract: `docs/runtime/SWORD_DAO_PRODUCTION_CONTRACT_20260925.md`.
-- This is a **candidate**, not CLOSED/LOCKED, until the exact candidate passes the local backend/full-clean gates.
+- A–E are **CLOSED / LOCKED** on exact local Full Clean evidence. F is a separate migration slice and does not reopen A–E balance.
 - Implemented directly on `main`:
   - design lock: `0e27ce0eb7df3670135f7883629f5b3777a61617`;
   - Batch A — fixed Sword CN / authored Gauge / Kiếm Khí spend-generate: `de15e39fca092a9c2022d033faf63d31ec7a46f5`;
@@ -61,8 +61,10 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - Hồi Phong mastery >=500 now generates +2 Kiếm Khí, not +3.
 - Thái Hư Kiếm Vực is no longer granted only by Ultimate mastery 1000; production gate is Tiên Vương realm order >=78 plus an Ultimate started at >=5 Kiếm Khí.
 - Active slot progression remains the existing 1→2→3→4→5 and hard-caps at 5.
-- **Deferred F — 5-stat migration has NOT started.** CL/TP/TPH/LL/TT design is frozen in the Sword contract but runtime still uses the current legacy Attack/Defense combat authority. Do not display the new scaling as production truth until F is implemented.
-- Next action: run the exact candidate through local backend Fast / Mode 5 Full Clean. If green, open F as a separate migration slice; after F rerun Sword balance against the production runtime before converting the other seven Dao.
+- Closure candidate QA-fix SHA: `ba54c9e05af69347a898ac35c9d57838efc803b3`.
+- Exact local Mode 5 FULL CLEAN evidence supplied by the user on 2026-09-25: **30/30 steps PASS**, Backend Fast **31/31 PASS**, Frontend Fast **20/20 PASS**, deterministic browser playtest **4/4 PASS**, strict browser summary PASS, visual workflow/baseline + Combat visual **390×844 / 360×800 / 412×915 / 430×932 PASS**, exact-SHA evidence YES, dirty=false.
+- **F — 5-stat migration is now OPEN as a separate slice.** CL/TP/TPH/LL/TT design is frozen in the Sword contract, but runtime still uses the current legacy Attack/Defense combat authority. Do not display the new scaling as production truth until F closes.
+- F audit/blockers: `docs/runtime/SWORD_DAO_FIVE_STAT_MIGRATION_AUDIT_20260925.md`. Do not invent save-refund, Dodge contest, or Control contest semantics that are not yet locked.
 
 ## Godot migration — ACTIVE
 
