@@ -71,7 +71,12 @@ Read this first. Do not reconstruct project state from old chats or memory witho
   - five-stat provenance + Dodge hard-cap/Control contest helpers: `4f1123bf0bc0b6b9db68eb6d12c713dce5e1f7b0`;
   - locked CombatEngine now uses Mobility↔Accuracy Dodge and Control↔Resolve: `bd3dc46eb4b158a48dbe4e7cb004d2c5dee4b47a`;
   - targeted F migration guard wired into Backend Fast: `b7a38af683fcb4583a3c0bf7c83a79d0807b37bf`.
-- **F1/F2 status: IMPLEMENTED / QA PENDING.** Do not open F3 Sword scaling as production truth until this candidate passes local Fast/Full Clean or failures are classified and fixed.
+- User explicitly authorized continuing the active F candidate instead of stopping between F2 and F3.
+- Control Pressure is now per group with an **8s idle reset**; 5s chain-break and 3s Bất Khuất remain unchanged.
+- F3 exact Sword scaling is implemented for all 10 skills using primary `CL/TPH/TT` values and baseline normalization so existing mastery/extra-hit shapes remain relative bonuses, not duplicate base coefficients.
+- Potential restore was hardened so `lifetimeEarned` remains the sole budget authority; forged spent/unspent cannot mint new Potential.
+- Current implementation head before checkpoint: `ec1c4de66227d23eb76c80b49b2e651921857d5d`.
+- **F1–F4 status: IMPLEMENTED / QA PENDING. F5 targeted guard is wired into Backend Fast.** Do not call F CLOSED until exact local Fast/Mode 5 evidence passes; F6 production balance rerun follows that evidence.
 
 ## Godot migration — ACTIVE
 

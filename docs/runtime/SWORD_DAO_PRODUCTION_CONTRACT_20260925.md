@@ -296,5 +296,15 @@ A–E are therefore **CLOSED / LOCKED**. F is a separate migration slice. Curren
 - New allocation ids: `power/body/agility/spirit/sense` = CL/TP/TPH/LL/TT.
 - Old shared Potential resonance/35% soft-cap multiplier: **retired**.
 - Dodge authority: existing Mobility-vs-Accuracy contest (2–65% base) + authored direct Dodge combined to a **75% final cap**, with existing dodge pressure.
-- Control authority: existing Control-vs-Resolve contest `0.35 + 1.30 × contest`, then current Control Duration Reduction (cap 66.67%); 5s chain-break + 3s Bất Khuất unchanged.
+- Control authority: existing Control-vs-Resolve contest `0.35 + 1.30 × contest`, then current Control Duration Reduction (cap 66.67%); Control Pressure is per group and resets to 0 after **8s** without same-group control; 5s chain-break + 3s Bất Khuất unchanged.
 - Defense remains `A/(A+D)` with Armor Pen applied to Defense.
+
+
+## 17. F executable candidate notes
+
+- F1: five-axis Potential + one-time full refund implemented.
+- F2: five-axis derived stats/provenance + primary `primaryStatsV5` snapshot implemented.
+- F3: all 10 Sword skills carry exact contract scaling; legacy coefficients are normalization/shape weights only so mastery extra hits retain their authored relative value.
+- F4: Defense keeps `A/(A+D)`; Dodge uses Mobility↔Accuracy; Control uses Control↔Resolve; Control Pressure resets after 8s idle in the same group.
+- F5 targeted guard is wired into Backend Fast.
+- F remains **QA PENDING** until the exact current candidate passes user-local gates.

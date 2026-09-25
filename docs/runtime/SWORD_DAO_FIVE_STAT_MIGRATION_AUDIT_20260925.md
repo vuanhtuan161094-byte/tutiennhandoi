@@ -121,7 +121,7 @@ Then apply authored Control Duration Reduction:
 
 `finalDuration = baseDuration * contestMultiplier * (1 - CDR / 100)`
 
-with the existing CDR cap **66.67%**. Existing chain safety stays unchanged: 5 continuous seconds breaks control and grants 3 seconds Bất Khuất. Pressure remains per control group and grows by +1 on an applied control attempt.
+with the existing CDR cap **66.67%**. Existing chain safety stays unchanged: 5 continuous seconds breaks control and grants 3 seconds Bất Khuất. Pressure remains per control group and grows by +1 on an applied control attempt. If the same control group has not been applied for **8 seconds**, its pressure resets to 0 before the next contest.
 
 ## 5. Defense status
 
@@ -138,3 +138,22 @@ No separate blocker is required yet for Defense if the user chooses to preserve 
 7. Exact candidate Full Clean before F closure.
 
 Do not convert the other seven Dao until F closes and Sword is rebalanced on production runtime.
+
+
+## 7. Implementation status
+
+Implemented candidate commits:
+
+- F1 five-axis Potential state: `c0be270af7d523eb03924cabf4e3b1bd1cfbe390`
+- F1 restore/session wiring: `a9346c92035ab53a56a95465ee538907587c91cf`
+- F2 provenance and contest helpers: `4f1123bf0bc0b6b9db68eb6d12c713dce5e1f7b0`
+- F2 locked CombatEngine contest authority: `bd3dc46eb4b158a48dbe4e7cb004d2c5dee4b47a`
+- F targeted gate: `b7a38af683fcb4583a3c0bf7c83a79d0807b37bf`
+- Control Pressure 8s reset: `12128ded9daf868654dbb3c1cc16d05f4145af0d`
+- F3 exact Sword five-stat scaling: `6f96aaae591b8c12c37adc00f1daf1c8a3d2758b`
+- Shared five-stat power helper: `a54f5bc581a1af505ae19b7a032c1032252ca2c4`
+- F3/F4 regression guards: `0eee3de5b541f01b5c9a6c3aed01a90ff1a8cef4`
+- V170-compatible Potential lifetime authority fix: `5407610ade61ab269cbb4dd3ef890fb55d2c21ec`
+- Anti-forgery migration guard: `ec1c4de66227d23eb76c80b49b2e651921857d5d`
+
+Current status: **F1–F4 IMPLEMENTED / F5 TARGETED QA WIRED / LOCAL QA PENDING**.
