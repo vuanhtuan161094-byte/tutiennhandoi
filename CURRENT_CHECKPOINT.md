@@ -43,6 +43,27 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - V150 Bảo Khí is suppressed from the live player-facing Combat stream; stale V2 production metadata/read-model labels were normalized to V3.
 - **Status: CLOSED / LOCKED.** Reopen only for a proven regression, an explicitly requested new combat feature, or a separately scoped internal-engine refactor with parity proof.
 
+## Sword Dao Production V1 — A–E IMPLEMENTED / QA PENDING (2026-09-25)
+
+- User explicitly reopened Sword backend gameplay as a new feature slice after Combat Backend V3 closure.
+- Canonical design contract: `docs/runtime/SWORD_DAO_PRODUCTION_CONTRACT_20260925.md`.
+- This is a **candidate**, not CLOSED/LOCKED, until the exact candidate passes the local backend/full-clean gates.
+- Implemented directly on `main`:
+  - design lock: `0e27ce0eb7df3670135f7883629f5b3777a61617`;
+  - Batch A — fixed Sword CN / authored Gauge / Kiếm Khí spend-generate: `de15e39fca092a9c2022d033faf63d31ec7a46f5`;
+  - Batch B — Kiếm Ý from actual Qi spend + redesigned 8 passive runtime: `d8a25545c3e22bc3d8e5171dde12bd932843a5a9`;
+  - Batch C — mastery identity fixes + Tiên Vương realm-gated Thái Hư Kiếm Vực: `39d42dba340eea1bf51c6e47c95630e5217a216c`;
+  - Batch D — auto Cửa Sát / bounded 4s Ultimate hold: `f7adc0768ec77eff09ecdc95ebe4bb1e50581455`;
+  - Batch E — targeted production-contract QA guard wired into Backend Fast: `81a15b9cd6cd6245d71df0719af0e94a2c51e7df`.
+- Sword fixed Chân Nguyên costs are now `0/3/0/5/5/3/8/9/12/0` for Basic/Flow/Nurture/BreakMark/Chain/Counter/Sever/Finisher/Myriad/Ultimate and no longer scale from Max Chân Nguyên.
+- Sword authored Gauge gains are `4/3/8/5/4/3/6/5/15/0`; Ultimate still costs 100 Gauge.
+- Kiếm Ý primary gain is now tied to real Kiếm Khí spend: spend 1–2 → +1 Ý; spend >=3 → +2 Ý. The old every-three-direct-actions generator is retired.
+- Hồi Phong mastery >=500 now generates +2 Kiếm Khí, not +3.
+- Thái Hư Kiếm Vực is no longer granted only by Ultimate mastery 1000; production gate is Tiên Vương realm order >=78 plus an Ultimate started at >=5 Kiếm Khí.
+- Active slot progression remains the existing 1→2→3→4→5 and hard-caps at 5.
+- **Deferred F — 5-stat migration has NOT started.** CL/TP/TPH/LL/TT design is frozen in the Sword contract but runtime still uses the current legacy Attack/Defense combat authority. Do not display the new scaling as production truth until F is implemented.
+- Next action: run the exact candidate through local backend Fast / Mode 5 Full Clean. If green, open F as a separate migration slice; after F rerun Sword balance against the production runtime before converting the other seven Dao.
+
 ## Godot migration — ACTIVE
 
 - Engine target: **Godot 4.7.2 stable**, primary viewport **390×844**.
