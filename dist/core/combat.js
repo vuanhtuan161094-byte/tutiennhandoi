@@ -417,16 +417,18 @@ export class CombatEngine {
             if (tier >= 1000 && actor.hp / combatMaxHp(actor.baseStats) <= .30)
                 this.applyDirectShield(actor, actor, { type: 'shield', capacity: 0, stability: 100, maxHpPct: 12, duration: 3 }, now, skill.id);
         }
-        // Kiếm Thế Viên Mãn: only a normal Active that did not already spend Kiếm Khí may consume the core follow-up budget.
-        if (v2.swordFullPayoffEligible && v2.directDamagingHitCount > 0 && (v2.swordQiSpent ?? 0) <= 0 && target.alive && core.swordQi >= core.swordQiCap) {
-            const followUp = claimDamagingFollowUpV2(action, { kind: 'intrinsic', id: 'intrinsic.v2.sword.sword_qi' });
+        // Skill-authored Kiếm Khí follow-ups are bounded to the root follow-up budget.
+        const spentQi = v2.swordQiSpent ?? 0;
+        const intrinsic = skill.id === 'skill.dao.sword.flow_slash' && spentQi >= 2
+            ? { id: 'intrinsic.v2.sword.flow_qi_slash', coefficient: .40, breakDamagePct: 8, label: 'Kiếm Khí Trảm' }
+            : skill.id === 'skill.dao.sword.counter' && spentQi >= 1 && v2.directDamagingHitCount > 0
+                ? { id: 'intrinsic.v2.sword.counter_qi_return', coefficient: .40, breakDamagePct: 6, label: 'Hồi Phong Kiếm Ảnh' }
+                : undefined;
+        if (intrinsic && v2.directDamagingHitCount > 0 && target.alive) {
+            const followUp = claimDamagingFollowUpV2(action, { kind: 'intrinsic', id: intrinsic.id });
             if (followUp) {
-                const before = core.swordQi;
-                core.swordQi = Math.max(0, core.swordQi - 2);
-                // Generated damage is ProcHit with procCoefficient=0: it may crit/heart for presentation and damage,
-                // but it cannot recursively open ordinary OnHit/OnCrit proc chains.
-                const outcome = this.applyDamage(actor, target, { sourceTag: 'ProcHit', coefficient: .40, breakDamagePct: 0, canCrit: true, canDodge: true, canHeart: true, unavoidable: false, trueDamage: false, procCoefficient: 0, skillId: skill.id, elementalCoefficients: undefined, primaryElement: undefined, cooldownDamageBonusPct: 0, runtimeEffectBonusPct: 0, runtimeBreakBonusPct: 0 }, now);
-                this.log(now, 'resource', `${actor.name} phóng Kiếm Khí Trảm từ Kiếm Thế Viên Mãn.`, actor.id, target.id, skill.id, { rootActionId: followUp.rootActionId, sourceActionId: followUp.sourceActionId, sourceTag: followUp.sourceTag, originIntrinsicId: followUp.originIntrinsicId ?? '', generatedByEventId: followUp.generatedByEventId, procDepth: followUp.procDepth, swordQiBefore: before, swordQi: core.swordQi, swordQiCap: core.swordQiCap, followUpsUsed: followUp.followUpsUsed, followUpBudget: followUp.followUpBudget, damage: outcome.hpDamage });
+                const outcome = this.applyDamage(actor, target, { sourceTag: 'ProcHit', coefficient: intrinsic.coefficient, breakDamagePct: intrinsic.breakDamagePct, canCrit: true, canDodge: true, canHeart: true, unavoidable: false, trueDamage: false, procCoefficient: 0, skillId: skill.id, elementalCoefficients: undefined, primaryElement: undefined, cooldownDamageBonusPct: 0, runtimeEffectBonusPct: 0, runtimeBreakBonusPct: 0 }, now);
+                this.log(now, 'resource', `${actor.name} kích ${intrinsic.label}.`, actor.id, target.id, skill.id, { rootActionId: followUp.rootActionId, sourceActionId: followUp.sourceActionId, sourceTag: followUp.sourceTag, originIntrinsicId: followUp.originIntrinsicId ?? '', generatedByEventId: followUp.generatedByEventId, procDepth: followUp.procDepth, swordQiSpent: spentQi, swordQi: core.swordQi, swordQiCap: core.swordQiCap, followUpsUsed: followUp.followUpsUsed, followUpBudget: followUp.followUpBudget, damage: outcome.hpDamage });
             }
         }
         const generated = swordQiGenerateAfterActionV2(actor, skill, action);

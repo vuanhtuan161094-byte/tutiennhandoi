@@ -256,8 +256,6 @@ export function prepareSwordCoreActionV2(entity, skill, action, now) {
     action.breakBonusPct += qi * 3;
     if (sword.swordDamageBuffUntil > now)
         action.effectBonusPct += sword.swordDamageBuffPct;
-    if (skillSlotClassV117(skill) === 'active' && skill.effects.some(e => e.type === 'damage') && qi >= sword.core.swordQiCap)
-        action.battleDaoV2.swordFullPayoffEligible = true;
 }
 export function swordQiSpendBeforeActionV2(entity, skill, target, now = 0) {
     if (!battleDaoV2Enabled(entity) || entity.combatBuildV117?.mainDaoId !== 'sword' || skillRuntimeV117(skill).daoBinding !== 'sword')
@@ -267,16 +265,29 @@ export function swordQiSpendBeforeActionV2(entity, skill, target, now = 0) {
     if (!core)
         return 0;
     const tier = entity.combatBuildV117?.skillPracticeTierV125?.[skill.id] ?? 0;
+    const qi = core.swordQi;
     let wanted = 0;
-    if (skill.id === 'skill.dao.sword.sever')
+    if (skill.id === 'skill.dao.sword.flow_slash' && qi >= 5)
+        wanted = 2;
+    else if (skill.id === 'skill.dao.sword.break_mark' && qi >= 3)
+        wanted = Math.min(3, qi - 2);
+    else if (skill.id === 'skill.dao.sword.chain') {
+        if (tier >= 1000 && qi >= 5)
+            wanted = 2;
+        else if (tier >= 500 && qi >= 3)
+            wanted = 1;
+    }
+    else if (skill.id === 'skill.dao.sword.counter' && qi >= 5)
+        wanted = 1;
+    else if (skill.id === 'skill.dao.sword.sever')
         wanted = tier >= 500 && target?.breakDebuffUntil && target.breakDebuffUntil > now ? 0 : (tier >= 1000 ? 3 : 2);
     else if (skill.id === 'skill.dao.sword.finisher')
-        wanted = tier >= 1000 ? Math.min(5, core.swordQi) : Math.min(3, core.swordQi);
-    else if (skill.id === 'skill.dao.sword.myriad' && tier >= 1000 && core.swordQi >= 5)
+        wanted = tier >= 1000 ? Math.min(5, qi) : Math.min(3, qi);
+    else if (skill.id === 'skill.dao.sword.myriad' && tier >= 500 && qi >= 4)
         wanted = 2;
     else if (skill.id === 'skill.dao.sword.ultimate')
-        wanted = Math.min(core.swordQi, 5);
-    const spent = Math.min(core.swordQi, wanted);
+        wanted = Math.min(qi, 5);
+    const spent = Math.min(qi, wanted);
     core.swordQi -= spent;
     return spent;
 }
@@ -287,19 +298,20 @@ export function swordQiGenerateAfterActionV2(entity, skill, action) {
     if (!core)
         return 0;
     const tier = entity.combatBuildV117?.skillPracticeTierV125?.[skill.id] ?? 0;
+    const spent = action.battleDaoV2?.swordQiSpent ?? 0;
     let gain = 0;
     if (skill.id === 'skill.dao.sword.basic' && action.battleDaoV2?.damagingHitCount)
         gain = 1;
-    else if (skill.id === 'skill.dao.sword.flow_slash')
+    else if (skill.id === 'skill.dao.sword.flow_slash' && spent <= 0)
         gain = 1 + (tier >= 100 && action.battleDaoV2?.heartHitCount ? 1 : 0);
     else if (skill.id === 'skill.dao.sword.nurture')
         gain = tier >= 250 ? 3 : 2;
-    else if (skill.id === 'skill.dao.sword.break_mark')
+    else if (skill.id === 'skill.dao.sword.break_mark' && spent <= 0)
         gain = 1;
-    else if (skill.id === 'skill.dao.sword.chain')
+    else if (skill.id === 'skill.dao.sword.chain' && spent <= 0)
         gain = 1;
     else if (skill.id === 'skill.dao.sword.counter' && action.battleDaoV2?.damagingHitCount)
-        gain = tier >= 500 ? 3 : 1;
+        gain = tier >= 500 ? 2 : 1;
     else if (skill.id === 'skill.dao.sword.myriad' && tier >= 250)
         gain = 3;
     if (skill.id === 'skill.dao.sword.basic' && tier >= 250 && action.battleDaoV2?.damagingHitCount && action.battleDaoV2.damagingHitCount >= 2)
@@ -310,6 +322,7 @@ export function swordQiGenerateAfterActionV2(entity, skill, action) {
         gain += 1;
     const before = core.swordQi;
     core.swordQi = Math.min(core.swordQiCap, core.swordQi + gain);
+    action.battleDaoV2.swordQiOverflow = Math.max(0, before + gain - core.swordQiCap);
     return core.swordQi - before;
 }
 export function swordV2ActionTuning(entity, skill) {
