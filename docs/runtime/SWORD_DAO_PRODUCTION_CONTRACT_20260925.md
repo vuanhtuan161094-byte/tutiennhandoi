@@ -33,18 +33,20 @@ The future combat foundation remains exactly five primary stats:
 
 No sixth primary stat. No Physical/Magic split. No hidden Realm damage multiplier. No generic rule requiring hybrid skill scaling weights to sum to 3.
 
-Candidate Sword scaling to apply only when F opens:
+F6-tuned Sword scaling after the first production benchmark:
 
 - Thanh Minh: 2.70 CL
-- Lưu Quang: 1.35 CL + 0.50 TPH
+- Lưu Quang: 1.35 CL + 1.55 TPH
 - Tàng Phong: 1.50 CL
-- Phá Vọng: 2.10 CL + 0.90 TT
-- Liên Kiếm: 1.00 CL + 0.75 TPH
-- Hồi Phong: 1.20 CL + 0.50 TPH
+- Phá Vọng: 1.60 CL + 2.00 TT
+- Liên Kiếm: 1.00 CL + 1.85 TPH
+- Hồi Phong: 1.20 CL + 1.50 TPH
 - Đoạn Cương: 3.00 CL
-- Quyết Sinh: 3.00 CL
-- Vạn Kiếm: 1.60 CL + 2.00 TT
-- Đoạn Thiên: 3.00 CL
+- Quyết Sinh: 2.10 CL + 2.00 TT
+- Vạn Kiếm: 1.60 CL + 8.00 TT
+- Đoạn Thiên: 2.10 CL + 2.00 TT
+
+F6 rationale: the first 12-seed CombatKernel V3 run measured Lưu Quang at 76.76% and Ngự Kiếm at 53.08% of Trọng Trảm. A fixed-budget allocation sweep showed that reallocating back into CL could only reach 89.02% for Lưu Quang and 65.02% for Ngự Kiếm, so the old hybrid coefficients did not make TPH/TT specialization viable. The F6 tune therefore increases only the hybrid skill weights instead of granting TPH global Action Speed or TT a hidden global damage rule.
 
 ## 3. Sword resources
 
@@ -190,7 +192,7 @@ Each skill gets its own expression:
 - Phá Vọng: Intent folds into Break
 - Liên Kiếm: final hit becomes Ý Kiếm
 - Quyết Sinh: Intent collapses into the single killing slash
-- Vạn Kiếm: additional finite sword-wave
+- Vạn Kiếm: additional finite sword-wave; Cực Ý channel is 14 hits with the authored final hit at 150%
 - Ultimate: finishing Ý Kiếm only under its complete condition
 
 Generated follow-ups must use the existing followUpBudget/procDepth boundary and may not recursively generate resources/procs.

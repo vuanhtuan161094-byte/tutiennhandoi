@@ -172,3 +172,32 @@ Static audit covered Dungeon, Hunt, Boss, PvP, virtual/offline Hunt, legacy comb
 - Boss V2 authoring does not independently mutate player five-stat authority; `offline.js` does not rescale combat stats.
 
 Static conclusion: no additional Dungeon/Boss/offline balance-coefficient changes are justified before F6 runtime evidence. Status remains **QA PENDING**.
+
+
+## 9. F6 first production benchmark and hybrid rebalance — 2026-09-25
+
+User-local deterministic CombatKernel V3 benchmark on the pre-tune candidate used 12 seeds × 180s:
+
+- Trọng Trảm: 1486.46 DPS = 100%.
+- Lưu Quang: 1141.007 DPS = 76.76%, below the 90–95% target.
+- Ngự Kiếm: 789.024 DPS = 53.08%, below the 85–92% target.
+- All three averaged 6 Ultimate casts; final CN remained roughly 119–122; no channel ended from CN exhaustion. The deficit was therefore not CN/Gauge starvation.
+
+A fixed 300-point allocation sweep then held each archetype's utility allocations stable and moved only CL↔TPH or CL↔TT:
+
+- best tested Lưu Quang split (P160/TPH50): 89.02%;
+- best tested Ngự Kiếm split (P150/TT60): 65.02%;
+- increasing TPH/TT under the old coefficients reduced sustained DPS monotonically.
+
+Conclusion: profile correction alone could not satisfy the locked stress targets. The old F3 hybrid coefficients made CL remain the dominant marginal damage stat even on the intended TPH/TT skills.
+
+F6 production candidate `b1754c0f1b2136d545207cdc36247e4523d7761b` therefore:
+
+- raises TPH weights on Lưu Quang / Liên Kiếm / Hồi Phong;
+- raises TT weights on Phá Vọng / Quyết Sinh / Vạn Kiếm / Đoạn Thiên;
+- keeps Thanh Minh, Tàng Phong and Đoạn Cương pure CL;
+- changes Vạn Kiếm Cực Ý from 10 to 14 hits;
+- wires the already-authored Vạn Kiếm final-hit ×1.5 into CombatKernel channel resolution;
+- leaves CN, Kiếm Khí, Kiếm Ý, Ultimate Gauge and the stress targets unchanged.
+
+This is a **candidate**, not closure. Required proof: Backend Fast green, rerun the 12-seed F6 benchmark, then exact Mode 5 FULL CLEAN.

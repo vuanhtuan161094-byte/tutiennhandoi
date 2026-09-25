@@ -102,6 +102,17 @@ Read this first. Do not reconstruct project state from old chats or memory witho
   - production Session no longer uses Attack-only V77 preview: `8595cbbd837aea39b9fc3ad39eb2f8d7fff4b3e4`.
 - Static consumer result: Dungeon first-clear, Hunt Boss and Săn Ảo/offline settlement all resolve through CombatKernel V3; Boss authoring does not rescale player five-stat state; `offline.js` does not mutate combat stats.
 - No further Dungeon/Boss/offline balance-coefficient patch is justified before F6 runtime evidence.
+- First user-local F6 runtime evidence:
+  - pre-tune 12-seed benchmark: Trọng Trảm 1486.46 DPS (100%), Lưu Quang 1141.007 (76.76%), Ngự Kiếm 789.024 (53.08%);
+  - resource cadence was healthy (about 6 Ultimates each, final CN about 119–122, no OOM channel ends);
+  - 300-point allocation sweep could only reach 89.02% for Lưu Quang and 65.02% for Ngự Kiếm, proving profile allocation alone could not satisfy the locked 90–95% / 85–92% stress targets.
+- F6 hybrid rebalance candidate: `b1754c0f1b2136d545207cdc36247e4523d7761b`.
+  - TPH weight raised only on Lưu Quang / Liên Kiếm / Hồi Phong;
+  - TT weight raised on Phá Vọng / Quyết Sinh / Vạn Kiếm / Đoạn Thiên;
+  - Vạn Kiếm Cực Ý is 14 hits and CombatKernel now applies its authored final-hit ×1.5;
+  - no CN/Qi/Intent/Gauge numbers changed.
+- QA note: the last remaining pre-balance Backend Fast failure was an obsolete strict ordering/envelope inside the old V148 Tri Kỷ benchmark; commit `597aa23521bf3a889f20e97ecbce53c2304b7307` preserves aggregate burst-vs-support role separation without forcing Yến Vũ > Tạ Vân after F migration.
+- Status remains **F6 CANDIDATE / QA PENDING**. Next: update → FAST → rerun F6 benchmark. If targets are green, run Mode 5 FULL CLEAN for closure.
 - User-local Mode 5 FULL CLEAN on `41b3d6f464a4030f4c4d93a0c9851d0b5e7d61a4`: **FAIL at Backend Fast, 29/33 PASS**. Earlier active phases 19/19 passed; Godot `KIEM_TRA_GAME.cmd` was reported OK.
 - Four Backend Fast failures were classified:
   - `v129-stat-provenance-test.js`: stale three-axis Potential expectation;
