@@ -85,6 +85,14 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - F6 measures production CombatKernel V3 only; it does not auto-tune gameplay. Default diagnostic matrix is 3 builds (Trọng Trảm / Lưu Quang / Ngự Kiếm) × 12 deterministic seeds × 180s, exactly 5 Sword Active slots + Basic + Ultimate, passive Lv20 and mastery 1000.
 - F6 outputs DPS/relative DPS, final CN/Gauge, Kiếm Khí generation/refund/estimated spend/overflow, Kiếm Ý timing, Break count, Ultimate cadence, Domain opens, per-skill cast/damage data. Current runtime logs do not expose CN after every skill payment, so the harness intentionally does not fabricate min-CN.
 - **F6 HARNESS status: IMPLEMENTED / NOT YET EXECUTED on the user machine.** Current F candidate remains QA PENDING.
+- Additional F5 static-audit fixes while the user is away from the PC:
+  - legacy `dist/core/potential.js` three-axis shell retired into a five-axis compatibility wrapper; mutation delegates to canonical F authority and old saves full-refund from `lifetimeEarned`: `e31452afdcb4caf2f687d1fa6fa3ec7b97a3d94c`;
+  - Godot Character ViewModel/Potential sheet migrated from 3 axes to CL/TP/TPH/LL/TT; this is a **STATIC CANDIDATE** until `KIEM_TRA_GAME.cmd` passes: `b023907d477a62ac690b5ddc4954fd3f6ebce51d`;
+  - web Character detail/read-model now presents 5 root stats and treats Defense as derived combat stat: `b94bd5a1c67d1a3e3ac7500ece0560871a20a4d3`;
+  - PvP synthetic opponent scaling now carries `primaryStatsV5` so Heavy/Flow/Myriad Sword damage all inherit the same rating damage factor; guard added to the F migration test: `4345f89726da7ab04e5fcf401dda68cc37ab104d`.
+- Static audit found PvP snapshots/encounter compilation use structured clones, so they preserve `primaryStatsV5`; no additional snapshot serialization patch was required.
+- Historical V127 three-axis simulation files are not production authority and must not be used as F balance evidence.
+- **Current status remains F QA PENDING.** Required local proof now includes both web/runtime Mode 5 FULL CLEAN and Godot `KIEM_TRA_GAME.cmd` because F touched Godot Character presentation, followed by the F6 benchmark.
 
 ## Godot migration — ACTIVE
 
