@@ -31,6 +31,21 @@ function checkCondition(condition, self, target, now) {
             return typeof value === 'number' && value < condition.value - 1e-9;
         }
         case 'targetIsBroken': return target.breakDebuffUntil > now;
+        case 'targetIsNotBroken': return target.breakDebuffUntil <= now;
+        case 'swordFinisherKillWindow': {
+            const projection = v2ResourceProjection(self, now);
+            return self.combatBuildV117?.mainDaoId === 'sword'
+                && (projection.swordQi ?? 0) >= 4
+                && target.breakDebuffUntil > now
+                && target.hp / Math.max(1, combatMaxHp(target.baseStats)) * 100 <= 30;
+        }
+        case 'swordPerfectUltimateWindow': {
+            const projection = v2ResourceProjection(self, now);
+            return self.combatBuildV117?.mainDaoId === 'sword'
+                && self.ultimateGaugeV117 + 1e-9 >= 100
+                && (projection.swordQi ?? 0) >= 5
+                && (projection.swordIntentV2 ?? 0) >= 20;
+        }
         case 'targetIsCasting': return Boolean(target.casting || target.channeling);
         case 'selfShieldBelow': {
             const maxHp = combatMaxHp(self.baseStats);
@@ -74,11 +89,21 @@ export function canUseSkill(self, skill, registry, now) {
 }
 export function chooseSkill(self, target, registry, now) {
     const rules = [...self.aiProfile.rules].sort((a, b) => b.priority - a.priority);
+    const swordMain = self.combatBuildV117?.mainDaoId === 'sword';
+    const swordGaugeReady = swordMain && self.ultimateGaugeV117 + 1e-9 >= 100;
+    const projection = swordMain ? v2ResourceProjection(self, now) : {};
+    const swordPerfectUltimate = swordGaugeReady && (projection.swordQi ?? 0) >= 5 && (projection.swordIntentV2 ?? 0) >= 20;
+    if (!swordGaugeReady)
+        delete self.pendingSetFlagsV117['swordUltimateHoldUntil'];
+    else if ((self.pendingSetFlagsV117['swordUltimateHoldUntil'] ?? 0) <= 0)
+        self.pendingSetFlagsV117['swordUltimateHoldUntil'] = now + 4;
     for (const rule of rules) {
         if (rule.conditions.length > 2)
             throw new Error(`${self.aiProfile.name}/${rule.skillId}: AI V1 chỉ cho tối đa 2 điều kiện AND.`);
         const skill = registry.skill(rule.skillId);
         if (!self.skillIds.includes(skill.id))
+            continue;
+        if (swordMain && skill.id === 'skill.dao.sword.ultimate' && swordGaugeReady && !swordPerfectUltimate && now + 1e-9 < (self.pendingSetFlagsV117['swordUltimateHoldUntil'] ?? now))
             continue;
         if (!canUseSkill(self, skill, registry, now))
             continue;

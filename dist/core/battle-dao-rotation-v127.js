@@ -12,17 +12,21 @@ function rulesForDao(dao, skillIds, offset = 0) {
     const gauge = { type: 'selfUltimateGaugeAtLeast', value: 100 };
     switch (dao) {
         case 'sword':
-            // V2 canonical: Kiếm Ý là passive-stack, không còn là spend resource. Active/Tuyệt Kỹ quyết định theo Core Kiếm Khí.
-            add('ultimate', 132, gauge, { type: 'selfDaoV2ResourceAtLeast', resource: 'swordQi', value: 5 });
-            add('finisher', 124, { type: 'selfDaoV2ResourceAtLeast', resource: 'swordQi', value: 3 }, { type: 'targetIsBroken' });
-            add('finisher', 114, { type: 'selfDaoV2ResourceAtLeast', resource: 'swordQi', value: 5 });
-            add('counter', 112);
+            // Auto Sword creates a readable kill window instead of dumping every resource on cooldown.
+            add('finisher', 142, { type: 'swordFinisherKillWindow' });
+            add('ultimate', 138, { type: 'swordPerfectUltimateWindow' });
+            // Fallback Ultimate is intentionally lower: ai.js may hold it for at most 4s while building 5 Khí + 20 Ý.
+            add('ultimate', 118, gauge);
+            add('counter', 116);
+            add('nurture', 113, { type: 'selfDaoV2ResourceBelow', resource: 'swordQi', value: 2 });
+            add('finisher', 112, { type: 'selfDaoV2ResourceAtLeast', resource: 'swordQi', value: 3 }, { type: 'targetIsBroken' });
             add('sever', 108, { type: 'selfDaoV2ResourceAtLeast', resource: 'swordQi', value: 2 });
-            add('break_mark', 100);
-            add('chain', 92);
-            add('flow_slash', 90);
-            add('myriad', 84);
-            add('nurture', 80, { type: 'selfDaoV2ResourceBelow', resource: 'swordQi', value: 3 });
+            add('break_mark', 102, { type: 'targetIsNotBroken' });
+            add('chain', 96);
+            add('flow_slash', 94);
+            add('myriad', 90, { type: 'selfDaoV2ResourceAtLeast', resource: 'swordQi', value: 4 });
+            add('break_mark', 86);
+            add('nurture', 82, { type: 'selfDaoV2ResourceBelow', resource: 'swordQi', value: 3 });
             add('basic', 10);
             break;
         case 'fist':
