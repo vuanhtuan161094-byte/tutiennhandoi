@@ -43,11 +43,20 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - V150 Bảo Khí is suppressed from the live player-facing Combat stream; stale V2 production metadata/read-model labels were normalized to V3.
 - **Status: CLOSED / LOCKED.** Reopen only for a proven regression, an explicitly requested new combat feature, or a separately scoped internal-engine refactor with parity proof.
 
-## Sword Dao Production V1 — A–E CLOSED / LOCKED · F OPEN (2026-09-25)
+## Sword Dao Production V1 — A–F CLOSED / LOCKED (2026-09-25)
 
 - User explicitly reopened Sword backend gameplay as a new feature slice after Combat Backend V3 closure.
 - Canonical design contract: `docs/runtime/SWORD_DAO_PRODUCTION_CONTRACT_20260925.md`.
-- A–E are **CLOSED / LOCKED** on exact local Full Clean evidence. F is a separate migration slice and does not reopen A–E balance.
+- F closure record: `docs/runtime/SWORD_DAO_FIVE_STAT_MIGRATION_CLOSURE_20260925.md`.
+- **Exact verified F gameplay SHA: `edf479ff465c262d105020d96dc23a31ba7b66c1`.**
+- Final F proof supplied by the user:
+  - FAST exact-SHA PASS, clean worktree, Backend Fast PASS, Frontend Fast PASS;
+  - F6 CombatKernel V3 benchmark 12 seeds × 180s: Trọng Trảm 1489.390 DPS (100%), Lưu Quang 1346.763 (90.42%, target PASS), Ngự Kiếm 1313.622 (88.20%, target PASS);
+  - all three averaged 6 Ultimates, final CN stayed ~119–122, OOM channel ends = 0;
+  - Mode 5 FULL CLEAN exact-SHA PASS, dirty=false, 30/30 steps PASS;
+  - prior `KIEM_TRA_GAME.cmd` PASS remains applicable because no `godot/**` files changed between that verified Godot candidate and final F gameplay SHA.
+- **F closure supersedes the historical candidate/status notes below. Do not interpret older “F OPEN / QA PENDING” bullets as current state.**
+- A–F are **CLOSED / LOCKED**. F migrated Sword to the five-stat foundation and rebalanced the three benchmark archetypes without reopening the A–E resource/rotation contract.
 - Implemented directly on `main`:
   - design lock: `0e27ce0eb7df3670135f7883629f5b3777a61617`;
   - Batch A — fixed Sword CN / authored Gauge / Kiếm Khí spend-generate: `de15e39fca092a9c2022d033faf63d31ec7a46f5`;

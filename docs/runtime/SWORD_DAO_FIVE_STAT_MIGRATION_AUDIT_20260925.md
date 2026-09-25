@@ -1,6 +1,6 @@
 # SWORD DAO F — FIVE-STAT MIGRATION AUDIT — 2026-09-25
 
-Status: **OPEN / F RULES LOCKED / EXECUTABLE MIGRATION ACTIVE**
+Status: **CLOSED / LOCKED**
 
 Repository: `vuanhtuan161094-byte/tutiennhandoi`  
 Branch: `main`  
@@ -201,3 +201,25 @@ F6 production candidate `b1754c0f1b2136d545207cdc36247e4523d7761b` therefore:
 - leaves CN, Kiếm Khí, Kiếm Ý, Ultimate Gauge and the stress targets unchanged.
 
 This is a **candidate**, not closure. Required proof: Backend Fast green, rerun the 12-seed F6 benchmark, then exact Mode 5 FULL CLEAN.
+
+
+## 10. F closure evidence — 2026-09-25
+
+F is CLOSED / LOCKED on exact verified gameplay candidate:
+
+`edf479ff465c262d105020d96dc23a31ba7b66c1`
+
+User-local evidence:
+
+- FAST on exact SHA: PASS, clean worktree, exact-SHA evidence YES, Backend Fast PASS, Frontend Fast PASS.
+- Final deterministic F6 benchmark: CombatKernel V3, 12 seeds × 180s.
+  - Trọng Trảm: 1489.390 DPS, 100%, target PASS.
+  - Lưu Quang: 1346.763 DPS, 90.42%, target 90–95% PASS.
+  - Ngự Kiếm: 1313.622 DPS, 88.20%, target 85–92% PASS.
+  - All three averaged 6 Ultimate casts; final CN remained 118.794 / 120.175 / 121.804; OOM channel ends = 0.
+- Mode 5 FULL CLEAN on the same exact SHA: PASS, dirty=false, 30/30 steps PASS. This included Fast, deterministic browser runtime smoke, strict browser summary and the then-current deep visual diagnostics.
+- Godot `KIEM_TRA_GAME.cmd` had already been reported PASS on the earlier F Godot candidate. A repository compare from that candidate (`41b3d6f464a4030f4c4d93a0c9851d0b5e7d61a4`) through the final verified gameplay SHA shows no `godot/**` file changes, so the verified Godot presentation tree is unchanged.
+
+Final five-stat Sword scaling is the production table in `SWORD_DAO_PRODUCTION_CONTRACT_20260925.md`.
+
+Historical pre-migration descriptions above remain audit evidence only; they are not current authority. Future work may migrate the remaining seven Dao as separate slices, but must not silently reopen Sword F.

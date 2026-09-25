@@ -1,6 +1,6 @@
 # SWORD DAO PRODUCTION CONTRACT — 2026-09-25
 
-Status: **A–E CLOSED / LOCKED · F OPEN FOR 5-STAT MIGRATION**
+Status: **A–F CLOSED / LOCKED**
 
 Repository: `vuanhtuan161094-byte/tutiennhandoi`  
 Branch: `main`
@@ -17,13 +17,13 @@ C. Skill mastery / identity cleanup.
 D. Auto-AI / finisher windows.  
 E. Targeted QA guards.
 
-**F — 5-stat migration is a separate later slice.** Do not partially fake 5-stat scaling inside Sword before F.
+**F — 5-stat migration is CLOSED / LOCKED.** The five-stat runtime, parity fixes and F6 Sword rebalance are production authority; reopen only for a proven regression or an explicitly requested new balance slice.
 
 The current locked Combat Backend V3 boundary remains intact. This work is a new gameplay/balance slice explicitly requested by the user.
 
-## 2. Five base stats — design lock, runtime migration deferred to F
+## 2. Five base stats — production authority
 
-The future combat foundation remains exactly five primary stats:
+The production combat foundation remains exactly five primary stats:
 
 - **Công Lực (CL):** primary offensive power source. Does not automatically grant Crit/Crit Damage.
 - **Thể Phách (TP):** +20 HP and +1 Defense per point.
