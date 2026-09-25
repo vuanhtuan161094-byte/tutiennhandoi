@@ -141,6 +141,7 @@ export function controlContestDurationMultiplierV5(controlPower, resolve, pressu
 export function fiveStatSkillPowerV5(stats, scaling, baselineCoefficient = 1) {
     if (!scaling)
         return Math.max(0, Number(stats?.attack) || 0);
+    const hasPrimarySnapshot = Boolean(stats?.primaryStatsV5);
     const primary = stats?.primaryStatsV5 ?? {
         power: Math.max(0, Number(stats?.attack) || 0),
         body: Math.max(0, Number(stats?.physique) || 0),
@@ -150,7 +151,18 @@ export function fiveStatSkillPowerV5(stats, scaling, baselineCoefficient = 1) {
     };
     const weighted = ['power','body','agility','spirit','sense'].reduce((sum,key)=>
         sum + Math.max(0, Number(primary[key]) || 0) * Math.max(0, Number(scaling[key]) || 0), 0);
-    return weighted / Math.max(0.0001, Number(baselineCoefficient) || 1);
+    const normalized = weighted / Math.max(0.0001, Number(baselineCoefficient) || 1);
+    // F5 compatibility: legacy runtime attackMultiplier statuses used to scale every
+    // authored damage skill. Static player progression is already synchronized into
+    // primaryStatsV5 before combat; only the effective/base Attack ratio is applied
+    // here so runtime Attack buffs/debuffs keep that behavior without minting TPH/TT
+    // from Mobility/Accuracy modifiers.
+    const primaryPower = Math.max(0, Number(primary.power) || 0);
+    const effectiveAttack = Math.max(0, Number(stats?.attack) || 0);
+    const runtimeAttackMultiplier = hasPrimarySnapshot && primaryPower > 1e-9
+        ? effectiveAttack / primaryPower
+        : 1;
+    return normalized * Math.max(0, runtimeAttackMultiplier);
 }
 export function trueEssenceEfficiencyPct(stats) {
     return clamp(stats.spiritEfficiencyPct ?? 0, 0, COMBAT_RULES.spiritEfficiencyCapPct);

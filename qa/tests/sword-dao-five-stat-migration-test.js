@@ -214,4 +214,23 @@ testCase('F5 canonical player factory synchronizes five-stat snapshot after Alch
   assert(alchemyAt>=0&&syncAt>alchemyAt,'five-stat bridge must run after the final legacy player stat layer');
 });
 
+
+testCase('F5 runtime Attack multipliers still scale the full hybrid Sword skill without minting TPH or TT',()=>{
+  const base={
+    attack:100,
+    primaryStatsV5:{power:100,body:60,agility:80,spirit:90,sense:70},
+  };
+  const buffed={...base,attack:118};
+  const flowBase=fiveStatSkillPowerV5(base,{power:1.35,agility:.50},1.55)*1.55;
+  const flowBuffed=fiveStatSkillPowerV5(buffed,{power:1.35,agility:.50},1.55)*1.55;
+  assert.equal(Number(flowBase.toFixed(6)),175);
+  assert.equal(Number(flowBuffed.toFixed(6)),206.5);
+  const myriadBase=fiveStatSkillPowerV5(base,{power:1.60,sense:2.00},3.72)*3.72;
+  const myriadBuffed=fiveStatSkillPowerV5(buffed,{power:1.60,sense:2.00},3.72)*3.72;
+  assert.equal(Number(myriadBase.toFixed(6)),300);
+  assert.equal(Number(myriadBuffed.toFixed(6)),354);
+  assert.equal(buffed.primaryStatsV5.agility,80);
+  assert.equal(buffed.primaryStatsV5.sense,70);
+});
+
 console.log(`\nSWORD DAO F FIVE-STAT MIGRATION: ${passed}/${passed} PASS`);
