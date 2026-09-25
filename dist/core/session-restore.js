@@ -9,7 +9,7 @@ import { repairAdventureStateReferences } from './save-stability.js';
 import { highestClearedDungeonFloor } from './dungeon.js';
 import { normalizeSoulCloneAuthorityV169, soulCloneAuthorityCapacityV127, synchronizeSoulForRealm, syncSoulDungeonWorkers } from './soul.js';
 import { ensureWorkshopProductionV12328 } from './workshop-production-v12328.js';
-import { FATE_BUILD_DEFINITIONS_V4, nodeSpentPoints, starterReincarnationTreeNodes } from './reincarnation-progression-v1102.js';
+import { FATE_BUILD_DEFINITIONS_V4, clonePermanentCorePotentialStateV5, nodeSpentPoints, starterReincarnationTreeNodes } from './reincarnation-progression-v1102.js';
 
 const LEGACY_ALCHEMY_TIER_TO_MAJOR_V167 = Object.freeze([1, 4, 8, 11, 15, 18, 22, 25]);
 const LEGACY_ALCHEMY_FAMILY_TO_V146_V167 = Object.freeze({
@@ -216,20 +216,7 @@ function v170NonNegativeInt(value) {
     return Math.max(0, Math.floor(Number(value) || 0));
 }
 function canonicalPermanentPotentialV170(raw) {
-    const earned = v170NonNegativeInt(raw?.lifetimeEarned);
-    const requested = {
-        power: v170NonNegativeInt(raw?.allocations?.power),
-        body: v170NonNegativeInt(raw?.allocations?.body),
-        defense: v170NonNegativeInt(raw?.allocations?.defense),
-    };
-    let remaining = earned;
-    const allocations = { power: 0, body: 0, defense: 0 };
-    for (const key of ['power', 'body', 'defense']) {
-        const kept = Math.min(requested[key], remaining);
-        allocations[key] = kept;
-        remaining -= kept;
-    }
-    return { lifetimeEarned: earned, unspent: remaining, allocations };
+    return clonePermanentCorePotentialStateV5(raw);
 }
 function canonicalFateBuildV170(rawFate, sharedBudget) {
     const requested = new Set(rawFate?.unlockedIds ?? []);

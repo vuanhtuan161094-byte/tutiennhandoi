@@ -216,7 +216,7 @@ export class SimulationSession {
         this.syncCurrentLifeFateRuntimeV4();
         const rp = this.metaValue.reincarnationProgress;
         const lifePotentialPct = nodeModifierValue(rp.tree, 'cultivation.lifePotentialGainPct');
-        const core = this.stateValue.character.corePotential ?? { life: undefined, permanent: { power: 0, body: 0, defense: 0 } };
+        const core = this.stateValue.character.corePotential ?? { life: undefined, permanent: { power: 0, body: 0, agility: 0, spirit: 0, sense: 0 } };
         this.stateValue.character.corePotential = { life: ensureLifePotentialForRealm(core.life, this.stateValue.realm.maxRealmOrder, lifePotentialPct), permanent: { ...rp.permanentPotential.allocations } };
         // V144 compatibility: preserve migrated raw save fields, but legacy Công Pháp/manual restoration is inert; only V127 manuals are live progression.
         const v125Foundation = cloneBuildFoundationV113(this.stateValue.character.buildFoundation, this.stateValue.character.spiritualRootId);
@@ -477,7 +477,7 @@ export class SimulationSession {
         return {
             schema: 'life-potential.v1102', ...structuredClone(core.life), earned: core.life.lifetimeEarned,
             definitions: corePotentialDefinitions.map(x => ({ ...x, perPoint: [...x.perPoint] })),
-            permanentApplied: { ...core.permanent }, statRule: '1 điểm = +1 Công Lực / +1 Thể Phách / +3 Phòng Ngự',
+            permanentApplied: { ...core.permanent }, statRule: '1 điểm = +1 CL / +1 TP (+20 HP, +1 Phòng) / +1 TPH / +1 LL (Max CN) / +1 TT',
         };
     }
     spendLifePotential(id, points = 1) {
@@ -488,7 +488,7 @@ export class SimulationSession {
     }
     permanentPotentialSummary() {
         const rp = this.metaValue.reincarnationProgress;
-        return { schema: 'reincarnation-permanent-potential.v1102', ...structuredClone(rp.permanentPotential), statRule: '1 điểm = +1 Công Lực / +1 Thể Phách / +3 Phòng Ngự' };
+        return { schema: 'reincarnation-permanent-potential.v1102', ...structuredClone(rp.permanentPotential), statRule: '1 điểm = +1 CL / +1 TP (+20 HP, +1 Phòng) / +1 TPH / +1 LL (Max CN) / +1 TT' };
     }
     spendPermanentPotential(id, points = 1) {
         const rp = this.metaValue.reincarnationProgress;
