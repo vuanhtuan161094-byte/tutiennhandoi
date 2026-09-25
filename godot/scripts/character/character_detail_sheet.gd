@@ -168,15 +168,19 @@ func _render_potential() -> void:
 
 	var summary := _card()
 	_add_card_title(summary, "ĐIỂM TIỀM NĂNG", _fmt_num(float(unspent)))
-	_add_body_text(summary, "Mỗi điểm chỉ phân vào một trong ba trục cốt lõi của đời hiện tại.", MUTED, 9)
+	_add_body_text(summary, "Mỗi điểm chỉ phân vào một trong năm chỉ số gốc của đời hiện tại.", MUTED, 9)
 	_add_pair(summary, "Công Lực", "1 điểm → +1")
-	_add_pair(summary, "Thể Phách", "1 điểm → +1 · Khí Huyết chuẩn +20")
-	_add_pair(summary, "Phòng Ngự", "1 điểm → +3")
+	_add_pair(summary, "Thể Phách", "1 điểm → +1 · Khí Huyết +20 · Phòng +1")
+	_add_pair(summary, "Thân Pháp", "1 điểm → Mobility +1")
+	_add_pair(summary, "Linh Lực", "1 điểm → Max Chân Nguyên +1")
+	_add_pair(summary, "Thần Thức", "1 điểm → Chính Xác +1 · Khống Chế +1 · Định Lực +1")
 
 	_add_section_label("PHÂN BỔ")
 	_potential_stat_card("power", "Công Lực", float(stats.get("power", 0)), int(allocations.get("power", 0)), _potential_effect("power", definitions), unspent)
 	_potential_stat_card("body", "Thể Phách", float(stats.get("body", 0)), int(allocations.get("body", 0)), _potential_effect("body", definitions), unspent)
-	_potential_stat_card("defense", "Phòng Ngự", float(stats.get("defense", 0)), int(allocations.get("defense", 0)), _potential_effect("defense", definitions), unspent)
+	_potential_stat_card("agility", "Thân Pháp", float(stats.get("agility", 0)), int(allocations.get("agility", 0)), _potential_effect("agility", definitions), unspent)
+	_potential_stat_card("spirit", "Linh Lực", float(stats.get("spirit", 0)), int(allocations.get("spirit", 0)), _potential_effect("spirit", definitions), unspent)
+	_potential_stat_card("sense", "Thần Thức", float(stats.get("sense", 0)), int(allocations.get("sense", 0)), _potential_effect("sense", definitions), unspent)
 
 func _potential_stat_card(stat_id: String, label: String, current_value: float, allocated: int, effect: String, unspent: int) -> void:
 	var card := _card()
@@ -236,9 +240,13 @@ func _potential_effect(stat_id: String, definitions: Array) -> String:
 		"power":
 			return "Mỗi điểm: Công Lực +1"
 		"body":
-			return "Mỗi điểm: Thể Phách +1 · Khí Huyết chuẩn +20"
-		"defense":
-			return "Mỗi điểm: Phòng Ngự +3"
+			return "Mỗi điểm: Thể Phách +1 · Khí Huyết +20 · Phòng Ngự +1"
+		"agility":
+			return "Mỗi điểm: Thân Pháp +1 · Mobility +1"
+		"spirit":
+			return "Mỗi điểm: Linh Lực +1 · Chân Nguyên tối đa +1"
+		"sense":
+			return "Mỗi điểm: Thần Thức +1 · Chính Xác +1 · Khống Chế +1 · Định Lực +1"
 	return ""
 
 func _emit_potential(stat_id: String, points: int) -> void:
@@ -251,10 +259,12 @@ func _render_stats() -> void:
 	var combat: Dictionary = stats.get("combat", {})
 
 	var core := _card()
-	_add_card_title(core, "CHỈ SỐ LÕI", "Nền tảng")
+	_add_card_title(core, "CHỈ SỐ GỐC", "5 trục")
 	_add_pair(core, "Công Lực", _fmt_num(float(stats.get("power", 0))))
 	_add_pair(core, "Thể Phách", _fmt_num(float(stats.get("body", 0))))
-	_add_pair(core, "Phòng Ngự", _fmt_num(float(stats.get("defense", 0))))
+	_add_pair(core, "Thân Pháp", _fmt_num(float(stats.get("agility", 0))))
+	_add_pair(core, "Linh Lực", _fmt_num(float(stats.get("spirit", 0))))
+	_add_pair(core, "Thần Thức", _fmt_num(float(stats.get("sense", 0))))
 
 	_add_stat_group("TẤN CÔNG", [
 		["Công Lực", _fmt_num(float(combat.get("attack", 0)))],

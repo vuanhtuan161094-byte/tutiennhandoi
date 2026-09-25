@@ -105,8 +105,11 @@ static func build(payload: Dictionary) -> Dictionary:
 		},
 		"stats": {
 			"power": float(core.get("power", combat.get("attack", 0))),
-			"body": float(core.get("body", 0)),
-			"defense": float(core.get("defense", combat.get("defense", 0))),
+			"body": float(core.get("body", float(combat.get("maxHp", 0)) / 20.0)),
+			"agility": float(core.get("agility", combat.get("mobility", 0))),
+			"spirit": float(core.get("spirit", combat.get("maxSpirit", 0))),
+			"sense": float(core.get("sense", combat.get("accuracy", 0))),
+			"defense": float(combat.get("defense", core.get("defense", 0))),
 			"combat": combat.duplicate(true),
 		},
 		"profile": {
