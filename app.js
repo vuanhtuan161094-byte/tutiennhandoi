@@ -2486,7 +2486,7 @@ function v1078StatsSheet(c,o){
   const groupHtml=groups.map(([title,key,rows])=>`<section class="v13819-detail-group"><header><b>${esc(title)}</b><button type="button" data-stat-help="${esc(key)}" aria-label="Giải thích ${esc(title)}">?</button></header>${rows.map(([k,v])=>`<div><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('')}</section>`).join('');
   const allElements=[...new Set([...affinities.map(x=>x[0]),...resists.map(x=>x[0])])];
   const elementHtml=allElements.length?`<section class="v13819-element-detail"><header><b>Ngũ Hành chi tiết</b><span>Hiệu lực / Kháng</span></header>${allElements.map(k=>{const a=affinities.find(x=>x[0]===k)?.[1]||0,r=resists.find(x=>x[0]===k)?.[1]||0;return `<div><span>${esc((V1077_ELEMENT_META[k]||[localizeUiTerm(k)])[0])}</span><strong>${num(a,1)}%</strong><em>${num(r,1)}%</em></div>`;}).join('')}</section>`:'';
-  return `<div class="v13819-detail-core"><div><span>Công Lực</span><strong>${num(core.power??st.attack??0)}</strong></div><div><span>Thể Phách</span><strong>${num(core.body??0)}</strong></div><div><span>Phòng Ngự</span><strong>${num(core.defense??st.defense??0)}</strong></div></div><p class="v13819-detail-note">Ba chỉ số lõi cho biết nền tảng nhân vật; các nhóm bên dưới giúp bạn nhìn rõ tấn công, sinh tồn và hướng build. Phá Thế được tổng hợp từ kỹ năng và hiệu ứng đang thật sự hoạt động.</p><div class="v13819-detail-grid">${groupHtml}</div>${elementHtml}`;
+  return `<div class="v13819-detail-core"><div><span>Công Lực</span><strong>${num(core.power??st.attack??0)}</strong></div><div><span>Thể Phách</span><strong>${num(core.body??((Number(st.maxHp)||0)/20))}</strong></div><div><span>Thân Pháp</span><strong>${num(core.agility??st.mobility??0)}</strong></div><div><span>Linh Lực</span><strong>${num(core.spirit??st.maxSpirit??0)}</strong></div><div><span>Thần Thức</span><strong>${num(core.sense??st.accuracy??0)}</strong></div></div><p class="v13819-detail-note">Năm chỉ số gốc là Công Lực / Thể Phách / Thân Pháp / Linh Lực / Thần Thức; Phòng Ngự, Chính Xác, Khống Chế và Định Lực là stat combat dẫn xuất. Phá Thế được tổng hợp từ kỹ năng và hiệu ứng đang thật sự hoạt động.</p><div class="v13819-detail-grid">${groupHtml}</div>${elementHtml}`;
 }
 function v13819AffinityValue(v){
   if(v&&typeof v==='object')return Number(v.pct??v.value??v.multiplier??0);
@@ -2512,9 +2512,12 @@ const V13819_STAT_HELP={
   crit:'Bạo Kích gồm Tỷ Lệ và Bạo Thương. Tỷ Lệ quyết định khả năng chí mạng; Bạo Thương quyết định mức tăng sát thương khi chí mạng.',
   element:'Ngũ Hành hiển thị hiệu lực và kháng thuộc tính thật từ combat entity. Không cộng mọi Hành thành một điểm tổng.',
   dao:'Bản Đạo tập trung Chân Nguyên, Tốc Độ Hành Động và Hiệu Suất Chân Nguyên — các biến trực tiếp tác động vòng thi triển kỹ năng.',
-  power:'Công Lực là nền tảng cho sức tấn công và một số hiệu quả kỹ năng. Tăng Công Lực giúp nhân vật gây sát thương mạnh hơn.',
-  body:'Thể Phách là nền tảng sinh tồn, chủ yếu giúp tăng Khí Huyết và sức bền của nhân vật.',
-  defense:'Phòng Ngự là thuộc tính lõi giảm sát thương thông qua đối kháng Công Lực–Phòng Ngự.',
+  power:'Công Lực là chỉ số gốc tấn công; không tự sinh Bạo Kích hay Bạo Thương.',
+  body:'Thể Phách là chỉ số gốc sinh tồn: mỗi điểm Tiềm Năng cho +20 Khí Huyết và +1 Phòng Ngự.',
+  agility:'Thân Pháp là chỉ số gốc đối kháng Né thông qua Mobility; không tự tăng Tốc Độ Hành Động.',
+  spirit:'Linh Lực là chỉ số gốc tăng Max Chân Nguyên; không tự tăng hồi Chân Nguyên, CDR hay hiệu suất.',
+  sense:'Thần Thức là chỉ số gốc cho Chính Xác, Khống Chế và Định Lực.',
+  defense:'Phòng Ngự là stat combat dẫn xuất, không còn là một trục Tiềm Năng độc lập.',
 };
 
 function v1078MoreSheet(){

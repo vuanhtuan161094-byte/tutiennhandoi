@@ -16,6 +16,11 @@ assert.ok(index.indexOf('ui-character-target-v1.css')>index.indexOf('ui-home-tar
 assert.match(app,/const c=model\.character,o=model\.overview,st=c\.combatStats\|\|\{\},core=c\.coreStats\|\|\{\},gear=model\.equipment\|\|\[\],sys=model\.equipmentSystem\|\|\{\}/,'Character renderer must continue binding canonical Character + Equipment read models');
 assert.match(app,/canonicalSlots=Number\(sys\.canonicalSlotCount\?\?10\)/,'canonical equipment slot count must remain backend-owned with the existing 10-slot fallback');
 assert.match(app,/v13819SetCategorySummary\(sys,'attire'\)/,'attire set summary must remain backend-owned');
+assert.match(app,/Năm chỉ số gốc là Công Lực \/ Thể Phách \/ Thân Pháp \/ Linh Lực \/ Thần Thức/,'Character detail must present the five-stat F foundation');
+assert.match(app,/core\.agility\?\?st\.mobility/,'Character detail must expose Thân Pháp from five-stat authority');
+assert.match(app,/core\.spirit\?\?st\.maxSpirit/,'Character detail must expose Linh Lực from five-stat authority');
+assert.match(app,/core\.sense\?\?st\.accuracy/,'Character detail must expose Thần Thức from five-stat authority');
+assert.doesNotMatch(app,/Ba chỉ số lõi cho biết nền tảng nhân vật/,'legacy three-axis Character copy must stay retired');
 assert.match(app,/v13819SetCategorySummary\(sys,'jewelry'\)/,'jewelry set summary must remain backend-owned');
 assert.match(app,/v13819BreakSummary\(c,sys\)/,'Phá Thế summary must remain canonical');
 assert.match(app,/data-open-inventory="gear"/,'Character target must retain canonical equipment navigation');
