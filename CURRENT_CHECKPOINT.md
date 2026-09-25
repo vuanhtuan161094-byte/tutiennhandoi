@@ -549,14 +549,18 @@ Evidence:
   - all Quyền passives Lv20 and all mastery tiers 1000;
   - diagnostic only: no target bands and no Quyền five-stat damage coefficients are locked yet.
 - Q1 baseline harness is now historical-only after Q2 began; do not execute it on current migrated content.
-- Q2 production implementation is present through `1aef6da7739ec2cd35eae6323b642a15f320a8e4`:
+- Q2 production implementation is present through `aa987ed91cc8abc4456281a86be40a2b2b0e0286`:
   - explicit Quyền Thế spending/generation + Trọng Thế scope;
   - five-stat metadata for all 10 Quyền skills;
   - mastery hit/cast/recovery/resource behavior;
   - Chấn Mạch Interrupt, Hồi Thân stagger, Trấn Nhạc soft control + mastery Defense shred;
   - Cửu Thiên Quyền Vực cap 7 / 4s;
   - Q1/Q2 targeted contract test wired in Backend Fast.
-- Current status: **Q2 CANDIDATE / LOCAL FAST PENDING**. Q3 parity/Auto is NOT opened yet.
+- Q2 hardening after the initial candidate:
+  - `21894bdd0647f0a22ebd3a807aa3bc828c08444a`: Hồi Thân payoff now requires a real timing counter; Chấn Mạch uses the action-start cast/channel snapshot; Fist p8 peak hold is refreshed only by damaging root actions, never stat reads;
+  - `235f1c97dd42760a77a47cd949f1efd4cc33d7b0`: player-facing Trọng Thế/CC copy aligned with runtime and Chấn Mạch logging distinguishes Bất Khuất immunity;
+  - `aa987ed91cc8abc4456281a86be40a2b2b0e0286`: tactical identity now exposes Chấn Mạch as Interrupt/Control and Trấn Nhạc as Control/Setup.
+- Current status: **Q2 IMPLEMENTATION CANDIDATE / LOCAL FAST PENDING**. Q3 parity/Auto is NOT opened yet.
 
 
 ## Fist Dao unified production contract — 2026-09-26
@@ -572,4 +576,4 @@ Evidence:
 - Five-stat families locked: CL primary; TP heavy/counter; TPH combo/counter; LL resource; TT utility only.
 - The old p1 text claiming Max HP/Defense per Liên Kình is classified as stale duplicate copy; p4 remains the dedicated Defense-per-stack passive.
 - Candidate internal benchmark bands: Trọng Quyền 100%, Liên Hoàn 92–98%, Phản Quyền 85–92%.
-- Status: **DESIGN LOCK / IMPLEMENTATION OPEN**. Next production write must follow Q1→Q2→Q3→Q4→Q5 from the unified contract.
+- Status: **DESIGN LOCK / Q2 IMPLEMENTATION CANDIDATE / LOCAL QA PENDING**. Do not open Q3 until exact-SHA FAST passes.

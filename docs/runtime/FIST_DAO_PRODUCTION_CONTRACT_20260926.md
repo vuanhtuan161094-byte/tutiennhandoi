@@ -1,6 +1,6 @@
 # FIST DAO PRODUCTION CONTRACT — 2026-09-26
 
-Status: **DESIGN LOCK / IMPLEMENTATION OPEN**
+Status: **DESIGN LOCK / Q2 IMPLEMENTATION CANDIDATE / LOCAL QA PENDING**
 
 Repository: `vuanhtuan161094-byte/tutiennhandoi`  
 Branch: `main`  
