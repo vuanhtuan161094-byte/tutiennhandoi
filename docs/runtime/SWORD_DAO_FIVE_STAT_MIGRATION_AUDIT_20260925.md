@@ -1,6 +1,6 @@
 # SWORD DAO F — FIVE-STAT MIGRATION AUDIT — 2026-09-25
 
-Status: **OPEN / DESIGN DECISIONS REQUIRED BEFORE EXECUTABLE MIGRATION**
+Status: **OPEN / F RULES LOCKED / EXECUTABLE MIGRATION ACTIVE**
 
 Repository: `vuanhtuan161094-byte/tutiennhandoi`  
 Branch: `main`  
@@ -60,36 +60,74 @@ These are technical and may be chosen during implementation without changing gam
 - migration helper/module placement;
 - QA fixture names and transport field names.
 
-## 4. Gameplay decisions still missing — BLOCKERS
+## 4. Locked F migration rules
 
-### F-B1 — Old save migration/refund
+### F-R1 — Old save migration: full refund
 
-The contract requires save migration/refund but does not define how old `power/body/defense` allocations become five-axis allocations.
+For both current-life and permanent Potential:
 
-A production rule must explicitly choose one policy, for both current-life and permanent Potential:
+- old `power/body/defense` allocations are never auto-mapped into the five new axes;
+- preserve the total earned budget;
+- refund every previously spent point into `unspent`;
+- initialize all five new allocations to 0;
+- preserve current-life awarded realm milestones;
+- mark migrated state with five-axis version metadata so the refund happens once.
 
-- full refund: preserve `lifetimeEarned`, set all five allocations to 0, move every previously spent point back to `unspent`; or
-- authored mapping: define exact point-for-point mapping from each old axis into CL/TP/TPH/LL/TT.
+Canonical five allocation ids:
 
-No mapping is currently authorized.
+- `power` = Công Lực (CL)
+- `body` = Thể Phách (TP)
+- `agility` = Thân Pháp (TPH)
+- `spirit` = Linh Lực (LL)
+- `sense` = Thần Thức (TT)
 
-### F-B2 — Mobility vs Accuracy Dodge authority
+The old shared Potential resonance / 35% soft-cap multiplier is retired. One point contributes only its authored axis effect.
 
-The target says TPH grants Mobility and TT grants Accuracy, and F must migrate the Dodge authority, but no production formula/caps/floor are locked.
+### F-R2 — Mobility vs Accuracy Dodge authority
 
-Required lock: exact function from attacker Accuracy and defender Mobility to Dodge/Hit chance, including min/max bounds and interaction with direct `dodgeChancePct` bonuses.
+Promote the existing repository contest shape instead of inventing a new curve.
 
-### F-B3 — Control vs Resolve authority
+Base contest:
 
-The target says TT grants both Control and Resolve, and F must migrate Control-vs-Resolve, but no production formula is locked.
+`ratio = max(1, Mobility) / max(1, Accuracy)`
 
-Required lock: exact effect of source Control vs target Resolve on control duration/chance, including bounds and interaction with `controlDurationReductionPct`, chain break and immunity.
+`centered = ratio - 1`
+
+`baseDodge = clamp(15 + 50 * centered / (1 + abs(centered)) - pressurePenalty, 2, 65)`
+
+where `pressurePenalty = min(35, dodgePressure * 7)`.
+
+Authored direct Dodge bonuses remain valid and combine into the remaining room up to a final **75% hard cap**:
+
+`finalDodge = combineBoundedPct(baseDodge, directDodgeChancePct, 75)`.
+
+Existing anti-streak pressure remains: successful Dodge adds 1 pressure; a failed Dodge check reduces pressure by 0.65 (floor 0).
+
+Hội Tâm and Tất Trúng semantics remain unchanged: Hội Tâm bypasses Dodge; Tất Trúng skips the Dodge check.
+
+### F-R3 — Control vs Resolve authority
+
+Promote the existing repository Control contest to production locked combat.
+
+`effectiveResolve = Resolve * (1 + controlPressure * 0.35)`
+
+`contest = Control / max(1, Control + effectiveResolve)`
+
+`contestMultiplier = 0.35 + 1.30 * contest`
+
+Thus equal Control/Resolve gives ×1.00 duration, the bounded contest approaches ×0.35 at extreme disadvantage and ×1.65 at extreme advantage.
+
+Then apply authored Control Duration Reduction:
+
+`finalDuration = baseDuration * contestMultiplier * (1 - CDR / 100)`
+
+with the existing CDR cap **66.67%**. Existing chain safety stays unchanged: 5 continuous seconds breaks control and grants 3 seconds Bất Khuất. Pressure remains per control group and grows by +1 on an applied control attempt.
 
 ## 5. Defense status
 
 No separate blocker is required yet for Defense if the user chooses to preserve the already-locked `A/(A+D)` mitigation curve and only changes how the five primary stats feed offensive power and Defense. If a different Defense contest is intended, it must be explicitly locked before F changes CombatKernel behavior.
 
-## 6. F implementation order after blockers are locked
+## 6. F implementation order
 
 1. F1 — five-axis Potential state + restore migration/refund + provenance.
 2. F2 — derive CL/TP/TPH/LL/TT into combat stats and UI/read models.

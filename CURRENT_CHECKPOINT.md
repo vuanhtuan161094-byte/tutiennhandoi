@@ -64,7 +64,7 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - Closure candidate QA-fix SHA: `ba54c9e05af69347a898ac35c9d57838efc803b3`.
 - Exact local Mode 5 FULL CLEAN evidence supplied by the user on 2026-09-25: **30/30 steps PASS**, Backend Fast **31/31 PASS**, Frontend Fast **20/20 PASS**, deterministic browser playtest **4/4 PASS**, strict browser summary PASS, visual workflow/baseline + Combat visual **390×844 / 360×800 / 412×915 / 430×932 PASS**, exact-SHA evidence YES, dirty=false.
 - **F — 5-stat migration is now OPEN as a separate slice.** CL/TP/TPH/LL/TT design is frozen in the Sword contract, but runtime still uses the current legacy Attack/Defense combat authority. Do not display the new scaling as production truth until F closes.
-- F audit/blockers: `docs/runtime/SWORD_DAO_FIVE_STAT_MIGRATION_AUDIT_20260925.md`. Do not invent save-refund, Dodge contest, or Control contest semantics that are not yet locked.
+- F rules are now locked in `docs/runtime/SWORD_DAO_FIVE_STAT_MIGRATION_AUDIT_20260925.md`: full refund old 3-axis Potential; five axes `power/body/agility/spirit/sense`; old shared resonance retired; Mobility↔Accuracy Dodge contest with 75% final cap; Control↔Resolve duration contest followed by existing CDR; Defense keeps `A/(A+D)`. F1/F2 implementation may proceed.
 
 ## Godot migration — ACTIVE
 

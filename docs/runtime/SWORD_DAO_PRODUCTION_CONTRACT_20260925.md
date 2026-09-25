@@ -263,7 +263,7 @@ Resource target:
 Do not implement partially during A–E.
 
 F will explicitly migrate:
-- Potential from old 3 axes to CL/TP/TPH/LL/TT
+- Potential from old 3 axes to CL/TP/TPH/LL/TT using a one-time full refund of old allocations
 - primary-stat storage/provenance
 - skill power formula and per-skill scaling
 - Defense contest
@@ -288,3 +288,13 @@ A–E closure evidence:
 - exact-SHA evidence: YES; working tree dirty: false.
 
 A–E are therefore **CLOSED / LOCKED**. F is a separate migration slice. Current F audit and unresolved gameplay decisions are recorded in `docs/runtime/SWORD_DAO_FIVE_STAT_MIGRATION_AUDIT_20260925.md`.
+
+
+## 16. F migration rules locked on 2026-09-25
+
+- Old 3-axis current-life and permanent Potential: **full refund** into unspent; no automatic mapping.
+- New allocation ids: `power/body/agility/spirit/sense` = CL/TP/TPH/LL/TT.
+- Old shared Potential resonance/35% soft-cap multiplier: **retired**.
+- Dodge authority: existing Mobility-vs-Accuracy contest (2–65% base) + authored direct Dodge combined to a **75% final cap**, with existing dodge pressure.
+- Control authority: existing Control-vs-Resolve contest `0.35 + 1.30 × contest`, then current Control Duration Reduction (cap 66.67%); 5s chain-break + 3s Bất Khuất unchanged.
+- Defense remains `A/(A+D)` with Armor Pen applied to Defense.
