@@ -138,6 +138,20 @@ export function controlContestDurationMultiplierV5(controlPower, resolve, pressu
     const contest = control / Math.max(1, control + effectiveResolve);
     return 0.35 + 1.30 * contest;
 }
+export function ensurePrimaryStatsV5SnapshotV5(stats) {
+    if (stats?.primaryStatsV5)
+        return { ...stats, primaryStatsV5: { ...stats.primaryStatsV5 } };
+    return {
+        ...stats,
+        primaryStatsV5: {
+            power: Math.max(0, Number(stats?.attack) || 0),
+            body: Math.max(0, Number(stats?.physique ?? ((Number(stats?.maxHp) || 0) / 20)) || 0),
+            agility: Math.max(0, Number(stats?.mobility) || 0),
+            spirit: Math.max(0, Number(stats?.maxSpirit) || 0),
+            sense: Math.max(0, Number(stats?.accuracy) || 0),
+        },
+    };
+}
 export function fiveStatSkillPowerV5(stats, scaling, baselineCoefficient = 1) {
     if (!scaling)
         return Math.max(0, Number(stats?.attack) || 0);

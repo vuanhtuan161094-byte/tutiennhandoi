@@ -12,7 +12,7 @@ import './skill-heart-method-v12317.js';
 import { addPoisonSeedStageV2, battleDaoV2BreakMultiplier, battleDaoV2Enabled, battleDaoV2HealShieldMultiplier, battleDaoV2IncomingDamageMultiplier, battleDaoV2OutgoingMultiplier, consumePoisonSeedStageV2, createBattleDaoRuntimeStateV2, claimDamagingFollowUpV2, finishRemainingDaoActionV2, onBattleDaoV2HpDamageTaken, onBattleDaoV2Mitigation, v2ResourceProjection, recordDamageOutcomeV2, resolveSwordIntentAfterRootV2, swordIntentBonusesV2, swordQiGenerateAfterActionV2, swordV2CapstoneFollowUp, swordV2ChannelProfile, swordV2CritHeartBonusPct, swordV2DirectDamageMultiplier, swordV2EffectsForSkill, syncBattleDaoV2Timers } from './battle-dao-v2-runtime.js';
 import { cloneTechniqueCombatRuntimeV119, initializeTechniqueCombatStateV119, techniqueCooldownReductionPctV119, techniqueDamageReductionAdjustmentPctV119, techniqueDeferredDamagePctV119, techniqueHealingReceivedMultiplierV119, techniqueInterruptResistPctV119, techniqueRecoveryMultiplierV119, techniqueSpiritOverflowToGaugePctV119, techniqueSpiritRegenMultiplierV119 } from './technique-runtime-v119.js';
 import './boss-gameplay-v2.js';
-import { COMBAT_RULES, actionSpeedMultiplier, combatMaxHp, combatSpiritStandard, combineBoundedPct, combinedHeartCritMultiplier, controlContestDurationMultiplierV5, controlDurationReductionPct, fiveStatSkillPowerV5, cooldownProfile, critLayerName, critProfile, defenseFactor, dodgeProfile, effectiveControlDuration, elementAffinity, elementResistanceMultiplier, fiveElementBreakMultiplier, fiveElementCounter, fiveElementDamageMultiplier, heartProfile, rawElementalDamage, totalDamageReductionPct } from './combat-rules.js';
+import { COMBAT_RULES, actionSpeedMultiplier, combatMaxHp, combatSpiritStandard, combineBoundedPct, combinedHeartCritMultiplier, controlContestDurationMultiplierV5, controlDurationReductionPct, ensurePrimaryStatsV5SnapshotV5, fiveStatSkillPowerV5, cooldownProfile, critLayerName, critProfile, defenseFactor, dodgeProfile, effectiveControlDuration, elementAffinity, elementResistanceMultiplier, fiveElementBreakMultiplier, fiveElementCounter, fiveElementDamageMultiplier, heartProfile, rawElementalDamage, totalDamageReductionPct } from './combat-rules.js';
 import { handleCombatDecisionV141 } from './combat-decision.js';
 function simpleSetParamV12318(entity, mechanic, key) {
     return setMechanicV117(entity, mechanic)?.params[key] ?? 0;
@@ -38,15 +38,16 @@ export class CombatEngine {
         }
     }
     instantiate(def) {
-        const maxHp = combatMaxHp(def.stats);
+        const snapshottedStats = ensurePrimaryStatsV5SnapshotV5(def.stats);
+        const maxHp = combatMaxHp(snapshottedStats);
         const entity = {
             id: def.id,
             combatModel: def.combatModel ?? 'legacy',
             name: def.name,
             tags: [...def.tags],
-            baseStats: { ...def.stats, maxHp },
+            baseStats: { ...snapshottedStats, maxHp },
             hp: maxHp,
-            spirit: def.stats.maxSpirit,
+            spirit: snapshottedStats.maxSpirit,
             skillIds: [...def.skillIds],
             cooldownUntil: {},
             statuses: [],

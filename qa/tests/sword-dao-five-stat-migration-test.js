@@ -10,8 +10,8 @@ import {
   spendLifeCorePotential,
   syncPrimaryStatsV5FromDerivedV5,
 } from '../../dist/core/reincarnation-progression-v1102.js';
-import { COMBAT_RULES, controlContestDurationMultiplierV5, fiveStatSkillPowerV5 } from '../../dist/core/combat-rules.js';
-import { contestedDodgeChancePctV5, evadeChancePct } from '../../dist/core/stats.js';
+import { COMBAT_RULES, controlContestDurationMultiplierV5, ensurePrimaryStatsV5SnapshotV5, fiveStatSkillPowerV5 } from '../../dist/core/combat-rules.js';
+import { contestedDodgeChancePctV5, effectiveStats, evadeChancePct } from '../../dist/core/stats.js';
 import { scalePvpEntityV91 } from '../../dist/core/pvp-v91.js';
 import { battleDaoSkillsV118 } from '../../dist/content/battle-dao-skill-pack-v118.js';
 import { buildRegistry } from '../../dist/content/registry.js';
@@ -262,6 +262,30 @@ testCase('F5 Hunt V130 preview responds to Sword TPH/TT scaling instead of Attac
   const myriadLow=buildHuntCombatProfileV130(make(myriadId,{agility:80,sense:40}),registry);
   const myriadHigh=buildHuntCombatProfileV130(make(myriadId,{agility:80,sense:120}),registry);
   assert(myriadHigh.rawDamagePerSecond>myriadLow.rawDamagePerSecond,'higher TT must raise Vạn Kiếm preview damage at equal Attack');
+});
+
+
+testCase('F5 legacy NPCs snapshot five primary stats once so runtime Mobility/Accuracy buffs do not mint TPH/TT',()=>{
+  const base=ensurePrimaryStatsV5SnapshotV5({
+    attack:100,physique:60,maxHp:1200,maxSpirit:80,mobility:70,accuracy:65,defense:50,
+    resolve:65,controlPower:65,actionSpeed:1,dodgeChancePct:0,heartChancePct:0,critChancePct:0,critPowerPerLayer:.5,
+  });
+  assert.deepEqual(base.primaryStatsV5,{power:100,body:60,agility:70,spirit:80,sense:65});
+  const registry=buildRegistry();
+  const runtime={
+    baseStats:base,
+    combatBuildV117:{activeSetMechanics:[]},
+    statuses:[{id:'status.wind_step',expiresAt:10}],
+    breakDebuffUntil:0,
+    tags:[],
+  };
+  const effective=effectiveStats(runtime,registry,1);
+  assert(effective.mobility>70);
+  assert(effective.accuracy>65);
+  assert.equal(effective.primaryStatsV5.agility,70);
+  assert.equal(effective.primaryStatsV5.sense,65);
+  const src=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
+  assert(src.includes('const snapshottedStats = ensurePrimaryStatsV5SnapshotV5(def.stats)'));
 });
 
 console.log(`\nSWORD DAO F FIVE-STAT MIGRATION: ${passed}/${passed} PASS`);
