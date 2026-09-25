@@ -27,10 +27,10 @@ echo   TU TIEN NHAN ROI - LOCAL CI
 echo ==============================================
 echo.
 echo  [1] FAST       - Active gates + Backend Fast + Frontend Fast
-echo  [2] BROWSER    - Browser Playtest runtime that
-echo  [3] VISUAL     - Runtime UI + Combat 4 viewport
-echo  [4] FULL       - FAST + BROWSER + VISUAL
-echo  [5] FULL CLEAN - FULL va bat buoc git working tree sach
+echo  [2] BROWSER    - Runtime browser smoke (4 hanh trinh)
+echo  [3] VISUAL     - Deep web UI/Combat diagnostics (on demand)
+echo  [4] FULL       - FAST + BROWSER SMOKE
+echo  [5] FULL CLEAN - FAST + BROWSER SMOKE + bat buoc git sach
 echo  [D] DEV        - Mo tools\\web\\CHOI_UI_DEV.cmd
 echo  [Q] Thoat
 echo.

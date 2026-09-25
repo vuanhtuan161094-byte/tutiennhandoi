@@ -47,7 +47,7 @@ const now = new Date();
 const stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
 const shaTag = sha === 'NO_GIT_SHA' ? 'nogit' : sha.slice(0, 8);
 const runRoot = path.resolve(repoRoot, 'artifacts', 'local-ci', `${stamp}-${shaTag}-${dirty ? 'dirty' : 'clean'}-${mode}`);
-const playtestOut = path.join(runRoot, 'ai-playtest');
+const playtestOut = path.join(runRoot, 'browser-smoke');
 const visualOut = path.join(runRoot, 'ui-visual');
 const logFile = path.join(runRoot, 'local-ci.log');
 const serverLogFile = path.join(runRoot, 'server.log');
@@ -276,14 +276,14 @@ async function runFast() {
 async function runBrowser(base, chromePath, skipContractValidation = false) {
   if (!skipContractValidation) await step('Browser contract validation', node, ['qa/playtest/validate-contracts.mjs']);
   const cdpPort = await reservePort(9333, 9399);
-  await step('Deterministic browser playtest', node, [
+  await step('Runtime browser smoke', node, [
     'qa/playtest/run-scenarios.mjs',
     '--base', base,
     '--out', playtestOut,
     '--chrome', chromePath,
     '--cdp-port', String(cdpPort),
   ], { env: { CHROME_PATH: chromePath } });
-  await step('Strict browser summary', node, ['qa/playtest/summarize-report.mjs', path.join(playtestOut, 'playtest-report.json')], {
+  await step('Strict browser smoke summary', node, ['qa/playtest/summarize-report.mjs', path.join(playtestOut, 'playtest-report.json')], {
     env: { TUTIEN_PLAYTEST_SHA: dirty ? `${sha}-dirty` : sha },
   });
 }
@@ -405,7 +405,7 @@ try {
     console.log(`Browser    : ${chromePath}`);
     const base = await startServer();
     if (mode === 'browser' || mode === 'full') await runBrowser(base, chromePath, mode === 'full');
-    if (mode === 'visual' || mode === 'full') await runVisual(base, chromePath);
+    if (mode === 'visual') await runVisual(base, chromePath);
   }
   summary.status = 'pass';
   banner('LOCAL CI PASS');
