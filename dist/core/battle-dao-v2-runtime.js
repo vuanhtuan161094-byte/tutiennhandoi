@@ -319,8 +319,10 @@ export function swordQiGenerateAfterActionV2(entity, skill, action) {
         gain = 1;
     else if (skill.id === 'skill.dao.sword.flow_slash' && spent <= 0)
         gain = 1 + (tier >= 100 && action.battleDaoV2?.heartHitCount ? 1 : 0);
-    else if (skill.id === 'skill.dao.sword.nurture')
-        gain = tier >= 250 ? 3 : 2;
+    else if (skill.id === 'skill.dao.sword.nurture') {
+        const before = action.battleDaoV2?.swordQiBefore ?? core.swordQi;
+        gain = tier >= 1000 && before <= 1 ? Math.max(0, 5 - core.swordQi) : tier >= 250 ? 3 : 2;
+    }
     else if (skill.id === 'skill.dao.sword.break_mark' && spent <= 0)
         gain = 1;
     else if (skill.id === 'skill.dao.sword.chain' && spent <= 0)
@@ -341,7 +343,7 @@ export function swordQiGenerateAfterActionV2(entity, skill, action) {
     return core.swordQi - before;
 }
 export function swordV2ActionTuning(entity, skill, target, action) {
-    const out = { castMultiplier: 1, recoveryMultiplier: 1, cooldownOverride: undefined, extraEffectBonusPct: 0, extraBreakBonusPct: 0, extraArmorPenPct: 0, extraCritHeartDamagePct: 0 };
+    const out = { castMultiplier: 1, recoveryMultiplier: 1, cooldownOverride: undefined, extraEffectBonusPct: 0, extraBreakBonusPct: 0, extraArmorPenPct: 0, extraCritHeartDamagePct: 0, critHeartPowerMultiplier: 1 };
     if (!battleDaoV2Enabled(entity) || entity.combatBuildV117?.mainDaoId !== 'sword' || skillRuntimeV117(skill).daoBinding !== 'sword')
         return out;
     const tier = entity.combatBuildV117?.skillPracticeTierV125?.[skill.id] ?? 0;
@@ -375,6 +377,18 @@ export function swordV2ActionTuning(entity, skill, target, action) {
     if (skill.id === 'skill.dao.sword.sever' && tier >= 100)
         out.extraBreakBonusPct += 15;
     const spent = Math.max(0, Math.floor(action?.battleDaoV2?.swordQiSpent ?? 0));
+    if (skill.id === 'skill.dao.sword.sever' && tier >= 1000 && qi >= 3) {
+        out.extraBreakBonusPct += 35;
+        out.extraArmorPenPct += 25;
+    }
+    if (skill.id === 'skill.dao.sword.finisher' && tier >= 250 && action?.battleDaoV2?.targetBrokenBefore)
+        out.extraEffectBonusPct += 20;
+    if (skill.id === 'skill.dao.sword.finisher' && tier >= 500 && spent >= 3)
+        out.extraArmorPenPct += 15;
+    if (skill.id === 'skill.dao.sword.finisher' && tier >= 1000 && spent >= 5)
+        out.critHeartPowerMultiplier = 1.5;
+    if (skill.id === 'skill.dao.sword.myriad' && tier >= 1000 && qi >= 4)
+        out.extraBreakBonusPct += 20;
     const intent = entity.battleDaoStateV2?.sword?.intent;
     const intentStacks = intent?.stacks ?? 0;
     const atIntentCap = (action?.battleDaoV2?.swordIntentAtStart ?? 0) >= (action?.battleDaoV2?.swordIntentCapAtStart ?? Number.POSITIVE_INFINITY);
@@ -489,7 +503,10 @@ export function swordV2EffectsForSkill(entity, skill, action, chance) {
         const spend = Math.min(qi, 5);
         if (tier >= 250)
             c += spend * .15;
-        return [cloneDamage(d0, c, d0.breakDamagePct ?? d0.stabilityDamage ?? 70), ...other];
+        const arr = [cloneDamage(d0, c, d0.breakDamagePct ?? d0.stabilityDamage ?? 70)];
+        if (tier >= 500 && qi >= 5)
+            arr.push(cloneDamage(d0, 1.8, 0));
+        return [...arr, ...other];
     }
     return skill.effects;
 }
@@ -501,9 +518,9 @@ export function swordV2ChannelProfile(entity, skill, action) {
     const qi = action?.battleDaoV2?.swordQiBefore ?? entity.battleDaoStateV2?.sword?.core?.swordQi ?? 0;
     if (tier >= 750)
         out.durationMultiplier = 2.6 / 3;
-    if (tier >= 1000 && qi >= 3)
+    if (tier >= 1000 && qi >= 4)
         out.hitCountOverride = 10;
-    else if (tier >= 500 && qi >= 3)
+    else if (tier >= 500 && qi >= 4)
         out.hitCountOverride = 8;
     if (tier >= 100)
         out.lastHitMultiplier = 1.5;

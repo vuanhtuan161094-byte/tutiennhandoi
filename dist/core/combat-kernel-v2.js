@@ -426,7 +426,8 @@ export function buildPlayerCombatEntityV1(input) {
     };
     const permanent = { ...emptyAlchemyAllocation(), ...(alchemyPermanentStats ?? {}) };
     const buff = activeAlchemyBuff(alchemy, state.worldTimeYears);
-    return applyAlchemyStatBonuses(born, lifeBonus, permanent, buff);
+    const finalEntity = applyAlchemyStatBonuses(born, lifeBonus, permanent, buff);
+    return { ...finalEntity, combatBuildV117: { ...(finalEntity.combatBuildV117 ?? {}), realmOrder: Math.max(0, Number(state.realm?.maxRealmOrder ?? 0) || 0) } };
 }
 
 /* Activity settlement boundary. */

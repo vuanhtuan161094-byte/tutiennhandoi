@@ -187,6 +187,7 @@ export function handleCombatDecisionV141(actor, target, now) {
             prepared.action.breakBonusPct += swordTuning.extraBreakBonusPct;
             prepared.action.armorPenBonusPct = (prepared.action.armorPenBonusPct ?? 0) + swordTuning.extraArmorPenPct;
             prepared.action.critHeartDamageBonusPct = (prepared.action.critHeartDamageBonusPct ?? 0) + swordTuning.extraCritHeartDamagePct;
+            prepared.action.critHeartPowerMultiplier = Math.max(prepared.action.critHeartPowerMultiplier ?? 1, swordTuning.critHeartPowerMultiplier ?? 1);
             prepared.action.castTimeMultiplier *= swordTuning.castMultiplier;
             prepared.action.recoveryMultiplier *= swordTuning.recoveryMultiplier;
             prepareRemainingDaoCoreActionV2(actor, target, skill, prepared.action, now);

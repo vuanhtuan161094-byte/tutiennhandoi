@@ -6,7 +6,7 @@ export const BATTLE_DAO_V2_REALM_ORDER = {
 export const BATTLE_DAO_V2_REALM_SEQUENCE = ['mundane', 'spirit', 'mystic', 'earth', 'heaven', 'immortal', 'extreme', 'breaker'];
 const swordCoreV2 = {
     dao: 'sword', name: 'Kiếm Khí', mainOnly: true,
-    summary: 'Chủ Kiếm tích 0–5 Kiếm Khí. Đánh Thường và kỹ năng Kiếm tạo Kiếm Khí; mỗi tầng tăng nhịp Skill Kiếm, đạt đỉnh mở payoff Kiếm Khí Trảm rồi dựng lại.',
+    summary: 'Chủ Kiếm xoay Kiếm Khí 0–5: sinh Khí → từng kiếm thức tự tiêu Khí theo vai trò → lượng Khí thực tiêu nuôi Kiếm Ý. Tiên Vương có thể mở Kiếm Vực tạm nâng cap lên 7 bằng Tuyệt Kỹ đủ 5 Khí.',
 };
 const swordTreeV2 = [
     { realm: 'mundane', activeSkillId: 'skill.dao.sword.flow_slash', passiveId: 'passive.v2.sword.intent' },

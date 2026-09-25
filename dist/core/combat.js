@@ -401,7 +401,7 @@ export class CombatEngine {
             sword.swordDamageBuffPct = 15;
             sword.swordDamageBuffUntil = Math.max(sword.swordDamageBuffUntil, now + 4);
         }
-        if (skill.id === 'skill.dao.sword.break_mark' && tier >= 500 && target.breakDebuffUntil > now) {
+        if (skill.id === 'skill.dao.sword.break_mark' && tier >= 500 && !v2.targetBrokenBefore && target.breakDebuffUntil > now) {
             target.pendingSetFlagsV117['swordV2BreakMarkUntil'] = Math.max(target.pendingSetFlagsV117['swordV2BreakMarkUntil'] ?? 0, now + 4);
             target.pendingSetFlagsV117['swordV2BreakMarkPct'] = tier >= 1000 ? 20 : 10;
         }
@@ -442,10 +442,10 @@ export class CombatEngine {
             const refundText = intent.refundedQi > 0 ? ` · hoàn ${intent.refundedQi} Khí` : '';
             this.log(now, 'resource', `${actor.name} vận Kiếm Ý: +${intent.gained} Ý${refundText}.`, actor.id, actor.id, skill.id, { swordIntentGain: intent.gained, swordIntent: intent.stacks, swordIntentCap: intentState?.cap ?? 20, swordQiRefunded: intent.refundedQi, swordQi: core.swordQi, swordQiCap: core.swordQiCap, swordIntentDurationSeconds: intentState?.durationSeconds ?? 12, swordIntentCritChancePct: intentBonus.critChancePct, swordIntentHeartChancePct: intentBonus.heartChancePct, swordIntentArmorPenPct: intentBonus.armorPenPct, swordIntentDirectDamagePct: intentBonus.directDamagePct, rootActionId: v2.rootActionId });
         }
-        if (skill.id === 'skill.dao.sword.ultimate' && tier >= 1000) {
+        if (skill.id === 'skill.dao.sword.ultimate' && (actor.combatBuildV117?.realmOrder ?? 0) >= 78 && (v2.swordQiBefore ?? 0) >= 5) {
             sword.swordDomainUntil = now + 4;
             core.swordQiCap = 7;
-            this.log(now, 'resource', `${actor.name} mở Thái Hư Kiếm Vực trong 4 giây.`, actor.id, actor.id, skill.id, { swordDomainUntil: sword.swordDomainUntil, swordQiCap: 7 });
+            this.log(now, 'resource', `${actor.name} mở Thái Hư Kiếm Vực trong 4 giây.`, actor.id, actor.id, skill.id, { swordDomainUntil: sword.swordDomainUntil, swordQiCap: 7, realmOrder: actor.combatBuildV117?.realmOrder ?? 0 });
         }
     }
     handleV2FollowUp(actor, target, follow, now) {
@@ -848,6 +848,7 @@ export class CombatEngine {
             runtimeBreakBonusPct: Math.max(0, runtimeAction?.breakBonusPct ?? 0),
             runtimeArmorPenBonusPct: Math.max(0, runtimeAction?.armorPenBonusPct ?? 0),
             runtimeCritHeartBonusPct: Math.max(0, runtimeAction?.critHeartDamageBonusPct ?? 0),
+            runtimeCritHeartPowerMultiplier: Math.max(1, runtimeAction?.critHeartPowerMultiplier ?? 1),
         };
     }
     rollHit(source, target, ctx, now) {
@@ -1003,7 +1004,8 @@ export class CombatEngine {
         if (breakMarkUntil > now)
             raw *= 1 + (target.pendingSetFlagsV117['swordV2BreakMarkPct'] ?? 0) / 100;
         const swordCritHeartBonus = swordV2CritHeartBonusPct(source, now) + Math.max(0, ctx.runtimeCritHeartBonusPct ?? 0);
-        raw *= combinedHeartCritMultiplier(hitRoll.heart, critLayerCount, heart.damagePct + (hitRoll.heart ? swordCritHeartBonus : 0), crit.damagePctPerLayer + (didCrit ? swordCritHeartBonus : 0));
+        const swordCritHeartPower = Math.max(1, ctx.runtimeCritHeartPowerMultiplier ?? 1);
+        raw *= combinedHeartCritMultiplier(hitRoll.heart, critLayerCount, (heart.damagePct + (hitRoll.heart ? swordCritHeartBonus : 0)) * swordCritHeartPower, (crit.damagePctPerLayer + (didCrit ? swordCritHeartBonus : 0)) * swordCritHeartPower);
         let damage = raw;
         if (!ctx.trueDamage) {
             damage *= defenseFactor(srcStats.attack, dstStats.defense, (srcStats.armorPenPct ?? 0) + Math.max(0, ctx.runtimeArmorPenBonusPct ?? 0));
