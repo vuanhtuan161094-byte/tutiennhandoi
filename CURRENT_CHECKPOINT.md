@@ -77,6 +77,14 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - Potential restore was hardened so `lifetimeEarned` remains the sole budget authority; forged spent/unspent cannot mint new Potential.
 - Current implementation head before checkpoint: `ec1c4de66227d23eb76c80b49b2e651921857d5d`.
 - **F1–F4 status: IMPLEMENTED / QA PENDING. F5 targeted guard is wired into Backend Fast.** Do not call F CLOSED until exact local Fast/Mode 5 evidence passes; F6 production balance rerun follows that evidence.
+- F6 deterministic balance harness is now implemented:
+  - harness: `qa/benchmarks/sword-dao-f6-benchmark.js`;
+  - Windows one-click wrapper: `tools/web/RUN_SWORD_F6_BENCHMARK.cmd`;
+  - lightweight harness contract guard: `qa/tests/sword-dao-f6-harness-contract-test.js`, wired into Backend Fast;
+  - implementation commits: `31e8830f5127afa73252075309263694ba5ab9f3` + Windows hardening `31bf5202edd8c9990ca7c35246e772f05a50ac99`.
+- F6 measures production CombatKernel V3 only; it does not auto-tune gameplay. Default diagnostic matrix is 3 builds (Trọng Trảm / Lưu Quang / Ngự Kiếm) × 12 deterministic seeds × 180s, exactly 5 Sword Active slots + Basic + Ultimate, passive Lv20 and mastery 1000.
+- F6 outputs DPS/relative DPS, final CN/Gauge, Kiếm Khí generation/refund/estimated spend/overflow, Kiếm Ý timing, Break count, Ultimate cadence, Domain opens, per-skill cast/damage data. Current runtime logs do not expose CN after every skill payment, so the harness intentionally does not fabricate min-CN.
+- **F6 HARNESS status: IMPLEMENTED / NOT YET EXECUTED on the user machine.** Current F candidate remains QA PENDING.
 
 ## Godot migration — ACTIVE
 
