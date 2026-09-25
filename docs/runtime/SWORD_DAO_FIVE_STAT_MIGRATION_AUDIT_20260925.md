@@ -157,3 +157,18 @@ Implemented candidate commits:
 - Anti-forgery migration guard: `ec1c4de66227d23eb76c80b49b2e651921857d5d`
 
 Current status: **F1–F4 IMPLEMENTED / F5 TARGETED QA WIRED / LOCAL QA PENDING**.
+
+
+## 8. F5 combat-consumer parity audit — 2026-09-25
+
+Static audit covered Dungeon, Hunt, Boss, PvP, virtual/offline Hunt, legacy combatants, and player stat composition.
+
+- Player composition synchronizes legacy static CL/TP/TPH/LL into the five-stat snapshot after the final stat layer; TT is not reconstructed from direct Accuracy.
+- Runtime Attack buffs/debuffs keep their historical whole-skill damage effect for five-stat Sword skills, without converting Mobility/Accuracy modifiers into TPH/TT.
+- Legacy/NPC combatants receive one five-stat snapshot at combat instantiation.
+- Hunt V130 telemetry and Săn Ảo preview read F hybrid scaling; Attack-only V77 preview is compatibility-only.
+- PvP rating scaling preserves `primaryStatsV5`; PvP snapshots and encounter compilation preserve it by structured clone.
+- Dungeon first-clear, Hunt Boss and Săn Ảo/offline settlement resolve through CombatKernel V3 in production.
+- Boss V2 authoring does not independently mutate player five-stat authority; `offline.js` does not rescale combat stats.
+
+Static conclusion: no additional Dungeon/Boss/offline balance-coefficient changes are justified before F6 runtime evidence. Status remains **QA PENDING**.
