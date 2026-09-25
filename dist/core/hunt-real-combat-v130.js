@@ -198,7 +198,7 @@ export function buildHuntCombatProfileV130(entity, registry) {
 export function huntPreviewPlayerDpsLog10V130(entity, registry) {
     const profile = buildHuntCombatProfileV130(entity, registry);
     const penFactor = 1 + Math.max(0, Math.min(100, Number(entity.stats?.armorPenPct) || 0)) / 180;
-    const fateDamagePct = clamp(entity.combatBuildV117?.fateV4?.damagePct, -90, 500);
+    const fateDamagePct = clamp(Number(entity.combatBuildV117?.fateV4?.damagePct) || 0, -90, 500);
     const fateFactor = Math.max(.1, 1 + fateDamagePct / 100);
     return log10(Math.max(1, profile.rawDamagePerSecond * penFactor * fateFactor));
 }

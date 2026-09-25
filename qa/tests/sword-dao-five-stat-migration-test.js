@@ -299,6 +299,7 @@ testCase('F5 Săn Ảo preview uses five-stat sustained profile while settlement
     skillIds:[skillId],triggers:[],aiProfile:{name:'preview',rules:[{skillId,priority:100,conditions:[{type:'always'}]}]},
     combatBuildV117:{skillPracticeTierV125:{},skillLevelsV12317:{},skillGradesV12317:{}},
   });
+  assert(Number.isFinite(huntPreviewPlayerDpsLog10V130(make('skill.dao.sword.flow_slash',80,70),registry)),'preview DPS log must stay finite without an authored fate damagePct');
   const flow='skill.dao.sword.flow_slash';
   assert(huntPreviewPlayerDpsLog10V130(make(flow,120,70),registry)>huntPreviewPlayerDpsLog10V130(make(flow,40,70),registry));
   const myriad='skill.dao.sword.myriad';
