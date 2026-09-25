@@ -10,10 +10,11 @@ export const HUNT_VIRTUAL_FARM_MODEL_VERSION_V141 = 'v141-build-parity';
 const clamp = (value, min, max) => Math.max(min, Math.min(max, Number(value) || 0));
 
 /**
- * Cheap read-only sustained-DPS estimator used by the Săn Ảo preview/telemetry only.
- * Settlement authority remains the representative CombatKernel V2 encounter in SimulationSession.
+ * Legacy cheap read-only sustained-DPS estimator retained for compatibility/tests.
+ * Production Session preview now uses huntPreviewPlayerDpsLog10V130 so Sword F scaling
+ * is represented; settlement authority is the representative CombatKernel V3 encounter.
  *
- * V141 parity closure:
+ * Historical V141 parity closure:
  * - generic Combat Power is never used to mint farm throughput;
  * - current offensive stats, Crit/Hội Tâm, Action Speed, Xuyên and active-skill breadth are reflected;
  * - real outgoing Damage% layers carried by the canonical CombatEntity (currently Mệnh Cách V4)

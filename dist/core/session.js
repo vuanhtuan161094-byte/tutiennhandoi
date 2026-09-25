@@ -64,7 +64,7 @@ import { applyBirthCombatOrigins, birthLuckFlatFromOrigins, birthLootMultiplierF
 import { applyEndlessLifeLegacy, bestEndlessHuntFarmFloors, bossReady, cloneEndlessHuntState, createEndlessHuntState, endlessHuntDisplay, endlessHuntFloorEfficiency, ensureEndlessHuntMonster, ensureMajorHuntMapUnlocked, generateEndlessHuntMonster, highestUnlockedLocalFloor, isEndlessHuntFloorCleared, isEndlessHuntFloorUnlocked, recordEndlessHuntFloorStats, resolveEndlessHuntFight, selectEndlessHuntFloor } from './endless-hunt.js';
 import { buildHuntCombatProfileV130, huntPreviewPlayerDpsLog10V130 } from './hunt-real-combat-v130.js';
 import { resolveEndlessHuntWithCombatKernelV3 } from './endless-hunt-combat-kernel-v2.js';
-import { deterministicBinomialV77, deterministicJitteredTotalV77, huntVirtualFarmPlayerDpsLog10V77, huntVirtualFarmProfileV77 } from './hunt-virtual-farm-v77.js';
+import { deterministicBinomialV77, deterministicJitteredTotalV77, huntVirtualFarmProfileV77 } from './hunt-virtual-farm-v77.js';
 import { compileCombatEncounterV1, runCompiledCombatEncounterV3 } from './combat-kernel-v2.js';
 import { applyCombatSettlementPolicyV1, contentEventDefeatPolicyV1, daoSuyDefeatPolicyV1, endlessHuntSettlementPolicyV1 } from './combat-kernel-v2.js';
 import { buildPlayerCombatEntityV1 } from './combat-kernel-v2.js';
