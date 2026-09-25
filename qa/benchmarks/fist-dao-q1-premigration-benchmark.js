@@ -110,7 +110,10 @@ function aggregate(profile,runs){
 }
 export function runFistQ1Benchmark({seeds=FIST_Q1_SEEDS,duration=FIST_Q1_DURATION_SECONDS}={}){
  const problems=validateFistQ1Profiles();if(problems.length) throw new Error(problems.join('\n'));
- const registry=buildRegistry(),runs=[];
+ const registry=buildRegistry();
+ const migrated=FIST_Q1_PROFILES.flatMap(p=>p.activeSkillIds).some(id=>Boolean(registry.skill(id).fiveStatScalingV5));
+ if(migrated) throw new Error('Q1 pre-migration benchmark is historical-only after Fist Q2; use its recorded pre-Q2 SHA or the later Q4 benchmark.');
+ const runs=[];
  for(const profile of FIST_Q1_PROFILES) for(const seed of seeds){
   const kernel=runCombatKernelV3({registry,seed,entities:[createFistQ1Player(profile),createFistQ1Target()],maxDuration:duration,mode:'simulation'});
   runs.push(summarize(kernel,profile,seed));

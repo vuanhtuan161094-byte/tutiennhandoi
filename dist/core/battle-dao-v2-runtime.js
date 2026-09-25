@@ -567,7 +567,7 @@ export function prepareFistCoreActionV2(entity, target, skill, action, now = 0) 
     }
     let wanted = 0;
     if (skill.id === 'skill.dao.fist.heavy')
-        wanted = tier >= 500 && before >= 5 ? 3 : 2;
+        wanted = before >= 5 ? 3 : 2;
     else if (skill.id === 'skill.dao.fist.shock' && tier >= 1000 && before >= 5)
         wanted = 2;
     else if (skill.id === 'skill.dao.fist.pressure' && before >= 5)
