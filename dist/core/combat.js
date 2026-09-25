@@ -426,7 +426,7 @@ export class CombatEngine {
                 core.fistDamageBuffUntil = Math.max(core.fistDamageBuffUntil ?? 0, now + 4);
             }
             if (skill.id === 'skill.dao.fist.shock' && landed) {
-                if (v2.targetCastingBefore && (target.casting || target.channeling)) {
+                if (v2.targetCastingBefore) {
                     this.applyStatus(actor, target, 'status.fist.shock_stagger', .35, 1, now, skill.id);
                     this.log(now, 'counterWindow', `${actor.name} dùng Chấn Mạch cắt nhịp ${target.name}.`, actor.id, target.id, skill.id, { fistCc: 'shock_interrupt', baseDuration: .35 });
                 }
@@ -435,7 +435,7 @@ export class CombatEngine {
                     target.pendingSetFlagsV117['fistV2ShockExposePct'] = 10;
                 }
             }
-            if (skill.id === 'skill.dao.fist.counter' && landed) {
+            if (skill.id === 'skill.dao.fist.counter' && landed && v2.fistCounterSucceeded) {
                 const lowHpAtCounter = actor.hp / combatMaxHp(actor.baseStats) <= .30;
                 this.applyStatus(actor, target, 'status.fist.counter_stagger', .40, 1, now, skill.id);
                 if (tier >= 250)

@@ -692,8 +692,10 @@ export function fistV2EffectsForSkill(entity, skill, action, chance, baseEffects
             arr.push(cloneDamage(d0, .80));
         return [...arr, ...other];
     }
-    if (skill.id === 'skill.dao.fist.counter')
-        return [cloneDamage(d0, 1.75 * (tier >= 100 ? 1.2 : 1), baseBreak), ...other];
+    if (skill.id === 'skill.dao.fist.counter') {
+        const counterSucceeded = Boolean(action?.battleDaoV2?.targetCastingBefore);
+        return [cloneDamage(d0, 1.75 * (tier >= 100 && counterSucceeded ? 1.2 : 1), baseBreak), ...other];
+    }
     if (skill.id === 'skill.dao.fist.chain_heavy') {
         if (tier >= 1000)
             return [cloneDamage(d0, .85), cloneDamage(d0, .85), cloneDamage(d0, .85), cloneDamage(d0, .85), cloneDamage(d0, 1.25, baseBreak), ...other];
@@ -746,8 +748,12 @@ export function finishFistCoreActionV2(entity, skill, action, now = 0) {
         else
             gain = tier >= 250 ? 3 : 2;
     }
-    else if (skill.id === 'skill.dao.fist.counter' && landed)
-        gain = tier >= 500 ? 3 : 2;
+    else if (skill.id === 'skill.dao.fist.counter' && landed) {
+        const counterSucceeded = Boolean(v2.targetCastingBefore);
+        v2.fistCounterSucceeded = counterSucceeded;
+        if (counterSucceeded)
+            gain = tier >= 500 ? 3 : 2;
+    }
     else if (skill.id === 'skill.dao.fist.chain_heavy' && landed)
         gain = 1;
     else if (skill.id === 'skill.dao.fist.pressure' && landed && (v2.fistForceSpent ?? 0) <= 0)
@@ -962,8 +968,12 @@ export function remainingDaoPassiveBonusesV2(entity, now) {
             const l8 = passiveLevelN(entity, dao, 8);
             out.directDamagePct += scale(l8, 10, dao === 'body' ? 25 : 30);
             out.gaugeGainPct += scale(l8, 0, 20);
-            st.expiresAt = Math.max(st.expiresAt, now + scale(l8, 1, 2));
-            st.nextDecayAt = undefined;
+            // Quyền p8 refresh is event-owned: stat/damage reads must never extend Liên Kình by themselves.
+            // Other Dao retain their historical behavior until their own migration slice.
+            if (dao !== 'fist') {
+                st.expiresAt = Math.max(st.expiresAt, now + scale(l8, 1, 2));
+                st.nextDecayAt = undefined;
+            }
         }
     }
     return out;
@@ -1263,8 +1273,15 @@ export function finishRemainingDaoActionV2(entity, target, skill, action, now, c
     for (const passiveDao of REMAINING_V2_DAOS) {
         if (passiveDao === 'body' || !canLearnDaoPassiveV2Runtime(entity, passiveDao) || !hasPassiveN(entity, passiveDao, 1))
             continue;
-        if (passiveDao === 'fist')
+        if (passiveDao === 'fist') {
             rootStackGainV2(entity, 'fist', action, now, chance, damaging);
+            const st = holderV2(entity, 'fist')?.stack;
+            if (damaging && st && st.stacks >= st.cap && hasPassiveN(entity, 'fist', 8)) {
+                const hold = scale(passiveLevelN(entity, 'fist', 8), 1, 2);
+                st.expiresAt = Math.max(st.expiresAt, now + hold);
+                st.nextDecayAt = undefined;
+            }
+        }
         else if (passiveDao === 'spell')
             rootStackGainV2(entity, 'spell', action, now, chance, skillStandardCostPctV117(skill) > 0 || skill.spiritCost > 0);
         else if (passiveDao === 'poison') {

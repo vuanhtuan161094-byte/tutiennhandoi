@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { buildRegistry } from '../../dist/content/registry.js';
 import { battleDaoSkillsV118 } from '../../dist/content/battle-dao-skill-pack-v118.js';
-import { createBattleDaoRuntimeStateV2, createRootActionV2, finishFistCoreActionV2, fistPassiveDefensePctV2, fistV2ActionTuning, fistV2EffectsForSkill, prepareFistCoreActionV2 } from '../../dist/core/battle-dao-v2-runtime.js';
+import { createBattleDaoRuntimeStateV2, createRootActionV2, finishFistCoreActionV2, finishRemainingDaoActionV2, fistPassiveDefensePctV2, fistV2ActionTuning, fistV2EffectsForSkill, prepareFistCoreActionV2, remainingDaoPassiveBonusesV2 } from '../../dist/core/battle-dao-v2-runtime.js';
 import { effectiveStats } from '../../dist/core/stats.js';
 import { fiveStatSkillPowerV5 } from '../../dist/core/combat-rules.js';
 import { canUseBattleDaoSkillV118 } from '../../dist/core/battle-dao-combat-v118.js';
@@ -194,6 +194,51 @@ testCase('Q2 Cửu Thiên Quyền Vực opens cap 7 and grants one extra root ge
  assert.equal(e.battleDaoStateV2.fist.core.fistForce,2);
 });
 
+testCase('Q2 Hồi Thân payoff requires a successful timing counter, not merely a landed cast',()=>{
+ const counter=battleDaoSkillsV118.find(x=>x.id==='skill.dao.fist.counter');
+
+ const miss=q2Entity(counter.id,1000,0),missAction=q2Action(miss,counter);
+ prepareFistCoreActionV2(miss,{id:'idle',breakDebuffUntil:0},counter,missAction,0);
+ const missEffects=fistV2EffectsForSkill(miss,counter,missAction,()=>false);
+ assert.equal(missEffects.find(x=>x.type==='damage').coefficient,1.75);
+ missAction.battleDaoV2.directDamagingHitCount=1;
+ const missFinish=finishFistCoreActionV2(miss,counter,missAction,0);
+ assert.equal(missAction.battleDaoV2.fistCounterSucceeded,false);
+ assert.equal(missFinish.requestedGain,0);
+ assert.equal(miss.battleDaoStateV2.fist.core.fistForce,0);
+
+ const hit=q2Entity(counter.id,1000,0),hitAction=q2Action(hit,counter);
+ prepareFistCoreActionV2(hit,{id:'casting',breakDebuffUntil:0,casting:{skillId:'skill.basic_strike'}},counter,hitAction,0);
+ const hitEffects=fistV2EffectsForSkill(hit,counter,hitAction,()=>false);
+ assert.equal(Number(hitEffects.find(x=>x.type==='damage').coefficient.toFixed(6)),2.1);
+ hitAction.battleDaoV2.directDamagingHitCount=1;
+ const hitFinish=finishFistCoreActionV2(hit,counter,hitAction,0);
+ assert.equal(hitAction.battleDaoV2.fistCounterSucceeded,true);
+ assert.equal(hitFinish.requestedGain,3);
+ assert.equal(hit.battleDaoStateV2.fist.core.fistForce,3);
+});
+
+testCase('Q2 Liên Kình p8 peak hold is refreshed by damaging roots, never by passive/stat reads',()=>{
+ const basic=battleDaoSkillsV118.find(x=>x.id==='skill.dao.fist.basic');
+ const e=q2Entity(basic.id,0,0);
+ e.combatBuildV117.learnedDaoPassiveIdsV118=['passive.v2.fist.p1','passive.v2.fist.p8'];
+ e.combatBuildV117.passiveLevelsV125={'passive.v2.fist.p1':20,'passive.v2.fist.p8':20};
+ e.battleDaoStateV2.fist.stack.stacks=e.battleDaoStateV2.fist.stack.cap;
+ e.battleDaoStateV2.fist.stack.expiresAt=10.5;
+ e.battleDaoStateV2.fist.stack.nextDecayAt=11.5;
+
+ const bonuses=remainingDaoPassiveBonusesV2(e,10);
+ assert(bonuses.directDamagePct>0);
+ assert.equal(e.battleDaoStateV2.fist.stack.expiresAt,10.5);
+ assert.equal(e.battleDaoStateV2.fist.stack.nextDecayAt,11.5);
+
+ const action=q2Action(e,basic);
+ action.battleDaoV2.directDamagingHitCount=1;
+ finishRemainingDaoActionV2(e,{id:'target',hp:100,baseStats:{maxHp:100}},basic,action,10,()=>false);
+ assert.equal(e.battleDaoStateV2.fist.stack.expiresAt,12);
+ assert.equal(e.battleDaoStateV2.fist.stack.nextDecayAt,undefined);
+});
+
 testCase('Q2 canonical Fist CC statuses and CombatKernel hooks are present',()=>{
  const registry=buildRegistry();
  const shock=registry.status('status.fist.shock_stagger');
@@ -209,6 +254,8 @@ testCase('Q2 canonical Fist CC statuses and CombatKernel hooks are present',()=>
  assert(combat.includes("'status.fist.counter_stagger', .40"));
  assert(combat.includes("statusRecoveryMultiplier"));
  assert(combat.includes("fistV2ShockExposeUntil"));
+ assert(combat.includes("if (v2.targetCastingBefore)"));
+ assert(combat.includes("landed && v2.fistCounterSucceeded"));
  assert(combat.includes("const lowHpAtCounter = actor.hp / combatMaxHp(actor.baseStats) <= .30"));
  assert(combat.includes("tier >= 1000 && lowHpAtCounter"));
 });
