@@ -56,7 +56,9 @@ export function boundedStatCapV129(key) {
         return COMBAT_RULES.controlDurationReductionCapPct;
     if (key === 'spiritEfficiencyPct')
         return COMBAT_RULES.spiritEfficiencyCapPct;
-    if (key === 'dodgeChancePct' || key === 'heartChancePct' || key === 'armorPenPct')
+    if (key === 'dodgeChancePct')
+        return 75;
+    if (key === 'heartChancePct' || key === 'armorPenPct')
         return 100;
     return undefined;
 }
@@ -128,6 +130,12 @@ export function controlDurationReductionPct(stats, statuses = []) {
 }
 export function effectiveControlDuration(baseSeconds, reductionPct) {
     return Math.max(0, baseSeconds) * (1 - clamp(reductionPct, 0, COMBAT_RULES.controlDurationReductionCapPct) / 100);
+}
+export function controlContestDurationMultiplierV5(controlPower, resolve, pressure = 0) {
+    const control = Math.max(0, Number(controlPower) || 0);
+    const effectiveResolve = Math.max(0, Number(resolve) || 0) * (1 + Math.max(0, Number(pressure) || 0) * 0.35);
+    const contest = control / Math.max(1, control + effectiveResolve);
+    return 0.35 + 1.30 * contest;
 }
 export function trueEssenceEfficiencyPct(stats) {
     return clamp(stats.spiritEfficiencyPct ?? 0, 0, COMBAT_RULES.spiritEfficiencyCapPct);

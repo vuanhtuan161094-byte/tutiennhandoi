@@ -193,14 +193,16 @@ export function statProvenanceV129(stages, finalEntity, context = {}) {
     const permanent = context.corePotential?.permanent ?? {};
     const rootStats = [
         { id: 'power', name: 'Công Lực', lifePoints: Math.max(0, Number(life.power) || 0), permanentPoints: Math.max(0, Number(permanent.power) || 0), combatStat: 'Công', perPointText: '+1 Công', combatPerPoint: 1 },
-        { id: 'body', name: 'Thể Phách', lifePoints: Math.max(0, Number(life.body) || 0), permanentPoints: Math.max(0, Number(permanent.body) || 0), combatStat: 'Thể Phách / Khí Huyết', perPointText: '+1 Thể Phách · +20 Khí Huyết chuẩn', combatPerPoint: 1 },
-        { id: 'defense', name: 'Phòng Ngự', lifePoints: Math.max(0, Number(life.defense) || 0), permanentPoints: Math.max(0, Number(permanent.defense) || 0), combatStat: 'Phòng', perPointText: '+3 Phòng', combatPerPoint: 3 },
+        { id: 'body', name: 'Thể Phách', lifePoints: Math.max(0, Number(life.body) || 0), permanentPoints: Math.max(0, Number(permanent.body) || 0), combatStat: 'Thể Phách / Khí Huyết / Phòng', perPointText: '+1 Thể Phách · +20 Khí Huyết · +1 Phòng', combatPerPoint: 1 },
+        { id: 'agility', name: 'Thân Pháp', lifePoints: Math.max(0, Number(life.agility) || 0), permanentPoints: Math.max(0, Number(permanent.agility) || 0), combatStat: 'Mobility', perPointText: '+1 Mobility', combatPerPoint: 1 },
+        { id: 'spirit', name: 'Linh Lực', lifePoints: Math.max(0, Number(life.spirit) || 0), permanentPoints: Math.max(0, Number(permanent.spirit) || 0), combatStat: 'Chân Nguyên', perPointText: '+1 Max Chân Nguyên', combatPerPoint: 1 },
+        { id: 'sense', name: 'Thần Thức', lifePoints: Math.max(0, Number(life.sense) || 0), permanentPoints: Math.max(0, Number(permanent.sense) || 0), combatStat: 'Chính Xác / Khống Chế / Định Lực', perPointText: '+1 Chính Xác · +1 Khống Chế · +1 Định Lực', combatPerPoint: 1 },
     ].map(x => ({ ...x, totalPoints: x.lifePoints + x.permanentPoints, combatContribution: (x.lifePoints + x.permanentPoints) * x.combatPerPoint }));
     return {
         schema: 'stat-provenance.v129',
         rootStats,
         terminology: {
-            rootStat: 'Chỉ số Gốc = Công Lực / Thể Phách / Phòng Ngự dùng để phân Tiềm Năng.',
+            rootStat: 'Chỉ số Gốc = Công Lực / Thể Phách / Thân Pháp / Linh Lực / Thần Thức dùng để phân Tiềm Năng.',
             baseValue: 'Giá trị Nền = stat của CombatEntity trước khi các hệ thống cá nhân cộng thêm.',
             flat: 'Cộng thẳng = +X đơn vị.',
             percentagePoint: 'Điểm % = mức tỷ lệ do nguồn ghi. Bạo Kích cộng thẳng; Né/Hội Tâm/Xuyên/Giảm Thương/Kháng Khống cộng theo phần hiệu lực còn lại.',
