@@ -621,6 +621,15 @@ function addGenericStackV2(entity, dao, amount, now) {
         refreshGenericStackV2(entity, dao, now);
     return st.stacks - before;
 }
+export function fistPassiveDefensePctV2(entity, now) {
+    if (!battleDaoV2Enabled(entity) || !canLearnDaoPassiveV2Runtime(entity, 'fist') || !hasPassiveN(entity, 'fist', 4))
+        return 0;
+    const st = stackV2(entity, 'fist', now);
+    const stacks = st?.stacks ?? 0;
+    if (stacks <= 0)
+        return 0;
+    return stacks * scale(passiveLevelN(entity, 'fist', 4), .15, .50);
+}
 export function remainingDaoPassiveBonusesV2(entity, now) {
     const out = { directDamagePct: 0, breakPct: 0, damageReductionPct: 0, spiritCostReductionPct: 0, recoveryReductionPct: 0, gaugeGainPct: 0, healShieldPct: 0, armorPenPct: 0 };
     if (!battleDaoV2Enabled(entity))

@@ -1,5 +1,5 @@
 import { actionSpeedMultiplier, adjustedActionTime, combatMaxHp, defenseFactor as v2DefenseFactor, combineBoundedPct, combineStatPctV129, } from './combat-rules.js';
-import { swordIntentBonusesV2 } from './battle-dao-v2-runtime.js';
+import { fistPassiveDefensePctV2, swordIntentBonusesV2 } from './battle-dao-v2-runtime.js';
 function simpleSetParam(entity, mechanic, key) {
     return entity.combatBuildV117?.activeSetMechanics?.find(x => x.mechanic === mechanic)?.params[key] ?? 0;
 }
@@ -55,6 +55,7 @@ export function effectiveStats(entity, registry, now) {
         defenseMul *= 1 - 0.30 * bossEffectiveness;
     }
     const swordV2 = swordIntentBonusesV2(entity, now);
+    const fistDefensePct = fistPassiveDefensePctV2(entity, now);
     heartChancePct = combineStatPctV129('heartChancePct', heartChancePct, swordV2.heartChancePct);
     const armorPenPct = combineStatPctV129('armorPenPct',
         combineStatPctV129('armorPenPct', entity.baseStats.armorPenPct ?? 0, setArmorPenPct),
@@ -63,7 +64,7 @@ export function effectiveStats(entity, registry, now) {
         ...entity.baseStats,
         maxHp: combatMaxHp(entity.baseStats),
         attack: entity.baseStats.attack * attackMul,
-        defense: entity.baseStats.defense * defenseMul * (1 + setDefensePct / 100),
+        defense: entity.baseStats.defense * defenseMul * (1 + (setDefensePct + fistDefensePct) / 100),
         mobility: entity.baseStats.mobility * mobilityMul,
         accuracy: entity.baseStats.accuracy * accuracyMul,
         actionSpeed: actionSpeedMultiplier(entity.baseStats.actionSpeed * actionSpeedMul),
