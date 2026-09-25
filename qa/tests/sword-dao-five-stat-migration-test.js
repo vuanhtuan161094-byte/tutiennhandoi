@@ -9,8 +9,9 @@ import {
   createLifeCorePotentialState,
   spendLifeCorePotential,
 } from '../../dist/core/reincarnation-progression-v1102.js';
-import { controlContestDurationMultiplierV5 } from '../../dist/core/combat-rules.js';
+import { COMBAT_RULES, controlContestDurationMultiplierV5, fiveStatSkillPowerV5 } from '../../dist/core/combat-rules.js';
 import { contestedDodgeChancePctV5, evadeChancePct } from '../../dist/core/stats.js';
+import { battleDaoSkillsV118 } from '../../dist/content/battle-dao-skill-pack-v118.js';
 
 let passed=0;
 const testCase=(name,fn)=>{fn();passed++;console.log(`✓ ${name}`);};
@@ -57,6 +58,7 @@ testCase('F2 each Potential point contributes only its authored axis effect with
   assert.equal(got.accuracy,21);
   assert.equal(got.controlPower,16);
   assert.equal(got.resolve,18);
+  assert.deepEqual(got.primaryStatsV5,{power:102,body:13,agility:24,spirit:35,sense:21});
 });
 
 testCase('F2 Dodge uses Mobility vs Accuracy plus direct Dodge to a 75% hard cap',()=>{
@@ -81,6 +83,59 @@ testCase('F2 locked combat source consumes the new Dodge and Control contest hel
   assert(src.includes('duration *= controlContestDurationMultiplierV5(src.controlPower, dst.resolve, pressure)'));
   assert(src.includes('target.controlPressure[pressureKey] = pressure + 1'));
   assert(src.includes('target.dodgePressure += 1'));
+});
+
+
+testCase('F4 Control Pressure resets after exactly 8 seconds of no same-group control',()=>{
+  assert.equal(COMBAT_RULES.controlPressureResetSeconds,8);
+  const src=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
+  assert(src.includes('now - lastPressureAt >= COMBAT_RULES.controlPressureResetSeconds ? 0'));
+  assert(src.includes('target.controlPressureLastAt[pressureKey] = now'));
+});
+
+testCase('F3 Sword has exactly the locked 10 five-stat scaling profiles',()=>{
+  const expected=new Map([
+    ['skill.dao.sword.basic',{scaling:{power:2.70},baseline:1.00}],
+    ['skill.dao.sword.flow_slash',{scaling:{power:1.35,agility:.50},baseline:1.55}],
+    ['skill.dao.sword.nurture',{scaling:{power:1.50},baseline:.45}],
+    ['skill.dao.sword.break_mark',{scaling:{power:2.10,sense:.90},baseline:1.35}],
+    ['skill.dao.sword.chain',{scaling:{power:1.00,agility:.75},baseline:2.16}],
+    ['skill.dao.sword.counter',{scaling:{power:1.20,agility:.50},baseline:1.80}],
+    ['skill.dao.sword.sever',{scaling:{power:3.00},baseline:2.20}],
+    ['skill.dao.sword.finisher',{scaling:{power:3.00},baseline:2.45}],
+    ['skill.dao.sword.myriad',{scaling:{power:1.60,sense:2.00},baseline:3.72}],
+    ['skill.dao.sword.ultimate',{scaling:{power:3.00},baseline:6.80}],
+  ]);
+  const sword=battleDaoSkillsV118.filter(x=>x.runtimeV117?.daoBinding==='sword');
+  assert.equal(sword.length,10);
+  for(const skill of sword){
+    const e=expected.get(skill.id);
+    assert(e,`unexpected Sword skill ${skill.id}`);
+    assert.deepEqual(skill.fiveStatScalingV5,e.scaling,`${skill.id} scaling mismatch`);
+    assert.equal(skill.fiveStatBaselineCoefficientV5,e.baseline,`${skill.id} baseline mismatch`);
+  }
+  const nonSword=battleDaoSkillsV118.filter(x=>x.runtimeV117?.daoBinding!=='sword');
+  assert(nonSword.every(x=>x.fiveStatScalingV5===undefined),'F3 must not migrate the other seven Dao');
+});
+
+testCase('F3 normalized five-stat power reproduces contract totals at baseline hit shape',()=>{
+  const stats={attack:999,mobility:999,accuracy:999,primaryStatsV5:{power:100,body:50,agility:80,spirit:60,sense:70}};
+  const flow=battleDaoSkillsV118.find(x=>x.id==='skill.dao.sword.flow_slash');
+  const flowPower=fiveStatSkillPowerV5(stats,flow.fiveStatScalingV5,flow.fiveStatBaselineCoefficientV5);
+  assert.equal(Number((flowPower*1.55).toFixed(6)),175); // 1.35*100 + .50*80
+  const myriad=battleDaoSkillsV118.find(x=>x.id==='skill.dao.sword.myriad');
+  const myriadPower=fiveStatSkillPowerV5(stats,myriad.fiveStatScalingV5,myriad.fiveStatBaselineCoefficientV5);
+  assert.equal(Number((myriadPower*.62*6).toFixed(6)),300); // 1.60*100 + 2.00*70
+  const ultimate=battleDaoSkillsV118.find(x=>x.id==='skill.dao.sword.ultimate');
+  const ultPower=fiveStatSkillPowerV5(stats,ultimate.fiveStatScalingV5,ultimate.fiveStatBaselineCoefficientV5);
+  assert.equal(Number((ultPower*6.8).toFixed(6)),300);
+});
+
+testCase('F3 CombatKernel consumes primaryStatsV5 scaling for root and bounded follow-up hits',()=>{
+  const src=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
+  assert(src.includes('fiveStatSkillPowerV5(srcStats, ctx.fiveStatScalingV5, ctx.fiveStatBaselineCoefficientV5)'));
+  assert(src.includes('fiveStatScalingV5: skill?.fiveStatScalingV5'));
+  assert(src.includes('fiveStatScalingV5: sourceSkill?.fiveStatScalingV5'));
 });
 
 console.log(`\nSWORD DAO F FIVE-STAT MIGRATION: ${passed}/${passed} PASS`);
