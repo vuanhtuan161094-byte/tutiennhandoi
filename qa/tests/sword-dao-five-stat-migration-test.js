@@ -150,4 +150,17 @@ testCase('F3 CombatKernel consumes primaryStatsV5 scaling for root and bounded f
   assert(src.includes('fiveStatScalingV5: sourceSkill?.fiveStatScalingV5'));
 });
 
+
+testCase('F1 legacy potential compatibility shell delegates to five-axis authority',async()=>{
+  const legacy=await import('../../dist/core/potential.js');
+  assert.deepEqual(legacy.potentialAttributeDefinitions.map(x=>x.id),['power','body','agility','spirit','sense']);
+  const migrated=legacy.clonePotentialState({lifetimeEarned:9,unspent:2,allocations:{power:3,body:2,defense:2}});
+  assert.equal(migrated.axisVersion,5);
+  assert.equal(migrated.unspent,9);
+  assert.deepEqual(migrated.allocations,{power:0,body:0,agility:0,spirit:0,sense:0});
+  const payload=legacy.legacyPotentialMigrationPayloadV127({lifetimeEarned:9,unspent:999,allocations:{power:999}});
+  assert.equal(payload.refundedUnspent,9);
+  assert.equal(payload.migratedTotal,9);
+});
+
 console.log(`\nSWORD DAO F FIVE-STAT MIGRATION: ${passed}/${passed} PASS`);
