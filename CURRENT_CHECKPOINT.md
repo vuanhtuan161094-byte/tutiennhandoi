@@ -93,6 +93,15 @@ Read this first. Do not reconstruct project state from old chats or memory witho
 - Static audit found PvP snapshots/encounter compilation use structured clones, so they preserve `primaryStatsV5`; no additional snapshot serialization patch was required.
 - Historical V127 three-axis simulation files are not production authority and must not be used as F balance evidence.
 - **Current status remains F QA PENDING.** Required local proof now includes both web/runtime Mode 5 FULL CLEAN and Godot `KIEM_TRA_GAME.cmd` because F touched Godot Character presentation, followed by the F6 benchmark.
+- F5 consumer/parity audit continued:
+  - player composed stats → five-stat bridge: `a0262c72ad7a8d6ae68f2eb7bd7ab55e440bbd7c`;
+  - preserve legacy runtime Attack multiplier semantics without minting TPH/TT: `703494cc83f2811688aa914694fcf93731ff7b91`;
+  - Hunt V130 hybrid Sword preview: `72923d6b97f2a7056f11085cffcb227d317c23a7`;
+  - one-time primary snapshot for legacy/NPC combatants: `52b7a413c7de7fcffcbd27c3e0a12f721d6a6af0`;
+  - Săn Ảo preview switched to F-aware V130 profile: `eee95cec082d31500663e87c2751ad38fdaa7e3a`;
+  - production Session no longer uses Attack-only V77 preview: `8595cbbd837aea39b9fc3ad39eb2f8d7fff4b3e4`.
+- Static consumer result: Dungeon first-clear, Hunt Boss and Săn Ảo/offline settlement all resolve through CombatKernel V3; Boss authoring does not rescale player five-stat state; `offline.js` does not mutate combat stats.
+- No further Dungeon/Boss/offline balance-coefficient patch is justified before F6 runtime evidence.
 
 ## Godot migration — ACTIVE
 
