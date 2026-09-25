@@ -555,6 +555,8 @@ export function prepareFistCoreActionV2(entity, target, skill, action, now = 0) 
     v2.fistDomainActiveAtStart = (core.fistDomainUntil ?? 0) > now;
     v2.targetBrokenBefore = Boolean(target?.breakDebuffUntil && target.breakDebuffUntil > now);
     v2.targetCastingBefore = Boolean(target?.casting || target?.channeling);
+    action.effectBonusPct += before * 3;
+    action.breakBonusPct += before * 4;
     if ((core.fistDamageBuffUntil ?? 0) > now)
         action.effectBonusPct += Math.max(0, core.fistDamageBuffPct ?? 0);
     const heavyPayoff = FIST_V2_PAYOFF_SKILLS.has(skill.id) && before >= 5;
@@ -1013,10 +1015,6 @@ export function battleDaoV2OutgoingMultiplier(entity, target, now, sourceTag, sk
         return 1;
     let pct = remainingDaoPassiveBonusesV2(entity, now).directDamagePct;
     const main = entity.combatBuildV117?.mainDaoId;
-    if (main === 'fist' && String(skillId ?? '').startsWith('skill.dao.fist.')) {
-        const n = holderV2(entity, 'fist')?.core?.fistForce ?? 0;
-        pct += n * 3;
-    }
     if (main === 'body') {
         const n = holderV2(entity, 'body')?.core?.counterForce ?? 0;
         pct += Math.floor(n / 20) * 3;
@@ -1061,8 +1059,6 @@ export function battleDaoV2BreakMultiplier(entity, now, skillId) {
         return 1;
     let pct = remainingDaoPassiveBonusesV2(entity, now).breakPct;
     const main = entity.combatBuildV117?.mainDaoId;
-    if (main === 'fist' && String(skillId ?? '').startsWith('skill.dao.fist.'))
-        pct += (holderV2(entity, 'fist')?.core?.fistForce ?? 0) * 4;
     if (main === 'formation') {
         const c = holderV2(entity, 'formation')?.core;
         if (c?.deployed)
@@ -1384,8 +1380,12 @@ export function v2ResourceProjection(entity, now) {
         out.swordIntentV2 = s.sword.intent.stacks;
         out.swordIntentV2Cap = s.sword.intent.cap;
     }
-    if (s.fist?.core)
+    if (s.fist?.core) {
         out.fistForce = s.fist.core.fistForce;
+        out.fistForceCap = s.fist.core.fistForceCap;
+        if ((s.fist.core.fistDomainUntil ?? 0) > now)
+            out.fistDomainUntil = s.fist.core.fistDomainUntil;
+    }
     if (s.fist?.stack) {
         out.fistPassiveStack = s.fist.stack.stacks;
         out.fistPassiveStackCap = s.fist.stack.cap;

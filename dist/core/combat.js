@@ -9,7 +9,7 @@ import { skillPracticeProfileFromTierV125 } from './specialization-skill-progres
 import { elementSealDamageCoefficientV133 } from './element-seal-v133.js';
 import { battleDaoSkillGrowthProfileV126 } from './battle-dao-skill-growth-v126.js';
 import './skill-heart-method-v12317.js';
-import { addPoisonSeedStageV2, battleDaoV2BreakMultiplier, battleDaoV2Enabled, battleDaoV2HealShieldMultiplier, battleDaoV2IncomingDamageMultiplier, battleDaoV2OutgoingMultiplier, consumePoisonSeedStageV2, createBattleDaoRuntimeStateV2, claimDamagingFollowUpV2, finishRemainingDaoActionV2, onBattleDaoV2HpDamageTaken, onBattleDaoV2Mitigation, v2ResourceProjection, recordDamageOutcomeV2, resolveSwordIntentAfterRootV2, swordIntentBonusesV2, swordQiGenerateAfterActionV2, swordV2CapstoneFollowUp, swordV2ChannelProfile, swordV2CritHeartBonusPct, swordV2DirectDamageMultiplier, swordV2EffectsForSkill, syncBattleDaoV2Timers } from './battle-dao-v2-runtime.js';
+import { addPoisonSeedStageV2, battleDaoV2BreakMultiplier, battleDaoV2Enabled, battleDaoV2HealShieldMultiplier, battleDaoV2IncomingDamageMultiplier, battleDaoV2OutgoingMultiplier, consumePoisonSeedStageV2, createBattleDaoRuntimeStateV2, claimDamagingFollowUpV2, finishFistCoreActionV2, finishRemainingDaoActionV2, fistV2EffectsForSkill, onBattleDaoV2HpDamageTaken, onBattleDaoV2Mitigation, v2ResourceProjection, recordDamageOutcomeV2, resolveSwordIntentAfterRootV2, swordIntentBonusesV2, swordQiGenerateAfterActionV2, swordV2CapstoneFollowUp, swordV2ChannelProfile, swordV2CritHeartBonusPct, swordV2DirectDamageMultiplier, swordV2EffectsForSkill, syncBattleDaoV2Timers } from './battle-dao-v2-runtime.js';
 import { cloneTechniqueCombatRuntimeV119, initializeTechniqueCombatStateV119, techniqueCooldownReductionPctV119, techniqueDamageReductionAdjustmentPctV119, techniqueDeferredDamagePctV119, techniqueHealingReceivedMultiplierV119, techniqueInterruptResistPctV119, techniqueRecoveryMultiplierV119, techniqueSpiritOverflowToGaugePctV119, techniqueSpiritRegenMultiplierV119 } from './technique-runtime-v119.js';
 import './boss-gameplay-v2.js';
 import { COMBAT_RULES, actionSpeedMultiplier, combatMaxHp, combatSpiritStandard, combineBoundedPct, combinedHeartCritMultiplier, controlContestDurationMultiplierV5, controlDurationReductionPct, ensurePrimaryStatsV5SnapshotV5, fiveStatSkillPowerV5, cooldownProfile, critLayerName, critProfile, defenseFactor, dodgeProfile, effectiveControlDuration, elementAffinity, elementResistanceMultiplier, fiveElementBreakMultiplier, fiveElementCounter, fiveElementDamageMultiplier, heartProfile, rawElementalDamage, totalDamageReductionPct } from './combat-rules.js';
@@ -277,7 +277,8 @@ export class CombatEngine {
             if (after > before + 1e-9)
                 this.log(now, 'resource', `${actor.name} tích Bảo Khí ${after.toFixed(0)}/${artifactV88.baoQiMax}.`, actor.id, actor.id, skill.id, { artifactRuntime: 'artifact.v88', artifactEvent: 'baoQi', baoQi: after, baoQiMax: artifactV88.baoQiMax, baoQiGain: after - before, artifactSources: sources });
         }
-        const resolvedEffects = swordV2EffectsForSkill(actor, skill, runtimeAction, pct => this.rng.chance(pct));
+        const swordEffects = swordV2EffectsForSkill(actor, skill, runtimeAction, pct => this.rng.chance(pct));
+        const resolvedEffects = fistV2EffectsForSkill(actor, skill, runtimeAction, pct => this.rng.chance(pct), swordEffects);
         this.resolveEffects(actor, target, resolvedEffects, 'ActiveHit', now, skill.id, cooldownDamageBonusPct, runtimeAction);
         this.registerCounterAction(actor, target, 'skillRole', now, skill.id);
         if (skill.channel && skill.channel.duration > 0 && skill.channel.baseHits > 0 && actor.alive && target.alive) {
@@ -394,11 +395,66 @@ export class CombatEngine {
         const remaining = finishRemainingDaoActionV2(actor, target, skill, action, now, pct => this.rng.chance(pct));
         for (const notice of remaining.notices)
             this.log(now, 'resource', notice.message, actor.id, actor.id, skill.id, notice.data);
+        const isFist = actor.combatBuildV117?.mainDaoId === 'fist' && skillRuntimeV117(skill).daoBinding === 'fist';
+        const fistFinish = isFist ? finishFistCoreActionV2(actor, skill, action, now) : undefined;
+        if (isFist && ((v2.fistForceSpent ?? 0) > 0 || (fistFinish?.requestedGain ?? 0) > 0)) {
+            this.log(now, 'resource', `${actor.name} vận Quyền Thế ${fistFinish?.fistForce ?? 0}/${fistFinish?.fistForceCap ?? 5}.`, actor.id, actor.id, skill.id, {
+                fistForceBefore: v2.fistForceBefore ?? 0,
+                fistForceSpent: v2.fistForceSpent ?? 0,
+                fistForceGenerated: fistFinish?.generated ?? 0,
+                fistForceRequestedGain: fistFinish?.requestedGain ?? 0,
+                fistForce: fistFinish?.fistForce ?? 0,
+                fistForceCap: fistFinish?.fistForceCap ?? 5,
+                fistHeavyPayoff: v2.fistHeavyPayoff === true,
+                fistDomainUntil: fistFinish?.fistDomainUntil ?? 0,
+            });
+        }
         const v2Projection = v2ResourceProjection(actor, now);
         if (Object.keys(v2Projection).length > 0)
             this.log(now, 'resource', `${actor.name} cập nhật Bản Đạo V2.`, actor.id, actor.id, skill.id, { v2DaoProjection: true, ...v2Projection });
         if (remaining.followUp && target.alive) {
             this.schedule({ time: now + remaining.followUp.delay, kind: 'v2FollowUp', actorId: actor.id, targetId: target.id, skillId: skill.id, v2FollowUp: { coefficient: remaining.followUp.coefficient, breakDamagePct: remaining.followUp.breakDamagePct, sourceSkillId: skill.id, label: remaining.followUp.label, claim: remaining.followUp.claim } });
+        }
+        if (isFist) {
+            const core = actor.battleDaoStateV2?.fist?.core;
+            const tier = actor.combatBuildV117?.skillPracticeTierV125?.[skill.id] ?? 0;
+            const landed = (v2.directDamagingHitCount ?? 0) > 0;
+            if (skill.id === 'skill.dao.fist.basic' && tier >= 750 && landed)
+                action.recoveryMultiplier *= Math.max(.1, 1 - .15 / Math.max(.2, skill.recoveryTime ?? 1));
+            if (skill.id === 'skill.dao.fist.nurture' && tier >= 500 && core) {
+                core.fistDamageBuffPct = 18;
+                core.fistDamageBuffUntil = Math.max(core.fistDamageBuffUntil ?? 0, now + 4);
+            }
+            if (skill.id === 'skill.dao.fist.shock' && landed) {
+                if (v2.targetCastingBefore && (target.casting || target.channeling)) {
+                    this.applyStatus(actor, target, 'status.fist.shock_stagger', .35, 1, now, skill.id);
+                    this.log(now, 'counterWindow', `${actor.name} dùng Chấn Mạch cắt nhịp ${target.name}.`, actor.id, target.id, skill.id, { fistCc: 'shock_interrupt', baseDuration: .35 });
+                }
+                if (tier >= 500 && !v2.targetBrokenBefore && target.breakDebuffUntil > now) {
+                    target.pendingSetFlagsV117['fistV2ShockExposeUntil'] = Math.max(target.pendingSetFlagsV117['fistV2ShockExposeUntil'] ?? 0, now + 4);
+                    target.pendingSetFlagsV117['fistV2ShockExposePct'] = 10;
+                }
+            }
+            if (skill.id === 'skill.dao.fist.counter' && landed) {
+                this.applyStatus(actor, target, 'status.fist.counter_stagger', .40, 1, now, skill.id);
+                if (tier >= 250)
+                    this.applyHeal(actor, actor, combatMaxHp(actor.baseStats) * .04, now, skill.id);
+                if (tier >= 1000 && actor.hp / combatMaxHp(actor.baseStats) <= .30)
+                    this.applyDirectShield(actor, actor, { type: 'shield', capacity: 0, stability: 100, maxHpPct: 12, duration: 3 }, now, skill.id);
+            }
+            if (skill.id === 'skill.dao.fist.pressure' && landed) {
+                const extreme = tier >= 1000 && (v2.fistForceBefore ?? 0) >= 5;
+                this.applyStatus(actor, target, extreme ? 'status.fist.pressure_extreme' : 'status.fist.pressure', extreme ? 4 : 3, 1, now, skill.id);
+                if (tier >= 500 && (v2.fistForceBefore ?? 0) >= 4)
+                    this.applyStatus(actor, target, extreme ? 'status.fist.guard_break_extreme' : 'status.fist.guard_break', extreme ? 5 : 4, 1, now, skill.id);
+            }
+            if (fistFinish?.openedDomain) {
+                this.log(now, 'resource', `${actor.name} mở Cửu Thiên Quyền Vực trong 4 giây.`, actor.id, actor.id, skill.id, {
+                    fistDomainUntil: fistFinish.fistDomainUntil,
+                    fistForceCap: fistFinish.fistForceCap,
+                });
+            }
+            return;
         }
         if (actor.combatBuildV117?.mainDaoId !== 'sword' || skillRuntimeV117(skill).daoBinding !== 'sword')
             return;
@@ -468,7 +524,9 @@ export class CombatEngine {
         this.log(now, 'resource', `${actor.name} phát ${follow.label}.`, actor.id, target.id, follow.sourceSkillId, { ...follow.claim, damage: outcome.hpDamage, v2FollowUp: true });
     }
     scheduleNextActionAfterRecovery(actor, target, skill, now, runtimeAction) {
-        const recovery = adjustedRecoveryTime((skill.recoveryTime ?? 0.2) * Math.max(.1, runtimeAction?.recoveryMultiplier ?? 1) * daoRecoveryMultiplierForTargetV118(actor, now) * techniqueRecoveryMultiplierV119(actor, skill, now), effectiveStats(actor, this.registry, now).actionSpeed);
+        const statusRecoveryMultiplier = this.activeStatusDefinitions(actor, now)
+            .reduce((multiplier, status) => multiplier * Math.max(.1, status.recoveryTimeMultiplier ?? 1), 1);
+        const recovery = adjustedRecoveryTime((skill.recoveryTime ?? 0.2) * Math.max(.1, runtimeAction?.recoveryMultiplier ?? 1) * daoRecoveryMultiplierForTargetV118(actor, now) * techniqueRecoveryMultiplierV119(actor, skill, now) * statusRecoveryMultiplier, effectiveStats(actor, this.registry, now).actionSpeed);
         this.schedule({ time: now + recovery, kind: 'decide', actorId: actor.id, targetId: target.id });
     }
     applyDaoMindDelay(target, delaySeconds, now) {
@@ -1013,8 +1071,10 @@ export class CombatEngine {
         }
         raw *= 1 + Math.max(0, ctx.runtimeEffectBonusPct) / 100;
         raw *= 1 + Math.max(0, ctx.cooldownDamageBonusPct) / 100;
-        raw *= battleDaoV2OutgoingMultiplier(source, target, now, ctx.sourceTag);
+        raw *= battleDaoV2OutgoingMultiplier(source, target, now, ctx.sourceTag, ctx.skillId);
         raw *= fateOutgoingDamageMultiplierV4(source,target);
+        if ((ctx.sourceTag === 'ActiveHit' || ctx.sourceTag === 'Counter') && (target.pendingSetFlagsV117['fistV2ShockExposeUntil'] ?? 0) > now)
+            raw *= 1 + Math.max(0, target.pendingSetFlagsV117['fistV2ShockExposePct'] ?? 0) / 100;
         if (ctx.sourceTag === 'ActiveHit' || ctx.sourceTag === 'Counter')
             raw *= swordV2DirectDamageMultiplier(source, now);
         const breakMarkUntil = target.pendingSetFlagsV117['swordV2BreakMarkUntil'] ?? 0;
@@ -1087,7 +1147,7 @@ export class CombatEngine {
             if ((coefficient ?? 0) > 0)
                 this.triggerElementalReactions(source, target, elementKey, ctx.sourceTag, now, ctx.skillId);
         }
-        this.applyBreakDamage(source, target, ctx.breakDamagePct * (1 + Math.max(-90, srcStats.breakEffectPct ?? 0) / 100) * (1 + Math.max(0, ctx.runtimeBreakBonusPct) / 100) * (1 + simpleSetParamV12318(source, 'simple_metal_break', 'breakBonusPct') / 100) * battleDaoV2BreakMultiplier(source, now), ctx.primaryElement, now, ctx.skillId);
+        this.applyBreakDamage(source, target, ctx.breakDamagePct * (1 + Math.max(-90, srcStats.breakEffectPct ?? 0) / 100) * (1 + Math.max(0, ctx.runtimeBreakBonusPct) / 100) * (1 + simpleSetParamV12318(source, 'simple_metal_break', 'breakBonusPct') / 100) * battleDaoV2BreakMultiplier(source, now, ctx.skillId), ctx.primaryElement, now, ctx.skillId);
         this.fireTriggers(source, target, 'OnHit', ctx.sourceTag, now, ctx.procCoefficient);
         if (didCrit)
             this.fireTriggers(source, target, 'OnCrit', ctx.sourceTag, now, ctx.procCoefficient);
