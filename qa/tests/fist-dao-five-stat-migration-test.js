@@ -3,6 +3,7 @@ import { buildRegistry } from '../../dist/content/registry.js';
 import { battleDaoSkillsV118 } from '../../dist/content/battle-dao-skill-pack-v118.js';
 import { createBattleDaoRuntimeStateV2, fistPassiveDefensePctV2 } from '../../dist/core/battle-dao-v2-runtime.js';
 import { effectiveStats } from '../../dist/core/stats.js';
+import { FIST_Q1_PROFILES, validateFistQ1Profiles } from '../benchmarks/fist-dao-q1-premigration-benchmark.js';
 
 let passed=0;
 function testCase(name,fn){fn();passed++;console.log('✓',name);}
@@ -57,6 +58,16 @@ testCase('Q1 player-facing Fist skill copy uses Quyền Thế, not stale Liên Q
   assert.equal(fist.length,10);
   assert(fist.some(x=>String(x.description).includes('Quyền Thế')));
   assert.equal(fist.filter(x=>String(x.description).includes('Liên Quyền')).length,0);
+});
+
+
+testCase('Q1 pre-migration benchmark profiles are deterministic five-slot 300-point fixtures',()=>{
+  assert.equal(FIST_Q1_PROFILES.length,3);
+  assert.deepEqual(validateFistQ1Profiles(),[]);
+  for(const p of FIST_Q1_PROFILES){
+    assert.equal(p.activeSkillIds.length,5);
+    assert.equal(Object.values(p.allocation).reduce((a,b)=>a+b,0),300);
+  }
 });
 
 console.log(`FIST DAO Q1: ${passed}/${passed} PASS`);
