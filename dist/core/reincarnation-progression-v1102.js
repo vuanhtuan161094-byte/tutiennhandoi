@@ -296,13 +296,28 @@ export function applyCorePotentialStats(stats,runtime){
   const permanent=normalizedFiveAllocationV5(runtime.permanent);
   const totals=Object.fromEntries(CORE_POTENTIAL_AXIS_IDS_V5.map(key=>[key,life[key]+permanent[key]]));
   const basePhysique=Number.isFinite(stats.physique)?Math.max(0,stats.physique):Math.max(0,(Number(stats.maxHp)||0)/20);
-  const physique=basePhysique+totals.body;
+  const legacyPrimary=stats.primaryStatsV5 ?? {
+    power:Math.max(0,Number(stats.attack)||0),
+    body:basePhysique,
+    agility:Math.max(0,Number(stats.mobility)||0),
+    spirit:Math.max(0,Number(stats.maxSpirit)||0),
+    // Compatibility seed until all old content authors explicit TT: pre-F Accuracy is the closest 1:1 base authority.
+    sense:Math.max(0,Number(stats.accuracy)||0),
+  };
+  const primaryStatsV5={
+    power:Math.max(0,(Number(legacyPrimary.power)||0)+totals.power),
+    body:Math.max(0,(Number(legacyPrimary.body)||0)+totals.body),
+    agility:Math.max(0,(Number(legacyPrimary.agility)||0)+totals.agility),
+    spirit:Math.max(0,(Number(legacyPrimary.spirit)||0)+totals.spirit),
+    sense:Math.max(0,(Number(legacyPrimary.sense)||0)+totals.sense),
+  };
   return {
     ...stats,
+    primaryStatsV5,
     attack:Math.max(0,(Number(stats.attack)||0)+totals.power),
     defense:Math.max(0,(Number(stats.defense)||0)+totals.body),
-    physique,
-    maxHp:physique*20,
+    physique:primaryStatsV5.body,
+    maxHp:primaryStatsV5.body*20,
     mobility:Math.max(0,(Number(stats.mobility)||0)+totals.agility),
     maxSpirit:Math.max(0,(Number(stats.maxSpirit)||0)+totals.spirit),
     accuracy:Math.max(0,(Number(stats.accuracy)||0)+totals.sense),

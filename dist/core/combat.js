@@ -18,6 +18,21 @@ function simpleSetParamV12318(entity, mechanic, key) {
     return setMechanicV117(entity, mechanic)?.params[key] ?? 0;
 }
 function fateOutgoingDamageMultiplierV4(source,target){ const fate=source?.combatBuildV117?.fateV4??{},general=Math.max(0,Number(fate.damagePct)||0),bossPct=Math.max(0,Number(fate.bossDamagePct)||0),boss=target?.tags?.some(tag=>['boss','dungeonguardian','bosslike'].includes(String(tag).toLowerCase())); return (1+general/100)*(boss?1+bossPct/100:1); }
+function swordFiveStatPowerV5(stats, scaling, baselineCoefficient) {
+    if (!scaling)
+        return Math.max(0, Number(stats.attack) || 0);
+    const primary = stats.primaryStatsV5 ?? {
+        power: Math.max(0, Number(stats.attack) || 0),
+        agility: Math.max(0, Number(stats.mobility) || 0),
+        sense: Math.max(0, Number(stats.accuracy) || 0),
+    };
+    const weighted = Math.max(0, Number(primary.power) || 0) * Math.max(0, Number(scaling.power) || 0)
+        + Math.max(0, Number(primary.body) || 0) * Math.max(0, Number(scaling.body) || 0)
+        + Math.max(0, Number(primary.agility) || 0) * Math.max(0, Number(scaling.agility) || 0)
+        + Math.max(0, Number(primary.spirit) || 0) * Math.max(0, Number(scaling.spirit) || 0)
+        + Math.max(0, Number(primary.sense) || 0) * Math.max(0, Number(scaling.sense) || 0);
+    return weighted / Math.max(0.0001, Number(baselineCoefficient) || 1);
+}
 export class CombatEngine {
     registry;
     seed;
@@ -452,7 +467,8 @@ export class CombatEngine {
     handleV2FollowUp(actor, target, follow, now) {
         if (!actor.alive || !target.alive)
             return;
-        const outcome = this.applyDamage(actor, target, { sourceTag: 'ProcHit', coefficient: Math.max(0, follow.coefficient), breakDamagePct: Math.max(0, follow.breakDamagePct), canCrit: true, canDodge: true, canHeart: true, unavoidable: false, trueDamage: false, procCoefficient: 0, skillId: follow.sourceSkillId, elementalCoefficients: undefined, primaryElement: undefined, cooldownDamageBonusPct: 0, runtimeEffectBonusPct: 0, runtimeBreakBonusPct: 0 }, now);
+        const sourceSkill = this.registry.skill(follow.sourceSkillId);
+        const outcome = this.applyDamage(actor, target, { sourceTag: 'ProcHit', coefficient: Math.max(0, follow.coefficient), breakDamagePct: Math.max(0, follow.breakDamagePct), canCrit: true, canDodge: true, canHeart: true, unavoidable: false, trueDamage: false, procCoefficient: 0, skillId: follow.sourceSkillId, elementalCoefficients: undefined, primaryElement: undefined, cooldownDamageBonusPct: 0, runtimeEffectBonusPct: 0, runtimeBreakBonusPct: 0, fiveStatScalingV5: sourceSkill?.fiveStatScalingV5, fiveStatBaselineCoefficientV5: sourceSkill?.fiveStatBaselineCoefficientV5 }, now);
         this.log(now, 'resource', `${actor.name} phát ${follow.label}.`, actor.id, target.id, follow.sourceSkillId, { ...follow.claim, damage: outcome.hpDamage, v2FollowUp: true });
     }
     scheduleNextActionAfterRecovery(actor, target, skill, now, runtimeAction) {
@@ -850,6 +866,8 @@ export class CombatEngine {
             runtimeArmorPenBonusPct: Math.max(0, runtimeAction?.armorPenBonusPct ?? 0),
             runtimeCritHeartBonusPct: Math.max(0, runtimeAction?.critHeartDamageBonusPct ?? 0),
             runtimeCritHeartPowerMultiplier: Math.max(1, runtimeAction?.critHeartPowerMultiplier ?? 1),
+            fiveStatScalingV5: skill?.fiveStatScalingV5,
+            fiveStatBaselineCoefficientV5: skill?.fiveStatBaselineCoefficientV5,
         };
     }
     rollHit(source, target, ctx, now) {
@@ -966,8 +984,9 @@ export class CombatEngine {
         const didCrit = critLayerCount > 0;
         if (didCrit)
             this.log(now, 'crit', `${source.name} ${critLayerName(critLayerCount)}.`, source.id, target.id, ctx.skillId, { rawCritPct: crit.rawPct, guaranteedLayers: crit.guaranteedLayers, nextLayerChancePct: crit.nextLayerChancePct, critLayers: critLayerCount, damagePctPerLayer: crit.damagePctPerLayer });
-        const hpPart = Math.min(combatMaxHp(target.baseStats) * Math.max(0, ctx.targetMaxHpPct ?? 0) / 100, srcStats.attack * Math.max(0, ctx.targetMaxHpAttackCapCoefficient ?? 0));
-        let raw = srcStats.attack * Math.max(0, ctx.coefficient) + hpPart + Math.max(0, Number(ctx.flatDamage ?? 0));
+        const skillPowerV5 = swordFiveStatPowerV5(srcStats, ctx.fiveStatScalingV5, ctx.fiveStatBaselineCoefficientV5);
+        const hpPart = Math.min(combatMaxHp(target.baseStats) * Math.max(0, ctx.targetMaxHpPct ?? 0) / 100, skillPowerV5 * Math.max(0, ctx.targetMaxHpAttackCapCoefficient ?? 0));
+        let raw = skillPowerV5 * Math.max(0, ctx.coefficient) + hpPart + Math.max(0, Number(ctx.flatDamage ?? 0));
         const elemental = ctx.elementalCoefficients ?? {};
         for (const [elementKey, coefficientValue] of Object.entries(elemental)) {
             const element = elementKey;
