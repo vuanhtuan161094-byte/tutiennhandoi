@@ -538,4 +538,14 @@ Evidence:
 - Legacy `low/medium/high` CN costs resolve against Chân Nguyên Chuẩn, not Max CN, so LL remains a meaningful larger resource pool; no forced flat-CN rewrite is required.
 - Five-stat identity before coefficient tuning: CL primary; TP for heavy/counter; TPH for combo/counter; LL resource capacity; TT utility only.
 - Old Fist Main-Dao damage calibration (1.10 mid / 0.84 endgame) must be benchmarked rather than silently retained or removed.
-- Status: **AUDIT OPEN / PRODUCTION SCALING UNCHANGED**. Next Q1: repair p4 + terminology guard, then build a deterministic pre-migration Quyền benchmark.
+- Q1 correctness candidate implemented:
+  - p4 **Hùng Kình Hộ Thể** now contributes its authored +0.15% → +0.50% Defense per Liên Kình through a pure five-stat-safe helper: `504f9844a6e2df16142f70bd1f5b61dd049268b2`;
+  - player-facing Fist skill copy now says **Quyền Thế** instead of stale Liên Quyền; internal `fistChain` compatibility metadata is unchanged;
+  - targeted `fist-dao-five-stat-migration-test.js` is wired into Backend Fast.
+- Deterministic pre-migration Quyền benchmark added: `182946fd49e315a3850cd1e10dc548225da94615`.
+  - 3 profiles: Trọng Quyền / Liên Hoàn / Phản Quyền;
+  - fixed 300-point allocation budget;
+  - 12 seeds × 180s, CombatKernel V3;
+  - all Quyền passives Lv20 and all mastery tiers 1000;
+  - diagnostic only: no target bands and no Quyền five-stat damage coefficients are locked yet.
+- Current status: **Q1 CANDIDATE / LOCAL FAST + BASELINE BENCHMARK PENDING**.
