@@ -517,3 +517,13 @@ Evidence:
 5. Non-UI runtime work is considered complete for the selected scope.
 6. UI/UX phase follows `docs/ui/UI_UX_WORKFLOW_V2_20260913.md`; no UI closure before actual runtime visual proof and explicit user approval.
 7. Home / Tu Luyện + App Shell / HUD + Character / Equipment are CLOSED / LOCKED. Next UI slice is **Combat Readability**, starting from the actual runtime baseline and preserving locked V168 Combat/Stat authority.
+
+
+## Local QA lane cleanup — 2026-09-25
+
+- Historical `AI PLAYTEST` naming was misleading: the runner is deterministic Chrome/CDP runtime smoke with four scripted journeys and no AI/LLM evaluator.
+- Local user-facing labels/artifacts now call it **Runtime Browser Smoke**.
+- Mode 4/5 `FULL / FULL CLEAN` now runs **Fast + Runtime Browser Smoke** only.
+- Heavy web visual capture (Home/Character baseline + four Combat viewports/showcase) remains available as explicit **VISUAL** mode and is no longer forced on every Full Clean.
+- Contract validation now guards this split so later changes cannot silently put heavyweight visual diagnostics back into Full/Full Clean.
+- This QA infrastructure cleanup happened after Sword F gameplay closure and does not alter the exact verified Sword gameplay SHA `edf479ff465c262d105020d96dc23a31ba7b66c1`.
