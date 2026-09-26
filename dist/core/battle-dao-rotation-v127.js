@@ -30,15 +30,24 @@ function rulesForDao(dao, skillIds, offset = 0) {
             add('basic', 10);
             break;
         case 'fist':
+            // Quyền Q3: phản ứng trước, ép Thất Thế, rồi mới cash-out Quyền Thế.
+            add('shock', 160, { type: 'targetIsCasting' });
+            add('counter', 154, { type: 'targetIsCasting' });
+            add('finisher', 150, { type: 'selfDaoV2ResourceAtLeast', resource: 'fistForce', value: 4 }, { type: 'targetIsBroken' });
+            add('pressure', 146, { type: 'selfDaoV2ResourceAtLeast', resource: 'fistForce', value: 5 }, { type: 'targetIsNotBroken' });
+            add('ultimate', 142, gauge, { type: 'selfDaoV2ResourceAtLeast', resource: 'fistForce', value: 5 });
+            add('heavy', 138, { type: 'selfDaoV2ResourceAtLeast', resource: 'fistForce', value: 5 });
+            // Fallback Ultimate may be held briefly by ai.js while 4 Quyền Thế tries to reach 5.
             add('ultimate', 132, gauge, { type: 'selfDaoV2ResourceAtLeast', resource: 'fistForce', value: 4 });
-            add('finisher', 122, { type: 'selfDaoV2ResourceAtLeast', resource: 'fistForce', value: 5 });
-            add('finisher', 116, { type: 'selfDaoV2ResourceAtLeast', resource: 'fistForce', value: 4 }, { type: 'targetIsBroken' });
-            add('counter', 112);
-            add('heavy', 108, { type: 'selfDaoV2ResourceAtLeast', resource: 'fistForce', value: 2 });
-            add('pressure', 102);
-            add('chain_heavy', 96);
-            add('shock', 92);
-            add('triple', 88);
+            add('shock', 128, { type: 'targetIsNotBroken' });
+            add('pressure', 124, { type: 'targetIsNotBroken' });
+            add('heavy', 116, { type: 'selfDaoV2ResourceAtLeast', resource: 'fistForce', value: 2 });
+            add('nurture', 110, { type: 'selfDaoV2ResourceBelow', resource: 'fistForce', value: 2 });
+            add('triple', 104, { type: 'selfDaoV2ResourceBelow', resource: 'fistForce', value: 4 });
+            add('chain_heavy', 98);
+            add('shock', 94);
+            add('triple', 90);
+            add('pressure', 86);
             add('nurture', 82, { type: 'selfDaoV2ResourceBelow', resource: 'fistForce', value: 3 });
             add('basic', 10);
             break;

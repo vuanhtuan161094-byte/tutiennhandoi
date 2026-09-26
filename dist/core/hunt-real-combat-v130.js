@@ -123,7 +123,8 @@ export function buildHuntCombatProfileV130(entity, registry) {
     const maxHp = combatMaxHp(entity.stats), attack = safe(entity.stats.attack), defense = safe(entity.stats.defense);
     const rules = [...entity.aiProfile.rules].sort((a, b) => b.priority - a.priority);
     const orderedIds = [...new Set([...rules.map(r => r.skillId), ...entity.skillIds])].filter(id => registry.skills.has(id));
-    const basic = orderedIds.find(id => id === 'skill.basic_strike') ?? entity.skillIds.find(id => id === 'skill.basic_strike');
+    const isBasicId = id => id === 'skill.basic_strike' || (entity.combatBuildV117?.mainDaoId === 'fist' && id === 'skill.dao.fist.basic');
+    const basic = orderedIds.find(isBasicId) ?? entity.skillIds.find(isBasicId);
     const standard = combatSpiritStandard(entity.stats);
     const regenPerSecond = standard * Math.max(0, entity.stats.spiritRegenStandardPctPerSecond ?? 0) / 100;
     const startingSpirit = Math.max(0, entity.stats.maxSpirit);

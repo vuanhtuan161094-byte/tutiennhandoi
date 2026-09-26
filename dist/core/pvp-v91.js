@@ -171,9 +171,9 @@ export function scalePvpEntityV91(anchorEntity, scale, id, name) {
   if (Number.isFinite(Number(stats.spiritStandard))) stats.spiritStandard = Math.max(0.01, Number(stats.spiritStandard) * sqrt);
   if (stats.primaryStatsV5 && typeof stats.primaryStatsV5 === 'object') {
     const primary = { ...stats.primaryStatsV5 };
-    // PvP band scaling is a synthetic combat handicap, not a respec. Keep every
-    // current Sword damage source (CL/TPH/TT) on the same linear damage scale so
-    // matchmaking does not favor one Sword build merely because F3 uses hybrid primaries.
+    // PvP band scaling is a synthetic combat handicap, not a respec. Keep current
+    // five-stat Dao damage sources on the same linear damage scale: Sword uses CL/TPH/TT,
+    // while Fist uses CL/TP/TPH. LL remains resource capacity on the sqrt lane.
     for (const key of ['power', 'body', 'agility', 'sense']) {
       if (Number.isFinite(Number(primary[key]))) primary[key] = Math.max(0.01, Number(primary[key]) * linear);
     }

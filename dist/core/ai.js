@@ -90,13 +90,20 @@ export function canUseSkill(self, skill, registry, now) {
 export function chooseSkill(self, target, registry, now) {
     const rules = [...self.aiProfile.rules].sort((a, b) => b.priority - a.priority);
     const swordMain = self.combatBuildV117?.mainDaoId === 'sword';
+    const fistMain = self.combatBuildV117?.mainDaoId === 'fist';
+    const projection = swordMain || fistMain ? v2ResourceProjection(self, now) : {};
     const swordGaugeReady = swordMain && self.ultimateGaugeV117 + 1e-9 >= 100;
-    const projection = swordMain ? v2ResourceProjection(self, now) : {};
     const swordPerfectUltimate = swordGaugeReady && (projection.swordQi ?? 0) >= 5 && (projection.swordIntentV2 ?? 0) >= 20;
     if (!swordGaugeReady)
         delete self.pendingSetFlagsV117['swordUltimateHoldUntil'];
     else if ((self.pendingSetFlagsV117['swordUltimateHoldUntil'] ?? 0) <= 0)
         self.pendingSetFlagsV117['swordUltimateHoldUntil'] = now + 4;
+    const fistUltimateEligible = fistMain && self.ultimateGaugeV117 + 1e-9 >= 100 && (projection.fistForce ?? 0) >= 4;
+    const fistPerfectUltimate = fistUltimateEligible && (projection.fistForce ?? 0) >= 5;
+    if (!fistUltimateEligible)
+        delete self.pendingSetFlagsV117['fistUltimateHoldUntil'];
+    else if ((self.pendingSetFlagsV117['fistUltimateHoldUntil'] ?? 0) <= 0)
+        self.pendingSetFlagsV117['fistUltimateHoldUntil'] = now + 3;
     for (const rule of rules) {
         if (rule.conditions.length > 2)
             throw new Error(`${self.aiProfile.name}/${rule.skillId}: AI V1 chỉ cho tối đa 2 điều kiện AND.`);
@@ -104,6 +111,8 @@ export function chooseSkill(self, target, registry, now) {
         if (!self.skillIds.includes(skill.id))
             continue;
         if (swordMain && skill.id === 'skill.dao.sword.ultimate' && swordGaugeReady && !swordPerfectUltimate && now + 1e-9 < (self.pendingSetFlagsV117['swordUltimateHoldUntil'] ?? now))
+            continue;
+        if (fistMain && skill.id === 'skill.dao.fist.ultimate' && fistUltimateEligible && !fistPerfectUltimate && now + 1e-9 < (self.pendingSetFlagsV117['fistUltimateHoldUntil'] ?? now))
             continue;
         if (!canUseSkill(self, skill, registry, now))
             continue;
