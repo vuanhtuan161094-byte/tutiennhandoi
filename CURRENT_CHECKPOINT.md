@@ -7,6 +7,7 @@ This file is the source of truth for a new chat. Read it before editing producti
 - Repository: `vuanhtuan161094-byte/tutiennhandoi`.
 - Branch: `main` only.
 - Workflow: refresh `main` → read `AGENTS.md` + this checkpoint + `docs/DEVELOPMENT_PROTOCOL.md` → search → narrow → patch → targeted proof → active local gate → scoped closure for the opened slice.
+- **Main Dao production/rebalance work uses `docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md`.**
 - GitHub Actions push automation is manual-only; local CI is the normal verification path.
 - Do not reopen a `CLOSED / LOCKED` system without a proven regression or explicit user instruction.
 - Canonical JavaScript runtime/save/gameplay authorities through V179 remain locked; Godot is presentation/client unless a separate parity-proven runtime port is explicitly opened.
@@ -59,7 +60,26 @@ This file is the source of truth for a new chat. Read it before editing producti
 - Final Q5 Tam Hoàn mastery package remains `55% + 55% + 55% + 125%`.
 - **Do not tune Quyền further** unless a proven regression or explicit new design request reopens the slice.
 
-## Full-game backend audit debt — intentionally separate from Dao closure
+## Dao Production Workflow V3 — IMPLEMENTED / LOCAL FAST PENDING
+
+- Canonical workflow: `docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md`.
+- New-slice contract template: `docs/runtime/DAO_NEW_SLICE_TEMPLATE_V3.md`.
+- Generic feature registry: `qa/runners/feature-closure-manifest.js`.
+- Generic runner modes:
+  - `feature-list`;
+  - `feature-info <feature-id>`;
+  - `feature <feature-id>`.
+- Generic one-click closure: `DONG_BO_VA_TEST_FEATURE.cmd <feature-id>`.
+- `DONG_BO_VA_TEST_DAO.cmd` is now a compatibility wrapper for the already closed `dao-fist` slice.
+- Registered examples are `dao-sword` and `dao-fist`; both are `closureReady:true` because their historical closure evidence already exists.
+- A newly opened Dao must be registered with `closureReady:false` and may not be closed until correctness, parity, identity-valid deterministic benchmark evidence, target bands, and required regressions are complete.
+- `feature-closure-framework-test.js` guards manifest uniqueness/existence, benchmark-contract ownership, deferred-system leakage, runner modes, generic launcher behavior, and the independence of full-game closure.
+- `dao-closure-scope-contract-test.js` remains as a compatibility guard but delegates the live scoped list to the `dao-fist` feature manifest.
+- Full-game `closure` remains the independent directory sweep and is not weakened.
+- This Workflow V3 implementation changes QA/workflow/docs only; it does **not** change gameplay/runtime coefficients or reopen Sword/Fist.
+- Required final verification before treating Workflow V3 itself as locked infrastructure: user-local Backend/Frontend FAST via `tools/web/TEST_GAME_LOCAL.cmd` Mode 1 on the exact current SHA.
+
+## Full-game backend audit debt — intentionally separate from feature closure
 
 The historical whole-game backend `closure` sweep last reported **137/141 PASS** after the five-stat migration. The remaining four failures are deferred cross-system audit debt, not evidence that Quyền is broken:
 
@@ -71,7 +91,8 @@ The historical whole-game backend `closure` sweep last reported **137/141 PASS**
 Scope rule:
 
 - `node qa/runners/v140-backend-gates.js closure` remains the full-game directory sweep and is not weakened.
-- `node qa/runners/v140-backend-gates.js dao` is the scoped Main Dao closure.
+- `node qa/runners/v140-backend-gates.js feature <feature-id>` is the normal scoped backend feature closure.
+- legacy `node qa/runners/v140-backend-gates.js dao` remains a compatibility alias for the already closed Fist scope.
 - Do not opportunistically rebalance or migrate Pháp Bảo/Chí Bảo/Relic, Linh Thú, Tri Kỷ, Equipment/Set/Gem/Inscription, Alchemy, Economy, Reincarnation-wide balance, Collection-wide power budgets, or old V120/V121/V129 global balance simulations merely to make a Dao slice green.
 - Reopen each deferred system only as its own deliberate post-five-stat audit/migration slice.
 
@@ -93,9 +114,9 @@ Scope rule:
 
 ## Immediate next action
 
-1. Quyền is closed; do not continue tuning it.
-2. For the next backend request, open only the explicitly requested Dao/system slice and audit current source first.
-3. If the next slice is one of the deferred systems above, perform a dedicated post-five-stat audit before changing tests or balance values.
+1. Run one local Mode 1 FAST on the current Workflow V3 candidate; do not run Full Clean or balance benchmark for this QA/docs-only infrastructure change unless FAST exposes a runtime-relevant regression.
+2. If FAST is green, update this section from `LOCAL FAST PENDING` to `ACTIVE / LOCKED` and start the next Dao in a new chat.
+3. New Dao chat must read `DAO_PRODUCTION_WORKFLOW_V3_20260926.md` and start from `DAO_NEW_SLICE_TEMPLATE_V3.md`; register its feature id with `closureReady:false` before final closure work.
 4. Preserve Combat V3, Sword and Quyền locks unless a regression is proven or the user explicitly reopens them.
 
 ## Historical checkpoint preservation
