@@ -17,6 +17,15 @@ const featureId=String(process.argv[3]??'').trim().toLowerCase();
 const excluded=name=>name.includes('transport')||name.includes('frontend')||name.includes('web-launcher')||name.includes('performance')||name==='pvp-v91-balance-test.js';
 const closure=()=>fs.readdirSync(testsDir).filter(n=>n.endsWith('test.js')&&!excluded(n)).sort();
 
+if(mode==='feature-list'){
+  console.log('Registered feature closure ids:');
+  for(const id of listBackendFeatureClosureIds()){
+    const manifest=backendFeatureClosureManifest(id);
+    console.log(`- ${id} | ${manifest.closureReady?'READY':'OPEN'} | ${manifest.label}`);
+  }
+  process.exit(0);
+}
+
 if(mode==='feature-info'){
   const manifest=backendFeatureClosureManifest(featureId);
   console.log(`Feature: ${manifest.id}`);
@@ -49,7 +58,7 @@ if(mode==='fast'){
   tests=closure();
   label='V140 BACKEND CLOSURE';
 }else{
-  throw new Error(`Use fast | feature-info <id> | feature <id> | dao | closure. Features: ${listBackendFeatureClosureIds().join(', ')}`);
+  throw new Error(`Use fast | feature-list | feature-info <id> | feature <id> | dao | closure. Features: ${listBackendFeatureClosureIds().join(', ')}`);
 }
 
 for(const n of tests)if(!fs.existsSync(path.join(testsDir,n)))throw new Error(`Missing gate ${n}`);
