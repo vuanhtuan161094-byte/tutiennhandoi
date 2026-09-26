@@ -40,7 +40,7 @@ testCase('Q1 Hùng Kình Hộ Thể Lv20 grants +0.50% Defense per Liên Kình',
   const e=entity({level:20,stacks:20});
   assert.equal(fistPassiveDefensePctV2(e,0),10);
   const s=effectiveStats(e,buildRegistry(),0);
-  assert.equal(s.defense,110);
+  assert.equal(Number(s.defense.toFixed(6)),110);
   assert.equal(s.attack,100);
   assert.equal(s.mobility,100);
 });

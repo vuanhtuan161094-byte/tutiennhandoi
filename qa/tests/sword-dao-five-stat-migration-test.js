@@ -131,8 +131,8 @@ testCase('F3 Sword has exactly the locked 10 five-stat scaling profiles',()=>{
     assert.deepEqual(skill.fiveStatScalingV5,e.scaling,`${skill.id} scaling mismatch`);
     assert.equal(skill.fiveStatBaselineCoefficientV5,e.baseline,`${skill.id} baseline mismatch`);
   }
-  const nonSword=battleDaoSkillsV118.filter(x=>x.runtimeV117?.daoBinding!=='sword');
-  assert(nonSword.every(x=>x.fiveStatScalingV5===undefined),'F3 must not migrate the other seven Dao');
+  const untouchedDao=battleDaoSkillsV118.filter(x=>!['sword','fist'].includes(x.runtimeV117?.daoBinding));
+  assert(untouchedDao.every(x=>x.fiveStatScalingV5===undefined),'F3 Sword lock must not migrate Dao outside the separately opened Fist Q2 slice');
 });
 
 testCase('F3 normalized five-stat power reproduces contract totals at baseline hit shape',()=>{
