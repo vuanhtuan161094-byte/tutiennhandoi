@@ -10,6 +10,7 @@ import {
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const runnerSource=fs.readFileSync(new URL('../runners/v140-backend-gates.js',import.meta.url),'utf8');
+const launcherSource=fs.readFileSync(new URL('../../DONG_BO_VA_TEST_FEATURE.cmd',import.meta.url),'utf8');
 const ids=listBackendFeatureClosureIds();
 
 assert.deepEqual(ids,['dao-fist','dao-sword'],'registered feature ids must be deterministic');
@@ -51,10 +52,16 @@ for(const gate of [
   'fist-dao-q5-chain-tuning-test.js',
 ]) assert(fist.gates.includes(gate),`dao-fist missing locked/shared regression ${gate}`);
 
+assert(runnerSource.includes("mode==='feature-list'"),'backend runner must expose feature-list mode');
 assert(runnerSource.includes("mode==='feature-info'"),'backend runner must expose feature-info mode');
 assert(runnerSource.includes("mode==='feature'"),'backend runner must expose feature closure mode');
 assert(runnerSource.includes("mode==='closure'"),'full backend closure must remain a separate mode');
 assert(runnerSource.includes('tests=closure()'),'full backend closure must remain the independent directory sweep');
+
+assert(launcherSource.includes('run-local-ci.mjs\" full --require-clean'),'generic launcher must require FULL CLEAN before scoped closure');
+assert(launcherSource.includes('v140-backend-gates.js\" feature \"!FEATURE!\"'),'generic launcher must run the registered feature gate');
+assert(!launcherSource.includes('v140-backend-gates.js\" closure'),'generic feature launcher must never substitute the full-game closure sweep');
+
 assert.throws(()=>backendFeatureClosureManifest('dao-does-not-exist'),/Unknown feature closure id/,'unknown feature ids must fail closed');
 
 console.log(`FEATURE CLOSURE FRAMEWORK: PASS (${ids.length} registered feature manifests)`);
