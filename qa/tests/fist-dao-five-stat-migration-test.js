@@ -58,7 +58,7 @@ testCase('Q1 p4 has no Defense bonus without Liên Kình',()=>{
 });
 
 testCase('Q1 player-facing Fist skill copy uses Quyền Thế, not stale Liên Quyền',()=>{
-  const fist=battleDaoSkillsV118.filter(x=>x.dao==='fist');
+  const fist=battleDaoSkillsV118.filter(x=>x.runtimeV117?.daoBinding==='fist');
   assert.equal(fist.length,10);
   assert(fist.some(x=>String(x.description).includes('Quyền Thế')));
   assert.equal(fist.filter(x=>String(x.description).includes('Liên Quyền')).length,0);
@@ -89,7 +89,7 @@ const EXPECTED_Q2_SCALING=new Map([
 ]);
 
 testCase('Q2 all ten Fist skills carry the locked five-stat family map',()=>{
- const fist=battleDaoSkillsV118.filter(x=>x.dao==='fist');
+ const fist=battleDaoSkillsV118.filter(x=>x.runtimeV117?.daoBinding==='fist');
  assert.equal(fist.length,10);
  for(const skill of fist){
    const expected=EXPECTED_Q2_SCALING.get(skill.id);
@@ -102,7 +102,7 @@ testCase('Q2 all ten Fist skills carry the locked five-stat family map',()=>{
 });
 
 testCase('Q2 CL/TP/TPH identities actually affect only their authored Fist families',()=>{
- const byId=Object.fromEntries(battleDaoSkillsV118.filter(x=>x.dao==='fist').map(x=>[x.id,x]));
+ const byId=Object.fromEntries(battleDaoSkillsV118.filter(x=>x.runtimeV117?.daoBinding==='fist').map(x=>[x.id,x]));
  const base={attack:100,primaryStatsV5:{power:100,body:100,agility:100,spirit:100,sense:100}};
  const heavy=byId['skill.dao.fist.heavy'],triple=byId['skill.dao.fist.triple'];
  const heavyBase=fiveStatSkillPowerV5(base,heavy.fiveStatScalingV5,heavy.fiveStatBaselineCoefficientV5);
@@ -128,7 +128,7 @@ function q2Action(e,skill){
 }
 
 testCase('Q2 Trọng Thế snapshots full start force and only authored payoff skills consume it',()=>{
- const byId=Object.fromEntries(battleDaoSkillsV118.filter(x=>x.dao==='fist').map(x=>[x.id,x]));
+ const byId=Object.fromEntries(battleDaoSkillsV118.filter(x=>x.runtimeV117?.daoBinding==='fist').map(x=>[x.id,x]));
  const target={id:'target',breakDebuffUntil:0};
  const heavy=byId['skill.dao.fist.heavy'];
  const e=q2Entity(heavy.id,1000,5),a=q2Action(e,heavy);
@@ -148,7 +148,7 @@ testCase('Q2 Trọng Thế snapshots full start force and only authored payoff s
 });
 
 testCase('Q2 resource gates and Cực Ý pressure/finisher spend obey Quyền Thế authority',()=>{
- const byId=Object.fromEntries(battleDaoSkillsV118.filter(x=>x.dao==='fist').map(x=>[x.id,x]));
+ const byId=Object.fromEntries(battleDaoSkillsV118.filter(x=>x.runtimeV117?.daoBinding==='fist').map(x=>[x.id,x]));
  const heavy=byId['skill.dao.fist.heavy'],fin=byId['skill.dao.fist.finisher'],pressure=byId['skill.dao.fist.pressure'];
  const low=q2Entity(heavy.id,1000,1);
  assert.equal(canUseBattleDaoSkillV118(low,heavy),false);
@@ -162,7 +162,7 @@ testCase('Q2 resource gates and Cực Ý pressure/finisher spend obey Quyền Th
 });
 
 testCase('Q2 mastery effects produce authored Fist hit packages',()=>{
- const byId=Object.fromEntries(battleDaoSkillsV118.filter(x=>x.dao==='fist').map(x=>[x.id,x]));
+ const byId=Object.fromEntries(battleDaoSkillsV118.filter(x=>x.runtimeV117?.daoBinding==='fist').map(x=>[x.id,x]));
  const heavy=byId['skill.dao.fist.heavy'];
  const e=q2Entity(heavy.id,1000,5),a=q2Action(e,heavy);
  prepareFistCoreActionV2(e,{id:'t',breakDebuffUntil:0},heavy,a,0);
@@ -282,7 +282,7 @@ testCase('Q2 player-facing core/skill copy matches locked payoff and CC semantic
  const fistSrc=fs.readFileSync(new URL('../../dist/content/fist-dao-v2.js',import.meta.url),'utf8');
  assert(fistSrc.includes('chỉ Băng Sơn Trọng Quyền, Trấn Nhạc Áp Quyền, Phá Quân Quyết hoặc Cửu Thiên Trấn Ngục Quyền'));
  assert(!fistSrc.includes('Active Quyền gây sát thương kế tiếp +35%'));
- const byId=Object.fromEntries(battleDaoSkillsV118.filter(x=>x.dao==='fist').map(x=>[x.id,x]));
+ const byId=Object.fromEntries(battleDaoSkillsV118.filter(x=>x.runtimeV117?.daoBinding==='fist').map(x=>[x.id,x]));
  assert(byId['skill.dao.fist.shock'].description.includes('ngắt cast/channel'));
  assert(byId['skill.dao.fist.counter'].description.includes('counter thành công'));
  assert(byId['skill.dao.fist.pressure'].description.includes('Trấn Áp'));
