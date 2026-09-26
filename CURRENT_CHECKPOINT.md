@@ -577,3 +577,18 @@ Evidence:
 - The old p1 text claiming Max HP/Defense per Liên Kình is classified as stale duplicate copy; p4 remains the dedicated Defense-per-stack passive.
 - Candidate internal benchmark bands: Trọng Quyền 100%, Liên Hoàn 92–98%, Phản Quyền 85–92%.
 - Status: **DESIGN LOCK / Q2 IMPLEMENTATION CANDIDATE / LOCAL QA PENDING**. Do not open Q3 until exact-SHA FAST passes.
+
+
+## Fist Q2 review lock — 2026-09-26
+
+- Q2 production candidate has been re-read against the unified Fist contract on exact main `9022c8dfeb732e8997cef0e9ad16a2d3c5c6c86a`.
+- Review result:
+  - all 10 Fist skills carry the locked CL/TP/TPH five-stat family metadata;
+  - Quyền Thế is snapshotted before spend and only authored payoff skills consume Trọng Thế;
+  - Chấn Mạch and successful Hồi Thân use canonical BodyControl statuses, therefore locked-v1 combat routes them through Control↔Resolve, same-group Control Pressure, CDR and Bất Khuất;
+  - Trấn Nhạc uses non-disabling Mobility/recovery debuffs only;
+  - Cửu Thiên Quyền Vực is 4s, cap 7 while active, and returns to cap 5 after expiry;
+  - Hồi Thân payoff requires the target to have been casting/channeling at action start; a merely landed cast does not grant counter payoff;
+  - Q2 targeted guard is wired into Backend Fast.
+- No additional gameplay patch was justified by static review. Do not tune Q2 coefficients before local FAST and Q4 runtime evidence.
+- Status remains **Q2 CODE COMPLETE / LOCAL QA PENDING**.
