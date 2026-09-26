@@ -1,0 +1,1 @@
+Archived verbatim by Git object reference in the following checkpoint compaction commit. See Git history for the pre-Fist-closure CURRENT_CHECKPOINT.md blob `1e671d90970dedb18510ea23b33c03424c24e44c`.
