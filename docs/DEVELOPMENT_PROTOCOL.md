@@ -11,6 +11,11 @@ Read only:
 3. exact source/test regions needed for the task;
 4. `/AGENTS.md` for AI-assisted production work.
 
+For Main Dao production/rebalance slices, also read:
+
+- `docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md`;
+- the active Dao production contract.
+
 Do not preload historical reports, old chats, full CI logs, or unrelated source files.
 
 ## 2. Source search
@@ -22,6 +27,14 @@ Normal task context target:
 - 1 active workflow/version spec;
 - 2–5 relevant source regions;
 - targeted tests only when they materially help.
+
+For gameplay/backend feature work, perform a **scope lock** before production tuning:
+- feature id;
+- allowed production areas;
+- shared seams that may be changed only with evidence;
+- explicitly deferred systems;
+- required regression surfaces;
+- feature closure manifest.
 
 ## 3. Git strategy
 
@@ -38,15 +51,45 @@ Rules:
 
 - G0: targeted test when changing a narrow mechanic/contract;
 - G1: Fast QA after executable/source changes;
-- G2: real-browser Runtime Smoke;
-- G3: Canonical Closure QA only for an approved closure candidate.
+- G2: real-browser Runtime Smoke when the changed risk reaches runtime/web behavior;
+- G3: exact clean candidate proof with Mode 5 — FULL CLEAN;
+- G4: **feature-scoped closure** for the opened backend/gameplay slice;
+- G5: whole-game backend/frontend closure only when the task scope is whole-game or when deliberately auditing cross-system debt.
 
 Current default is local:
 - `tools/web/TEST_GAME_LOCAL.cmd` for web/runtime;
-- Mode 5 — FULL CLEAN for clean exact-candidate proof (Fast + representative runtime browser smoke; heavyweight deep visual diagnostics are separate/on-demand);
+- Mode 5 — FULL CLEAN for clean exact-candidate proof;
+- `DONG_BO_VA_TEST_FEATURE.cmd <feature-id>` for registered backend feature closure;
 - `KIEM_TRA_GAME.cmd` for Godot.
 
-Manual GitHub Actions remains available as an optional exact-SHA gate when account storage is available.
+Feature manifests live in `qa/runners/feature-closure-manifest.js`.
+
+Useful commands:
+
+```cmd
+node qa\runners\v140-backend-gates.js feature-list
+node qa\runners\v140-backend-gates.js feature-info <feature-id>
+node qa\runners\v140-backend-gates.js feature <feature-id>
+```
+
+A feature with `closureReady:false` must fail closed. Do not flip it to `true` until correctness, parity, deterministic identity-valid benchmark evidence, and required regression tests are complete.
+
+### Benchmark validity rule
+
+A balance benchmark is invalid if the archetype did not execute its defining behavior. Examples:
+- Counter build with zero successful counters;
+- Break build with zero Break events;
+- channel build with zero completed channels;
+- stack/resource build that never reaches/spends its defining state;
+- Ultimate/domain build with zero Ultimate/domain events.
+
+Do not tune coefficients from invalid identity evidence.
+
+### Full-game audit rule
+
+`node qa/runners/v140-backend-gates.js closure` remains the whole-game backend directory sweep.
+
+A red out-of-scope test is classified before patching. It does not grant permission to rebalance that unrelated system during a narrow feature slice.
 
 For UI-visible work, evidence must come from the real game at the primary 390×844 viewport.
 
@@ -69,7 +112,7 @@ Manual `mode=fast`:
 5. run deterministic real-browser journeys;
 6. upload short-retention exact-SHA evidence.
 
-Manual `mode=closure` adds Canonical backend/frontend QA after Fast + Runtime Smoke.
+Manual `mode=closure` adds full Canonical backend/frontend QA after Fast + Runtime Smoke. This remains a whole-game audit and does not replace registered feature-scoped closure.
 
 Normal development should use the local gates above unless the user explicitly chooses Actions.
 
@@ -84,7 +127,7 @@ Manual only. Use when the self-hosted runner itself is suspect. It checks Node, 
 1. inspect run status;
 2. if green, stop unless runtime screenshots must be reviewed;
 3. if failed, inspect only the failed step/log/artifact;
-4. classify runtime vs test-harness vs runner failure before patching.
+4. classify failure as production regression, stale expectation, harness defect, runner/environment defect, or out-of-scope audit debt before patching.
 
 Do not fetch complete successful logs.
 
@@ -104,16 +147,31 @@ Lifecycle:
 
 For UI/UX:
 
-`source snapshot -> real baseline -> narrow audit/brief -> candidate patch -> Game CI -> runtime screenshot review -> user approval -> [closure] -> Canonical QA -> checkpoint`
+`source snapshot -> real baseline -> narrow audit/brief -> candidate patch -> Game CI -> runtime screenshot review -> user approval -> [closure] -> required scoped/Canonical QA -> checkpoint`
 
 Primary review viewport is 390×844. Additional viewports are required only when the changed risk is responsive/layout-related or an observed defect needs them.
 
-## 9. Authority order
+## 9. Backend/gameplay feature closure
+
+Preferred feature loop:
+
+`scope lock -> contract -> runtime seam audit -> correctness -> parity -> identity-valid benchmark -> minimal local tune -> FULL CLEAN -> feature-scoped closure -> closure record -> compact checkpoint`
+
+Rules:
+- correctness before balance;
+- parity before benchmark;
+- one tuning lever at a time;
+- prefer feature-owned/local levers over global multipliers;
+- stop tuning when the locked target band passes;
+- do not rerun unrelated heavyweight evidence unless the changed risk requires it;
+- record final gameplay SHA separately from later QA/docs-only closure SHA when applicable;
+- preserve whole-game audit failures as explicit deferred debt instead of hiding them.
+
+## 10. Authority order
 
 Current user instruction > live `main` production code/tests > current checkpoint/workflow > active version spec > Git history.
 
-
-## 10. Godot migration validation
+## 11. Godot migration validation
 
 Godot work has an additional project-local validation lane.
 
