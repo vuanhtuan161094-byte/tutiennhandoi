@@ -2,6 +2,7 @@ import { combatMaxHp, skillTrueEssenceCost } from './combat-rules.js';
 import { canUseSkillRuntimeV117, resourceValueV117, skillSpiritCostMultiplierFromRuntimeV117 } from './five-element-combat-v117.js';
 import { canUseBattleDaoSkillV118, daoResourceValueV118, daoSpiritCostMultiplierV118 } from './battle-dao-combat-v118.js';
 import { v2ResourceProjection } from './battle-dao-v2-runtime.js';
+import { skillRuntimeV117 } from './skill-runtime-v117.js';
 import { effectiveStats } from './stats.js';
 function daoV2AiResourceValue(self, _target, resource, now) {
     const projected = v2ResourceProjection(self, now)[resource];
@@ -119,8 +120,11 @@ export function chooseSkill(self, target, registry, now) {
         if (rule.conditions.every(c => checkCondition(c, self, target, now)))
             return skill;
     }
+    // Counter actions are tactical-only. If their authored/auto rule did not match,
+    // the generic fallback must not bypass that condition and fire them blindly.
     return self.skillIds
         .map(id => registry.skill(id))
+        .filter(s => skillRuntimeV117(s).form !== 'counter')
         .filter(s => canUseSkill(self, s, registry, now))
         .sort((a, b) => a.cooldown - b.cooldown)[0];
 }

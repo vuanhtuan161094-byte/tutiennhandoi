@@ -89,13 +89,20 @@ function inferDomains(skill) {
  * Legacy bridge: old skills keep working without being silently re-authored. New content should author runtimeV117 explicitly.
  */
 export function skillRuntimeV117(skill) {
-    if (skill.runtimeV117)
-        return {
+    if (skill.runtimeV117) {
+        const runtime = {
             ...skill.runtimeV117,
             domains: [...(skill.runtimeV117.domains ?? [])],
             spend: skill.runtimeV117.spend?.map(x => ({ ...x })),
             generate: skill.runtimeV117.generate?.map(x => ({ ...x })),
         };
+        // Quyền Q4: Hồi Thân Phản Quyền reacts to the target's live cast/channel,
+        // not the legacy boss-only activeCounterWindow mechanic. Other Counter
+        // skills retain the old gate unless their authored runtime says otherwise.
+        if (skill.id === 'skill.dao.fist.counter')
+            runtime.requiresCounterWindow = false;
+        return runtime;
+    }
     return {
         form: inferForm(skill),
         slotClass: inferSlot(skill),
