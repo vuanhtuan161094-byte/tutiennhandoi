@@ -60,9 +60,10 @@ This file is the source of truth for a new chat. Read it before editing producti
 - Final Q5 Tam Hoàn mastery package remains `55% + 55% + 55% + 125%`.
 - **Do not tune Quyền further** unless a proven regression or explicit new design request reopens the slice.
 
-## Dao Production Workflow V3 — IMPLEMENTED / LOCAL FAST PENDING
+## Dao Production Workflow V3 — ACTIVE / LOCKED (2026-09-26)
 
 - Canonical workflow: `docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md`.
+- Closure record: `docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_CLOSURE_20260926.md`.
 - New-slice contract template: `docs/runtime/DAO_NEW_SLICE_TEMPLATE_V3.md`.
 - Generic feature registry: `qa/runners/feature-closure-manifest.js`.
 - Generic runner modes:
@@ -70,14 +71,23 @@ This file is the source of truth for a new chat. Read it before editing producti
   - `feature-info <feature-id>`;
   - `feature <feature-id>`.
 - Generic one-click closure: `DONG_BO_VA_TEST_FEATURE.cmd <feature-id>`.
-- `DONG_BO_VA_TEST_DAO.cmd` is now a compatibility wrapper for the already closed `dao-fist` slice.
+- `DONG_BO_VA_TEST_DAO.cmd` is a compatibility wrapper for the already closed `dao-fist` slice.
 - Registered examples are `dao-sword` and `dao-fist`; both are `closureReady:true` because their historical closure evidence already exists.
 - A newly opened Dao must be registered with `closureReady:false` and may not be closed until correctness, parity, identity-valid deterministic benchmark evidence, target bands, and required regressions are complete.
 - `feature-closure-framework-test.js` guards manifest uniqueness/existence, benchmark-contract ownership, deferred-system leakage, runner modes, generic launcher behavior, and the independence of full-game closure.
 - `dao-closure-scope-contract-test.js` remains as a compatibility guard but delegates the live scoped list to the `dao-fist` feature manifest.
 - Full-game `closure` remains the independent directory sweep and is not weakened.
-- This Workflow V3 implementation changes QA/workflow/docs only; it does **not** change gameplay/runtime coefficients or reopen Sword/Fist.
-- Required final verification before treating Workflow V3 itself as locked infrastructure: user-local Backend/Frontend FAST via `tools/web/TEST_GAME_LOCAL.cmd` Mode 1 on the exact current SHA.
+- Workflow V3 exact verified infrastructure candidate: `a7119a7fbef8159a0c49a138775f0ec29b3f1296`.
+- User-local Mode 1 FAST evidence on that exact SHA:
+  - branch `main`;
+  - clean worktree / `dirty=false`;
+  - exact-SHA evidence YES;
+  - Local CI **21/21 steps PASS**;
+  - Backend Fast **39/39 PASS**;
+  - Frontend Fast **20/20 PASS**;
+  - framework/scope guards PASS.
+- The V3 implementation changes QA/workflow/docs only; it does **not** change gameplay/runtime coefficients or reopen Sword/Fist.
+- **Use V3 as the default workflow for every newly opened Main Dao slice.** Modify it only for a proven process defect or explicit user instruction.
 
 ## Full-game backend audit debt — intentionally separate from feature closure
 
@@ -114,9 +124,9 @@ Scope rule:
 
 ## Immediate next action
 
-1. Run one local Mode 1 FAST on the current Workflow V3 candidate; do not run Full Clean or balance benchmark for this QA/docs-only infrastructure change unless FAST exposes a runtime-relevant regression.
-2. If FAST is green, update this section from `LOCAL FAST PENDING` to `ACTIVE / LOCKED` and start the next Dao in a new chat.
-3. New Dao chat must read `DAO_PRODUCTION_WORKFLOW_V3_20260926.md` and start from `DAO_NEW_SLICE_TEMPLATE_V3.md`; register its feature id with `closureReady:false` before final closure work.
+1. Start the next Dao in a new chat using `docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md`.
+2. Read `docs/runtime/DAO_NEW_SLICE_TEMPLATE_V3.md`, inspect current source, create the new Dao contract, and register its feature id with `closureReady:false` before final closure work.
+3. Complete runtime seam audit before changing production coefficients; correctness → parity → identity-valid benchmark → minimal tune → scoped closure.
 4. Preserve Combat V3, Sword and Quyền locks unless a regression is proven or the user explicitly reopens them.
 
 ## Historical checkpoint preservation
