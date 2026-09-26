@@ -1,3 +1,9 @@
+import {
+  BACKEND_FEATURE_CLOSURE_MANIFESTS,
+  backendFeatureClosureManifest,
+  listBackendFeatureClosureIds,
+} from './feature-closure-manifest.js';
+
 export const BACKEND_FAST_GATES = Object.freeze([
   'v140-cultivation-core-test.js',
   'v143-hunt-reward-authority-test.js',
@@ -21,6 +27,7 @@ export const BACKEND_FAST_GATES = Object.freeze([
   'fist-dao-counter-runtime-test.js',
   'fist-dao-q4-harness-contract-test.js',
   'fist-dao-q5-chain-tuning-test.js',
+  'feature-closure-framework-test.js',
   'dao-closure-scope-contract-test.js',
   'v129-gameplay-consistency-test.js',
   'v129-dao-suy-alchemy-balance-test.js',
@@ -39,24 +46,12 @@ export const BACKEND_FAST_GATES = Object.freeze([
   'v179-guidance-worker-policy-runtime-authority-test.js',
 ]);
 
-// Feature-slice closure for Main Dao work after the five-stat migration.
-// Keep this list narrow: only Fist/Sword regression, five-stat authority,
-// CombatKernel V3 parity and direct Dao consumers. Full-game closure remains
-// the directory sweep in v140-backend-gates.js and is intentionally not weakened.
-export const BACKEND_DAO_CLOSURE_GATES = Object.freeze([
-  'dao-closure-scope-contract-test.js',
-  'combat-backend-phase1-3-regression-test.js',
-  'combat-backend-phase4-6-regression-test.js',
-  'combat-backend-phase7-8-parity-test.js',
-  'combat-backend-phase9-cutover-test.js',
-  'sword-dao-production-contract-test.js',
-  'sword-dao-five-stat-migration-test.js',
-  'sword-dao-f6-harness-contract-test.js',
-  'fist-dao-five-stat-migration-test.js',
-  'fist-dao-counter-runtime-test.js',
-  'fist-dao-q4-harness-contract-test.js',
-  'fist-dao-q5-chain-tuning-test.js',
-  'v129-combat-parity-test.js',
-  'v129-stat-provenance-test.js',
-  'v98-dao-domain-test.js',
-]);
+// Compatibility alias for the already-closed Fist slice. New work should use
+// BACKEND_FEATURE_CLOSURE_MANIFESTS + runner mode `feature <feature-id>`.
+export const BACKEND_DAO_CLOSURE_GATES = backendFeatureClosureManifest('dao-fist').gates;
+
+export {
+  BACKEND_FEATURE_CLOSURE_MANIFESTS,
+  backendFeatureClosureManifest,
+  listBackendFeatureClosureIds,
+};
