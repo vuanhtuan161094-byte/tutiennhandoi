@@ -2,14 +2,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runGateFiles } from './gate-runner.js';
+import { BACKEND_FAST_GATES, BACKEND_DAO_CLOSURE_GATES } from './v140-backend-gate-manifest.js';
+
 const here=path.dirname(fileURLToPath(import.meta.url));
 const testsDir=path.resolve(here,'../tests');
 const repoRoot=path.resolve(here,'../..');
 const mode=String(process.argv[2]??'fast').trim().toLowerCase();
-const FAST=['v140-cultivation-core-test.js','v143-hunt-reward-authority-test.js','v147-spirit-beast-progression-test.js','v148-confidant-rebuild-test.js','v148-confidant-v129-balance-test.js','v140-zero-legacy-test.js','v129-stat-architecture-test.js','v129-stat-provenance-test.js','v129-stat-source-audit-test.js','v129-major-systems-audit-test.js','v129-combat-parity-test.js','combat-backend-phase1-3-regression-test.js','combat-backend-phase4-6-regression-test.js','combat-backend-phase7-8-parity-test.js','combat-backend-phase9-cutover-test.js','sword-dao-production-contract-test.js','sword-dao-five-stat-migration-test.js','sword-dao-f6-harness-contract-test.js','fist-dao-five-stat-migration-test.js','fist-dao-counter-runtime-test.js','fist-dao-q4-harness-contract-test.js','fist-dao-q5-chain-tuning-test.js','v129-gameplay-consistency-test.js','v129-dao-suy-alchemy-balance-test.js','v129-hunt-alchemy-tier-regression-test.js','v129-endgame-continuity-structural-test.js','v99-dongfu-production-test.js','v170-reincarnation-meta-runtime-authority-test.js','v171-endgame-runtime-authority-test.js','v172-faction-membership-runtime-authority-test.js','v173-world-to-hunt-runtime-authority-test.js','v174-one-shot-settlement-runtime-authority-test.js','v175-social-family-identity-runtime-authority-test.js','v176-first-life-story-runtime-authority-test.js','v177-session-action-identity-runtime-authority-test.js','v178-current-life-identity-runtime-authority-test.js','v179-guidance-worker-policy-runtime-authority-test.js'];
 const excluded=name=>name.includes('transport')||name.includes('frontend')||name.includes('web-launcher')||name.includes('performance')||name==='pvp-v91-balance-test.js';
 const closure=()=>fs.readdirSync(testsDir).filter(n=>n.endsWith('test.js')&&!excluded(n)).sort();
-const tests=mode==='fast'?FAST:mode==='closure'?closure():null;
-if(!tests)throw new Error('Use fast | closure');
+const tests=mode==='fast'?[...BACKEND_FAST_GATES]:mode==='dao'?[...BACKEND_DAO_CLOSURE_GATES]:mode==='closure'?closure():null;
+if(!tests)throw new Error('Use fast | dao | closure');
 for(const n of tests)if(!fs.existsSync(path.join(testsDir,n)))throw new Error(`Missing gate ${n}`);
 await runGateFiles({ label:`V140 BACKEND ${mode.toUpperCase()}`, tests, testsDir, repoRoot });
