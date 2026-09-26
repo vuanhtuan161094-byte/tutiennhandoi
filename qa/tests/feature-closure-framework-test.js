@@ -58,9 +58,9 @@ assert(runnerSource.includes("mode==='feature'"),'backend runner must expose fea
 assert(runnerSource.includes("mode==='closure'"),'full backend closure must remain a separate mode');
 assert(runnerSource.includes('tests=closure()'),'full backend closure must remain the independent directory sweep');
 
-assert(launcherSource.includes('run-local-ci.mjs\" full --require-clean'),'generic launcher must require FULL CLEAN before scoped closure');
-assert(launcherSource.includes('v140-backend-gates.js\" feature \"!FEATURE!\"'),'generic launcher must run the registered feature gate');
-assert(!launcherSource.includes('v140-backend-gates.js\" closure'),'generic feature launcher must never substitute the full-game closure sweep');
+assert(launcherSource.includes('run-local-ci.mjs" full --require-clean'),'generic launcher must require FULL CLEAN before scoped closure');
+assert(launcherSource.includes('v140-backend-gates.js" feature "!FEATURE!"'),'generic launcher must run the registered feature gate');
+assert(!launcherSource.includes('v140-backend-gates.js" closure'),'generic feature launcher must never substitute the full-game closure sweep');
 
 assert.throws(()=>backendFeatureClosureManifest('dao-does-not-exist'),/Unknown feature closure id/,'unknown feature ids must fail closed');
 
