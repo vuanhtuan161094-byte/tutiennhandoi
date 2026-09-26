@@ -672,7 +672,7 @@ export function fistV2EffectsForSkill(entity, skill, action, chance, baseEffects
     }
     if (skill.id === 'skill.dao.fist.triple') {
         if (tier >= 1000)
-            return [cloneDamage(d0, .55), cloneDamage(d0, .55), cloneDamage(d0, .55), cloneDamage(d0, 1.10, baseBreak * 1.25), ...other];
+            return [cloneDamage(d0, .55), cloneDamage(d0, .55), cloneDamage(d0, .55), cloneDamage(d0, 1.25, baseBreak * 1.25), ...other];
         const arr = [cloneDamage(d0, .55), cloneDamage(d0, .55), cloneDamage(d0, tier >= 100 ? .55 * 1.2 : .55)];
         if (tier >= 250 && before >= 3)
             arr.push(cloneDamage(d0, tier >= 500 ? .70 : .40));
