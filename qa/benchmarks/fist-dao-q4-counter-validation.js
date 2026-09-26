@@ -20,14 +20,15 @@ const averageMap=(runs,key)=>{
   return Object.fromEntries([...ids].sort().map(id=>[id,round(mean(runs.map(run=>Number(run[key]?.[id]??0))))]));
 };
 
+const COUNTER_WINDOW_SKILL_ID='skill.boss.v81.cataclysm';
 const heavy=FIST_Q4_PROFILES.find(x=>x.id==='heavy');
 const counterBase=FIST_Q4_PROFILES.find(x=>x.id==='counter');
 if(!heavy||!counterBase) throw new Error('Missing Q4 heavy/counter profile');
 
 // Counter-centric diagnostic loadout: Chấn Mạch is intentionally removed because
-// production Auto correctly gives it first claim on target-casting windows. Keeping
-// both in this deterministic dummy pattern starves Hồi Thân Phản Quyền to 0 casts,
-// so that profile cannot validate counter identity.
+// production Auto correctly gives it first claim on target-casting windows. The
+// target uses a real 1.55s cast skill so Hồi Thân Phản Quyền has an observable,
+// deterministic counter window instead of relying on Basic's short cast cadence.
 const counter=Object.freeze({
   ...counterBase,
   activeSkillIds:Object.freeze([
@@ -39,13 +40,29 @@ const counter=Object.freeze({
   ]),
 });
 
+function createCounterWindowTarget(){
+  const target=createFistQ4Target();
+  target.skillIds=[COUNTER_WINDOW_SKILL_ID];
+  target.aiProfile={
+    name:'Q4 Counter Window Dummy',
+    rules:[{skillId:COUNTER_WINDOW_SKILL_ID,priority:100,conditions:[{type:'always'}]}],
+  };
+  // Keep the target a harmless benchmark dummy: the long cast exists only to
+  // exercise targetIsCasting/counter timing, not to pressure player survivability.
+  target.stats.attack=1;
+  return target;
+}
+
 function runProfile(profile){
   const registry=buildRegistry();
+  const counterWindowSkill=registry.skills?.get?.(COUNTER_WINDOW_SKILL_ID)??registry.getSkill?.(COUNTER_WINDOW_SKILL_ID);
+  if(!counterWindowSkill) throw new Error(`Missing counter-window skill: ${COUNTER_WINDOW_SKILL_ID}`);
+  if(Number(counterWindowSkill.castTime??0)<1) throw new Error(`Counter-window cast is too short: ${counterWindowSkill.castTime}`);
   const runs=[];
   for(const seed of FIST_Q4_SEEDS){
     const player=createFistQ4Player(profile);
     player.aiProfile=battleDaoAutoRotationV127('fist',player.skillIds);
-    const target=createFistQ4Target();
+    const target=createCounterWindowTarget();
     const kernel=runCombatKernelV3({registry,seed,entities:[player,target],maxDuration:FIST_Q4_DURATION_SECONDS,mode:'simulation'});
     runs.push(summarizeFistQ4Run(kernel,profile,seed));
   }
@@ -77,11 +94,12 @@ export function runFistQ4CounterValidation(){
   const relativeDps=round(counterSummary.dpsMean/Math.max(.0001,heavySummary.dpsMean)*100,2);
   const counterCastMean=Number(counterSummary.castsMeanBySkill['skill.dao.fist.counter']??0);
   return {
-    schema:'fist-dao-q4-counter-validation.v1',
+    schema:'fist-dao-q4-counter-validation.v2',
     generatedAt:new Date().toISOString(),
     engine:'combat.v3',
     durationSeconds:FIST_Q4_DURATION_SECONDS,
     seeds:[...FIST_Q4_SEEDS],
+    counterWindowSkillId:COUNTER_WINDOW_SKILL_ID,
     targetRelativeDps:[85,92],
     heavy:heavySummary,
     counter:{
@@ -92,7 +110,7 @@ export function runFistQ4CounterValidation(){
       counterCastMean:round(counterCastMean),
       counterIdentityValid:counterCastMean>0&&counterSummary.counterSuccessMean>0,
     },
-    note:'Diagnostic only. Production Auto remains Chấn Mạch-first; this loadout isolates Hồi Thân Phản Quyền so Q4 can measure the counter archetype instead of a second interrupt build.',
+    note:'Diagnostic only. Production Auto remains Chấn Mạch-first; validation removes Chấn Mạch and supplies a real long-cast target action so Hồi Thân Phản Quyền can be measured as a counter archetype.',
     runs:{heavy:heavyRuns,counter:counterRuns},
   };
 }
@@ -108,6 +126,7 @@ if(invoked){
   },{
     Build:'Phản Quyền',DPS:report.counter.dpsMean,'vs Heavy':`${report.counter.relativeDps}%`,Counter:report.counter.counterSuccessMean,Break:report.counter.breaksMean,Ult:report.counter.ultimateCastsMean,
   }]);
+  console.log(`Counter window skill: ${report.counterWindowSkillId}`);
   console.log(`Counter casts mean: ${report.counter.counterCastMean}`);
   console.log(`Counter identity: ${report.counter.counterIdentityValid?'VALID':'INVALID'}`);
   console.log(`DPS target 85–92%: ${report.counter.withinDpsTarget?'PASS':'OUTSIDE'}`);
