@@ -15,15 +15,16 @@ For any production/runtime/UI/asset change:
 7. if a required gate fails, classify it and patch the smallest responsible layer;
 8. do **not** stop and wait for the user to say `continue` during normal fix iterations;
 9. UI/UX closure still requires explicit user visual approval of actual runtime screenshots;
-10. closure uses Canonical QA only after an approved candidate.
+10. backend/gameplay feature closure uses the registered **feature-scoped closure manifest** after an approved candidate; whole-game closure remains a separate audit unless the opened scope is explicitly whole-game.
 
 **No exact candidate evidence = no completion claim.**
 
 Current operating mode:
 - GitHub Actions is **manual-only** to avoid automatic artifact/storage consumption.
 - Web/runtime candidates use `tools/web/TEST_GAME_LOCAL.cmd`; closure evidence starts from Mode 5 — FULL CLEAN on a clean checkout. FULL/FULL CLEAN means Fast + representative runtime browser smoke; heavyweight deep visual diagnostics remain explicit/on-demand via Visual mode.
+- Registered backend feature slices use `DONG_BO_VA_TEST_FEATURE.cmd <feature-id>` for final exact-SHA FULL CLEAN + scoped closure. The manifest must remain `closureReady:false` until correctness, parity, and identity-valid benchmark evidence are complete.
 - Godot candidates use `KIEM_TRA_GAME.cmd`.
-- Canonical closure can be run locally with the backend/frontend closure runners when needed.
+- Full-game Canonical backend/frontend closure remains available as a separate audit and must not be made green by opportunistically retuning unrelated systems.
 - Manual GitHub Actions may be used only when explicitly desired and account storage is available.
 
 Deep multi-state/multi-viewport capture tools under `qa/visual/` remain diagnostic/on-demand tools, not a mandatory per-push gate.
@@ -47,8 +48,9 @@ Before editing:
 1. confirm current `main` HEAD;
 2. read `/CURRENT_CHECKPOINT.md`;
 3. read `/docs/DEVELOPMENT_PROTOCOL.md`;
-4. for UI/UX, read the current canonical UI workflow;
-5. inspect only the exact source/test regions needed.
+4. for Dao production work, read `docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md`;
+5. for UI/UX, read the current canonical UI workflow;
+6. inspect only the exact source/test regions needed.
 
 Use `search -> narrow -> read -> patch -> targeted proof`.
 
@@ -64,6 +66,11 @@ For presentation work:
 - preserve deterministic/runtime-authored values;
 - use real runtime evidence before visual closure.
 
+For gameplay/backend feature slices:
+- declare allowed/shared/deferred scope before production tuning;
+- do not patch an unrelated subsystem merely because a whole-game audit exposes its pre-existing or post-migration debt;
+- a red locked-feature regression is blocking; a desire to rebalance that locked feature is not.
+
 ## 4. Concurrent-chat safety on `main`
 
 This repo intentionally works directly on `main`.
@@ -77,17 +84,30 @@ When another chat/agent is active:
 
 ## 5. Testing model
 
-The repository has one normal CI workflow and one diagnostic workflow:
+The repository has local candidate gates, scoped feature closure, and a separate full-game audit.
 
 ### Local verification — current default
 - `tools/web/TEST_GAME_LOCAL.cmd` covers Fast, Browser, Visual and Full local web/runtime proof.
 - Mode 5 — FULL CLEAN is the default exact-clean candidate gate while Actions push automation is disabled.
 - `KIEM_TRA_GAME.cmd` is the mandatory Godot import/parse/unit/bridge/runtime/Stagehand gate.
 
+### Feature-scoped backend closure
+- Feature manifests live in `qa/runners/feature-closure-manifest.js`.
+- Inspect a manifest with `node qa/runners/v140-backend-gates.js feature-info <feature-id>`.
+- Final scoped gate: `node qa/runners/v140-backend-gates.js feature <feature-id>`.
+- One-click Windows closure: `DONG_BO_VA_TEST_FEATURE.cmd <feature-id>`.
+- A feature registered with `closureReady:false` must fail closed until correctness/parity/identity-valid benchmark evidence is complete.
+- Benchmark identity must be behaviorally valid before DPS/balance evidence is accepted.
+
+### Full-game backend closure
+- `node qa/runners/v140-backend-gates.js closure` remains the independent directory sweep.
+- It is a whole-game audit, not the default blocking gate for a narrowly reopened feature slice.
+- Classify out-of-scope failures; do not silently weaken the audit and do not retune unrelated gameplay to satisfy it.
+
 ### `.github/workflows/ci.yml`
 - manual dispatch only;
 - `mode=fast` -> Fast backend + Fast frontend + representative Runtime Smoke;
-- `mode=closure` -> the same Fast/Smoke gate followed by Canonical backend + frontend QA;
+- `mode=closure` -> the same Fast/Smoke gate followed by full Canonical backend + frontend QA;
 - artifact retention is intentionally short to limit Actions storage use.
 
 ### `.github/workflows/runner-diagnostics.yml`
@@ -112,23 +132,35 @@ Rules:
 
 ## 7. Development loop
 
-Preferred loop:
+Preferred backend/gameplay loop:
 
-`checkpoint -> audit -> narrow patch -> targeted test if useful -> Game CI -> inspect runtime evidence when relevant -> iterate -> user visual approval for UI -> [closure] -> Canonical QA -> checkpoint`
+`checkpoint -> scope lock -> contract -> runtime seam audit -> correctness -> parity -> identity-valid benchmark -> minimal tune -> Fast/Full Clean -> feature-scoped closure -> checkpoint`
+
+Preferred UI loop:
+
+`checkpoint -> audit -> narrow patch -> targeted test if useful -> Game CI -> inspect runtime evidence -> iterate -> user visual approval -> [closure] -> scoped/Canonical QA as required -> checkpoint`
 
 Do not run heavyweight visual/state matrices just because code changed. Use the smallest proof that covers the changed risk.
 
 ## 8. Closure
 
+For backend/gameplay feature slices:
+- exact gameplay candidate evidence is required;
+- correctness and parity must be green before balance tuning is accepted;
+- deterministic benchmark evidence must prove the defining archetype mechanics actually executed;
+- tune the smallest feature-owned lever and stop when the target band passes;
+- final closure uses the registered feature manifest and exact clean SHA;
+- full-game audit debt outside the declared scope is recorded/deferred, not opportunistically patched;
+- write a dated closure record and keep the root checkpoint compact.
+
 Never mark a UI slice `LOCKED` without:
 - exact candidate SHA with green Game CI;
 - real runtime screenshot evidence;
 - explicit user visual approval;
-- Canonical Closure QA;
+- required scoped/Canonical Closure QA;
 - checkpoint update by the slice owner.
 
 Do not use `[closure]` merely because a candidate compiles or looks plausible.
-
 
 ## 9. Godot migration work
 
