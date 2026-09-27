@@ -83,8 +83,9 @@ assert.deepEqual(
   'retired V142 Set ids must contribute zero gameplay power',
 );
 
-// Combat adapter keeps one final V142 Set composition seam; the retirement facade above makes it inert.
-assert.match(equipment, /const v142SetPower = equipmentSetPowerV142\(state\)/);
-assert.match(equipment, /activeSets\.push\(\.\.\.v142SetPower\.activeSets\)/);
+// Combat adapter must project equipment power without any retired V142 Set path.
+assert.doesNotMatch(equipment, /equipmentSetPowerV142/);
+assert.match(equipment, /legacy\.equipmentPower\(stateWithoutRetiredAxes\(state\), new Map\(\)\)/);
+assert.match(equipment, /activeSets:\s*\[\], activeSetMechanics:\s*\[\]/);
 
 console.log('V165 Equipment runtime authority B1 PASS');
