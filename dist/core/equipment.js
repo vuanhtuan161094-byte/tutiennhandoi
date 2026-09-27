@@ -5,13 +5,14 @@ export * from './equipment-legacy-pre-nguhanh-retirement.js';
 
 const isRetiredElementTrait = id => String(id ?? '').startsWith('trait.element.');
 const isRetiredElementAffix = roll => roll?.family === 'element' || String(roll?.id ?? '').startsWith('affix.element.');
+const isRetiredEquipmentTag = tag => String(tag ?? '').startsWith('EquipmentElement:') || String(tag ?? '').startsWith('EquipmentGem:') || String(tag ?? '').startsWith('SetV142:');
 function sanitizedNewItem(item) {
   const next = { ...item };
   delete next.setId;
   next.traitIds = (next.traitIds ?? []).filter(id => !isRetiredElementTrait(id));
   next.affixes = (next.affixes ?? []).filter(roll => !isRetiredElementAffix(roll));
   next.gemSockets = [];
-  next.tags = (next.tags ?? []).filter(tag => !String(tag).startsWith('SetV142:'));
+  next.tags = (next.tags ?? []).filter(tag => !isRetiredEquipmentTag(tag));
   return next;
 }
 function stateWithoutSets(state) {
@@ -28,7 +29,11 @@ export function addEquipment(state, item) {
 }
 export function equipmentPower(state, _sets) {
   const power = legacy.equipmentPower(stateWithoutSets(state), new Map());
-  return { ...power, elementalAffinities: {}, elementalResistancesPct: {}, activeSets: [], activeSetMechanics: [] };
+  return {
+    ...power,
+    elementalAffinities: {}, elementalResistancesPct: {}, activeSets: [], activeSetMechanics: [],
+    grantedTags: (power.grantedTags ?? []).filter(tag => !isRetiredEquipmentTag(tag)),
+  };
 }
 export function applyEquipmentToEntity(base, state, sets) {
   const power = equipmentPower(state, sets);
