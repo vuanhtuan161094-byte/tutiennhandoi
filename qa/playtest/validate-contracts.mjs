@@ -1,8 +1,26 @@
 import { access, readFile, readdir } from 'node:fs/promises';
+import path from 'node:path';
 
 const readJson = async path => JSON.parse(await readFile(path, 'utf8'));
 const fail = message => { throw new Error(message); };
 const exists = async path => { try { await access(path); return true; } catch { return false; } };
+
+async function readEffectiveEntrypointSource(entryPath, maxDepth = 4) {
+  let currentPath = entryPath;
+  const visited = new Set();
+  const sources = [];
+  for (let depth = 0; depth <= maxDepth; depth += 1) {
+    if (visited.has(currentPath)) fail(`Circular delegated entrypoint detected: ${currentPath}`);
+    visited.add(currentPath);
+    if (!(await exists(currentPath))) fail(`Delegated entrypoint not found: ${currentPath}`);
+    const source = await readFile(currentPath, 'utf8');
+    sources.push(`// ${currentPath}\n${source}`);
+    const delegated = source.match(/await\s+import\(\s*['"](\.\/[^'"]+)['"]\s*\)/);
+    if (!delegated) return sources.join('\n');
+    currentPath = path.normalize(path.join(path.dirname(currentPath), delegated[1])).replaceAll('\\', '/');
+  }
+  fail(`Delegated entrypoint exceeds maximum depth ${maxDepth}: ${entryPath}`);
+}
 
 const agentContract = await readFile('AGENTS.md', 'utf8');
 for (const clause of [
@@ -40,7 +58,7 @@ if (workflow.includes('capture-combat-runtime.mjs') || workflow.includes('captur
   fail('Manual Game CI must not run the heavyweight visual showcase');
 }
 
-const localCiSource = await readFile('qa/local/run-local-ci.mjs', 'utf8');
+const localCiSource = await readEffectiveEntrypointSource('qa/local/run-local-ci.mjs');
 if (!localCiSource.includes("if (mode === 'browser' || mode === 'full') await runBrowser")) {
   fail('Local Full gate must include representative runtime browser smoke');
 }
