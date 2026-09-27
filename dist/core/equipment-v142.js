@@ -6,8 +6,21 @@
 import * as legacy from './equipment-v142-legacy.js';
 export * from './equipment-v142-legacy.js';
 
+const RETIRED_SET_METADATA_V142 = new Map((legacy.EQUIPMENT_SET_CATALOG_V142 ?? []).map(def => [
+  def.id,
+  Object.freeze({
+    id: def.id,
+    key: def.key,
+    name: def.name,
+    category: def.category,
+    ...(def.element ? { element: def.element } : {}),
+    bonuses: Object.freeze([]),
+    retired: true,
+  }),
+]));
+
 export const EQUIPMENT_SET_CATALOG_V142 = Object.freeze([]);
-export function equipmentSetDefinitionV142(_id) { return undefined; }
+export function equipmentSetDefinitionV142(id) { return RETIRED_SET_METADATA_V142.get(String(id ?? '')); }
 export function equipmentAttireSetForElementV142(_element) { return undefined; }
 export function equipmentSetFragmentNameV142(setId) { return `Tàn Ấn legacy · ${String(setId ?? '')}`; }
 export function equipmentProgressionSummaryV142(state) {

@@ -4,6 +4,7 @@ import { normalizeCanonicalEquipmentAfterRestore } from '../../dist/core/session
 import {
   EQUIPMENT_MAX_ENHANCEMENT_V142,
   EQUIPMENT_V142_SCHEMA,
+  equipmentSetDefinitionV142,
   equipmentSetPowerV142,
 } from '../../dist/core/equipment-v142.js';
 
@@ -19,7 +20,7 @@ assert.match(session, /buildPlayerCombatEntityV1/);
 assert.match(combatFactory, /applyEquipmentToEntity\(character, state\.equipment, registry\.equipmentSets\)/);
 assert.equal((combatFactory.match(/applyEquipmentToEntity\(/g) ?? []).length, 1, 'canonical player factory must compose equipment exactly once');
 
-// Save/load authority: restore must enforce the same +15 cap and retired-lane rules as live V142 mutation.
+// Save/load authority: restore must enforce the +15 cap and keep retired Set identity as read-only compatibility metadata.
 const restoreFixture = {
   equipment: {
     items: [
@@ -49,8 +50,13 @@ assert.equal(sanitized.setResonanceLevelV143, 0);
 assert.equal(restoreFixture.equipment.items[1].enhancementLevel, 20, 'legacy equipment keeps its independent +20 compatibility cap');
 assert.equal(restoreFixture.equipment.items[1].grade, 'breaker', 'legacy equipment semantics are not rewritten by V165');
 assert.equal(restoreFixture.equipment.items[2].enhancementLevel, 0);
-assert.equal(restoreFixture.equipment.items[3].setId, 'set.v142.attire.metal', 'valid V142 Set identity must be preserved');
-assert.equal(restoreFixture.equipment.items[3].setResonanceLevelV143, 4);
+assert.equal(restoreFixture.equipment.items[3].setId, 'set.v142.attire.metal', 'retired V142 Set identity must remain readable');
+assert.equal(restoreFixture.equipment.items[3].setResonanceLevelV143, 4, 'retired resonance metadata may remain readable but inert');
+
+const retiredSetDefinition = equipmentSetDefinitionV142('set.v142.attire.metal');
+assert.equal(retiredSetDefinition?.id, 'set.v142.attire.metal');
+assert.equal(retiredSetDefinition?.retired, true);
+assert.deepEqual(retiredSetDefinition?.bonuses, [], 'retired Set metadata must not expose gameplay bonuses');
 
 // Canonical V142 crafting cannot silently resurrect retired Grade/Gem/Dao-Wen progression.
 assert.match(crafting, /gemSockets: \[\]/);
@@ -63,7 +69,7 @@ for (const method of ['engraveDaoInscriptionV115', 'socketEquipmentGemV128', 'up
   assert.ok(block.includes("item.schema === 'equipment.v142'"), `${method} must reject V142 items`);
 }
 
-// Set authority: V142 Set power is derived once from equipped V142 item IDs.
+// Retired Set authority: legacy V142 Set ids may remain readable, but Set power is always inert.
 const setState = {
   items: [
     { id: 'weapon', schema: EQUIPMENT_V142_SCHEMA, slot: 'weapon', setId: 'set.v142.attire.metal' },
@@ -71,12 +77,13 @@ const setState = {
   ],
   equipped: { weapon: 'weapon', head: 'head' },
 };
-const setPower = equipmentSetPowerV142(setState);
-assert.equal(setPower.statMultipliers.attack, 0.08, '2-piece Metal Set bonus must be applied exactly once');
-assert.equal(setPower.activeSets.length, 1);
-assert.equal(setPower.activeSets[0].pieces, 2);
+assert.deepEqual(
+  equipmentSetPowerV142(setState),
+  { flatStats: {}, statMultipliers: {}, activeSets: [] },
+  'retired V142 Set ids must contribute zero gameplay power',
+);
 
-// Combat adapter keeps one final V142 set composition path.
+// Combat adapter keeps one final V142 Set composition seam; the retirement facade above makes it inert.
 assert.match(equipment, /const v142SetPower = equipmentSetPowerV142\(state\)/);
 assert.match(equipment, /activeSets\.push\(\.\.\.v142SetPower\.activeSets\)/);
 
