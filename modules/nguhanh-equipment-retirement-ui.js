@@ -2,6 +2,7 @@
  * Presentation retirement for removed equipment Ngũ Hành Gem/Set systems.
  * Linh Căn/root UI is intentionally untouched.
  */
+const RETIRED_AFFIX_MARKER = 'NGŨ HÀNH LEGACY';
 const RETIRED_SELECTORS = [
   '.v138247-socket-workshop', '.v138247-socket-unavailable', '.v138247-gem-legend', '.v138247-socket-runtime-note',
   '.v138233-set-screen', '.v138247-set-screen', '.v138247-set-hero', '.v138247-set-rules', '.v138242-set-card', '.v138244-set-mini', '.v138246-set-shift',
@@ -15,10 +16,20 @@ style.dataset.nguhanhEquipmentRetired = '1';
 style.textContent = `${RETIRED_SELECTORS.join(',')} { display:none !important; }`;
 document.head.appendChild(style);
 
+function pruneRetiredAffixRows(root = document) {
+  root.querySelectorAll?.('.v13820-affix').forEach(row => {
+    if (String(row.textContent || '').includes(RETIRED_AFFIX_MARKER)) row.remove();
+  });
+  root.querySelectorAll?.('[data-reforge-same],[data-reforge-change],[data-refine-affix]').forEach(button => {
+    const owner = button.closest?.('.v13820-affix, article, section, div');
+    if (owner && String(owner.textContent || '').includes(RETIRED_AFFIX_MARKER)) owner.remove();
+  });
+}
 function pruneRetiredEquipmentUi(root = document) {
   for (const selector of RETIRED_SELECTORS) {
     try { root.querySelectorAll?.(selector).forEach(node => node.remove()); } catch {}
   }
+  pruneRetiredAffixRows(root);
   root.querySelectorAll?.('.v13819-detail-group').forEach(group => {
     if (group.querySelector('[data-stat-help="break"]')) {
       group.querySelectorAll('div').forEach(row => {
