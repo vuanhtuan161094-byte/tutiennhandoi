@@ -1,4 +1,4 @@
-const WIP_CACHE_TOKEN='ui-home-v1-20260913';
+const WIP_CACHE_TOKEN='ui-nguhanh-retire-20260927';
 
 function isLocalWipHost(hostname){
   const host=String(hostname||'').toLowerCase();
@@ -45,6 +45,9 @@ try{
 try{
   await import(`./app.js?v=${WIP_CACHE_TOKEN}`);
 }catch(error){showFatalBootError(error,'app.js');throw error;}
+try{
+  await import(`./modules/nguhanh-equipment-retirement-ui.js?v=${WIP_CACHE_TOKEN}`);
+}catch(error){showFatalBootError(error,'nguhanh-equipment-retirement-ui.js');throw error;}
 try{
   await import(`./modules/endgame-ui-v159.js?v=${WIP_CACHE_TOKEN}`);
 }catch(error){showFatalBootError(error,'endgame-ui-v159.js');throw error;}
