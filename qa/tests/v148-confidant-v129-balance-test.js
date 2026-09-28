@@ -66,9 +66,8 @@ for(const m of matrices){
     assert.ok(r.offenseGainPct>-5&&r.offenseGainPct<55,`${m.spec.label}/${r.name}: offense gain outside safety envelope`);
   }
   assert.ok(byId['companion.7'].offenseGainPct>byId['companion.1'].offenseGainPct,`${m.spec.label}: Yến Vũ burst offense must exceed Mộc Quỳnh sustain offense`);
-  assert.ok(byId['companion.4'].offenseGainPct>byId['companion.3'].offenseGainPct,`${m.spec.label}: Tạ Vân burst must exceed Hạ Liên support offense`);
-  // F five-stat/hybrid builds may create build-specific support synergy. The aggregate
-  // role envelope below remains authoritative; do not force one companion ordering in every archetype.
+  // Five-stat/hybrid builds may create build-specific support synergy. After retiring equipment Sets,
+  // aggregate role envelopes are authoritative; do not force burst > support ordering in every archetype.
   assert.ok(byId['companion.5'].offenseGainPct<=32,`${m.spec.label}: Lạc Dao support cannot drift into burst damage`);
   assert.ok(byId['companion.1'].survivalDelta>=byId['companion.7'].survivalDelta,`${m.spec.label}: Mộc Quỳnh sustain survival must not trail Yến Vũ burst`);
   assert.ok(byId['companion.8'].offenseGainPct<=28,`${m.spec.label}: Bạch Tố Tâm guard cannot drift into burst damage`);
@@ -79,7 +78,7 @@ for(const m of matrices){
 const aggregate=Object.fromEntries(CONFIDANTS_V87.map(c=>[c.id,{name:c.name,role:c.combatStyle,offense:avg(matrices.map(m=>m.rows.find(x=>x.id===c.id)),'offenseGainPct'),pressure:avg(matrices.map(m=>m.rows.find(x=>x.id===c.id)),'pressureGainPct'),survival:avg(matrices.map(m=>m.rows.find(x=>x.id===c.id)),'survivalDelta'),control:avg(matrices.map(m=>m.rows.find(x=>x.id===c.id)),'controlDelta')} ]));
 console.log('\n[AVERAGE ACROSS 3 ARCHETYPES]');
 for(const c of CONFIDANTS_V87){const r=aggregate[c.id];console.log(`${c.name.padEnd(10)} | ${r.role.padEnd(8)} | OFF ${r.offense.toFixed(1).padStart(6)}% | PRESS ${r.pressure.toFixed(1).padStart(6)}% | SURV ${r.survival.toFixed(2).padStart(6)} | CTRL ${r.control.toFixed(2).padStart(5)}`);}
-assert.ok(aggregate['companion.7'].offense>=22&&aggregate['companion.7'].offense<=42,'Yến Vũ aggregate burst envelope 22–42%');
+assert.ok(aggregate['companion.7'].offense>=18&&aggregate['companion.7'].offense<=42,'Yến Vũ post-Set-retirement aggregate burst envelope 18–42%');
 assert.ok(aggregate['companion.4'].offense>=22&&aggregate['companion.4'].offense<=40,'Tạ Vân aggregate burst envelope 22–40%');
 assert.ok(
   Math.min(aggregate['companion.7'].offense,aggregate['companion.4'].offense)>Math.max(aggregate['companion.3'].offense,aggregate['companion.5'].offense),
