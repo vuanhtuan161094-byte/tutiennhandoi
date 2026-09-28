@@ -5,7 +5,7 @@ import { battleDaoSkillsV118 } from '../../dist/content/battle-dao-skill-pack-v1
 import { EQUIPMENT_AFFIX_DEFINITIONS_V114, rollEquipmentAffixesV114 } from '../../dist/core/equipment-affix-v114.js';
 import { buildManualCatalogV127, manualEffectMultiplierV127 } from '../../dist/core/manual-progression-v127.js';
 import { SWORD_V2_PASSIVE_IDS, swordIntentBonusesV2 } from '../../dist/core/battle-dao-v2-runtime.js';
-import { V128_DAO_INSCRIPTIONS, daoInscriptionPowerV128, equipmentGemEffectV128, socketEquipmentGemV128, EQUIPMENT_GEM_BLANK_RESOURCE_V128 } from '../../dist/core/equipment-inscription-gem-v128.js';
+import { V128_DAO_INSCRIPTIONS, V128_EQUIPMENT_GEMS, daoInscriptionPowerV128, equipmentGemEffectV128, socketEquipmentGemV128, EQUIPMENT_GEM_BLANK_RESOURCE_V128 } from '../../dist/core/equipment-inscription-gem-v128.js';
 import { combatPowerBreakdown } from '../../dist/core/personal-power.js';
 
 let passed=0;
@@ -99,26 +99,26 @@ test('Phụ Kiếm Kiếm Ý is precision/crit identity and never a global Công
 });
 
 
-test('Đạo Văn and Ngũ Hành Ngọc budgets are authored for ten equipment slots instead of per-item spam',()=>{
+test('Đạo Văn budgets remain bounded while retired Ngũ Hành Ngọc contributes zero effect',()=>{
   const ten=x=>x*10;
   const byId=Object.fromEntries(V128_DAO_INSCRIPTIONS.map(x=>[x.id,daoInscriptionPowerV128({id:x.id})]));
   assert.ok(ten(byId['dao.v128.army_breaker'].flatStats.armorPenPct)<=12.01);
   assert.ok(ten(byId['dao.v128.steady_mind'].flatStats.controlDurationReductionPct)<=15.01);
   assert.ok(ten(byId['dao.v128.heart'].flatStats.heartChancePct)<=8.01);
-  const metal=equipmentGemEffectV128({element:'metal',level:5}), water=equipmentGemEffectV128({element:'water',level:5}), wood=equipmentGemEffectV128({element:'wood',level:5}), fire=equipmentGemEffectV128({element:'fire',level:5});
-  assert.ok(ten(metal.flatStats.armorPenPct)<=15.01);
-  assert.ok(ten(water.flatStats.damageReductionPct)<=6.01);
-  assert.ok(ten(wood.flatStats.lifeStealPct)<=6.01);
-  assert.equal(ten(fire.flatStats.critChancePct),40);
+  assert.deepEqual(V128_EQUIPMENT_GEMS,[],'live Ngũ Hành Ngọc catalog must stay retired');
+  for(const element of ['metal','water','wood','fire','earth']){
+    assert.equal(equipmentGemEffectV128({element,level:5}),undefined,`${element} Ngọc must contribute zero live effect`);
+  }
 });
 
-test('A single equipment item cannot stack duplicate Ngũ Hành Ngọc elements',()=>{
-  const item={id:'equipment.v129.gem.unique',name:'V129 Ngọc Test',grade:'breaker',gemSockets:[null,null,null,null]};
+test('Retired Ngũ Hành Ngọc cannot be socketed and rejection is atomic',()=>{
+  const item={id:'equipment.v129.gem.retired',name:'V129 Ngọc Legacy Test',grade:'breaker',gemSockets:[null,null,null,null]};
   const inv={[EQUIPMENT_GEM_BLANK_RESOURCE_V128]:10};
-  socketEquipmentGemV128(item,0,'fire',inv); const afterFirst=inv[EQUIPMENT_GEM_BLANK_RESOURCE_V128];
-  assert.throws(()=>socketEquipmentGemV128(item,1,'fire',inv),/chỉ được khảm 1 Hỏa Ngọc/);
-  assert.equal(inv[EQUIPMENT_GEM_BLANK_RESOURCE_V128],afterFirst,'duplicate rejection must be atomic');
-  socketEquipmentGemV128(item,1,'metal',inv); assert.equal(item.gemSockets[1].element,'metal');
+  const beforeItem=structuredClone(item), beforeInv=structuredClone(inv);
+  assert.throws(()=>socketEquipmentGemV128(item,0,'fire',inv),/retire/i);
+  assert.throws(()=>socketEquipmentGemV128(item,1,'metal',inv),/retire/i);
+  assert.deepEqual(item,beforeItem,'retired socket attempts must not mutate legacy item payload');
+  assert.deepEqual(inv,beforeInv,'retired socket attempts must not consume legacy Gem Blank inventory');
 });
 
 
