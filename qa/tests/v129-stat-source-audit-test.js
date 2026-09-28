@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { EQUIPMENT_AFFIX_DEFINITIONS_V114 } from '../../dist/core/equipment-affix-v114.js';
 import { ROOT_ORIGIN_COMBAT_DEFINITIONS_V132 } from '../../dist/core/root-origin-combat-v132.js';
 import { SPIRIT_BEAST_SPECIES_V86, spiritBeastBondSummaryV86 } from '../../dist/core/spirit-beast-v86.js';
-import { SET_SIMPLE_2P_STAT_V12318, SET_SIMPLE_MINOR_V12318 } from '../../dist/core/equipment-set-v116.js';
-import { V128_DAO_INSCRIPTIONS, daoInscriptionPowerV128, equipmentGemEffectV128 } from '../../dist/core/equipment-inscription-gem-v128.js';
+import { LIVE_EQUIPMENT_SET_CATALOG_V12310, activeEquipmentSetMechanicsV116 } from '../../dist/core/equipment-set-v116.js';
+import { V128_DAO_INSCRIPTIONS, V128_EQUIPMENT_GEMS, daoInscriptionPowerV128, equipmentGemEffectV128 } from '../../dist/core/equipment-inscription-gem-v128.js';
 
 let passed=0; const test=(name,fn)=>{fn();passed++;console.log(`✓ [${passed}] ${name}`)};
 const byId=id=>EQUIPMENT_AFFIX_DEFINITIONS_V114.find(x=>x.id===id);
@@ -36,19 +36,20 @@ test('V147 Linh Thú collection gives owned raw but equipped-only percentage',()
   assert.deepEqual({p:active.powerPct,b:active.bodyPct,d:active.defensePct},{p:5.3,b:3.1,d:2.5});
 });
 
-test('Ngũ Hành Set 2p is noticeable while bounded-stat minor lanes remain controlled',()=>{
-  assert.equal(SET_SIMPLE_2P_STAT_V12318.at(-1),18);
-  assert.equal(SET_SIMPLE_MINOR_V12318.at(-1),8);
+test('Ngũ Hành equipment Sets are retired while Căn Nguyên remains an independent live source',()=>{
+  assert.deepEqual(LIVE_EQUIPMENT_SET_CATALOG_V12310,[],'no live equipment Set catalog may survive retirement');
+  const legacySetState={items:[{id:'legacy-set-piece',slot:'weapon',setId:'set.v116.attire.dainhat_phanthien'}],equipped:{weapon:'legacy-set-piece'}};
+  assert.deepEqual(activeEquipmentSetMechanicsV116(legacySetState),[],'legacy Set metadata must produce zero live mechanics');
+  assert.equal(ROOT_ORIGIN_COMBAT_DEFINITIONS_V132.filter(x=>x.root==='fire').length,6,'Căn Nguyên authority must remain intact');
 });
 
-test('Đạo Văn and Ngọc remain secondary layers rather than dominant single-slot stats',()=>{
+test('Đạo Văn remains secondary while retired Ngũ Hành Ngọc has zero live effect',()=>{
   const ins=Object.fromEntries(V128_DAO_INSCRIPTIONS.map(x=>[x.id,daoInscriptionPowerV128({id:x.id})]));
   assert.ok(ins['dao.v128.heart'].flatStats.heartChancePct<=1);
   assert.ok(ins['dao.v128.army_breaker'].flatStats.armorPenPct<=1.5);
   assert.ok(ins['dao.v128.steady_mind'].flatStats.controlDurationReductionPct<=2);
-  const water=equipmentGemEffectV128({element:'water',level:5});
-  const metal=equipmentGemEffectV128({element:'metal',level:5});
-  assert.ok(water.flatStats.damageReductionPct<=0.6); assert.ok(metal.flatStats.armorPenPct<=1.5);
+  assert.deepEqual(V128_EQUIPMENT_GEMS,[],'live Ngũ Hành Ngọc catalog must stay retired');
+  for(const element of ['water','metal','wood','fire','earth']) assert.equal(equipmentGemEffectV128({element,level:5}),undefined,`${element} Ngọc must stay inert`);
 });
 
 console.log(`V129 STAT SOURCE AUDIT: ${passed}/${passed} PASS`);
