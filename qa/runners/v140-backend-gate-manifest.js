@@ -28,6 +28,7 @@ export const BACKEND_FAST_GATES = Object.freeze([
   'fist-dao-q4-harness-contract-test.js',
   'fist-dao-q5-chain-tuning-test.js',
   'mind-dao-production-contract-test.js',
+  'mind-dao-skill-form-contract-test.js',
   'feature-closure-framework-test.js',
   'dao-closure-scope-contract-test.js',
   'v129-gameplay-consistency-test.js',
