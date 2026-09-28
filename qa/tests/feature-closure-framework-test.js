@@ -66,6 +66,7 @@ for(const gate of [
   'fist-dao-q4-harness-contract-test.js',
   'fist-dao-q5-chain-tuning-test.js',
   'mind-dao-production-contract-test.js',
+  'mind-dao-skill-form-contract-test.js',
 ]) assert(mind.gates.includes(gate),`dao-mind missing locked/shared regression ${gate}`);
 assert.deepEqual(mind.lockedRegressionFeatures,['dao-sword','dao-fist']);
 
