@@ -24,6 +24,10 @@ export const FIST_LOCK_REGRESSION_GATES=freezeList([
   'fist-dao-q5-chain-tuning-test.js',
 ]);
 
+export const MIND_OPEN_GATES=freezeList([
+  'mind-dao-production-contract-test.js',
+]);
+
 const makeManifest=spec=>Object.freeze({
   schema:'feature-closure-manifest.v1',
   workflow:'docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md',
@@ -67,6 +71,19 @@ export const BACKEND_FEATURE_CLOSURE_MANIFESTS=Object.freeze({
     lockedRegressionFeatures:['dao-sword'],
     deferredFamilies:DAO_DEFERRED,
     gates:[...DAO_SHARED_CLOSURE_GATES,...SWORD_LOCK_REGRESSION_GATES,...FIST_LOCK_REGRESSION_GATES],
+  }),
+  'dao-mind':makeManifest({
+    id:'dao-mind',
+    label:'Mind Dao / Thần Niệm Đạo',
+    kind:'dao',
+    closureReady:false,
+    benchmarkCommand:'tools\\web\\RUN_MIND_M5_BENCHMARK.cmd',
+    // M0 uses the production-contract gate as the fail-closed benchmark contract placeholder.
+    // M4 must replace this with the real identity-valid harness contract before closureReady=true.
+    benchmarkContractGate:'mind-dao-production-contract-test.js',
+    lockedRegressionFeatures:['dao-sword','dao-fist'],
+    deferredFamilies:DAO_DEFERRED,
+    gates:[...DAO_SHARED_CLOSURE_GATES,...SWORD_LOCK_REGRESSION_GATES,...FIST_LOCK_REGRESSION_GATES,...MIND_OPEN_GATES],
   }),
 });
 
