@@ -89,6 +89,25 @@ This file is the source of truth for a new chat. Read it before editing producti
 - The V3 implementation changes QA/workflow/docs only; it does **not** change gameplay/runtime coefficients or reopen Sword/Fist.
 - **Use V3 as the default workflow for every newly opened Main Dao slice.** Modify it only for a proven process defect or explicit user instruction.
 
+## Ngũ Hành Equipment Retirement — CLOSED / LOCKED (2026-09-29)
+
+- Closure record: `docs/runtime/NGU_HANH_EQUIPMENT_RETIREMENT_20260927.md`.
+- Exact user-local Windows closure evidence SHA: `39781155b11b1c48edce11fb141cd204a71df71c`.
+- Closure command: `DONG_BO_VA_TEST_NGU_HANH_RETIRE.cmd`.
+- User-local clean exact-SHA proof:
+  - branch `main`;
+  - targeted retirement regression PASS;
+  - Backend Fast **39/39 PASS**;
+  - Frontend Fast **20/20 PASS**;
+  - Runtime Browser Smoke **4/4 PASS**;
+  - Strict Browser Smoke PASS with `runtimeErrors=0`, `networkFailures=0`, `missingImages=0`, `overflow=0`;
+  - `LOCAL CI PASS`;
+  - final `NGU HANH RETIREMENT LOCAL CLOSURE: PASS`.
+- Retired from live gameplay: equipment Ngũ Hành Gems/sockets, equipment Sets/Tàn Ấn/resonance bonuses, equipment elemental affixes and equipment-sourced elemental affinity/resistance authority.
+- Preserved: Linh Căn, unrelated equipment progression/Đạo Văn, and legacy retired fields as read-only compatibility data with zero live retired power/mutation authority.
+- Compatibility `*-legacy.js` / pre-retirement modules are deliberate read-only seams; do not delete them merely to reduce module count without a separate compatibility migration.
+- Reopen only for a proven regression or explicit user request. Do not silently restore a universal equipment-level Ngũ Hành combat wheel.
+
 ## Full-game backend audit debt — intentionally separate from feature closure
 
 The historical whole-game backend `closure` sweep last reported **137/141 PASS** after the five-stat migration. The remaining four failures are deferred cross-system audit debt, not evidence that Quyền is broken:
@@ -122,12 +141,13 @@ Scope rule:
 - Concept images, reconstructed mocks, or static source review are not runtime proof.
 - No UI slice becomes visually locked without actual runtime screenshot/video evidence and explicit user approval.
 
-## Immediate next action
+## Immediate next action — Thần Niệm Dao
 
-1. Start the next Dao in a new chat using `docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md`.
-2. Read `docs/runtime/DAO_NEW_SLICE_TEMPLATE_V3.md`, inspect current source, create the new Dao contract, and register its feature id with `closureReady:false` before final closure work.
-3. Complete runtime seam audit before changing production coefficients; correctness → parity → identity-valid benchmark → minimal tune → scoped closure.
-4. Preserve Combat V3, Sword and Quyền locks unless a regression is proven or the user explicitly reopens them.
+1. Open **Thần Niệm (`mind`)** as the next Main Dao slice under `docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md`; register its feature id with `closureReady:false` before closure work.
+2. Audit current runtime/content/rotation seams before changing coefficients. In particular reconcile the existing V2 `mind` echo cadence (`echoEvery: 3`, delayed echo/follow-up lane) with the V118 Thần Niệm skill scaffold built around **Thần Ấn**; do not invent a third independent resource merely to avoid this reconciliation.
+3. Lock the production identity first: mental pressure / tactical interference / control, distinct from Kiếm burst and Quyền counter-bruiser. Hard control must remain bounded and boss-resistant; Thần Thức is utility/control authority, not a generic damage multiplier.
+4. Then proceed in order: resource contract → combat loop → skill/passive architecture → rotation/AI parity → backend authority → deterministic identity benchmark → minimal tuning → scoped closure.
+5. Preserve Combat V3, Sword, Quyền and Ngũ Hành Equipment Retirement locks unless a regression is proven or the user explicitly reopens them.
 
 ## Historical checkpoint preservation
 
