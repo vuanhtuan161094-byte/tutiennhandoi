@@ -26,6 +26,7 @@ export const FIST_LOCK_REGRESSION_GATES=freezeList([
 
 export const MIND_OPEN_GATES=freezeList([
   'mind-dao-production-contract-test.js',
+  'mind-dao-skill-form-contract-test.js',
 ]);
 
 const makeManifest=spec=>Object.freeze({
