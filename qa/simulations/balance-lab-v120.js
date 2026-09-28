@@ -47,7 +47,7 @@ export function setMechanicsV120(attireSetId, attirePieces, jewelrySetId, jewelr
     if (jewelrySetId || jewelryPieces)
         throw new Error('Alpha.23.10: Bội/Nhẫn là trang bị thường, không còn mechanic Set trong Balance Lab.');
     const mechanics = [];
-    if (attireSetId && attirePieces)
+    if (attireSetId && attirePieces && isLiveEquipmentSetV12310(attireSetId))
         mechanics.push(...activeEquipmentSetMechanicsV116(setItems(attireSetId, attirePieces, grade, 1100)));
     return mechanics;
 }
@@ -133,7 +133,7 @@ export function thematicAttireSetIdV120(_dao, root) {
     const rootSet = LIVE_EQUIPMENT_SET_CATALOG_V12310.find(x => x.tags.includes(rootTag));
     if (rootSet)
         return rootSet.id;
-    return LIVE_EQUIPMENT_SET_CATALOG_V12310[0].id;
+    return LIVE_EQUIPMENT_SET_CATALOG_V12310[0]?.id;
 }
 /** @deprecated Alpha.23.10: Bội/Nhẫn không còn Set. */
 export function compatibleJewelrySetIdsV120(_dao, _root) { return []; }
