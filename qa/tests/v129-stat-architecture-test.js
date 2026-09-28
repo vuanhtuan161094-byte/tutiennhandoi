@@ -63,7 +63,7 @@ test('Seven offensive Dao ultimates are authored Tất Trúng while Thể ultima
   for(const s of offensive){ assert.equal(s.unavoidable,true,s.id); assert.match(s.description,/Tất Trúng/); }
 });
 
-test('Equipment Né is a rare affix source instead of a common default roll',()=>{
+test('Equipment Né remains slot-restricted and down-weighted after Ngũ Hành affix retirement',()=>{
   const dodge=EQUIPMENT_AFFIX_DEFINITIONS_V114.find(x=>x.id==='affix.combat.dodge'); assert.ok(dodge); assert.ok((dodge.rollWeightMultiplier??1)<=0.2);
   const slots=['weapon','head','robe','belt','bracelet','gloves','boots','necklace','ring','talisman'];
   let hits=0,total=5000;
@@ -71,7 +71,8 @@ test('Equipment Né is a rare affix source instead of a common default roll',()=
     const aff=rollEquipmentAffixesV114({slot:slots[seed%slots.length]},'heaven',seed);
     if(aff.some(x=>x.id==='affix.combat.dodge')) hits++;
   }
-  const pct=hits*100/total; assert.ok(pct>=2 && pct<=10,`heaven dodge roll rate ${pct.toFixed(2)}%`);
+  const pct=hits*100/total;
+  assert.ok(pct>=12 && pct<=22,`post-retirement heaven dodge roll rate ${pct.toFixed(2)}%`);
 });
 
 test('261 Công Pháp keep Crit scalable but bound naturally capped secondary sources at authored origin',()=>{
