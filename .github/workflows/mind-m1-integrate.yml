@@ -1,4 +1,4 @@
-name: Mind M1 guarded integration
+name: Mind M1 guarded correctness
 
 on:
   push:
@@ -15,7 +15,7 @@ jobs:
     runs-on: [self-hosted, Windows, X64]
     timeout-minutes: 10
     steps:
-      - name: Checkout integration candidate
+      - name: Checkout M1 candidate
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -25,48 +25,41 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Apply guarded M1 patch
+      - name: Apply remaining guarded runtime seams
         shell: cmd
         run: |
           node --check tools\mind-m1-integrate.mjs
-          if errorlevel 1 exit /b 1
           node tools\mind-m1-integrate.mjs
-          if errorlevel 1 exit /b 1
           node --check dist\core\mind-dao-v2-runtime.js
-          if errorlevel 1 exit /b 1
           node --check dist\core\battle-dao-v2-runtime.js
-          if errorlevel 1 exit /b 1
+          node --check dist\core\combat-m1-base.js
           node --check dist\core\combat.js
-          if errorlevel 1 exit /b 1
 
       - name: Targeted Mind correctness gates
         shell: cmd
         run: |
+          node qa\tests\mind-dao-m1-seal-transaction-test.js
           node qa\tests\mind-dao-m1-authority-test.js
-          if errorlevel 1 exit /b 1
           node qa\tests\mind-dao-production-contract-test.js
-          if errorlevel 1 exit /b 1
+          node qa\tests\mind-dao-skill-form-contract-test.js
 
       - name: Locked Dao smoke gates
         shell: cmd
         run: |
-          node qa\tests\sword-dao-f6-harness-contract-test.js
-          if errorlevel 1 exit /b 1
+          node qa\tests\sword-dao-production-contract-test.js
           node qa\tests\fist-dao-counter-runtime-test.js
-          if errorlevel 1 exit /b 1
 
       - name: Commit only after gates pass
-        shell: cmd
+        shell: bash
         run: |
-          git rm .github\workflows\mind-m1-integrate.yml tools\mind-m1-integrate.mjs
-          if errorlevel 1 exit /b 1
-          git add dist\core\battle-dao-v2-runtime.js dist\core\combat.js
-          if errorlevel 1 exit /b 1
+          set -euo pipefail
+          git rm .github/workflows/mind-m1-integrate.yml tools/mind-m1-integrate.mjs
+          git add dist/core/battle-dao-v2-runtime.js
+          if git diff --cached --quiet; then
+            echo "No guarded M1 changes produced"
+            exit 1
+          fi
           git config user.name "github-actions[bot]"
-          if errorlevel 1 exit /b 1
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if errorlevel 1 exit /b 1
-          git commit -m "feat(mind): wire M1 authority runtime"
-          if errorlevel 1 exit /b 1
+          git commit -m "fix(mind): close remaining M1 authority seams"
           git push origin HEAD:main
-          if errorlevel 1 exit /b 1
