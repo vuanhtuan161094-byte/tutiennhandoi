@@ -52,7 +52,8 @@ Feature manifest: **`closureReady:false`**
 Design target: `docs/runtime/MIND_DAO_PRODUCTION_SPEC_V1_20260929.md`  
 Production contract: `docs/runtime/MIND_DAO_PRODUCTION_CONTRACT_20260929.md`  
 M2B audit: `docs/runtime/MIND_DAO_M2B_CLOSURE_AUDIT_20260929.md`  
-M2C audit: `docs/runtime/MIND_DAO_M2C_CLOSURE_AUDIT_20260929.md`
+M2C audit: `docs/runtime/MIND_DAO_M2C_CLOSURE_AUDIT_20260929.md`  
+M3 audit: `docs/runtime/MIND_DAO_M3_CLOSURE_AUDIT_20260929.md`
 
 ### Closed subphases
 
@@ -61,6 +62,7 @@ M2C audit: `docs/runtime/MIND_DAO_M2C_CLOSURE_AUDIT_20260929.md`
 - **M2A — CLOSED:** all ten Mind skills have explicit five-stat families; no generic TT damage multiplier.
 - **M2B — CLOSED:** passive P1–P8 architecture and ownership.
 - **M2C — CLOSED:** all ten Mind mastery rows have runtime ownership for 100 / 250 / 500 / 750 / 1000 milestones through the Mind owner and narrow combat/decision seams.
+- **M3 — CLOSED:** manual/shared CombatKernel V3, Auto/tactical, PvE/Boss, PvP, Hunt/offline, save/carry, Secondary Mind and locked Sword/Quyền consumer parity audited with a registered gate.
 
 M2B runtime candidate:
 `24c608f1764c9e5a34c65e5c66602e3e30d3a499`
@@ -68,38 +70,41 @@ M2B runtime candidate:
 M2C semantic-alignment candidate:
 `17ec773bb057e7e6145bea10de91e532bff0efdf`
 
-M2C production locks:
-- mastery is Main-Mind-owned; Secondary does not gain Mind Active/Core/Ultimate mastery authority;
-- root extra-hit packages are procDepth-0 and once/root;
-- mastery may not replay Thần Ấn gain/consume through Niệm Ảnh;
-- Niệm Ảnh remains sanitized, non-recursive, shared-budgeted and capped at 70%;
-- Observe 1000 sixth-hit/instant-echo path requires completed channel resolution;
-- Flow 1000 reuses existing cadence/state ownership and does not create a second echo counter;
-- Ultimate remains outside ordinary snapshot authority;
-- Nhiễu 500 keys echo-Break to the current target's Nhiễu state, not snapshot source identity;
-- Ultimate 1000 improves echo cadence interval by 25% while preserving the canonical 0.6s echo delay and shared follow-up budget.
+M3 parity proof commits:
+- gate: `ee86e719c47d8f3f57f33ea95b676373224ea73c`;
+- registration: `ee57079fe1f8f3f58cfb1d32d2b83d1e6ba99165`.
 
-M2C closure limitation:
-- exact SHA `17ec773b...` had no attached GitHub Actions run at audit time;
-- M2C is closed as architecture/ownership from source + registered guards, not as whole-feature FULL CLEAN evidence.
+### M3 production locks
 
-### Immediate next action — M3 production-path parity
+- production consumers converge on canonical CombatKernel V3 / `CombatEngine`; no second Mind mechanic engine was found;
+- Auto/tactical layers choose actions but do not independently resolve Mind mechanics;
+- PvP and Hunt authoritative matches use the compiled CombatKernel V3 path;
+- Hunt carry forwards durable `battleDaoStateV2`; action-local Thần Ấn/Niệm Ảnh transaction state remains combat-owned;
+- Secondary Mind remains the M2B passive-only Resolve-safe lane;
+- Sword and Quyền stay locked regression dependencies;
+- M3 changed no gameplay coefficient.
 
-Prove the same closed Mind semantics across:
-1. manual CombatKernel V3;
-2. Auto rotation;
-3. PvE and Boss;
-4. PvP;
-5. Hunt/offline representative combat;
-6. save/restore/carry state where applicable;
-7. Secondary Mind passive-only behavior;
-8. locked Sword and Quyền regressions after shared-seam changes.
+M3 closure limitation:
+- no GitHub Actions run is claimed for the exact M3 proof commits at closure time;
+- M3 is closed as production-path ownership/parity from audited source + registered guards, not as whole-feature FULL CLEAN evidence.
 
-M3 must not tune coefficients. Any parity defect is fixed at the narrowest owner seam and guarded before M4 opens.
+### Immediate next action — M4 deterministic identity harness
 
-After M3:
-- **M4:** replace blocked benchmark launcher with identity-valid deterministic harness;
-- **M5:** minimal Mind-owned tuning only after valid baseline;
+Build the deterministic benchmark harness before any tuning. The harness must prove defining mechanics are actually exercised and reject invalid zero-mechanic runs.
+
+Required archetypes remain:
+1. **Bạo Ấn** — normalized damage reference 100%;
+2. **Niệm Ảnh** — target 88–98% of Bạo Ấn, with 15–30% real echo contribution;
+3. **Nhiễu Thức** — target 75–90% of Bạo Ấn and highest real interference/control metric.
+
+M4 work:
+- install a real Mind benchmark/harness contract gate;
+- replace the feature manifest benchmark placeholder only after that gate exists;
+- make `RUN_MIND_M5_BENCHMARK.cmd` execute the identity-valid deterministic harness instead of fail-closing;
+- record baseline only; **do not tune coefficients in M4**.
+
+After M4:
+- **M5:** minimal Mind-owned tuning only from valid deterministic baseline;
 - **M6:** FULL CLEAN + `DONG_BO_VA_TEST_FEATURE.cmd dao-mind` + dated closure record + lock.
 
 ## Full-game audit debt — separate from Mind feature closure
