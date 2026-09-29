@@ -28,6 +28,13 @@ export const statuses = [
         disablesActions: true,
     },
     {
+        id: 'status.mind.interference_stagger',
+        name: 'Thần Thức Chấn Nhiễu',
+        group: 'SpiritControl',
+        controlKind: 'hard',
+        disablesActions: true,
+    },
+    {
         id: 'status.fist.pressure',
         name: 'Trấn Áp',
         group: 'Debuff',
