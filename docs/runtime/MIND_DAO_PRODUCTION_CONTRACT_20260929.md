@@ -1,6 +1,6 @@
 # THẦN NIỆM DAO PRODUCTION CONTRACT — 2026-09-29
 
-Status: **M2A CLOSED / M2B OPEN — PASSIVE + MASTERY ARCHITECTURE IN IMPLEMENTATION; PRODUCTION TUNING NOT AUTHORIZED**
+Status: **M2B CLOSED / M2C OPEN — PASSIVE ARCHITECTURE CLOSED; MASTERY OWNERSHIP NEXT; PRODUCTION TUNING NOT AUTHORIZED**
 
 Repository: `vuanhtuan161094-byte/tutiennhandoi`  
 Branch: `main` only  
@@ -14,309 +14,181 @@ Parent locks:
 - Dao Production Workflow V3 — ACTIVE / LOCKED.
 - Ngũ Hành Equipment Retirement — CLOSED / LOCKED.
 
-This contract opens Thần Niệm under the same production discipline learned from Kiếm and Quyền: **contract first → runtime seam correctness → parity → identity-valid deterministic benchmark → minimal tuning → scoped closure**. A benchmark result is invalid when the defining Thần Niệm mechanic did not actually fire.
+Thần Niệm remains under the V3 sequence: **correctness → parity → identity-valid deterministic benchmark → minimal tuning → scoped closure**. The feature manifest remains `closureReady:false`; M2B closure is not whole-feature closure and does not authorize coefficient tuning.
 
-## 1. Scope lock
-
-### In scope
-
-- `dist/content/mind-dao-v2.js`.
-- Thần Niệm rows only in `dist/content/battle-dao-skill-pack-v118.js`.
-- Thần Niệm state/defaults in `dist/core/battle-dao-v2-contract.js`.
-- Thần Niệm runtime ownership in `dist/core/battle-dao-v2-runtime.js`.
-- Necessary Thần Niệm compatibility seams in `dist/core/battle-dao-combat-v118.js`.
-- Thần Niệm Auto rules in `dist/core/battle-dao-rotation-v127.js` and narrowly required AI conditions.
-- Shared CombatKernel / control / Hunt / PvP seams only when a proven Thần Niệm correctness or parity defect requires them.
-- QA harnesses, feature manifest, docs, launcher.
-
-### Explicitly deferred
-
-Do not pull these systems into this slice merely to make a global test green:
-- Artifact / Relic;
-- Spirit Beast;
-- Confidant;
-- Equipment balance;
-- Alchemy balance;
-- Economy;
-- Reincarnation-wide balance;
-- Collection-wide power budgets;
-- other unopened Dao production slices.
-
-Sword and Quyền remain regression locks, not tuning targets.
-
-## 2. Production identity
+## 1. Production identity
 
 Thần Niệm is the **mental pressure / tactical interference / control Dao**.
 
-It should win by:
-1. placing **Thần Ấn** on the target;
-2. choosing whether to spend those marks for disruption or damage;
-3. building long-cycle **Niệm Lực** through sustained mental actions;
-4. using **Niệm Ảnh** as a delayed, sandboxed echo of selected actions;
-5. creating bounded control windows under the canonical Control vs Resolve, pressure, chain-limit, immunity and boss rules.
+Canonical readable loop:
 
-Thần Niệm is the primary home for meaningful hard-control gameplay, but hard control must be **sparse, contestable and boss-resistant**. It must never become permanent stun/root/silence/suppression chaining or bypass canonical control immunity.
+**`ẤN → NHIỄU → ẢNH / KÍCH`**
 
-Thần Niệm is not:
-- Kiếm burst with different names;
-- Quyền counter / Break bruiser;
-- a generic TT-to-damage conversion engine;
-- a third elemental system;
-- a reason to reopen Ngũ Hành equipment gameplay.
+It wins by placing target-local Thần Ấn, spending marks for tactical interference or burst/Break, building long-cycle Niệm Lực, and using sandboxed Niệm Ảnh as a delayed cadence payoff. Hard control remains bounded by canonical Control vs Resolve, control pressure, chain limits, immunity and boss rules.
 
-## 3. Canonical resource model
+Forbidden drift:
+- no generic `TT → all damage` multiplier;
+- no permanent control chain;
+- no recursive echo/proc engine;
+- no third independent resource;
+- no reopening Sword/Quyền/Ngũ Hành equipment balance to tune Mind.
 
-There are **two stored resource lanes** plus one core cadence mechanic. Do not invent a third independent resource.
+## 2. Canonical resources and state
 
-### 3.1 Thần Ấn — target-local short cycle
+### Thần Ấn — target-local short cycle
 
-- Stored on the target as mark `Thần Ấn`.
-- Normal cap: **5**.
-- Built by authored Thần Niệm skills.
-- Spent by disruption / burst payoffs.
-- Target-local: changing target must not magically transfer the target's marks.
+- owner: current target;
+- hard cap: **5**;
+- built by authored Main-Mind skills only;
+- spend commits exactly once at root resolution;
+- switching target never transfers marks;
+- Niệm Ảnh may never repeat add/consume transactions.
 
-Current working build/spend map:
-- Basic: +1.
-- Lạc Niệm Thành Ấn: +2.
-- Phân Thần Truy Niệm: +2.
-- Truy Hồn Niệm Ấn: +1.
-- Tịch Niệm Quan Tâm: +3 only through the completed authored action/channel semantics; timing must be verified before production lock.
-- Vạn Niệm Phân Lưu: +2.
-- Nhiễu Thần Chỉ: intended spend 1–3 for interference.
-- Bạo Ấn Phá Thức: spend up to 5 for burst/Break.
-- Ultimate: spend up to 5 for final payoff.
+Current production build/spend semantics are owned by the V2 Mind runtime and guarded by M1 tests, including Observe progress, Nhiễu spend, Bạo Ấn/Ultimate consume, and Phân Lưu bonus generation.
 
-### 3.2 Niệm Lực — self long cycle
+### Niệm Lực — self long cycle
 
-Existing V2 passive-stack authority is retained as the long-cycle lane:
-- player-facing name: **Niệm Lực**;
-- p1 unlocks it;
-- base cap 20;
-- base hold 12s;
-- after hold expires, decay 1 stack/s;
-- p3 modifies duration/decay;
-- p5 modifies cap;
-- carries across Hunt kills under the existing V2 carry model.
+- base cap: **20**;
+- P5 candidate maximum cap: **30**;
+- base hold: **12s**;
+- base decay: **1 stack/s** after hold expiry;
+- P3 owns hold/decay tuning;
+- carries across Hunt kills under existing V2 semantics;
+- reads/UI projections may synchronize elapsed timers but may not refresh the P8 peak hold.
 
-The current p1/p6/p7/p8 generic damage/Armor Pen package is **not automatically accepted as final Thần Niệm identity**. M1/M2 must audit which bonuses should move toward echo/interference/control rather than allowing Niệm Lực to become another generic damage stack.
+### Niệm Ảnh — cadence mechanic, not a third resource
 
-### 3.3 Niệm Ảnh — core cadence/payoff, not a resource bar
+- Main-only;
+- every **3 eligible normal Mind Active roots**;
+- delay **0.6s**;
+- baseline replay coefficient **35%**;
+- safety ceiling **70%** after authored additions;
+- stores only sanitized damage/heal/shield/Break packets;
+- no Chân Nguyên/Gauge/Thần Ấn/Niệm Lực replay;
+- no channel/deploy/summon duplication;
+- no recursion;
+- shared follow-up budget remains authoritative.
 
-`mindEchoCounter` is an internal cadence counter, not a third player-facing resource.
+Basic and Ultimate do not advance the ordinary cadence unless a future implemented mastery explicitly says otherwise.
 
-Baseline authored intent already present in `mind-dao-v2.js`:
-- main-Dao only;
-- eligible Thần Niệm Active actions create/update a sanitized snapshot;
-- every 3 eligible Active actions arms/fires a **Niệm Ảnh** after 0.6s;
-- baseline echo coefficient 35%;
-- no extra CN charge;
-- no Ultimate Gauge generation from the echo;
-- no summon/channel duplication;
-- no recursive echo;
-- shared follow-up/event budget must remain authoritative.
+## 3. Ten-skill inventory
 
-Minimum snapshot safety contract:
-- root/procDepth-0 source only;
-- no resource generation/spend replay;
-- no Thần Ấn add/consume replay;
-- no Ultimate/Gauge replay;
-- no passive re-trigger loop;
-- damage/heal/shield/Break may be replayed only from a sanitized packet;
-- any control effect replay must be explicitly whitelisted and must still route through canonical Control vs Resolve / boss / chain-immunity rules.
+The production inventory remains exactly:
 
-Basic and Ultimate do not advance the ordinary 3-Active cadence unless an authored mastery explicitly says otherwise. Ultimate may have its own explicit echo interaction without becoming a new snapshot source.
+1. `skill.dao.mind.basic` — Linh Tê Niệm Châm.
+2. `skill.dao.mind.mark` — Lạc Niệm Thành Ấn.
+3. `skill.dao.mind.split` — Phân Thần Truy Niệm.
+4. `skill.dao.mind.interfere` — Nhiễu Thần Chỉ.
+5. `skill.dao.mind.guard` — Tâm Kính Hộ Thức.
+6. `skill.dao.mind.chase` — Truy Hồn Niệm Ấn.
+7. `skill.dao.mind.burst` — Bạo Ấn Phá Thức.
+8. `skill.dao.mind.observe` — Tịch Niệm Quan Tâm.
+9. `skill.dao.mind.flow` — Vạn Niệm Phân Lưu.
+10. `skill.dao.mind.ultimate` — Vạn Niệm Quy Nhất · Tịch Chiếu.
 
-## 4. Five-stat ownership
+No extra production skill may be added during this slice without reopening the contract.
 
-The five primary stats remain exactly CL / TP / TPH / LL / TT.
+## 4. Five-stat ownership — M2A CLOSED
 
-Current audit fact: the ten V118 Thần Niệm skills do **not** yet carry `fiveStatScalingV5`. `fiveStatSkillPowerV5()` therefore falls back to effective Attack, so current damage is effectively on the legacy CL/Attack lane; there is no hidden TT damage mapping.
+All ten Mind skills now carry explicit `fiveStatScalingV5` families.
 
-Production ownership direction:
-- **CL** — direct-damage anchor.
-- **TT** — primary control / Accuracy / Resolve / mental-effect authority. TT may appear in explicitly authored skill-specific mental scaling later, but there is no global TT damage multiplier.
-- **TPH** — only explicit tempo/chase skill scaling where justified; never generic Action Speed from TPH.
-- **TP** — defensive/shield-specific contribution only where explicitly authored.
-- **LL** — Max Chân Nguyên capacity only unless a future skill explicitly states otherwise.
+Locked ownership direction:
+- **CL / power** — direct-damage anchor;
+- **TT / sense** — Accuracy / Control / Resolve authority plus explicitly authored mental skill scaling;
+- **TPH / agility** — selected split/chase/echo-oriented local scaling only;
+- **TP / body** — Tâm Kính defensive/shield contribution only where authored;
+- **LL / spirit** — Max Chân Nguyên capacity, not a hidden damage stat.
 
-Exact per-skill five-stat weights are **M2 work** and may not be tuned before M1 correctness is complete.
+There is no global TT damage multiplier. Exact coefficients remain benchmark/tuning work and are not authorized by M2A closure alone.
 
-## 5. Current ten-skill inventory
+## 5. Passive ownership — M2B CLOSED
 
-The existing ten-skill set is the working production inventory; do not add random skills during M0/M1.
+Canonical V2 progression remains exactly P1–P8.
 
-1. `skill.dao.mind.basic` — Linh Tê Niệm Châm — Basic / +1 Thần Ấn.
-2. `skill.dao.mind.mark` — Lạc Niệm Thành Ấn — fast mark build.
-3. `skill.dao.mind.split` — Phân Thần Truy Niệm — mark build / multi-hit candidate.
-4. `skill.dao.mind.interfere` — Nhiễu Thần Chỉ — tactical interference spender.
-5. `skill.dao.mind.guard` — Tâm Kính Hộ Thức — defensive mental guard.
-6. `skill.dao.mind.chase` — Truy Hồn Niệm Ấn — cast / snapshot-oriented chase.
-7. `skill.dao.mind.burst` — Bạo Ấn Phá Thức — mark-spend damage/Break.
-8. `skill.dao.mind.observe` — Tịch Niệm Quan Tâm — channel / observation / setup.
-9. `skill.dao.mind.flow` — Vạn Niệm Phân Lưu — deploy/state / pressure support.
-10. `skill.dao.mind.ultimate` — Vạn Niệm Quy Nhất · Tịch Chiếu — unavoidable Ultimate payoff under boss/control rules.
+- **P1 — Niệm Lực Quyết:** unlocks Niệm Lực; Main converts 10-stack groups into Niệm Ảnh/control quality; Secondary-safe lane is Resolve only.
+- **P2 — Dưỡng Niệm Chân Kinh:** one bounded extra-stack chance per eligible gain event.
+- **P3 — Niệm Lực Trường Tồn:** hold/decay ownership; passive/stat reads do not refresh the peak timer.
+- **P4 — Minh Tâm Chân Ý:** Main action-local Accuracy + Control Power; Secondary-safe Resolve only.
+- **P5 — Vạn Niệm Vô Cực:** increases Niệm Lực cap only; never changes Thần Ấn cap.
+- **P6 — Thần Niệm Lăng Thiên:** Main Nhiễu potency + Niệm Ảnh Break quality; no generic Skill Damage.
+- **P7 — Nhất Niệm Phá Vọng:** at Niệm Lực ≥20, procDepth-0 Main-Mind direct packets gain action-local Armor Pen only while the target is under current mental pressure (Thần Ấn, Nhiễu, or marks consumed by the current root).
+- **P8 — Niệm Lực Bất Diệt:** cap-state peak refresh is event-owned; Main gains Niệm Ảnh/Nhiễu/control quality, Secondary gets bounded Resolve; no generic all-skill damage or Gauge gain.
 
-Mastery numbers in `mind-dao-v2.js` are **candidate authored content**, not closure authority yet. M1/M2 must prove the runtime actually owns each promised mechanic before any coefficient is balanced.
+Ownership rules:
+- `mind-dao-v2-runtime.js` is the Mind-specific passive output owner;
+- generic `remainingDaoPassiveBonusesV2()` must remain mutation-free for Mind output;
+- generic P8 damage/Gauge and read-owned refresh branches must exclude Mind;
+- Main-only action-local Accuracy/Control/Armor Pen must not leak to Secondary Mind;
+- Secondary Mind may observe the long-cycle passive stack on the character's own eligible roots but may not gain Mind Active/Core/Ultimate authority.
 
-## 6. Passive ownership
+M2B runtime candidate: `24c608f1764c9e5a34c65e5c66602e3e30d3a499`. Detailed audit: `docs/runtime/MIND_DAO_M2B_CLOSURE_AUDIT_20260929.md`.
 
-Canonical V2 progression already contains p1–p8:
-- p1 Niệm Lực Quyết;
-- p2 Dưỡng Niệm Chân Kinh;
-- p3 Niệm Lực Trường Tồn;
-- p4 Minh Tâm Chân Ý;
-- p5 Vạn Niệm Vô Cực;
-- p6 Thần Niệm Lăng Thiên;
-- p7 Nhất Niệm Phá Vọng;
-- p8 Niệm Lực Bất Diệt.
+## 6. M1 correctness state — CLOSED
 
-The older five `passive.dao.mind.*` entries in V118 coexist as an older compatibility/content lane. M1 must identify their surviving authority and must not create a third passive family.
+The previously identified M1 blockers are resolved and now treated as regression guards, not current defects:
+- V2-owned Thần Ấn generation/spend;
+- mark-based Nhiễu eligibility/transaction;
+- zero-mark normal Bạo Ấn rejection;
+- Observe mark gain by resolved channel progress;
+- Phân Lưu 5s state and bounded bonus-mark cadence;
+- sanitized Niệm Ảnh replay with shared follow-up budget and non-recursion;
+- Ultimate excluded from ordinary echo cadence;
+- P8 timer refresh moved out of passive/stat reads.
 
-Rules learned from Quyền:
-- passive/stat reads must not mutate combat timers merely because UI/combat code asked for a read;
-- event-owned refresh must happen on an eligible root action, not inside a bonus getter;
-- Main-only core and Secondary-passive semantics must remain separate.
+## 7. M2C — Mastery architecture OPEN
 
-## 7. Runtime seam audit — M1 blockers
+The ten mastery rows in `mind-dao-v2.js` remain authored design intent until runtime ownership is proven.
 
-### Finding A — Nhiễu ownership is bypassed under V2
+M2C must classify and implement each milestone by ownership type:
+- pure numeric skill-local modifier;
+- root-action behavior change;
+- snapshot/echo modifier;
+- Thần Ấn transaction modifier;
+- Niệm Lực event modifier;
+- control/Break modifier;
+- timing/cast/recovery modifier.
 
-`prepareBattleDaoActionV118()` / `finishBattleDaoActionV118()` suppress V1 Dao resource/signature mutation when V2 is enabled. The existing `mindInterfere` block that consumes 1–3 Thần Ấn and applies cast/recovery interference sits inside that suppressed V1 path.
+Mastery must not create a second echo counter, a third resource lane, duplicate Gauge/resource events, or bypass control/boss/follow-up-budget rules.
 
-Result: the current V2 Thần Niệm runtime does not own the promised Nhiễu Thần Chỉ mark-spend/interference behavior through that legacy block.
+No balance tuning is authorized during M2C.
 
-**M1 requirement:** move/rebuild this behavior under the V2 owner, not by re-enabling the whole V1 Dao path.
+## 8. M3 parity requirements
 
-### Finding B — Auto Burst gates on the wrong semantic
-
-Current Auto uses `mindEchoCounter >= 2` to choose `skill.dao.mind.burst`, while Burst actually consumes target `Thần Ấn`.
-
-**M1 requirement:** Auto must gate a mark spender on actual target mark state / intended tactical window, not on internal Niệm Ảnh cadence.
-
-### Finding C — Niệm Ảnh runtime does not match the authored snapshot contract
-
-The catalog describes a whitelisted snapshot replay. Current V2 runtime stores snapshot metadata, then computes a delayed damage coefficient from the just-finished action's HP damage. It does not yet replay the authored sanitized damage/heal/shield/Break packet.
-
-**M1 requirement:** establish one canonical sanitized snapshot packet and prove non-recursion/event-budget behavior.
-
-### Finding D — five-stat migration is not done
-
-All ten current Thần Niệm skills lack `fiveStatScalingV5`; the fallback is Attack/CL.
-
-**M2 requirement:** add explicit per-skill five-stat families only after M1 mechanics are correct.
-
-### Finding E — Niệm Lực p8 refresh is still read-owned
-
-The generic remaining-Dao bonus getter can extend a cap-state stack timer for non-Fist Dao, including Mind. Quyền already taught that refresh must be event-owned rather than caused by a read.
-
-**M1 requirement:** Thần Niệm peak-state refresh must be attached to eligible action events, not stat/bonus reads.
-
-### Finding F — channel/deploy timing must be proven
-
-Tịch Niệm Quan Tâm and Vạn Niệm Phân Lưu promise setup/state behavior. Before tuning, tests must prove mark gain/state creation occurs at the intended completion/event boundary and cannot be duplicated by interrupted channel/proc replay.
-
-## 8. Control contract
-
-Thần Niệm owns control identity, but all disabling control must remain inside canonical combat rules:
-- TT/Control vs Resolve contest;
-- control pressure;
-- control-chain limit;
-- immunity window;
-- boss resistance/effectiveness;
-- no generated proc may bypass those gates.
-
-M1 may add/repair a **bounded mental interrupt/stagger window** only after identifying the canonical control API. It must not introduce a parallel stun implementation in Thần Niệm code.
-
-Soft interference such as cast delay/recovery pressure remains valid and should be a defining output even when a boss resists hard control.
-
-## 9. Auto / parity contract
-
-Before benchmark/tuning, prove the same semantic loop in:
+Before benchmark work, prove semantic parity for:
 - manual CombatKernel V3 path;
 - Auto rotation;
 - PvE/Boss;
 - PvP;
-- Hunt/offline settlement path where combat is represented;
-- save/restore / carry state;
-- Secondary Dao passive-only behavior.
+- Hunt/offline representative combat;
+- save/restore/carry state where applicable;
+- Secondary Mind passive-only behavior;
+- locked Sword and Quyền regressions after shared-seam changes.
 
-Auto priorities must express the same resource semantics as manual play:
-- react to target cast/channel for Nhiễu;
-- do not spend Burst without Thần Ấn;
-- do not confuse `mindEchoCounter` with spendable marks;
-- build when marks are low;
-- use Ultimate only under a valid authored payoff window.
+## 9. Deterministic benchmark — M4 BLOCKED
 
-## 10. Deterministic benchmark contract — planned, BLOCKED in M0
+Feature command remains:
 
-Feature manifest benchmark command: `tools\web\RUN_MIND_M5_BENCHMARK.cmd`.
+`tools\web\RUN_MIND_M5_BENCHMARK.cmd`
 
-The launcher is intentionally blocked until correctness + parity exist. It must be replaced by a real deterministic harness before `closureReady:true`.
+The launcher intentionally remains fail-closed until M3 parity is complete and M4 installs the real identity-valid deterministic harness. The current feature manifest benchmark contract gate remains a placeholder.
 
-Planned benchmark archetypes:
-- **Nhiễu Thức** — mark-spend/control pressure; highest real interference/control output, lowest damage target.
-- **Niệm Ảnh** — echo/snapshot cadence; meaningful non-zero echo share without recursion.
-- **Bạo Ấn** — mark-spend damage/Break; damage reference, lower control pressure than Nhiễu Thức.
+Planned archetypes remain:
+- **Bạo Ấn** — normalized damage reference 100%;
+- **Niệm Ảnh** — target 88–98% of Bạo Ấn, with 15–30% real echo contribution;
+- **Nhiễu Thức** — target 75–90% of Bạo Ấn and highest real interference/control metric.
 
-Candidate identity bands to validate after the first correct baseline (not tuning authority yet):
-- Bạo Ấn normalized damage reference: 100%.
-- Niệm Ảnh damage: 88–98% of Bạo Ấn.
-- Nhiễu Thức damage: 75–90% of Bạo Ấn.
-- Niệm Ảnh echo contribution: target 15–30% of its total damage in a valid sustained benchmark.
-- Nhiễu Thức must produce non-zero real interference/control events and exceed both other archetypes on the benchmark control metric.
-- All three must build and spend Thần Ấn in the intended loop.
+Any run with zero defining mechanic is invalid evidence.
 
-A run is **INVALID** if the defining mechanic is zero/unreachable, including:
-- Niệm Ảnh archetype with zero echo events;
-- Nhiễu Thức with zero real interference/control events;
-- Bạo Ấn with zero Thần Ấn spend;
-- recursive echo or event-budget violation;
-- benchmark using a different runtime path from production.
+## 10. Phase state
 
-Do not tune against invalid runs.
+- **M0 — CLOSED** — scope / contract / registry.
+- **M1 — CLOSED** — runtime correctness / ownership.
+- **M2A — CLOSED** — explicit five-stat migration.
+- **M2B — CLOSED** — passive architecture / ownership.
+- **M2C — OPEN** — mastery architecture / ownership.
+- **M3 — OPEN AFTER M2C** — rotation and parity.
+- **M4 — BLOCKED** — deterministic identity harness.
+- **M5 — BLOCKED** — minimal tuning.
+- **M6 — BLOCKED** — exact clean feature-scoped closure.
 
-## 11. Phase sequence
-
-### M0 — Scope / contract / registry
-- create this contract;
-- register `dao-mind` with `closureReady:false`;
-- install fail-closed benchmark placeholder;
-- add structural contract gate.
-
-### M1 — Runtime correctness / ownership
-- V2-owned Thần Ấn interference;
-- canonical sanitized Niệm Ảnh snapshot;
-- event-owned Niệm Lực refresh;
-- target-mark projection/Auto conditions;
-- channel/deploy completion semantics;
-- no recursion / no duplicate authority.
-
-### M2 — Five-stat migration + skill/passive architecture
-- explicit CL/TT/TPH/TP families;
-- no generic TT damage multiplier;
-- finalize control allocation and mastery ownership;
-- update contract gate from M0 baseline to production contract.
-
-### M3 — Rotation / parity
-- Auto/manual parity;
-- PvE/PvP/Hunt/save/carry/Secondary-passive parity.
-
-### M4 — Deterministic harness
-- replace blocked benchmark launcher;
-- prove identity counters are non-zero and runtime-valid;
-- establish first correct baseline.
-
-### M5 — Minimal tuning
-- tune only Thần Niệm-specific coefficients/priority windows necessary to enter target bands;
-- do not retune Sword/Quyền or deferred systems.
-
-### M6 — Scoped closure
-- flip manifest to `closureReady:true` only after correctness, parity, valid benchmark and target bands pass;
-- Full Clean + `DONG_BO_VA_TEST_FEATURE.cmd dao-mind`;
-- record exact clean Windows evidence SHA;
-- then close/lock.
-
-## 12. M0 exit condition
-
-M0 is complete when this contract, feature manifest, fail-closed benchmark guard and structural contract test are committed on `main`. **M0 completion is not gameplay closure and is not authorization to tune coefficients.**
+`dao-mind` must remain `closureReady:false` until M3/M4/M5 evidence and required regressions are complete. Whole-feature production tuning/closure is not authorized by this M2B close.

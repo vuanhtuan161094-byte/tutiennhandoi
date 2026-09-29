@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { battleDaoSkillsV118 } from '../../dist/content/battle-dao-skill-pack-v118.js';
 import { mindPassivesV2 } from '../../dist/content/mind-dao-v2.js';
 import { remainingDaoPassiveBonusesV2 } from '../../dist/core/battle-dao-v2-runtime.js';
 import { effectiveStats } from '../../dist/core/stats.js';
 import {
+  gainMindPassiveStackV2,
   mindDirectArmorPenBonusV2,
   mindPassiveBonusesV2,
 } from '../../dist/core/mind-dao-v2-runtime.js';
@@ -76,6 +78,29 @@ assert.match(passiveText,/Nhiễu/);
   assert.equal(Number(mindDirectArmorPenBonusV2(e,target,action,10).toFixed(6)),18,'Nhiễu pressure must also qualify P7');
 }
 
+// M2B closure guard: passive/stat reads must never refresh the P8 peak timer.
+{
+  const e=entity();
+  const st=e.battleDaoStateV2.mind.stack;
+  st.expiresAt=100;
+  const registry={status(){throw new Error('no statuses expected');}};
+  mindPassiveBonusesV2(e,10);
+  remainingDaoPassiveBonusesV2(e,10);
+  effectiveStats(e,registry,10);
+  assert.equal(st.expiresAt,100,'Mind passive/stat reads must not refresh P8 peak hold');
+}
+
+// P8 refresh is event-owned: an eligible Main-Mind Active at cap extends the bounded peak hold.
+{
+  const e=entity();
+  const st=e.battleDaoStateV2.mind.stack;
+  st.expiresAt=10.25;
+  const active=battleDaoSkillsV118.find(x=>x.id==='skill.dao.mind.mark');
+  assert(active);
+  assert.equal(gainMindPassiveStackV2(e,active,10,()=>false),0,'at-cap Active does not add another stack');
+  assert.equal(st.expiresAt,12,'P8 peak hold refresh must be owned by the eligible action event');
+}
+
 const statsSource=fs.readFileSync(new URL('../../dist/core/stats.js',import.meta.url),'utf8');
 const combatSource=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
 const genericSource=fs.readFileSync(new URL('../../dist/core/battle-dao-v2-runtime.js',import.meta.url),'utf8');
@@ -86,5 +111,6 @@ assert(combatSource.includes('mindDirectArmorPenBonusV2'),'CombatEngine must con
 assert(combatSource.includes('echoBreakPct'),'Niệm Ảnh must consume P6 Break effectiveness');
 assert(genericSource.includes("else if (dao === 'mind') {\n            // M2B: Mind passive output is owned by mind-dao-v2-runtime.js"));
 assert(genericSource.includes("if (dao !== 'mind' && atCap && hasPassiveN(entity, dao, 8))"),'generic p8 damage/gauge package must exclude Mind');
+assert(genericSource.includes("if (dao !== 'fist' && dao !== 'mind')"),'generic read-owned p8 refresh must exclude Mind');
 
 console.log('MIND DAO M2B PASSIVE ARCHITECTURE: PASS');

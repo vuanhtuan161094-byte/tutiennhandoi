@@ -27,6 +27,10 @@ export const FIST_LOCK_REGRESSION_GATES=freezeList([
 export const MIND_OPEN_GATES=freezeList([
   'mind-dao-production-contract-test.js',
   'mind-dao-skill-form-contract-test.js',
+  'mind-dao-m1-seal-transaction-test.js',
+  'mind-dao-m1-authority-test.js',
+  'mind-dao-m2-five-stat-test.js',
+  'mind-dao-m2-passive-architecture-test.js',
 ]);
 
 const makeManifest=spec=>Object.freeze({
@@ -79,8 +83,8 @@ export const BACKEND_FEATURE_CLOSURE_MANIFESTS=Object.freeze({
     kind:'dao',
     closureReady:false,
     benchmarkCommand:'tools\\web\\RUN_MIND_M5_BENCHMARK.cmd',
-    // M0 uses the production-contract gate as the fail-closed benchmark contract placeholder.
-    // M4 must replace this with the real identity-valid harness contract before closureReady=true.
+    // M2B is closed, but Mastery/Parity/Benchmark/Tuning are still open.
+    // M4 must replace this placeholder with the real identity-valid harness contract before closureReady=true.
     benchmarkContractGate:'mind-dao-production-contract-test.js',
     lockedRegressionFeatures:['dao-sword','dao-fist'],
     deferredFamilies:DAO_DEFERRED,
