@@ -33,6 +33,7 @@ export const MIND_OPEN_GATES=freezeList([
   'mind-dao-m2-passive-architecture-test.js',
   'mind-dao-m2-mastery-architecture-test.js',
   'mind-dao-m3-consumer-parity-test.js',
+  'mind-dao-m4-harness-contract-test.js',
 ]);
 
 const makeManifest=spec=>Object.freeze({
@@ -85,9 +86,8 @@ export const BACKEND_FEATURE_CLOSURE_MANIFESTS=Object.freeze({
     kind:'dao',
     closureReady:false,
     benchmarkCommand:'tools\\web\\RUN_MIND_M5_BENCHMARK.cmd',
-    // M3 parity proof is registered. M4 benchmark, M5 tuning and exact M6 closure evidence remain open.
-    // M4 must replace this placeholder with the real identity-valid harness contract before closureReady=true.
-    benchmarkContractGate:'mind-dao-production-contract-test.js',
+    // M4 identity harness is installed but baseline evidence is not yet recorded. M5 tuning and M6 exact closure remain blocked.
+    benchmarkContractGate:'mind-dao-m4-harness-contract-test.js',
     lockedRegressionFeatures:['dao-sword','dao-fist'],
     deferredFamilies:DAO_DEFERRED,
     gates:[...DAO_SHARED_CLOSURE_GATES,...SWORD_LOCK_REGRESSION_GATES,...FIST_LOCK_REGRESSION_GATES,...MIND_OPEN_GATES],
