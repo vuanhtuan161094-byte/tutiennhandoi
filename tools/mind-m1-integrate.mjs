@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 
 const path = 'dist/core/battle-dao-v2-runtime.js';
-let text = fs.readFileSync(path, 'utf8');
+let text = fs.readFileSync(path, 'utf8').replace(/\r\n/g, '\n');
 
 function replaceExact(label, before, after) {
   const count = text.split(before).length - 1;
