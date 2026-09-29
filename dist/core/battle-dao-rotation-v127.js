@@ -115,15 +115,20 @@ function rulesForDao(dao, skillIds, offset = 0) {
             add('basic', 10);
             break;
         case 'mind':
-            add('ultimate', 134, gauge);
+            // M1: tactical spenders are gated by the target-local Thần Ấn they actually consume.
+            add('interfere', 156, { type: 'targetIsCasting' }, { type: 'targetMarkAtLeast', mark: 'Thần Ấn', stacks: 1 });
+            add('burst', 150, { type: 'targetIsBroken' }, { type: 'targetMarkAtLeast', mark: 'Thần Ấn', stacks: 3 });
+            add('ultimate', 144, gauge, { type: 'targetMarkAtLeast', mark: 'Thần Ấn', stacks: 3 });
+            add('burst', 138, { type: 'targetMarkAtLeast', mark: 'Thần Ấn', stacks: 5 });
+            // mindEchoCounter is cadence only: at 2/3 prefer a valuable snapshot source instead of spending marks.
+            add('chase', 126, { type: 'selfDaoV2ResourceAtLeast', resource: 'mindEchoCounter', value: 2 });
             add('guard', 124, { type: 'selfHpBelow', pct: 58 });
-            add('interfere', 120, { type: 'targetIsCasting' });
-            add('burst', 114, { type: 'selfDaoV2ResourceAtLeast', resource: 'mindEchoCounter', value: 2 });
-            add('observe', 102);
-            add('flow', 98);
-            add('split', 94);
-            add('chase', 90);
-            add('mark', 86);
+            add('ultimate', 116, gauge);
+            add('observe', 106);
+            add('flow', 102);
+            add('split', 98);
+            add('chase', 94);
+            add('mark', 90);
             add('basic', 10);
             break;
     }
