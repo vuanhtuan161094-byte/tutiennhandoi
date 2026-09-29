@@ -1,6 +1,6 @@
 # THẦN NIỆM DAO PRODUCTION CONTRACT — 2026-09-29
 
-Status: **M2C CLOSED / M3 OPEN — MASTERY ARCHITECTURE CLOSED; PRODUCTION-PATH PARITY NEXT; PRODUCTION TUNING NOT AUTHORIZED**
+Status: **M3 CLOSED / M4 OPEN — PRODUCTION-PATH PARITY CLOSED; DETERMINISTIC IDENTITY HARNESS NEXT; PRODUCTION TUNING NOT AUTHORIZED**
 
 Repository: `vuanhtuan161094-byte/tutiennhandoi`  
 Branch: `main` only  
@@ -14,7 +14,7 @@ Parent locks:
 - Dao Production Workflow V3 — ACTIVE / LOCKED.
 - Ngũ Hành Equipment Retirement — CLOSED / LOCKED.
 
-Thần Niệm remains under the V3 sequence: **correctness → parity → identity-valid deterministic benchmark → minimal tuning → scoped closure**. The feature manifest remains `closureReady:false`; M2C closure is not whole-feature closure and does not authorize coefficient tuning.
+Thần Niệm remains under the V3 sequence: **correctness → parity → identity-valid deterministic benchmark → minimal tuning → scoped closure**. The feature manifest remains `closureReady:false`; M3 closure is not whole-feature closure and does not authorize coefficient tuning.
 
 ## 1. Production identity
 
@@ -152,25 +152,32 @@ M2C semantic-alignment candidate: `17ec773bb057e7e6145bea10de91e532bff0efdf`. De
 
 No production balance tuning is authorized by M2C closure.
 
-## 8. M3 parity requirements — OPEN
+## 8. M3 production-path parity — CLOSED
 
-Before benchmark work, prove semantic parity for:
-- manual CombatKernel V3 path;
-- Auto rotation;
-- PvE/Boss;
+Parity has been audited across:
+- manual/shared CombatKernel V3 authority;
+- Auto/tactical rotation inputs;
+- PvE/Boss consumers;
 - PvP;
 - Hunt/offline representative combat;
 - save/restore/carry state where applicable;
 - Secondary Mind passive-only behavior;
 - locked Sword and Quyền regressions after shared-seam changes.
 
-## 9. Deterministic benchmark — M4 BLOCKED
+Production consumers converge on canonical CombatKernel V3 / `CombatEngine`; no alternate Mind mechanic engine was found. Hunt carry preserves durable `battleDaoStateV2`; action-local Thần Ấn/Niệm Ảnh transactions remain combat-owned. Auto/tactical layers choose actions but do not resolve Mind mechanics independently.
+
+Registered gate: `qa/tests/mind-dao-m3-consumer-parity-test.js`.  
+Detailed audit: `docs/runtime/MIND_DAO_M3_CLOSURE_AUDIT_20260929.md`.
+
+M3 made no coefficient or balance changes.
+
+## 9. Deterministic benchmark — M4 OPEN
 
 Feature command remains:
 
 `tools\web\RUN_MIND_M5_BENCHMARK.cmd`
 
-The launcher remains fail-closed until M3 parity is complete and M4 installs the real identity-valid deterministic harness. The current feature manifest benchmark contract gate remains a placeholder.
+The launcher remains fail-closed until M4 installs the real identity-valid deterministic harness and replaces the current feature-manifest benchmark contract placeholder.
 
 Planned archetypes remain:
 - **Bạo Ấn** — normalized damage reference 100%;
@@ -179,6 +186,8 @@ Planned archetypes remain:
 
 Any run with zero defining mechanic is invalid evidence.
 
+M4 authorizes harness/baseline construction only. Coefficient tuning remains blocked until an identity-valid deterministic baseline exists.
+
 ## 10. Phase state
 
 - **M0 — CLOSED** — scope / contract / registry.
@@ -186,9 +195,9 @@ Any run with zero defining mechanic is invalid evidence.
 - **M2A — CLOSED** — explicit five-stat migration.
 - **M2B — CLOSED** — passive architecture / ownership.
 - **M2C — CLOSED** — mastery architecture / ownership.
-- **M3 — OPEN** — production-path parity.
-- **M4 — BLOCKED** — deterministic identity harness.
+- **M3 — CLOSED** — production-path parity.
+- **M4 — OPEN** — deterministic identity harness / baseline.
 - **M5 — BLOCKED** — minimal tuning.
 - **M6 — BLOCKED** — exact clean feature-scoped closure.
 
-`dao-mind` must remain `closureReady:false` until M3/M4/M5 evidence and required regressions are complete. Whole-feature production tuning/closure is not authorized by this M2C close.
+`dao-mind` must remain `closureReady:false` until M4/M5 evidence and required regressions are complete. Whole-feature production tuning/closure is not authorized by this M3 close.
