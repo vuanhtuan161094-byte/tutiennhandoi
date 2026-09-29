@@ -5,6 +5,8 @@ export const MIND_V2_MARK_CAP = 5;
 export const MIND_V2_ECHO_DELAY_SECONDS = .6;
 export const MIND_V2_BASE_ECHO_COEFFICIENT = .35;
 export const MIND_V2_FLOW_SECONDS = 5;
+export const MIND_V2_FLOW_MASTERY_SECONDS = 6;
+export const MIND_V2_ULTIMATE_DOMAIN_SECONDS = 5;
 
 function isMainMind(entity, skill) {
     return entity?.combatBuildV117?.battleDaoV2Enabled === true
@@ -26,6 +28,28 @@ function isSecondaryMind(entity) {
         && entity?.combatBuildV117?.mainDaoId !== 'mind'
         && entity?.combatBuildV117?.secondaryDaoId === 'mind';
 }
+export function mindMasteryTierV2(entity, skillOrId) {
+    const id = typeof skillOrId === 'string' ? skillOrId : skillOrId?.id;
+    if (!id)
+        return 0;
+    return Math.max(0, Math.min(1000, Math.floor(Number(entity?.combatBuildV117?.skillPracticeTierV125?.[id]) || 0)));
+}
+function mindCoreV2(entity) {
+    return entity?.battleDaoStateV2?.mind?.core;
+}
+function cloneStoredSnapshot(snapshot) {
+    if (!snapshot)
+        return undefined;
+    return {
+        sourceSkillId: snapshot.sourceSkillId,
+        targetId: snapshot.targetId,
+        createdAt: snapshot.createdAt,
+        payloadId: snapshot.payloadId,
+        procDepth: snapshot.procDepth ?? 0,
+        packets: (snapshot.packets ?? []).filter(packet => ['damage', 'shield', 'heal'].includes(packet?.type)).map(packet => ({ ...packet })),
+    };
+}
+
 export function mindPassiveBonusesV2(entity, now = 0) {
     void now;
     const out = {
@@ -133,6 +157,22 @@ export function consumeMindMarksV2(source, target, maxConsume = MIND_V2_MARK_CAP
     return { consumed, before, after };
 }
 
+export function addMindPassiveStacksV2(source, amount, now) {
+    if (!isMainMind(source) || !hasMindPassive(source, 1))
+        return 0;
+    const stack = source.battleDaoStateV2?.mind?.stack;
+    if (!stack)
+        return 0;
+    const before = Math.max(0, Math.floor(stack.stacks ?? 0));
+    stack.stacks = Math.min(Math.max(1, Math.floor(stack.cap ?? 20)), before + Math.max(0, Math.floor(amount)));
+    const gained = stack.stacks - before;
+    if (gained > 0) {
+        stack.expiresAt = now + Math.max(.1, Number(stack.durationSeconds ?? 12));
+        stack.nextDecayAt = undefined;
+    }
+    return gained;
+}
+
 export function gainMindPassiveStackV2(source, skill, now, chance = () => false) {
     if (!isMainMind(source, skill) || !hasMindPassive(source, 1))
         return 0;
@@ -160,6 +200,112 @@ export function gainMindPassiveStackV2(source, skill, now, chance = () => false)
     return gained;
 }
 
+export function prepareMindMasteryActionV2(source, target, skill, action, now = 0) {
+    if (!isMainMind(source, skill) || !action?.battleDaoV2)
+        return action;
+    const tier = mindMasteryTierV2(source, skill);
+    const v2 = action.battleDaoV2;
+    const core = mindCoreV2(source);
+    const slot = skillSlotClassV117(skill);
+    v2.mindMasteryTier = tier;
+    v2.mindTargetBrokenBefore = Boolean(target?.breakDebuffUntil && target.breakDebuffUntil > now);
+
+    if (skill.id === 'skill.dao.mind.basic') {
+        const next = Math.max(0, Math.floor(core?.basicActionCounter ?? 0)) + 1;
+        v2.mindBasicCounterNext = next;
+        v2.mindBasicExtremeSecondHit = tier >= 1000 && next % 3 === 0;
+        if (tier >= 500 && core?.nextBasicDamageBonusReady) {
+            action.effectBonusPct += 20;
+            v2.mindConsumeBasicEchoBoost = true;
+        }
+    }
+    if ((skill.id === 'skill.dao.mind.mark' || skill.id === 'skill.dao.mind.split') && tier >= 100)
+        action.effectBonusPct += 15;
+    if (skill.id === 'skill.dao.mind.interfere' && tier >= 1000)
+        action.breakBonusPct += 25;
+    if (skill.id === 'skill.dao.mind.burst' && tier >= 250 && v2.mindTargetBrokenBefore)
+        action.effectBonusPct += 20;
+
+    if (slot === 'active' && (core?.guardEmpowerUntil ?? 0) > now) {
+        action.effectBonusPct += 10;
+        v2.mindConsumeGuardEmpower = true;
+    }
+
+    if (skill.id === 'skill.dao.mind.basic' && tier >= 750)
+        action.recoveryMultiplier *= .95 / 1.10;
+    else if (skill.id === 'skill.dao.mind.mark' && tier >= 750)
+        action.recoveryMultiplier *= .55 / .75;
+    else if (skill.id === 'skill.dao.mind.split' && tier >= 750)
+        action.recoveryMultiplier *= .60 / .80;
+    else if (skill.id === 'skill.dao.mind.interfere' && tier >= 750)
+        action.recoveryMultiplier *= .60 / .80;
+    else if (skill.id === 'skill.dao.mind.guard' && tier >= 750)
+        action.recoveryMultiplier *= .60 / .85;
+    else if (skill.id === 'skill.dao.mind.chase') {
+        if (tier >= 100)
+            action.castTimeMultiplier *= .65 / .80;
+        if (tier >= 750)
+            action.recoveryMultiplier *= .55 / .75;
+    }
+    else if (skill.id === 'skill.dao.mind.burst' && tier >= 750)
+        action.recoveryMultiplier *= .65 / .85;
+    else if (skill.id === 'skill.dao.mind.observe') {
+        if (tier >= 100)
+            action.channelDurationMultiplierV118 = Math.max(.1, Number(action.channelDurationMultiplierV118 ?? 1)) * (2.2 / 2.5);
+        if (tier >= 750)
+            action.recoveryMultiplier *= .70 / .90;
+        if (tier >= 1000)
+            v2.mindPreActionSnapshot = cloneStoredSnapshot(core?.snapshot);
+    }
+    else if (skill.id === 'skill.dao.mind.flow') {
+        if (tier >= 750)
+            action.castTimeMultiplier *= .60 / .80;
+    }
+    else if (skill.id === 'skill.dao.mind.ultimate') {
+        if (tier >= 750)
+            action.recoveryMultiplier *= 1.15 / 1.50;
+        if (tier >= 250)
+            v2.mindPreActionSnapshot = cloneStoredSnapshot(core?.snapshot);
+    }
+    return action;
+}
+
+export function mindMasteryExtraDirectHitsV2(source, skill, action) {
+    if (!isMainMind(source, skill) || !action?.battleDaoV2 || (action.battleDaoV2.procDepth ?? 0) !== 0)
+        return [];
+    const v2 = action.battleDaoV2;
+    if (v2.mindMasteryExtraHitsIssued)
+        return [];
+    const tier = mindMasteryTierV2(source, skill);
+    let hits = [];
+    if (skill.id === 'skill.dao.mind.basic' && v2.mindBasicExtremeSecondHit)
+        hits = [{ coefficient: .60, breakDamagePct: 0, armorPenBonusPct: 15 }];
+    else if (skill.id === 'skill.dao.mind.mark' && tier >= 1000)
+        hits = [{ coefficient: .70, breakDamagePct: 0, armorPenBonusPct: 0 }];
+    else if (skill.id === 'skill.dao.mind.split') {
+        if (tier >= 1000)
+            hits = [{ coefficient: .55, breakDamagePct: 0, armorPenBonusPct: 0 }, { coefficient: .55, breakDamagePct: 0, armorPenBonusPct: 0 }];
+        else if (tier >= 250)
+            hits = [{ coefficient: .45, breakDamagePct: 0, armorPenBonusPct: 0 }];
+    }
+    else if (skill.id === 'skill.dao.mind.chase' && tier >= 1000)
+        hits = [{ coefficient: .80, breakDamagePct: 0, armorPenBonusPct: 0 }];
+    if (hits.length > 0)
+        v2.mindMasteryExtraHitsIssued = true;
+    return hits;
+}
+
+export function mindMasteryShieldMultiplierV2(source, skill) {
+    if (!isMainMind(source, skill) || skill?.id !== 'skill.dao.mind.guard')
+        return 1;
+    const tier = mindMasteryTierV2(source, skill);
+    if (tier >= 1000)
+        return 1.45;
+    if (tier >= 100)
+        return 1.20;
+    return 1;
+}
+
 function snapshotActionEligible(source, skill, action) {
     return isMainMind(source, skill)
         && skillSlotClassV117(skill) === 'active'
@@ -181,10 +327,19 @@ export function captureMindDamagePacketV2(source, skill, action, ctx) {
         return;
     const effectMultiplier = 1 + Math.max(0, Number(ctx.runtimeEffectBonusPct ?? 0)) / 100;
     const breakMultiplier = 1 + Math.max(0, Number(ctx.runtimeBreakBonusPct ?? 0)) / 100;
+    let coefficient = Math.max(0, Number(ctx.coefficient ?? 0)) * effectMultiplier;
+    let breakDamagePct = Math.max(0, Number(ctx.breakDamagePct ?? 0)) * breakMultiplier;
+    const tier = mindMasteryTierV2(source, skill);
+    if (skill.id === 'skill.dao.mind.mark' && tier >= 250)
+        coefficient *= 1.10;
+    if (skill.id === 'skill.dao.mind.burst' && tier >= 1000) {
+        coefficient *= .40;
+        breakDamagePct *= .40;
+    }
     store.push({
         type: 'damage',
-        coefficient: Math.max(0, Number(ctx.coefficient ?? 0)) * effectMultiplier,
-        breakDamagePct: Math.max(0, Number(ctx.breakDamagePct ?? 0)) * breakMultiplier,
+        coefficient,
+        breakDamagePct,
         canCrit: ctx.canCrit !== false,
         canDodge: ctx.canDodge !== false,
         canHeart: ctx.canHeart !== false,
@@ -224,26 +379,31 @@ export function captureMindHealPacketV2(source, skill, action, effect, runtimeMu
 
 export function resolveMindInterfereV2(source, target, skill, action, now) {
     if (!isMainMind(source, skill) || skill?.daoRuntimeV118?.signature !== 'mindInterfere')
-        return { consumed: 0, targetCastDelaySeconds: 0, mentalStaggerSeconds: 0 };
+        return { consumed: 0, targetCastDelaySeconds: 0, mentalStaggerSeconds: 0, masteryStackGain: 0 };
     const spent = consumeMindMarksV2(source, target, 3);
     if (action?.battleDaoV2) {
         action.battleDaoV2.mindMarksBefore = spent.before;
         action.battleDaoV2.mindMarksSpent = spent.consumed;
     }
     if (spent.consumed <= 0)
-        return { consumed: 0, targetCastDelaySeconds: 0, mentalStaggerSeconds: 0 };
+        return { consumed: 0, targetCastDelaySeconds: 0, mentalStaggerSeconds: 0, masteryStackGain: 0 };
+    const tier = mindMasteryTierV2(source, skill);
     const passive = mindPassiveBonusesV2(source, now);
     let potencyPct = spent.consumed * 6 * (1 + passive.interferencePct / 100);
+    if (tier >= 100)
+        potencyPct *= 1.15;
     if (target?.tags?.includes('Boss'))
         potencyPct *= .5;
     const delay = Math.min(1.5, potencyPct / 100 * 2.5);
     target.pendingSetFlagsV117 ??= {};
     target.pendingSetFlagsV117['mindRecoveryPenaltyPct'] = Math.max(target.pendingSetFlagsV117['mindRecoveryPenaltyPct'] ?? 0, potencyPct);
     const acting = Boolean(target.casting || target.channeling);
+    const masteryStackGain = tier >= 250 && spent.consumed >= 2 ? addMindPassiveStacksV2(source, 1, now) : 0;
     return {
         consumed: spent.consumed,
         targetCastDelaySeconds: delay,
-        mentalStaggerSeconds: spent.consumed >= 3 && acting ? .35 : 0,
+        mentalStaggerSeconds: spent.consumed >= 3 && acting ? (tier >= 1000 ? .50 : .35) : 0,
+        masteryStackGain,
     };
 }
 
@@ -255,10 +415,38 @@ export function resolveMindConsumeDamageV2(source, target, skill, effect, action
         action.battleDaoV2.mindMarksBefore = spent.before;
         action.battleDaoV2.mindMarksSpent = spent.consumed;
     }
-    const coefficient = Math.max(0, Number(effect.baseCoefficient ?? 0))
-        + spent.consumed * Math.max(0, Number(effect.coefficientPerStack ?? 0));
-    const breakDamagePct = spent.consumed * Math.max(0, Number(effect.breakDamagePctPerStack ?? effect.stabilityDamagePerStack ?? 0));
+    const tier = mindMasteryTierV2(source, skill);
+    let baseCoefficient = Math.max(0, Number(effect.baseCoefficient ?? 0));
+    if (skill.id === 'skill.dao.mind.ultimate' && tier >= 100)
+        baseCoefficient *= 1.15;
+    let coefficient = baseCoefficient + spent.consumed * Math.max(0, Number(effect.coefficientPerStack ?? 0));
+    let breakDamagePct = spent.consumed * Math.max(0, Number(effect.breakDamagePctPerStack ?? effect.stabilityDamagePerStack ?? 0));
+    if (skill.id === 'skill.dao.mind.burst') {
+        if (tier >= 100)
+            coefficient += spent.consumed * .08;
+        if (tier >= 1000) {
+            coefficient *= 1.40;
+            breakDamagePct *= 1.30;
+        }
+    }
     return { ...spent, coefficient, breakDamagePct };
+}
+
+export function resolveMindUltimateInterferenceV2(source, target, skill, tx, now) {
+    if (!isMainMind(source, skill) || skill?.id !== 'skill.dao.mind.ultimate' || (tx?.consumed ?? 0) < 3)
+        return { targetCastDelaySeconds: 0, mentalPulseSeconds: 0, potencyPct: 0 };
+    const passive = mindPassiveBonusesV2(source, now);
+    let potencyPct = Math.max(0, Number(tx.consumed ?? 0)) * 6 * (1 + passive.interferencePct / 100);
+    if (target?.tags?.includes('Boss'))
+        potencyPct *= .5;
+    const delay = Math.min(1.5, potencyPct / 100 * 2.5);
+    target.pendingSetFlagsV117 ??= {};
+    target.pendingSetFlagsV117['mindRecoveryPenaltyPct'] = Math.max(target.pendingSetFlagsV117['mindRecoveryPenaltyPct'] ?? 0, potencyPct);
+    return {
+        targetCastDelaySeconds: delay,
+        mentalPulseSeconds: (tx.consumed ?? 0) >= 5 ? .60 : 0,
+        potencyPct,
+    };
 }
 
 export function mindObserveProgressV2(source, target, skill, action, resolvedTicks, totalTicks) {
@@ -280,50 +468,201 @@ function cloneSnapshotPackets(action) {
         .map(packet => ({ ...packet }));
 }
 
+function echoStateBonusV2(source, now) {
+    const core = mindCoreV2(source);
+    let bonus = mindPassiveBonusesV2(source, now).echoCoefficientBonus;
+    if ((core?.flowUntil ?? 0) > now && mindMasteryTierV2(source, 'skill.dao.mind.flow') >= 500)
+        bonus += .10;
+    if ((core?.guardEchoBuffUntil ?? 0) > now && mindMasteryTierV2(source, 'skill.dao.mind.guard') >= 1000)
+        bonus += .10;
+    if ((core?.ultimateDomainUntil ?? 0) > now && mindMasteryTierV2(source, 'skill.dao.mind.ultimate') >= 1000)
+        bonus += .20;
+    return bonus;
+}
+
+function baseEchoCoefficientForSkillV2(source, skillId, fallback) {
+    let coefficient = Math.max(0, Number(fallback ?? MIND_V2_BASE_ECHO_COEFFICIENT));
+    const tier = mindMasteryTierV2(source, skillId);
+    if (skillId === 'skill.dao.mind.split' && tier >= 500)
+        coefficient = Math.max(coefficient, .45);
+    if (skillId === 'skill.dao.mind.chase' && tier >= 1000)
+        coefficient = Math.max(coefficient, .50);
+    return coefficient;
+}
+
+function buildEchoV2(source, snapshot, now, baseCoefficient = MIND_V2_BASE_ECHO_COEFFICIENT, delayOverride) {
+    const core = mindCoreV2(source);
+    const safe = cloneStoredSnapshot(snapshot);
+    if (!safe || safe.packets.length <= 0)
+        return undefined;
+    const packets = safe.packets.map(packet => ({ ...packet }));
+    if (safe.sourceSkillId === 'skill.dao.mind.mark' && mindMasteryTierV2(source, safe.sourceSkillId) >= 500)
+        packets.push({ type: 'damage', coefficient: .40, breakDamagePct: 0, canCrit: true, canDodge: true, canHeart: true });
+    const nextBonus = Math.max(0, Number(core?.nextEchoBonusPct ?? 0));
+    const coefficient = Math.min(.70, baseEchoCoefficientForSkillV2(source, safe.sourceSkillId, baseCoefficient) + echoStateBonusV2(source, now) + nextBonus);
+    const domainDelay = (core?.ultimateDomainUntil ?? 0) > now && mindMasteryTierV2(source, 'skill.dao.mind.ultimate') >= 1000
+        ? MIND_V2_ECHO_DELAY_SECONDS * .75
+        : MIND_V2_ECHO_DELAY_SECONDS;
+    return {
+        delay: delayOverride ?? domainDelay,
+        coefficient,
+        sourceSkillId: safe.sourceSkillId,
+        targetId: safe.targetId,
+        payloadId: safe.payloadId,
+        packets,
+        consumeNextEchoBonus: nextBonus > 0,
+    };
+}
+
+export function mindMasteryEchoBreakBonusPctV2(source, target, sourceSkillId) {
+    let bonus = 0;
+    if (sourceSkillId === 'skill.dao.mind.chase' && mindMasteryTierV2(source, sourceSkillId) >= 500)
+        bonus += 20;
+    if (sourceSkillId === 'skill.dao.mind.interfere'
+        && mindMasteryTierV2(source, sourceSkillId) >= 500
+        && Math.max(0, Number(target?.pendingSetFlagsV117?.mindRecoveryPenaltyPct ?? 0)) > 0)
+        bonus += 20;
+    return bonus;
+}
+
+export function mindEchoBreakBonusV2(source, target, sourceSkillId, now) {
+    return mindPassiveBonusesV2(source, now).echoBreakPct + mindMasteryEchoBreakBonusPctV2(source, target, sourceSkillId);
+}
+
+export function markMindEchoScheduledV2(source, echo) {
+    if (!echo?.consumeNextEchoBonus)
+        return;
+    const core = mindCoreV2(source);
+    if (core)
+        core.nextEchoBonusPct = 0;
+}
+
+export function mindEchoResolvedV2(source) {
+    const core = mindCoreV2(source);
+    if (core && mindMasteryTierV2(source, 'skill.dao.mind.basic') >= 500)
+        core.nextBasicDamageBonusReady = true;
+}
+
+export function mindGuardShieldBreakV2(owner, now) {
+    if (!isMainMind(owner) || mindMasteryTierV2(owner, 'skill.dao.mind.guard') < 250)
+        return 0;
+    return addMindPassiveStacksV2(owner, 1, now);
+}
+
+export function mindMasteryBasicFollowUpV2(source, skill, action, chance = () => false) {
+    if (!isMainMind(source, skill) || skill?.id !== 'skill.dao.mind.basic' || !action?.battleDaoV2)
+        return undefined;
+    const tier = mindMasteryTierV2(source, skill);
+    if (tier < 100 || action.battleDaoV2.mindBasicExtremeSecondHit || (action.battleDaoV2.directDamagingHitCount ?? 0) <= 0 || !chance(15))
+        return undefined;
+    return {
+        delay: .05,
+        coefficient: .50,
+        breakDamagePct: 0,
+        gaugeGain: tier >= 250 ? 1 : 0,
+    };
+}
+
 export function finishMindRootV2(source, target, skill, action, now) {
-    const out = { notices: [], echo: undefined, flowBonusMarkGain: 0 };
+    const out = { notices: [], echo: undefined, flowBonusMarkGain: 0, flowBonusStackGain: 0, masteryStackGain: 0 };
     if (!isMainMind(source, skill) || action?.battleDaoV2?.mindInvalidSpend)
         return out;
-    const core = source.battleDaoStateV2?.mind?.core;
-    if (!core)
+    const core = mindCoreV2(source);
+    const v2 = action?.battleDaoV2;
+    if (!core || !v2)
         return out;
+    const tier = mindMasteryTierV2(source, skill);
+    const slot = skillSlotClassV117(skill);
+
+    if (slot === 'basic') {
+        core.basicActionCounter = Math.max(0, Math.floor(v2.mindBasicCounterNext ?? ((core.basicActionCounter ?? 0) + 1)));
+        if (v2.mindConsumeBasicEchoBoost)
+            core.nextBasicDamageBonusReady = false;
+        return out;
+    }
+
+    if (slot === 'ultimate') {
+        if (tier >= 1000) {
+            core.ultimateDomainUntil = now + MIND_V2_ULTIMATE_DOMAIN_SECONDS;
+            out.notices.push({ message: `${source.name} mở Tịch Chiếu Niệm Vực trong ${MIND_V2_ULTIMATE_DOMAIN_SECONDS}s.`, data: { mindUltimateDomainUntil: core.ultimateDomainUntil } });
+        }
+        if (tier >= 250) {
+            const pre = v2.mindPreActionSnapshot ?? cloneStoredSnapshot(core.snapshot);
+            out.echo = buildEchoV2(source, pre, now, .50);
+        }
+        return out;
+    }
+
+    if (slot !== 'active')
+        return out;
+
+    if (v2.mindConsumeGuardEmpower)
+        core.guardEmpowerUntil = 0;
+
+    let observeImmediateEcho;
+    if (skill.id === 'skill.dao.mind.observe' && v2.mindObserveCompleted) {
+        if (tier >= 250) {
+            out.masteryStackGain += addMindPassiveStacksV2(source, 2, now);
+        }
+        if (tier >= 500)
+            core.nextEchoBonusPct = Math.max(Number(core.nextEchoBonusPct ?? 0), .10);
+        if (tier >= 1000)
+            observeImmediateEcho = buildEchoV2(source, v2.mindPreActionSnapshot, now, MIND_V2_BASE_ECHO_COEFFICIENT, 0);
+    }
+
+    if (skill.id === 'skill.dao.mind.interfere')
+        out.masteryStackGain += Math.max(0, Number(v2.mindInterfereResult?.masteryStackGain ?? 0));
+
+    if (skill.id === 'skill.dao.mind.guard') {
+        if (tier >= 500)
+            core.guardEmpowerUntil = now + 4;
+        if (tier >= 1000)
+            core.guardEchoBuffUntil = now + 3;
+    }
+
     const opensFlow = skill.id === 'skill.dao.mind.flow';
-    if (skillSlotClassV117(skill) !== 'active')
-        return out;
+    if (opensFlow) {
+        const duration = tier >= 100 ? MIND_V2_FLOW_MASTERY_SECONDS : MIND_V2_FLOW_SECONDS;
+        core.flowUntil = now + duration;
+        core.flowEligibleActiveCount = 0;
+        out.notices.push({ message: `${source.name} mở Vạn Niệm Phân Lưu trong ${duration}s.`, data: { mindFlowUntil: core.flowUntil } });
+    }
+
     core.eligibleActiveCount = Math.max(0, Math.floor(core.eligibleActiveCount ?? 0)) + 1;
+    let flowEcho;
     if (!opensFlow && (core.flowUntil ?? 0) > now) {
         core.flowEligibleActiveCount = Math.max(0, Math.floor(core.flowEligibleActiveCount ?? 0)) + 1;
-        if (core.flowEligibleActiveCount >= 3) {
-            core.flowEligibleActiveCount = 0;
+        const flowTier = mindMasteryTierV2(source, 'skill.dao.mind.flow');
+        if (core.flowEligibleActiveCount % 3 === 0) {
             out.flowBonusMarkGain = addMindMarksV2(source, target, 1);
+            if (flowTier >= 250)
+                out.flowBonusStackGain = addMindPassiveStacksV2(source, 1, now);
         }
     }
+
     const packets = cloneSnapshotPackets(action);
     core.snapshot = {
         sourceSkillId: skill.id,
         targetId: target?.id,
         createdAt: now,
-        payloadId: `${action?.battleDaoV2?.rootActionId ?? skill.id}:snapshot`,
+        payloadId: `${v2.rootActionId ?? skill.id}:snapshot`,
         procDepth: 0,
         packets,
     };
+
+    if (!opensFlow && (core.flowUntil ?? 0) > now) {
+        const flowTier = mindMasteryTierV2(source, 'skill.dao.mind.flow');
+        if (flowTier >= 1000 && core.flowEligibleActiveCount % 2 === 0)
+            flowEcho = buildEchoV2(source, core.snapshot, now, .25);
+    }
+
+    let ordinaryEcho;
     if (core.eligibleActiveCount >= Math.max(1, Math.floor(core.echoEvery ?? 3))) {
         core.eligibleActiveCount = 0;
-        if (packets.length > 0) {
-            out.echo = {
-                delay: MIND_V2_ECHO_DELAY_SECONDS,
-                coefficient: Math.min(.70, Math.max(0, Number(core.echoCoefficient ?? MIND_V2_BASE_ECHO_COEFFICIENT) + mindPassiveBonusesV2(source, now).echoCoefficientBonus)),
-                sourceSkillId: skill.id,
-                targetId: target?.id,
-                payloadId: core.snapshot.payloadId,
-                packets: packets.map(packet => ({ ...packet })),
-            };
-        }
+        ordinaryEcho = buildEchoV2(source, core.snapshot, now, Number(core.echoCoefficient ?? MIND_V2_BASE_ECHO_COEFFICIENT));
     }
-    if (opensFlow) {
-        core.flowUntil = now + MIND_V2_FLOW_SECONDS;
-        core.flowEligibleActiveCount = 0;
-        out.notices.push({ message: `${source.name} mở Vạn Niệm Phân Lưu trong ${MIND_V2_FLOW_SECONDS}s.`, data: { mindFlowUntil: core.flowUntil } });
-    }
+
+    out.echo = observeImmediateEcho ?? ordinaryEcho ?? flowEcho;
+    v2.mindMasteryStackGainResolved = Math.max(0, Number(out.masteryStackGain ?? 0)) + Math.max(0, Number(out.flowBonusStackGain ?? 0));
     return out;
 }
