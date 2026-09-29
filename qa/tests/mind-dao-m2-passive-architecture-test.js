@@ -9,7 +9,7 @@ import {
 } from '../../dist/core/mind-dao-v2-runtime.js';
 
 const ALL=Array.from({length:8},(_,i)=>`passive.v2.mind.p${i+1}`);
-function entity({main=true,stacks=20,cap=20,level=20}={}){
+function entity({main=true,stacks=30,cap=30,level=20}={}){
   return {
     combatBuildV117:{
       battleDaoV2Enabled:true,
@@ -18,7 +18,7 @@ function entity({main=true,stacks=20,cap=20,level=20}={}){
       learnedDaoPassiveIdsV118:[...ALL],
       passiveLevelsV125:Object.fromEntries(ALL.map(id=>[id,level])),
     },
-    battleDaoStateV2:{mind:{stack:{stacks,cap,durationSeconds:12,decayEverySeconds:1,expiresAt:999}}},
+    battleDaoStateV2:{mind:{stack:{stacks,cap,durationSeconds:20,decayEverySeconds:2,expiresAt:999}}},
     baseStats:{
       attack:100,defense:100,mobility:100,accuracy:100,actionSpeed:1,resolve:100,controlPower:100,
       maxHp:2000,maxSpirit:100,physique:100,critChancePct:0,dodgeChancePct:0,heartChancePct:0,
@@ -37,11 +37,11 @@ assert.match(passiveText,/Nhiễu/);
 {
   const e=entity();
   const b=mindPassiveBonusesV2(e,10);
-  assert.equal(Number(b.echoCoefficientBonus.toFixed(6)),.18,'P1 groups + P8 peak must reinforce echo coefficient');
-  assert.equal(Number(b.accuracyPct.toFixed(6)),12,'P4 must own Main-Mind precision');
-  assert.equal(Number(b.controlPowerPct.toFixed(6)),34,'P1+P4+P8 must reinforce Main-Mind control locally');
-  assert.equal(Number(b.interferencePct.toFixed(6)),36,'P1+P6+P8 must reinforce Nhiễu soft potency');
-  assert.equal(Number(b.echoBreakPct.toFixed(6)),10,'P6 must reinforce Niệm Ảnh Break per 10 stacks');
+  assert.equal(Number(b.echoCoefficientBonus.toFixed(6)),.22,'P1 groups + P8 peak must reinforce echo coefficient at the P5-expanded cap');
+  assert.equal(Number(b.accuracyPct.toFixed(6)),18,'P4 must own Main-Mind precision');
+  assert.equal(Number(b.controlPowerPct.toFixed(6)),45,'P1+P4+P8 must reinforce Main-Mind control locally');
+  assert.equal(Number(b.interferencePct.toFixed(6)),48,'P1+P6+P8 must reinforce Nhiễu soft potency');
+  assert.equal(Number(b.echoBreakPct.toFixed(6)),15,'P6 must reinforce Niệm Ảnh Break per 10 stacks');
   assert.equal(Number(b.resolvePct.toFixed(6)),0,'Main Mind must not receive the Secondary-safe Resolve lane');
   assert.equal(Number(b.conditionalArmorPenPct.toFixed(6)),18,'P7 must expose its localized pressure payoff');
 
@@ -60,9 +60,9 @@ assert.match(passiveText,/Nhiễu/);
   assert.equal(b.interferencePct,0);
   assert.equal(b.echoBreakPct,0);
   assert.equal(b.conditionalArmorPenPct,0);
-  assert.equal(Number(b.resolvePct.toFixed(6)),32,'Secondary Mind gets only the p1+p4+p8 Resolve-safe lane at peak');
+  assert.equal(Number(b.resolvePct.toFixed(6)),43,'Secondary Mind gets only the p1+p4+p8 Resolve-safe lane at the P5-expanded peak');
   const stats=effectiveStats(e,{status(){throw new Error('no statuses expected');}},10);
-  assert.equal(Number(stats.resolve.toFixed(6)),132,'Secondary Resolve must materialize into canonical effectiveStats');
+  assert.equal(Number(stats.resolve.toFixed(6)),143,'Secondary Resolve must materialize into canonical effectiveStats');
 }
 
 {
