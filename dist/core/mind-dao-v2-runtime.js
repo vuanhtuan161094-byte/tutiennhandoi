@@ -500,11 +500,8 @@ function buildEchoV2(source, snapshot, now, baseCoefficient = MIND_V2_BASE_ECHO_
         packets.push({ type: 'damage', coefficient: .40, breakDamagePct: 0, canCrit: true, canDodge: true, canHeart: true });
     const nextBonus = Math.max(0, Number(core?.nextEchoBonusPct ?? 0));
     const coefficient = Math.min(.70, baseEchoCoefficientForSkillV2(source, safe.sourceSkillId, baseCoefficient) + echoStateBonusV2(source, now) + nextBonus);
-    const domainDelay = (core?.ultimateDomainUntil ?? 0) > now && mindMasteryTierV2(source, 'skill.dao.mind.ultimate') >= 1000
-        ? MIND_V2_ECHO_DELAY_SECONDS * .75
-        : MIND_V2_ECHO_DELAY_SECONDS;
     return {
-        delay: delayOverride ?? domainDelay,
+        delay: delayOverride ?? MIND_V2_ECHO_DELAY_SECONDS,
         coefficient,
         sourceSkillId: safe.sourceSkillId,
         targetId: safe.targetId,
@@ -518,8 +515,7 @@ export function mindMasteryEchoBreakBonusPctV2(source, target, sourceSkillId) {
     let bonus = 0;
     if (sourceSkillId === 'skill.dao.mind.chase' && mindMasteryTierV2(source, sourceSkillId) >= 500)
         bonus += 20;
-    if (sourceSkillId === 'skill.dao.mind.interfere'
-        && mindMasteryTierV2(source, sourceSkillId) >= 500
+    if (mindMasteryTierV2(source, 'skill.dao.mind.interfere') >= 500
         && Math.max(0, Number(target?.pendingSetFlagsV117?.mindRecoveryPenaltyPct ?? 0)) > 0)
         bonus += 20;
     return bonus;
@@ -628,7 +624,11 @@ export function finishMindRootV2(source, target, skill, action, now) {
         out.notices.push({ message: `${source.name} mở Vạn Niệm Phân Lưu trong ${duration}s.`, data: { mindFlowUntil: core.flowUntil } });
     }
 
-    core.eligibleActiveCount = Math.max(0, Math.floor(core.eligibleActiveCount ?? 0)) + 1;
+    const baseEchoInterval = Math.max(1, Number(core.echoEvery ?? 3));
+    const ultimateDomainCadence = (core.ultimateDomainUntil ?? 0) > now
+        && mindMasteryTierV2(source, 'skill.dao.mind.ultimate') >= 1000;
+    const echoInterval = ultimateDomainCadence ? baseEchoInterval * .75 : baseEchoInterval;
+    core.eligibleActiveCount = Math.max(0, Number(core.eligibleActiveCount ?? 0)) + 1;
     let flowEcho;
     if (!opensFlow && (core.flowUntil ?? 0) > now) {
         core.flowEligibleActiveCount = Math.max(0, Math.floor(core.flowEligibleActiveCount ?? 0)) + 1;
@@ -657,8 +657,10 @@ export function finishMindRootV2(source, target, skill, action, now) {
     }
 
     let ordinaryEcho;
-    if (core.eligibleActiveCount >= Math.max(1, Math.floor(core.echoEvery ?? 3))) {
-        core.eligibleActiveCount = 0;
+    if (core.eligibleActiveCount >= echoInterval) {
+        core.eligibleActiveCount = ultimateDomainCadence
+            ? Math.max(0, core.eligibleActiveCount - echoInterval)
+            : 0;
         ordinaryEcho = buildEchoV2(source, core.snapshot, now, Number(core.echoCoefficient ?? MIND_V2_BASE_ECHO_COEFFICIENT));
     }
 

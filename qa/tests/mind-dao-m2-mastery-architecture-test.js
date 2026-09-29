@@ -9,6 +9,7 @@ import {
   mindEchoResolvedV2,
   mindGuardShieldBreakV2,
   mindMasteryBasicFollowUpV2,
+  mindMasteryEchoBreakBonusPctV2,
   mindMasteryExtraDirectHitsV2,
   mindMasteryShieldMultiplierV2,
   prepareMindMasteryActionV2,
@@ -73,6 +74,10 @@ function packetSnapshot(skillId='skill.dao.mind.mark'){
   assert.equal(mindMasteryShieldMultiplierV2(source({'skill.dao.mind.guard':1000}),skills['skill.dao.mind.guard']),1.45);
   const e=source({'skill.dao.mind.guard':250});
   assert.equal(mindGuardShieldBreakV2(e,5),1); assert.equal(e.battleDaoStateV2.mind.stack.stacks,1);
+  const empowered=source({'skill.dao.mind.guard':500}); empowered.battleDaoStateV2.mind.core.guardEmpowerUntil=4;
+  const next=action('guard-next'); prepareMindMasteryActionV2(empowered,target(),skills['skill.dao.mind.mark'],next,1);
+  assert.equal(next.effectBonusPct,10,'Guard 500 empowers the next eligible Mind Active once inside the 4s window');
+  assert.equal(next.battleDaoV2.mindConsumeGuardEmpower,true);
 }
 
 {
@@ -82,6 +87,11 @@ function packetSnapshot(skillId='skill.dao.mind.mark'){
   const out=resolveMindInterfereV2(e,t,skills['skill.dao.mind.interfere'],a,1);
   assert.equal(out.consumed,3); assert.equal(out.mentalStaggerSeconds,.50); assert.equal(out.masteryStackGain,1);
   assert.equal(e.battleDaoStateV2.mind.stack.stacks,1);
+}
+{
+  const e=source({'skill.dao.mind.interfere':500}); const t=target();
+  t.pendingSetFlagsV117.mindRecoveryPenaltyPct=10;
+  assert.equal(mindMasteryEchoBreakBonusPctV2(e,t,'skill.dao.mind.mark'),20,'Interfere 500 buffs any Niệm Ảnh hitting a currently Nhiễu target, not only an Interfere-sourced snapshot');
 }
 
 {
@@ -125,6 +135,20 @@ function packetSnapshot(skillId='skill.dao.mind.mark'){
   e.battleDaoStateV2.mind.core.nextBasicDamageBonusReady=false;
   mindEchoResolvedV2(e);
   assert.equal(e.battleDaoStateV2.mind.core.nextBasicDamageBonusReady,false,'Basic 500 is not armed below its mastery threshold');
+
+  const b=source({'skill.dao.mind.basic':500});
+  mindEchoResolvedV2(b); assert.equal(b.battleDaoStateV2.mind.core.nextBasicDamageBonusReady,true);
+  const boosted=action('basic500'); prepareMindMasteryActionV2(b,target(),skills['skill.dao.mind.basic'],boosted,2);
+  assert.equal(boosted.effectBonusPct,20); finishMindRootV2(b,target(),skills['skill.dao.mind.basic'],boosted,2);
+  assert.equal(b.battleDaoStateV2.mind.core.nextBasicDamageBonusReady,false,'Basic 500 boost is consumed by the next Basic root');
+}
+
+{
+  const e=source({'skill.dao.mind.chase':250});
+  e.battleDaoStateV2.mind.core.snapshot=packetSnapshot('skill.dao.mind.mark');
+  const a=action('chase250'); a.battleDaoV2.mindSnapshotPackets=[{type:'damage',coefficient:1.2,breakDamagePct:5}];
+  finishMindRootV2(e,target(),skills['skill.dao.mind.chase'],a,2);
+  assert.equal(e.battleDaoStateV2.mind.core.snapshot.sourceSkillId,'skill.dao.mind.chase','Chase 250 remains the latest eligible snapshot source inside the bounded cadence window');
 }
 
 {
@@ -155,8 +179,16 @@ function packetSnapshot(skillId='skill.dao.mind.mark'){
   const e=source({'skill.dao.mind.ultimate':1000}); e.battleDaoStateV2.mind.core.snapshot=packetSnapshot('skill.dao.mind.chase');
   const a=action('ultimate'); prepareMindMasteryActionV2(e,target(),skills['skill.dao.mind.ultimate'],a,20);
   const out=finishMindRootV2(e,target(),skills['skill.dao.mind.ultimate'],a,21);
-  assert(out.echo); assert.equal(out.echo.coefficient,.70); assert.equal(Number(out.echo.delay.toFixed(6)),.45);
+  assert(out.echo); assert.equal(out.echo.coefficient,.70); assert.equal(Number(out.echo.delay.toFixed(6)),.60,'Ultimate domain improves cadence interval, not the fixed 0.6s echo delay');
   assert.equal(e.battleDaoStateV2.mind.core.ultimateDomainUntil,26);
+
+  const mark=skills['skill.dao.mind.mark']; const t=target();
+  let r=action('u1'); r.battleDaoV2.mindSnapshotPackets=[{type:'damage',coefficient:1,breakDamagePct:0}]; assert.equal(finishMindRootV2(e,t,mark,r,22).echo,undefined);
+  r=action('u2'); r.battleDaoV2.mindSnapshotPackets=[{type:'damage',coefficient:1,breakDamagePct:0}]; assert.equal(finishMindRootV2(e,t,mark,r,23).echo,undefined);
+  r=action('u3'); r.battleDaoV2.mindSnapshotPackets=[{type:'damage',coefficient:1,breakDamagePct:0}]; assert(finishMindRootV2(e,t,mark,r,24).echo,'75% cadence interval produces the first domain echo on the third Active and keeps fractional cadence credit');
+  assert.equal(Number(e.battleDaoStateV2.mind.core.eligibleActiveCount.toFixed(6)),.75);
+  r=action('u4'); r.battleDaoV2.mindSnapshotPackets=[{type:'damage',coefficient:1,breakDamagePct:0}]; assert.equal(finishMindRootV2(e,t,mark,r,25).echo,undefined);
+  r=action('u5'); r.battleDaoV2.mindSnapshotPackets=[{type:'damage',coefficient:1,breakDamagePct:0}]; assert(finishMindRootV2(e,t,mark,r,25.5).echo,'fractional cadence credit makes the second domain echo arrive after two more Actives');
 }
 
 const combat=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
