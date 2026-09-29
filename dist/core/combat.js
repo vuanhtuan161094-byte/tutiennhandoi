@@ -1,37 +1,20 @@
-import { CombatEngine as CombatEngineBaseM1 } from './combat-m1-base.js';
-import {
-    claimDamagingFollowUpV2,
-    finishRemainingDaoActionV2,
-    recordDamageOutcomeV2,
-    v2ResourceProjection,
-} from './battle-dao-v2-runtime.js';
+import { CombatEngine as CombatEngineBaseM2B } from './combat-m2b-base.js';
+import { claimDamagingFollowUpV2, recordDamageOutcomeV2 } from './battle-dao-v2-runtime.js';
 import {
     MIND_V2_MARK,
     MIND_V2_MARK_CAP,
-    addMindMarksV2,
     captureMindDamagePacketV2,
-    captureMindHealPacketV2,
-    captureMindShieldPacketV2,
-    finishMindRootV2,
-    gainMindPassiveStackV2,
-    mindMarkCountV2,
-    mindGuardFiveStatMultiplierV2,
-    mindPassiveBonusesV2,
-    mindDirectArmorPenBonusV2,
-    mindObserveProgressV2,
+    mindEchoResolvedV2,
+    mindGuardShieldBreakV2,
+    mindMasteryBasicFollowUpV2,
+    mindMasteryEchoBreakBonusPctV2,
+    mindMasteryExtraDirectHitsV2,
+    mindMasteryShieldMultiplierV2,
+    mindMasteryTierV2,
     resolveMindConsumeDamageV2,
-    resolveMindInterfereV2,
+    resolveMindUltimateInterferenceV2,
 } from './mind-dao-v2-runtime.js';
-import { skillRuntimeV117 } from './skill-runtime-v117.js';
-import { effectiveStats } from './stats.js';
-import { combatMaxHp } from './combat-rules.js';
-
-const MIND_CONTACT_GENERATORS = new Set([
-    'skill.dao.mind.basic',
-    'skill.dao.mind.mark',
-    'skill.dao.mind.split',
-    'skill.dao.mind.chase',
-]);
+import { skillRuntimeV117, skillSlotClassV117 } from './skill-runtime-v117.js';
 
 function isMainMindSkillV2(source, skill) {
     return Boolean(skill)
@@ -40,174 +23,46 @@ function isMainMindSkillV2(source, skill) {
         && skillRuntimeV117(skill).daoBinding === 'mind';
 }
 
-function isCanonicalMindMarkV2(source, effect, skill) {
-    return isMainMindSkillV2(source, skill) && effect?.mark === MIND_V2_MARK;
-}
-
 /**
- * M1 Thần Niệm seam wrapper.
+ * M2C Thần Niệm mastery seam.
  *
- * combat-m1-base.js is the frozen V141 engine snapshot. This class overrides
- * only Mind authority seams so Sword/Fist and unrelated combat paths remain
- * byte-for-byte owned by the previous engine implementation.
+ * combat-m2b-base.js is the closed M1/M2A/M2B owner. This wrapper adds only
+ * authored Mind mastery behavior and one proven M1 Ultimate-control repair.
  */
-export class CombatEngine extends CombatEngineBaseM1 {
-    applyDamage(source, target, ctx, now) {
-        let authored = ctx;
-        let mindSkill;
-        if (source?.combatBuildV117?.battleDaoV2Enabled === true && source?.combatBuildV117?.mainDaoId === 'mind' && ctx?.skillId) {
-            mindSkill = this.registry.skill(ctx.skillId);
-            if (skillRuntimeV117(mindSkill).daoBinding === 'mind' && mindSkill.fiveStatScalingV5 && ctx.fiveStatScalingV5 === undefined) {
-                authored = {
-                    ...ctx,
-                    fiveStatScalingV5: mindSkill.fiveStatScalingV5,
-                    fiveStatBaselineCoefficientV5: mindSkill.fiveStatBaselineCoefficientV5,
-                };
-            }
-        }
-        const directMind = Boolean(mindSkill)
-            && skillRuntimeV117(mindSkill).daoBinding === 'mind'
-            && (authored.sourceTag === 'ActiveHit' || authored.sourceTag === 'Counter');
-        if (!directMind)
-            return super.applyDamage(source, target, authored, now);
-        const passive = mindPassiveBonusesV2(source, now);
-        const armorPen = mindDirectArmorPenBonusV2(source, target, authored.mindRootActionV2, now);
-        if (armorPen > 0)
-            authored = { ...authored, runtimeArmorPenBonusPct: Math.max(0, Number(authored.runtimeArmorPenBonusPct ?? 0)) + armorPen };
-        source.pendingSetFlagsV117 ??= {};
-        const hadAccuracy = Object.prototype.hasOwnProperty.call(source.pendingSetFlagsV117, 'mindV2ActionAccuracyPct');
-        const previousAccuracy = source.pendingSetFlagsV117.mindV2ActionAccuracyPct;
-        source.pendingSetFlagsV117.mindV2ActionAccuracyPct = passive.accuracyPct;
-        try {
-            return super.applyDamage(source, target, authored, now);
-        }
-        finally {
-            if (hadAccuracy)
-                source.pendingSetFlagsV117.mindV2ActionAccuracyPct = previousAccuracy;
-            else
-                delete source.pendingSetFlagsV117.mindV2ActionAccuracyPct;
-        }
-    }
-
-    applyStatus(source, target, statusId, baseDuration, stacks, now, skillId) {
-        let skill;
-        try { skill = skillId ? this.registry.skill(skillId) : undefined; }
-        catch { skill = undefined; }
-        if (!isMainMindSkillV2(source, skill))
-            return super.applyStatus(source, target, statusId, baseDuration, stacks, now, skillId);
-        const passive = mindPassiveBonusesV2(source, now);
-        source.pendingSetFlagsV117 ??= {};
-        const hadControl = Object.prototype.hasOwnProperty.call(source.pendingSetFlagsV117, 'mindV2ActionControlPowerPct');
-        const previousControl = source.pendingSetFlagsV117.mindV2ActionControlPowerPct;
-        source.pendingSetFlagsV117.mindV2ActionControlPowerPct = passive.controlPowerPct;
-        try {
-            return super.applyStatus(source, target, statusId, baseDuration, stacks, now, skillId);
-        }
-        finally {
-            if (hadControl)
-                source.pendingSetFlagsV117.mindV2ActionControlPowerPct = previousControl;
-            else
-                delete source.pendingSetFlagsV117.mindV2ActionControlPowerPct;
-        }
-    }
-
+export class CombatEngine extends CombatEngineBaseM2B {
     damageContextFromEffect(source, effect, defaultSourceTag, skill, skillId, cooldownDamageBonusPct, runtimeAction) {
         const ctx = super.damageContextFromEffect(source, effect, defaultSourceTag, skill, skillId, cooldownDamageBonusPct, runtimeAction);
-        if (isMainMindSkillV2(source, skill) && runtimeAction?.battleDaoV2)
-            ctx.mindRootActionV2 = runtimeAction;
-        captureMindDamagePacketV2(source, skill, runtimeAction, ctx);
+        const masteryArmorPen = Math.max(0, Number(effect?.mindMasteryArmorPenBonusPct ?? 0));
+        if (masteryArmorPen > 0)
+            ctx.runtimeArmorPenBonusPct = Math.max(0, Number(ctx.runtimeArmorPenBonusPct ?? 0)) + masteryArmorPen;
         return ctx;
     }
 
-    commitMindInterferenceV2(source, target, skill, runtimeAction, now) {
-        if (!isMainMindSkillV2(source, skill) || skill.daoRuntimeV118?.signature !== 'mindInterfere' || !runtimeAction?.battleDaoV2)
-            return undefined;
-        const v2 = runtimeAction.battleDaoV2;
-        if (v2.mindInterfereCommitted)
-            return v2.mindInterfereResult;
-        v2.mindInterfereCommitted = true;
-        const result = resolveMindInterfereV2(source, target, skill, runtimeAction, now);
-        v2.mindInterfereResult = { ...result };
-        if (result.consumed <= 0) {
-            v2.mindInvalidSpend = true;
-            this.log(now, 'info', `${source.name} không thể phát ${skill.name}: mục tiêu không có Thần Ấn.`, source.id, target.id, skill.id, {
-                mindV2: true,
-                invalidMindSpend: true,
-                mindMarks: mindMarkCountV2(target),
-            });
+    resolveEffectDamageV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
+        const result = super.resolveEffectDamageV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
+        if (!target.alive || !isMainMindSkillV2(source, skill) || defaultSourceTag !== 'ActiveHit' || (runtimeAction?.battleDaoV2?.procDepth ?? 0) !== 0)
             return result;
+        for (const packet of mindMasteryExtraDirectHitsV2(source, skill, runtimeAction)) {
+            if (!source.alive || !target.alive)
+                break;
+            const extraEffect = {
+                ...effect,
+                coefficient: Math.max(0, Number(packet.coefficient ?? 0)),
+                breakDamagePct: Math.max(0, Number(packet.breakDamagePct ?? 0)),
+                mindMasteryArmorPenBonusPct: Math.max(0, Number(packet.armorPenBonusPct ?? 0)),
+            };
+            super.resolveEffectDamageV141(source, target, extraEffect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
         }
-        this.log(now, 'mark', `${source.name} tiêu hao ${result.consumed} tầng ${MIND_V2_MARK}.`, source.id, target.id, skill.id, {
-            consumed: result.consumed,
-            mindMarks: mindMarkCountV2(target),
-            mindV2: true,
-        });
-        this.applyDaoMindDelay(target, result.targetCastDelaySeconds, now);
-        if (result.mentalStaggerSeconds > 0)
-            this.applyStatus(source, target, 'status.mind.interference_stagger', result.mentalStaggerSeconds, 1, now, skill.id);
         return result;
     }
 
-    resolveEffectDamageV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
-        const interference = this.commitMindInterferenceV2(source, target, skill, runtimeAction, now);
-        if (skill?.daoRuntimeV118?.signature === 'mindInterfere' && isMainMindSkillV2(source, skill) && (interference?.consumed ?? 0) <= 0)
-            return;
-        return super.resolveEffectDamageV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
-    }
-
-    resolveEffectAddMarkV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
-        if (!isCanonicalMindMarkV2(source, effect, skill))
-            return super.resolveEffectAddMarkV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
-
-        // Observe earns +3 only from resolved channel progress, never up front.
-        if (skill.id === 'skill.dao.mind.observe') {
-            this.log(now, 'info', `${source.name} bắt đầu Tịch Niệm; Thần Ấn chờ tiến độ Duy Trì.`, source.id, target.id, skillId, {
-                mindV2: true,
-                mindSealDeferredToChannel: true,
-            });
-            return;
-        }
-
-        // Contact generators award their mark only after at least one authored
-        // direct hit actually lands. Flow is a Deploy and awards on resolution.
-        if (MIND_CONTACT_GENERATORS.has(skill.id) && (runtimeAction?.battleDaoV2?.directDamagingHitCount ?? 0) <= 0) {
-            this.log(now, 'info', `${source.name} không tạo Thần Ấn vì ${skill.name} không chạm mục tiêu.`, source.id, target.id, skillId, {
-                mindV2: true,
-                mindMarkSuppressedNoContact: true,
-            });
-            return;
-        }
-
-        const before = mindMarkCountV2(target);
-        const gained = addMindMarksV2(source, target, effect.stacks);
-        const after = mindMarkCountV2(target);
-        this.log(now, 'mark', `${target.name} nhận ${MIND_V2_MARK}: ${after}/${MIND_V2_MARK_CAP}.`, source.id, target.id, skillId, {
-            stacks: after,
-            mindSealBefore: before,
-            mindSealGain: gained,
-            mindSealAfter: after,
-            mindSealCap: MIND_V2_MARK_CAP,
-            mindV2: true,
-        });
-    }
-
     resolveEffectConsumeMarkDamageV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
-        if (!isCanonicalMindMarkV2(source, effect, skill))
+        if (!isMainMindSkillV2(source, skill) || skill.id !== 'skill.dao.mind.ultimate' || effect?.mark !== MIND_V2_MARK)
             return super.resolveEffectConsumeMarkDamageV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
 
         const tx = resolveMindConsumeDamageV2(source, target, skill, effect, runtimeAction);
         if (!tx)
             return;
-        if (skill.id === 'skill.dao.mind.burst' && tx.consumed <= 0) {
-            if (runtimeAction?.battleDaoV2)
-                runtimeAction.battleDaoV2.mindInvalidSpend = true;
-            this.log(now, 'info', `${source.name} không thể phát ${skill.name}: mục tiêu không có Thần Ấn.`, source.id, target.id, skillId, {
-                mindV2: true,
-                invalidMindSpend: true,
-            });
-            return;
-        }
-
         this.log(now, 'mark', `${source.name} tiêu hao ${tx.consumed} tầng ${MIND_V2_MARK}.`, source.id, target.id, skillId, {
             consumed: tx.consumed,
             mindSealBefore: tx.before,
@@ -215,6 +70,12 @@ export class CombatEngine extends CombatEngineBaseM1 {
             mindSealCap: MIND_V2_MARK_CAP,
             mindV2: true,
         });
+
+        const interference = resolveMindUltimateInterferenceV2(source, target, skill, tx, now);
+        if (interference.targetCastDelaySeconds > 0)
+            this.applyDaoMindDelay(target, interference.targetCastDelaySeconds, now);
+        if (interference.mentalPulseSeconds > 0)
+            this.applyStatus(source, target, 'status.mind.interference_stagger', interference.mentalPulseSeconds, 1, now, skill.id);
 
         const sealV2 = this.elementalContextV133(source, skill, skill.elementalCoefficients, runtimeAction);
         const ctx = {
@@ -243,192 +104,163 @@ export class CombatEngine extends CombatEngineBaseM1 {
     }
 
     resolveEffectShieldV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
-        let authored = effect;
-        if (isMainMindSkillV2(source, skill) && skill.id === 'skill.dao.mind.guard' && skill.fiveStatScalingV5) {
-            const fiveStatMultiplier = mindGuardFiveStatMultiplierV2(effectiveStats(source, this.registry, now), skill);
-            authored = {
-                ...effect,
-                capacity: Math.max(0, Number(effect.capacity ?? 0)) * fiveStatMultiplier,
-                maxHpPct: Math.max(0, Number(effect.maxHpPct ?? 0)) * fiveStatMultiplier,
-                attackCoefficient: Math.max(0, Number(effect.attackCoefficient ?? 0)) * fiveStatMultiplier,
-            };
+        if (!isMainMindSkillV2(source, skill) || skill.id !== 'skill.dao.mind.guard')
+            return super.resolveEffectShieldV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
+        const multiplier = mindMasteryShieldMultiplierV2(source, skill);
+        const authored = multiplier === 1 ? effect : {
+            ...effect,
+            capacity: Math.max(0, Number(effect.capacity ?? 0)) * multiplier,
+            maxHpPct: Math.max(0, Number(effect.maxHpPct ?? 0)) * multiplier,
+            attackCoefficient: Math.max(0, Number(effect.attackCoefficient ?? 0)) * multiplier,
+        };
+        const before = source.shields.length;
+        const result = super.resolveEffectShieldV141(source, target, authored, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
+        if (mindMasteryTierV2(source, skill) >= 250) {
+            for (const shield of source.shields.slice(before))
+                shield.mindGuardMasteryRootEligible = true;
         }
-        captureMindShieldPacketV2(source, skill, runtimeAction, authored, runtimeEffectMultiplier);
-        return super.resolveEffectShieldV141(source, target, authored, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
+        return result;
     }
 
-    resolveEffectHealV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
-        captureMindHealPacketV2(source, skill, runtimeAction, effect, runtimeEffectMultiplier);
-        return super.resolveEffectHealV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
+    absorbWithShields(source, target, incoming, now, skillId, sourceTag = 'Environment') {
+        const candidates = target.shields.filter(shield => shield.mindGuardMasteryRootEligible === true && shield.capacity > 0 && shield.expiresAt > now);
+        const absorbed = super.absorbWithShields(source, target, incoming, now, skillId, sourceTag);
+        for (const shield of candidates) {
+            if (shield.capacity > 0 || shield.mindGuardMasteryRewarded)
+                continue;
+            shield.mindGuardMasteryRewarded = true;
+            const gained = mindGuardShieldBreakV2(target, now);
+            if (gained > 0)
+                this.log(now, 'resource', `${target.name} hộ thức vỡ, tích +${gained} Niệm Lực.`, target.id, target.id, shield.sourceSkillId, {
+                    mindGuardMasteryStackGain: gained,
+                    mindPassiveStack: target.battleDaoStateV2?.mind?.stack?.stacks ?? 0,
+                    mindV2: true,
+                });
+        }
+        return absorbed;
     }
 
-    handleChannelTick(actor, target, skillId, token, spiritCost, now) {
+    handleChannelEnd(actor, target, skillId, token, now) {
         const channel = actor.channeling;
-        const observe = channel?.token === token && channel.skillId === skillId && skillId === 'skill.dao.mind.observe';
-        const beforeTicks = channel?.resolvedHits ?? 0;
-        super.handleChannelTick(actor, target, skillId, token, spiritCost, now);
-        if (!observe || !channel || (channel.resolvedHits ?? 0) <= beforeTicks)
-            return;
-        const skill = this.registry.skill(skillId);
-        const gained = mindObserveProgressV2(actor, target, skill, channel.runtimeV117, channel.resolvedHits, channel.totalHits);
-        if (gained > 0)
-            this.log(now, 'mark', `${actor.name} Quan Tâm tích +${gained} ${MIND_V2_MARK} (${mindMarkCountV2(target)}/${MIND_V2_MARK_CAP}).`, actor.id, target.id, skill.id, {
-                mindObserveMarkGain: gained,
-                mindMarks: mindMarkCountV2(target),
-                resolvedTicks: channel.resolvedHits,
-                totalTicks: channel.totalHits,
-                mindV2: true,
-            });
+        if (channel?.token === token && channel.skillId === skillId && skillId === 'skill.dao.mind.observe') {
+            const skill = this.registry.skill(skillId);
+            const complete = (channel.resolvedHits ?? 0) >= (channel.totalHits ?? 0) && (channel.totalHits ?? 0) > 0;
+            if (complete && channel.runtimeV117?.battleDaoV2) {
+                channel.runtimeV117.battleDaoV2.mindObserveCompleted = true;
+                if (mindMasteryTierV2(actor, skill) >= 1000 && !channel.runtimeV117.battleDaoV2.mindObserveExtremeExtraHitIssued) {
+                    channel.runtimeV117.battleDaoV2.mindObserveExtremeExtraHitIssued = true;
+                    this.resolveEffects(actor, target, skill.channel?.effects ?? [], 'ActiveHit', now, skill.id, channel.cooldownDamageBonusPct, channel.runtimeV117);
+                }
+            }
+        }
+        return super.handleChannelEnd(actor, target, skillId, token, now);
     }
 
     finishBattleDaoV2Action(actor, target, skill, action, now) {
-        if (!isMainMindSkillV2(actor, skill))
-            return super.finishBattleDaoV2Action(actor, target, skill, action, now);
-        const v2 = action?.battleDaoV2;
-        if (!v2)
-            return;
+        const beforeFollowUps = Math.max(0, Number(action?.battleDaoV2?.followUpsUsed ?? 0));
+        const result = super.finishBattleDaoV2Action(actor, target, skill, action, now);
+        if (!isMainMindSkillV2(actor, skill) || !action?.battleDaoV2)
+            return result;
 
-        // Preserve Secondary Dao passive observation without invoking the old
-        // Main-Mind core branch that derived echo damage from hpDamage.
-        const originalMain = actor.combatBuildV117.mainDaoId;
-        actor.combatBuildV117.mainDaoId = '__mind_m1_passive_observer__';
-        try {
-            const secondary = finishRemainingDaoActionV2(actor, target, skill, action, now, pct => this.rng.chance(pct));
-            for (const notice of secondary.notices)
-                this.log(now, 'resource', notice.message, actor.id, actor.id, skill.id, notice.data);
-        }
-        finally {
-            actor.combatBuildV117.mainDaoId = originalMain;
-        }
-
-        if (!v2.mindInvalidSpend) {
-            const gainedNiệmLực = gainMindPassiveStackV2(actor, skill, now, pct => this.rng.chance(pct));
-            if (gainedNiệmLực > 0)
-                this.log(now, 'resource', `${actor.name} tích +${gainedNiệmLực} Niệm Lực.`, actor.id, actor.id, skill.id, {
-                    mindPassiveStackGain: gainedNiệmLực,
-                    mindPassiveStack: actor.battleDaoStateV2?.mind?.stack?.stacks ?? 0,
-                    mindV2: true,
-                });
-        }
-
-        const mind = finishMindRootV2(actor, target, skill, action, now);
-        for (const notice of mind.notices)
-            this.log(now, 'resource', notice.message, actor.id, actor.id, skill.id, notice.data);
-        if (mind.flowBonusMarkGain > 0)
-            this.log(now, 'mark', `${actor.name} Phân Lưu bồi +${mind.flowBonusMarkGain} ${MIND_V2_MARK}.`, actor.id, target.id, skill.id, {
-                mindFlowBonusMarkGain: mind.flowBonusMarkGain,
-                mindMarks: mindMarkCountV2(target),
+        const masteryStackGain = Math.max(0, Number(action.battleDaoV2.mindMasteryStackGainResolved ?? 0));
+        if (masteryStackGain > 0)
+            this.log(now, 'resource', `${actor.name} nhận thêm +${masteryStackGain} Niệm Lực từ Thuần Thục.`, actor.id, actor.id, skill.id, {
+                mindMasteryStackGain: masteryStackGain,
+                mindPassiveStack: actor.battleDaoStateV2?.mind?.stack?.stacks ?? 0,
                 mindV2: true,
             });
 
-        const projection = v2ResourceProjection(actor, now);
-        delete projection.mindEchoCounter;
-        const flowUntil = actor.battleDaoStateV2?.mind?.core?.flowUntil ?? 0;
-        if (flowUntil > now)
-            projection.mindFlowUntil = flowUntil;
-        if (Object.keys(projection).length > 0)
-            this.log(now, 'resource', `${actor.name} cập nhật Bản Đạo V2.`, actor.id, actor.id, skill.id, { v2DaoProjection: true, ...projection });
-
-        if (mind.echo && target.alive) {
-            const claim = claimDamagingFollowUpV2(action, { kind: 'intrinsic', id: 'intrinsic.v2.mind.echo' });
-            if (!claim) {
-                this.log(now, 'resource', `${actor.name} không thể phát Niệm Ảnh vì follow-up budget đã dùng.`, actor.id, target.id, skill.id, {
-                    mindEchoSuppressed: true,
-                    payloadId: mind.echo.payloadId,
-                    mindV2: true,
-                });
-                return;
+        if (skillSlotClassV117(skill) !== 'basic') {
+            const afterFollowUps = Math.max(0, Number(action.battleDaoV2.followUpsUsed ?? 0));
+            if (afterFollowUps > beforeFollowUps) {
+                const core = actor.battleDaoStateV2?.mind?.core;
+                if (core)
+                    core.nextEchoBonusPct = 0;
             }
-            this.schedule({
-                time: now + mind.echo.delay,
-                kind: 'v2FollowUp',
-                actorId: actor.id,
-                targetId: target.id,
-                skillId: skill.id,
-                v2FollowUp: {
-                    kind: 'mindSnapshot',
-                    sourceSkillId: mind.echo.sourceSkillId,
-                    targetId: mind.echo.targetId,
-                    label: 'Niệm Ảnh',
-                    coefficient: mind.echo.coefficient,
-                    payloadId: mind.echo.payloadId,
-                    payload: mind.echo.packets,
-                    claim,
-                },
-            });
+            return result;
         }
+
+        if (!target.alive)
+            return result;
+        const follow = mindMasteryBasicFollowUpV2(actor, skill, action, pct => this.rng.chance(pct));
+        if (!follow)
+            return result;
+        const claim = claimDamagingFollowUpV2(action, { kind: 'intrinsic', id: 'intrinsic.v2.mind.mastery.basic_needle' });
+        if (!claim)
+            return result;
+        this.schedule({
+            time: now + follow.delay,
+            kind: 'v2FollowUp',
+            actorId: actor.id,
+            targetId: target.id,
+            skillId: skill.id,
+            v2FollowUp: {
+                kind: 'mindMasteryBasic',
+                sourceSkillId: skill.id,
+                targetId: target.id,
+                label: 'Niệm Châm bồi',
+                coefficient: follow.coefficient,
+                breakDamagePct: follow.breakDamagePct,
+                gaugeGain: follow.gaugeGain,
+                claim,
+            },
+        });
+        return result;
     }
 
     handleV2FollowUp(actor, target, follow, now) {
-        if (follow?.kind !== 'mindSnapshot')
-            return super.handleV2FollowUp(actor, target, follow, now);
-        if (!actor.alive || !target.alive || (follow.targetId && follow.targetId !== target.id))
+        if (follow?.kind === 'mindMasteryBasic') {
+            if (!actor.alive || !target.alive || (follow.targetId && follow.targetId !== target.id))
+                return;
+            const outcome = this.applyDamage(actor, target, {
+                sourceTag: 'ProcHit',
+                coefficient: Math.max(0, Number(follow.coefficient ?? 0)),
+                breakDamagePct: Math.max(0, Number(follow.breakDamagePct ?? 0)),
+                canCrit: true,
+                canDodge: true,
+                canHeart: true,
+                unavoidable: false,
+                trueDamage: false,
+                procCoefficient: 0,
+                skillId: follow.sourceSkillId,
+                elementalCoefficients: undefined,
+                primaryElement: undefined,
+                cooldownDamageBonusPct: 0,
+                runtimeEffectBonusPct: 0,
+                runtimeBreakBonusPct: 0,
+            }, now);
+            let gaugeGain = 0;
+            if (outcome.hit && Math.max(0, Number(follow.gaugeGain ?? 0)) > 0) {
+                const before = Math.max(0, Number(actor.ultimateGaugeV117 ?? 0));
+                actor.ultimateGaugeV117 = Math.min(100, before + Math.max(0, Number(follow.gaugeGain ?? 0)));
+                gaugeGain = actor.ultimateGaugeV117 - before;
+            }
+            this.log(now, 'resource', `${actor.name} phát ${follow.label}.`, actor.id, target.id, follow.sourceSkillId, {
+                ...follow.claim,
+                damage: outcome.hpDamage,
+                gaugeGain,
+                v2FollowUp: true,
+                mindMastery: true,
+                mindV2: true,
+            });
             return;
-        const sourceSkill = this.registry.skill(follow.sourceSkillId);
-        const echoCoefficient = Math.max(0, Math.min(.70, Number(follow.coefficient ?? 0)));
-        const echoBreakPct = mindPassiveBonusesV2(actor, now).echoBreakPct;
-        let damage = 0;
-        let shield = 0;
-        let heal = 0;
-        for (const packet of follow.payload ?? []) {
-            if (!actor.alive || !target.alive)
-                break;
-            if (packet?.type === 'damage') {
-                const outcome = this.applyDamage(actor, target, {
-                    sourceTag: 'ProcHit',
-                    coefficient: Math.max(0, Number(packet.coefficient ?? 0)) * echoCoefficient,
-                    breakDamagePct: Math.max(0, Number(packet.breakDamagePct ?? 0)) * echoCoefficient * (1 + echoBreakPct / 100),
-                    canCrit: packet.canCrit !== false,
-                    canDodge: packet.canDodge !== false,
-                    canHeart: packet.canHeart !== false,
-                    unavoidable: false,
-                    trueDamage: false,
-                    procCoefficient: 0,
-                    skillId: follow.sourceSkillId,
-                    elementalCoefficients: undefined,
-                    primaryElement: undefined,
-                    cooldownDamageBonusPct: 0,
-                    runtimeEffectBonusPct: 0,
-                    runtimeBreakBonusPct: 0,
-                    fiveStatScalingV5: sourceSkill?.fiveStatScalingV5,
-                    fiveStatBaselineCoefficientV5: sourceSkill?.fiveStatBaselineCoefficientV5,
-                }, now);
-                damage += outcome.hpDamage;
-            }
-            else if (packet?.type === 'shield') {
-                const before = this.totalShield(actor, now);
-                this.applyDirectShield(actor, actor, {
-                    type: 'shield',
-                    capacity: Math.max(0, Number(packet.capacity ?? 0)) * echoCoefficient,
-                    maxHpPct: Math.max(0, Number(packet.maxHpPct ?? 0)) * echoCoefficient,
-                    attackCoefficient: Math.max(0, Number(packet.attackCoefficient ?? 0)) * echoCoefficient,
-                    stability: Math.max(0, Number(packet.stability ?? 100)),
-                    duration: Math.max(0, Number(packet.duration ?? 0)),
-                }, now, follow.sourceSkillId);
-                shield += Math.max(0, this.totalShield(actor, now) - before);
-            }
-            else if (packet?.type === 'heal') {
-                const healTarget = packet.target === 'target' ? target : actor;
-                const srcStats = effectiveStats(actor, this.registry, now);
-                const maxHp = combatMaxHp(healTarget.baseStats);
-                const amount = (
-                    Math.max(0, Number(packet.flat ?? 0))
-                    + maxHp * Math.max(0, Number(packet.maxHpPct ?? 0)) / 100
-                    + srcStats.attack * Math.max(0, Number(packet.attackCoefficient ?? 0))
-                ) * echoCoefficient;
-                heal += this.applyHeal(actor, healTarget, amount, now, follow.sourceSkillId);
-            }
         }
-        this.log(now, 'resource', `${actor.name} phát ${follow.label}.`, actor.id, target.id, follow.sourceSkillId, {
-            ...follow.claim,
-            damage,
-            heal,
-            shield,
-            v2FollowUp: true,
-            mindSnapshot: true,
-            payloadId: follow.payloadId ?? '',
-            mindV2: true,
-        });
+
+        if (follow?.kind === 'mindSnapshot') {
+            const masteryBreakPct = mindMasteryEchoBreakBonusPctV2(actor, target, follow.sourceSkillId);
+            const authored = masteryBreakPct > 0 ? {
+                ...follow,
+                payload: (follow.payload ?? []).map(packet => packet?.type === 'damage'
+                    ? { ...packet, breakDamagePct: Math.max(0, Number(packet.breakDamagePct ?? 0)) * (1 + masteryBreakPct / 100) }
+                    : packet),
+            } : follow;
+            const valid = actor.alive && target.alive && (!follow.targetId || follow.targetId === target.id);
+            const result = super.handleV2FollowUp(actor, target, authored, now);
+            if (valid)
+                mindEchoResolvedV2(actor);
+            return result;
+        }
+
+        return super.handleV2FollowUp(actor, target, follow, now);
     }
 }
-//# sourceMappingURL=combat.js.map
