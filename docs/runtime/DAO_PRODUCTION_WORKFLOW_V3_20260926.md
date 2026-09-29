@@ -1,255 +1,171 @@
 # DAO PRODUCTION WORKFLOW V3 — 2026-09-26
 
-This is the canonical workflow for reopening or producing a Main Dao after Sword and Fist closure.
+Status: **ACTIVE / LOCKED**
 
-The goal is to minimize iteration count without weakening evidence. The key rule is to separate **feature correctness/balance closure** from the **whole-game audit** from the beginning of the slice.
+This is the canonical workflow for reopening or producing a Main Dao. Current `main`, `CURRENT_CHECKPOINT.md`, the active Dao contract/spec, live source and registered gates outrank historical audit notes.
 
-## 0. Operating principles
+## 0. Required entry sequence
 
-1. Current `main` is source of truth.
-2. Read `AGENTS.md`, `CURRENT_CHECKPOINT.md`, `docs/DEVELOPMENT_PROTOCOL.md`, then this workflow before a new Dao slice.
-3. Closed systems are read-only unless a real regression or explicit user request reopens them.
-4. A Dao slice may touch only its declared scope plus shared combat seams proven necessary by evidence.
-5. Full-game backend closure is an audit, not permission to retune unrelated systems.
-6. Correctness is closed before balance tuning begins.
-7. Benchmark DPS is invalid unless the benchmark also proves the intended build identity actually executed.
-8. Tune the smallest feature-specific lever that fixes the measured miss. Do not use a global multiplier to fix a relative-archetype problem.
-9. Exact-SHA evidence is required for closure.
-10. One failed gate must be classified before any patch: production regression, stale expectation, harness defect, environment/runner defect, or out-of-scope audit debt.
+1. Refresh `main`.
+2. Read `AGENTS.md`.
+3. Read `CURRENT_CHECKPOINT.md`.
+4. Read `docs/DEVELOPMENT_PROTOCOL.md`.
+5. Read this workflow and the active Dao contract/spec.
+6. Search → narrow → patch → targeted proof → active gate → scoped closure.
 
-## 1. Phase 0 — Scope lock
+Closed systems are read-only unless a proven regression or explicit user request reopens them.
 
-Before production code changes, create or update the Dao contract and feature manifest.
+## 1. Scope lock
 
-Lock:
+Before production changes, lock:
 
-- feature id, e.g. `dao-body`;
+- feature id `dao-<id>`;
 - Dao identity and combat role;
-- allowed production files/systems;
-- shared seams that may be changed if proven necessary;
+- allowed production files and shared seams;
 - explicitly deferred systems;
 - 10-skill structure;
-- passive structure;
-- resource model;
-- five-stat family map;
+- passive/resource model;
+- five-stat ownership;
 - Auto intent;
-- deterministic benchmark archetypes and target bands;
-- feature closure manifest id.
+- deterministic benchmark archetypes and target bands.
 
-A newly opened feature may be registered with `closureReady: false`. The generic closure runner must refuse to close it until the slice explicitly flips to `closureReady: true` after evidence is complete.
+Register the feature in `qa/runners/feature-closure-manifest.js` with `closureReady:false`.
 
-### Scope rule
+Do not pull unrelated Pháp Bảo, Linh Thú, Tri Kỷ, Equipment, Alchemy, Economy or Reincarnation-wide balance into a Dao slice merely because a global audit is red.
 
-Do not pull Pháp Bảo, Linh Thú, Tri Kỷ, Equipment balance, Alchemy, Economy, Reincarnation-wide balance, or other unrelated systems into a Dao slice merely because a global test is red.
+## 2. Contract before code
 
-## 2. Phase 1 — Contract before code
+The active contract must define:
 
-The contract must answer these before implementation:
+- all 10 production skills and roles;
+- passive ownership boundaries;
+- short/long-cycle resources, generation, spend and caps;
+- CL / TP / TPH / LL / TT scaling families;
+- forbidden generic multipliers or duplicate authority;
+- Auto priority intent;
+- benchmark archetypes, bands and identity metrics.
 
-- What is the Dao identity?
-- What are the 10 production skills and their roles?
-- What are the passives and their ownership boundaries?
-- Which resources are short-cycle and long-cycle?
-- Which skills generate/spend each resource?
-- Which CL/TP/TPH/LL/TT families may scale each skill?
-- Which mechanics are forbidden from leaking into generic damage/stat multipliers?
-- What is the Auto priority intent?
-- What are the internal archetypes and target bands?
-- What evidence will prove each archetype identity?
+Do not tune coefficients while these remain ambiguous.
 
-Do not start numeric tuning while these remain ambiguous.
+## 3. Runtime seam audit
 
-## 3. Phase 2 — Runtime seam audit
-
-Before changing coefficients, audit all relevant production seams:
+Audit before tuning:
 
 - skill metadata and `canUse` gates;
 - action prepare/finish hooks;
 - resource snapshot/spend/generate timing;
-- mastery overrides and multi-hit packages;
-- CC/control/Break paths;
-- AI condition vocabulary and fallback behavior;
+- mastery, multi-hit and channel behavior;
+- CC / Break / status paths;
+- AI conditions and fallback behavior;
 - Ultimate hold/fire rules;
-- PvP snapshot/scaling;
-- Hunt preview;
-- offline/virtual Hunt representative combat;
+- PvP snapshot/replay;
+- Hunt and offline/virtual Hunt;
 - legacy/NPC five-stat snapshots;
-- serialization/restore compatibility when applicable.
+- save/restore compatibility where applicable.
 
-This phase exists to catch hidden legacy gates before benchmark work. Fist Counter demonstrated why this is mandatory: the skill logic was correct while a generic legacy counter gate prevented the skill from ever being selected.
+A stale compatibility gate must be repaired before benchmark work.
 
-## 4. Phase 3 — Correctness implementation
+## 4. Correctness implementation
 
-Implement only the authored contract:
-
-- resources;
-- gates;
-- mastery behavior;
-- control/Break behavior;
-- five-stat scaling family;
-- Auto rules;
-- parity consumers.
-
-Add targeted regression tests for every repaired legacy seam.
-
-**No balance tuning yet.**
+Implement only the authored contract. Add narrow regression tests for repaired seams.
 
 Exit condition:
 
-- targeted correctness tests green;
-- no known skill is blocked by a stale gate;
-- no obsolete resource/metadata path owns live behavior.
+- targeted correctness tests pass;
+- no authored skill is blocked by a stale gate;
+- no obsolete resource/metadata path owns live behavior;
+- no duplicate mechanic authority was introduced.
 
-## 5. Phase 4 — Parity before benchmark
+**No balance tuning yet.**
 
-Before accepting balance evidence, prove the production consumers:
+## 5. Production-path parity
 
-- CombatKernel V3 path;
-- PvE;
-- PvP snapshot/replay payload where applicable;
-- Hunt preview;
-- offline/virtual Hunt;
-- Auto rotation;
+Before benchmark evidence is accepted, prove the relevant consumers:
+
+- canonical CombatKernel V3 / `CombatEngine` path;
+- PvE/Boss;
+- PvP;
+- Auto/tactical rotation;
+- Hunt/offline representative combat;
+- save/carry state where applicable;
 - five-stat materialization/provenance;
-- compatibility behavior needed by already locked Dao.
+- required locked Dao regressions.
 
-A benchmark must not become the place where parity bugs are first discovered.
+A benchmark must not be the first place parity defects are discovered.
 
-## 6. Phase 5 — Identity-valid deterministic benchmark
+## 6. Identity-valid deterministic benchmark
 
-Every Dao benchmark must prove two things:
+Every benchmark must prove both:
 
-1. numerical outcome;
+1. numerical result;
 2. the intended archetype actually executed its defining mechanic.
 
-Examples of identity assertions:
+Examples: Counter success > 0, Break/Broken occurs, channel completes, stack threshold is reached, resource generation/spend/payoff occurs, or Ultimate/domain events occur.
 
-- Counter build: counter casts > 0 and successful counters > 0;
-- Break build: Break events > 0 and/or target reaches the authored Broken state;
-- Channel build: completed channel count > 0 and no false OOM cancellation;
-- stack build: stack threshold reached and meaningful uptime > 0;
-- resource-payoff build: generation > 0, spend > 0, payoff casts > 0;
-- Ultimate/domain build: Ultimate and domain/open events > 0;
-- DoT/mark build: mark/DoT application and consumption > 0.
+If the defining mechanic count is zero, the DPS result is invalid evidence. Fix the harness or production path first.
 
-If identity evidence is zero, the DPS number is **invalid evidence**. Fix the harness or production decision path first; do not tune coefficients from that run.
+Use deterministic seeds and paired comparisons where practical. Do not tune from one-seed noise.
 
-### Benchmark stability
+## 7. Minimal tuning
 
-Use deterministic seeds and paired comparisons where practical. Report mean plus enough spread information to detect a one-seed accident. Do not react to a sub-percent miss without checking identity and seed stability.
+- change one feature-owned lever at a time;
+- prefer the skill/passive/resource lever owned by the miss;
+- reject global multipliers for relative-archetype problems;
+- preserve healthy resource cadence;
+- rerun only affected evidence;
+- stop when the target band is reached.
 
-## 7. Phase 6 — Minimal tuning
+## 8. Feature-scoped closure
 
-Rules:
-
-- change one lever at a time;
-- prefer the skill/passive/resource lever owned by the underperforming archetype;
-- do not change a global Dao multiplier when the problem is the ratio between archetypes;
-- preserve resource cadence if it is already healthy;
-- stop immediately when the target band is reached;
-- rerun only the evidence affected by the change.
-
-A small miss should receive a small local correction. Fist Q5 is the reference pattern: Liên Hoàn missed by ~0.5 percentage point, so only Tam Hoàn mastery's final hit was tuned rather than the global Fist multiplier.
-
-## 8. Phase 7 — Feature scoped closure
-
-Feature closure uses the registered manifest, not the whole backend directory sweep.
-
-Generic commands:
+Canonical commands:
 
 ```cmd
 node qa\runners\v140-backend-gates.js feature-info <feature-id>
 node qa\runners\v140-backend-gates.js feature <feature-id>
 ```
 
-One-click Windows closure:
+Canonical one-click Windows closure:
 
 ```cmd
 DONG_BO_VA_TEST_FEATURE.cmd <feature-id>
 ```
 
-The one-click closure performs:
+The feature manifest must remain `closureReady:false` until correctness, parity, identity-valid benchmark, target bands and required regressions are complete. Only then flip it to `true` and run exact-SHA feature closure.
 
-1. clean update from `origin/main`;
-2. Mode 5 FULL CLEAN exact-candidate proof;
-3. feature-scoped backend closure;
-4. clean-worktree verification;
-5. exact SHA output.
+There is no separate Dao compatibility launcher. `DONG_BO_VA_TEST_FEATURE.cmd` is the only Dao feature closure entry point.
 
-`DONG_BO_VA_TEST_DAO.cmd` is retained only as a compatibility wrapper for the already closed Fist slice.
+## 9. Full-game audit is separate
 
-### Closure-ready rule
+`node qa/runners/v140-backend-gates.js closure` is the whole-game audit.
 
-The feature manifest must remain `closureReady: false` until:
+Classify any failure before patching it:
 
-- correctness is complete;
-- parity is complete;
-- deterministic benchmark is identity-valid;
-- target bands pass;
-- required regression tests exist.
+- shared regression caused by this slice → blocking;
+- stale expectation for a retired model → fix/retire that expectation in its own scope;
+- unrelated balance debt → defer;
+- harness/runner defect → repair the harness/runner without gameplay retuning.
 
-Only then change it to `closureReady: true` and run the closure launcher.
+Never make an unrelated subsystem green opportunistically during Dao closure.
 
-## 9. Phase 8 — Full-game audit is separate
-
-`node qa/runners/v140-backend-gates.js closure` remains the whole-game directory sweep.
-
-It may be run to discover debt, but an out-of-scope failure does not block a correctly scoped Dao closure unless it proves a shared regression caused by the candidate.
-
-For every global failure, classify it:
-
-- shared regression caused by this slice -> blocking, fix the responsible layer;
-- stale test for a retired model -> record for that system's migration;
-- unrelated balance failure -> defer to that system's audit;
-- harness/runner defect -> repair the harness/runner without gameplay retuning.
-
-Never make an unrelated system green opportunistically during Dao closure.
-
-## 10. Phase 9 — Closure record and compact checkpoint
+## 10. Closure record and checkpoint
 
 After exact-SHA feature closure passes:
 
 - write one dated closure record;
-- record final gameplay SHA separately from later QA/docs-only SHA when relevant;
-- record benchmark targets/results;
-- record the scoped gate result;
-- record deferred full-game audit debt explicitly;
-- update `CURRENT_CHECKPOINT.md` with only current state, not the whole implementation diary;
-- leave detailed history in closure docs and Git history.
+- record gameplay SHA and final closure SHA separately when relevant;
+- record benchmark bands/results and scoped gate evidence;
+- record deferred full-game debt;
+- update `CURRENT_CHECKPOINT.md` with compact current state only;
+- leave implementation history to Git history and the minimum required closure evidence.
 
-## 11. Standard Dao execution sequence
+## 11. Locked regression policy
 
-The normal path for the next Dao is:
+Sword and Fist are locked. Include their narrow regression/contract gates only when shared risk warrants it. A regression is blocking; a desire to rebalance a locked Dao is not.
 
-`Scope Lock -> Contract -> Runtime Seam Audit -> Correctness -> Parity -> Identity-valid Benchmark -> Minimal Tune -> FULL CLEAN -> Feature Closure -> Lock`
+## 12. New Dao handoff
 
-Expected tuning loop:
+Normal path:
 
-- one correctness pass;
-- one parity pass;
-- one benchmark baseline;
-- normally zero to two small tuning iterations;
-- one exact-SHA scoped closure.
+`Scope Lock → Contract → Runtime Seam Audit → Correctness → Parity → Identity-valid Benchmark → Minimal Tune → FULL CLEAN → Feature Closure → Lock`
 
-If the slice starts cycling more than this, stop and classify whether the real problem is contract ambiguity, an un-audited legacy seam, or an invalid benchmark identity.
-
-## 12. Locked systems regression policy
-
-Every new Dao closure must protect already locked shared combat behavior with narrow regression tests, but must not re-balance locked Dao.
-
-Sword and Fist are currently locked. A future Dao may include their contract/regression tests in its feature manifest when shared code is touched. A red locked-Dao regression is blocking; a desire to improve its balance is not.
-
-## 13. New Dao handoff checklist
-
-At the start of a new chat:
-
-1. refresh `main`;
-2. read `AGENTS.md`;
-3. read `CURRENT_CHECKPOINT.md`;
-4. read `docs/DEVELOPMENT_PROTOCOL.md`;
-5. read this V3 workflow;
-6. inspect current source for the requested Dao;
-7. create the new Dao contract and feature manifest with `closureReady: false`;
-8. do not modify production coefficients until Phase 2 runtime seam audit is complete.
-
-This workflow supersedes ad-hoc Dao closure sequencing learned during Sword/Fist development. Existing Sword/Fist closure records remain authoritative evidence for those locked slices.
+If the slice starts cycling, classify whether the problem is contract ambiguity, an un-audited legacy seam, or invalid benchmark identity before changing more gameplay.
