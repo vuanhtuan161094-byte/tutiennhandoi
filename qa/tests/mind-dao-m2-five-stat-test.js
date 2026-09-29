@@ -47,6 +47,6 @@ assert(mindGuardFiveStatMultiplierV2(powerOnlyGuardStats,guard)<1,'CL-only alloc
 
 const combatSource=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
 assert(combatSource.includes('mindGuardFiveStatMultiplierV2'),'CombatEngine must consume the Tâm Kính TP+TT effect family');
-assert(combatSource.includes('fiveStatBaselineCoefficientV5: skill.fiveStatBaselineCoefficientV5'),'Mind consume packets must carry five-stat metadata into applyDamage');
+assert(/fiveStatBaselineCoefficientV5:\s*(?:skill|mindSkill)\.fiveStatBaselineCoefficientV5/.test(combatSource),'Mind packets must carry five-stat metadata into applyDamage regardless of wrapper-local variable name');
 
 console.log('MIND DAO M2A FIVE-STAT MIGRATION: PASS');
