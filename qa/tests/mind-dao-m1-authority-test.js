@@ -21,13 +21,11 @@ const source = {
 const target = { id:'target', name: 'Target', marks: {}, tags: [], pendingSetFlagsV117: {} };
 const action = (id, packets = []) => ({ battleDaoV2: { rootActionId: `root:${id}`, procDepth: 0, mindSnapshotPackets: packets } });
 
-// Canonical Thần Ấn store is target.marks with a hard cap of five.
 assert.equal(addMindMarksV2(source, target, 7), 5);
 assert.equal(mindMarkCountV2(target), 5);
 assert.deepEqual(consumeMindMarksV2(source, target, 2), { consumed: 2, before: 5, after: 3 });
 assert.equal(mindMarkCountV2(target), 3);
 
-// Observe rewards progress only: for five ticks, marks land at 2 / 4 / 5.
 target.marks['Thần Ấn'] = 0;
 const observeAction = action('observe');
 assert.equal(mindObserveProgressV2(source, target, byId['skill.dao.mind.observe'], observeAction, 1, 5), 0);
@@ -38,7 +36,6 @@ assert.equal(mindObserveProgressV2(source, target, byId['skill.dao.mind.observe'
 assert.equal(mindObserveProgressV2(source, target, byId['skill.dao.mind.observe'], observeAction, 5, 5), 1);
 assert.equal(mindMarkCountV2(target), 3);
 
-// Nhiễu consumes once at resolved root, with three marks enabling the canonical mental-stagger attempt.
 target.marks['Thần Ấn'] = 3;
 target.casting = { skillId: 'dummy', resolvesAt: 10 };
 const interfereAction = action('interfere');
@@ -49,7 +46,6 @@ assert(interfere.targetCastDelaySeconds > 0);
 assert.equal(interfere.mentalStaggerSeconds, .35);
 delete target.casting;
 
-// Burst conversion is post-spend and cannot consume the same marks twice.
 target.marks['Thần Ấn'] = 5;
 const burstEffect = byId['skill.dao.mind.burst'].effects.find(x => x.type === 'consumeMarkDamage');
 const burstAction = action('burst');
@@ -62,7 +58,6 @@ const burstAgain = resolveMindConsumeDamageV2(source, target, byId['skill.dao.mi
 assert.equal(burstAgain.consumed, 0);
 assert.equal(burstAgain.coefficient, 1);
 
-// Every third eligible Active echoes only sanitized damage/heal/shield packets.
 source.battleDaoStateV2.mind.core = createMindCoreStateV2();
 const markSkill = byId['skill.dao.mind.mark'];
 const cleanDamage = { type: 'damage', coefficient: .7, breakDamagePct: 2, canCrit: true, canDodge: true, canHeart: true };
@@ -75,7 +70,6 @@ assert.deepEqual(third.echo.packets, [cleanDamage]);
 assert.equal(source.battleDaoStateV2.mind.core.snapshot.sourceSkillId, markSkill.id);
 assert.equal(source.battleDaoStateV2.mind.core.snapshot.targetId, target.id);
 
-// Ultimate is outside ordinary cadence and may not replace the normal snapshot.
 const snapshotBeforeUltimate = structuredClone(source.battleDaoStateV2.mind.core.snapshot);
 const cadenceBeforeUltimate = source.battleDaoStateV2.mind.core.eligibleActiveCount;
 const ultimate = finishMindRootV2(source, target, byId['skill.dao.mind.ultimate'], action('ultimate', [cleanDamage]), 4);
@@ -83,7 +77,6 @@ assert.equal(ultimate.echo, undefined);
 assert.equal(source.battleDaoStateV2.mind.core.eligibleActiveCount, cadenceBeforeUltimate);
 assert.deepEqual(source.battleDaoStateV2.mind.core.snapshot, snapshotBeforeUltimate);
 
-// Phân Lưu opens for five seconds; the deploy itself does not count toward its own third-active bonus.
 source.battleDaoStateV2.mind.core = createMindCoreStateV2();
 target.marks['Thần Ấn'] = 0;
 const flow = finishMindRootV2(source, target, byId['skill.dao.mind.flow'], action('flow', [cleanDamage]), 10);
@@ -93,10 +86,11 @@ assert.equal(finishMindRootV2(source, target, markSkill, action('f1', [cleanDama
 assert.equal(finishMindRootV2(source, target, markSkill, action('f2', [cleanDamage]), 12).flowBonusMarkGain, 0);
 assert.equal(finishMindRootV2(source, target, markSkill, action('f3', [cleanDamage]), 13).flowBonusMarkGain, 1);
 
-// Integration guards: generic runtime must be mutation-free for Main-Mind core;
-// CombatEngine wrapper is the single owner for M1 transactions/snapshot replay.
 const runtimeSource = fs.readFileSync(new URL('../../dist/core/battle-dao-v2-runtime.js', import.meta.url), 'utf8');
-const combatSource = fs.readFileSync(new URL('../../dist/core/combat.js', import.meta.url), 'utf8');
+const combatSource = [
+  fs.readFileSync(new URL('../../dist/core/combat.js', import.meta.url), 'utf8'),
+  fs.readFileSync(new URL('../../dist/core/combat-m2b-base.js', import.meta.url), 'utf8'),
+].join('\n');
 assert(!runtimeSource.includes('out.mindEchoCounter ='), 'mindEchoCounter must remain internal, not a projected resource');
 assert(!runtimeSource.includes('(action.battleDaoV2?.hpDamage ?? 0) / Math.max(1, entity.baseStats.attack)'), 'Niệm Ảnh must not infer snapshots from realized HP damage');
 assert(runtimeSource.includes("if (dao !== 'fist' && dao !== 'mind')"), 'Mind p8 timer refresh must not be read-owned');
