@@ -12,6 +12,16 @@ function isMainMind(entity, skill) {
         && (!skill || skillRuntimeV117(skill).daoBinding === 'mind');
 }
 
+const clampLevel = value => Math.max(1, Math.min(20, Math.floor(Number(value) || 1)));
+const scaleLevel = (level, min, max) => min + (max - min) * ((clampLevel(level) - 1) / 19);
+const mindPassiveId = n => `passive.v2.mind.p${n}`;
+function hasMindPassive(entity, n) {
+    return Boolean(entity?.combatBuildV117?.learnedDaoPassiveIdsV118?.includes(mindPassiveId(n)));
+}
+function mindPassiveLevel(entity, n) {
+    return clampLevel(entity?.combatBuildV117?.passiveLevelsV125?.[mindPassiveId(n)] ?? 1);
+}
+
 export function mindMarkCountV2(target) {
     return Math.max(0, Math.min(MIND_V2_MARK_CAP, Math.floor(target?.marks?.[MIND_V2_MARK] ?? 0)));
 }
@@ -33,6 +43,33 @@ export function consumeMindMarksV2(source, target, maxConsume = MIND_V2_MARK_CAP
     const after = before - consumed;
     target.marks[MIND_V2_MARK] = after;
     return { consumed, before, after };
+}
+
+export function gainMindPassiveStackV2(source, skill, now, chance = () => false) {
+    if (!isMainMind(source, skill) || !hasMindPassive(source, 1))
+        return 0;
+    const slot = skillSlotClassV117(skill);
+    if (slot !== 'active' && slot !== 'ultimate')
+        return 0;
+    const stack = source.battleDaoStateV2?.mind?.stack;
+    if (!stack)
+        return 0;
+    const before = Math.max(0, Math.floor(stack.stacks ?? 0));
+    let requested = slot === 'ultimate' ? 2 : 1;
+    if (hasMindPassive(source, 2) && chance(scaleLevel(mindPassiveLevel(source, 2), 10, 30)))
+        requested += 1;
+    stack.stacks = Math.min(Math.max(1, Math.floor(stack.cap ?? 20)), before + requested);
+    const gained = stack.stacks - before;
+    if (gained > 0) {
+        stack.expiresAt = now + Math.max(.1, Number(stack.durationSeconds ?? 12));
+        stack.nextDecayAt = undefined;
+    }
+    if (stack.stacks >= Math.max(1, Math.floor(stack.cap ?? 20)) && hasMindPassive(source, 8)) {
+        const hold = scaleLevel(mindPassiveLevel(source, 8), 1, 2);
+        stack.expiresAt = Math.max(Number(stack.expiresAt ?? 0), now + hold);
+        stack.nextDecayAt = undefined;
+    }
+    return gained;
 }
 
 function snapshotActionEligible(source, skill, action) {
@@ -152,7 +189,7 @@ function cloneSnapshotPackets(action) {
 
 export function finishMindRootV2(source, target, skill, action, now) {
     const out = { notices: [], echo: undefined, flowBonusMarkGain: 0 };
-    if (!isMainMind(source, skill))
+    if (!isMainMind(source, skill) || action?.battleDaoV2?.mindInvalidSpend)
         return out;
     const core = source.battleDaoStateV2?.mind?.core;
     if (!core)
@@ -171,6 +208,7 @@ export function finishMindRootV2(source, target, skill, action, now) {
     const packets = cloneSnapshotPackets(action);
     core.snapshot = {
         sourceSkillId: skill.id,
+        targetId: target?.id,
         createdAt: now,
         payloadId: `${action?.battleDaoV2?.rootActionId ?? skill.id}:snapshot`,
         procDepth: 0,
@@ -183,6 +221,7 @@ export function finishMindRootV2(source, target, skill, action, now) {
                 delay: MIND_V2_ECHO_DELAY_SECONDS,
                 coefficient: Math.min(.70, Math.max(0, Number(core.echoCoefficient ?? MIND_V2_BASE_ECHO_COEFFICIENT))),
                 sourceSkillId: skill.id,
+                targetId: target?.id,
                 payloadId: core.snapshot.payloadId,
                 packets: packets.map(packet => ({ ...packet })),
             };
