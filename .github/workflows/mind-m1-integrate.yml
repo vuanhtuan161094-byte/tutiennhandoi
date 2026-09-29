@@ -26,37 +26,52 @@ jobs:
           node-version: '22'
 
       - name: Apply guarded M1 patch
-        shell: cmd
+        shell: powershell
         run: |
-          node --check tools\mind-m1-integrate.mjs
-          node tools\mind-m1-integrate.mjs
-          node --check dist\core\mind-dao-v2-runtime.js
-          node --check dist\core\battle-dao-v2-runtime.js
-          node --check dist\core\combat.js
+          $ErrorActionPreference = 'Stop'
+          node --check tools/mind-m1-integrate.mjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tools/mind-m1-integrate.mjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node --check dist/core/mind-dao-v2-runtime.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node --check dist/core/battle-dao-v2-runtime.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node --check dist/core/combat.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Targeted Mind correctness gates
-        shell: cmd
+        shell: powershell
         run: |
-          node qa\tests\mind-dao-m1-authority-test.js
-          node qa\tests\mind-dao-production-contract-test.js
+          $ErrorActionPreference = 'Stop'
+          node qa/tests/mind-dao-m1-authority-test.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node qa/tests/mind-dao-production-contract-test.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Locked Dao smoke gates
-        shell: cmd
+        shell: powershell
         run: |
-          node qa\tests\sword-dao-production-contract-test.js
-          node qa\tests\fist-dao-counter-runtime-test.js
+          $ErrorActionPreference = 'Stop'
+          node qa/tests/sword-dao-f6-harness-contract-test.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node qa/tests/fist-dao-counter-runtime-test.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Commit only after gates pass
-        shell: bash
+        shell: powershell
         run: |
-          set -euo pipefail
+          $ErrorActionPreference = 'Stop'
           git rm .github/workflows/mind-m1-integrate.yml tools/mind-m1-integrate.mjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           git add dist/core/battle-dao-v2-runtime.js dist/core/combat.js
-          if git diff --cached --quiet; then
-            echo "No integration changes produced"
-            exit 1
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "feat(mind): wire M1 authority runtime"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 0) { throw 'No integration changes produced' }
+          if ($LASTEXITCODE -ne 1) { exit $LASTEXITCODE }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'feat(mind): wire M1 authority runtime'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           git push origin HEAD:main
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
