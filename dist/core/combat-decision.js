@@ -7,6 +7,7 @@ import { skillPracticeProfileFromTierV125 } from './specialization-skill-progres
 import { battleDaoSkillGrowthProfileV126 } from './battle-dao-skill-growth-v126.js';
 import { skillProgressEffectBonusFromRuntimeV12317, skillSecondaryEffectBonusPctV12317 } from './skill-heart-method-v12317.js';
 import { battleDaoV2Enabled, battleDaoV2SpiritCostMultiplier, createRootActionV2, fistV2ActionTuning, prepareFistCoreActionV2, prepareRemainingDaoCoreActionV2, prepareSwordCoreActionV2, swordQiSpendBeforeActionV2, swordV2ActionTuning } from './battle-dao-v2-runtime.js';
+import { prepareMindMasteryActionV2 } from './mind-dao-v2-runtime.js';
 import { techniqueBloodSacrificeCapPctV119, techniqueBreakLimitExtraPctV119, techniqueBurnBloodEfficiencyV119, techniqueCastMultiplierV119, techniqueCooldownReturnInternalSecondsV119, techniqueCooldownReturnPctV119, techniqueCooldownReturnSpiritCostPctV119, techniqueEquippedMasteryV119, techniqueGuidingReturnInternalSecondsV119, techniqueGuidingReturnRestoreStandardPctV119, techniqueShieldConsumeEffectBonusPctV119, techniqueShieldConsumePctV119, techniqueSpiritCostMultiplierV119 } from './technique-runtime-v119.js';
 import { bossDangerMetaV81 } from './boss-gameplay-v2.js';
 import { combatMaxHp, combatSpiritStandard, skillTrueEssenceCost } from './combat-rules.js';
@@ -26,12 +27,10 @@ export function handleCombatDecisionV141(actor, target, now) {
         const practice = skillPracticeProfileFromTierV125(practiceTier);
         const authoredGrowth = battleDaoSkillGrowthProfileV126(skill, practiceTier);
         const rawRuntimeSpiritMultiplier = skillSpiritCostMultiplierFromRuntimeV117(actor, skill, now) * daoSpiritCostMultiplierV118(actor, skill) * battleDaoV2SpiritCostMultiplier(actor, skill, now) * techniqueSpiritCostMultiplierV119(actor, skill, now) * (1 - practice.spiritCostReductionPct / 100) * (1 - (authoredGrowth?.spiritCostReductionPct ?? 0) / 100);
-        // Công Pháp V1: ordinary build reductions may not push a skill below 60% of its authored Chân Nguyên cost.
         const runtimeSpiritMultiplier = Math.max(.60, rawRuntimeSpiritMultiplier);
         let spiritCost = skillTrueEssenceCost(skill, stats, this.activeSpiritCostMultiplier(actor, now) * runtimeSpiritMultiplier);
         let techniquePreEffectBonusPct = 0;
         let techniquePreRecoveryMultiplier = 1;
-        // Phá Cực Nhiên Nguyên: an equipped high-cost rule deliberately spends extra Chân Nguyên for a narrow payoff.
         const breakLimitPct = skillRuntimeV117(skill).costClass === 'high' ? techniqueBreakLimitExtraPctV119(actor) : 0;
         if (breakLimitPct > 0 && spiritCost > 0 && actor.spirit > spiritCost) {
             const maxExtra = spiritCost * breakLimitPct / 100;
@@ -44,7 +43,6 @@ export function handleCombatDecisionV141(actor, target, now) {
                 this.log(now, 'resource', `${actor.name} vận Phá Cực, tiêu thêm ${paidExtra.toFixed(0)} Chân Nguyên.`, actor.id, actor.id, skill.id, { extraSpirit: paidExtra, effectBonusPct: actualPct * .70 });
             }
         }
-        // Bí Thuật may fund an otherwise unaffordable action, but the transaction is atomic: no HP is lost if it still cannot pay.
         if (actor.spirit + 1e-9 < spiritCost) {
             const missing = spiritCost - actor.spirit;
             const standard = Math.max(1, combatSpiritStandard(stats));
@@ -78,7 +76,6 @@ export function handleCombatDecisionV141(actor, target, now) {
             return;
         }
         actor.spirit = Math.max(0, actor.spirit - spiritCost);
-        // Quy Nguyên Chân Ý: crossing below 20% after paying a real skill cost grants one bounded emergency pulse.
         const guidingRestorePct = techniqueGuidingReturnRestoreStandardPctV119(actor);
         if (guidingRestorePct > 0 && spiritCost > 0 && spiritPctBefore >= 20 && actor.spirit / Math.max(1, actor.baseStats.maxSpirit) * 100 < 20) {
             const readyAt = actor.pendingSetFlagsV117['techniqueGuidingReturnReadyAt'] ?? 0;
@@ -91,7 +88,6 @@ export function handleCombatDecisionV141(actor, target, now) {
                 }
             }
         }
-        // Phản Bản Quy Nguyên Cấm Pháp uses the already-existing Basic slot as its explicit trigger: no hidden extra skill slot.
         if (skillSlotClassV117(skill) === 'basic') {
             const pct = techniqueCooldownReturnPctV119(actor);
             const readyAt = actor.pendingSetFlagsV117['techniqueCooldownReturnReadyAt'] ?? 0;
@@ -148,7 +144,6 @@ export function handleCombatDecisionV141(actor, target, now) {
         prepared.action.recoveryMultiplier *= techniquePreRecoveryMultiplier * Math.max(.4, 1 - (authoredGrowth?.recoveryReductionPct ?? 0) / 100);
         if (techniqueEquippedMasteryV119(actor, 'technique.v119.secret.reverse_breath') >= 100 && spiritPctBefore < 30)
             prepared.action.suppressGaugeGenerate = true;
-        // Phệ Thuẫn consumes pre-existing shield before this action resolves, so a shield created by this same skill can never feed itself.
         const shieldConsumePct = techniqueShieldConsumePctV119(actor);
         const domains = new Set(skillDomainsV117(skill));
         if (shieldConsumePct > 0 && domains.has('Damage') && skillSlotClassV117(skill) !== 'basic') {
@@ -199,6 +194,7 @@ export function handleCombatDecisionV141(actor, target, now) {
             prepared.action.castTimeMultiplier *= fistTuning.castMultiplier;
             prepared.action.recoveryMultiplier *= fistTuning.recoveryMultiplier;
             prepareRemainingDaoCoreActionV2(actor, target, skill, prepared.action, now);
+            prepareMindMasteryActionV2(actor, target, skill, prepared.action, now);
         }
         const spentElement = Object.values(prepared.action.spentResources ?? {}).reduce((sum, value) => sum + Math.max(0, Number(value ?? 0)), 0);
         if (spentElement > 0 && (techniqueEquippedMasteryV119(actor, 'technique.v119.secret.steal_heaven') >= 40 || techniqueEquippedMasteryV119(actor, 'technique.v119.secret.hidden_edge') >= 40))
@@ -210,7 +206,6 @@ export function handleCombatDecisionV141(actor, target, now) {
         const fistTuningForCooldown = fistV2ActionTuning(actor, skill, target, prepared.action);
         if (fistTuningForCooldown.cooldownOverride !== undefined)
             cooldown.actualCooldown = Math.max(skill.minimumCooldown ?? 0, fistTuningForCooldown.cooldownOverride);
-        // Locked: cooldown begins when the skill starts, not when channel/recovery ends.
         actor.cooldownUntil[skill.id] = now + cooldown.actualCooldown;
         const castTime = adjustedCastTime(skill.castTime * skillCastTimeMultiplierFromRuntimeV117(actor, skill) * daoCastTimeMultiplierV118(actor, skill) * techniqueCastMultiplierV119(actor, skill, now) * prepared.action.castTimeMultiplier, stats.actionSpeed);
         const token = ++this.castToken;
@@ -241,5 +236,5 @@ export function handleCombatDecisionV141(actor, target, now) {
             skillId: skill.id,
             castToken: token,
         });
-    
+
 }
