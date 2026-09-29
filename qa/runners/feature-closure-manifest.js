@@ -31,6 +31,7 @@ export const MIND_OPEN_GATES=freezeList([
   'mind-dao-m1-authority-test.js',
   'mind-dao-m2-five-stat-test.js',
   'mind-dao-m2-passive-architecture-test.js',
+  'mind-dao-m2-mastery-architecture-test.js',
 ]);
 
 const makeManifest=spec=>Object.freeze({
@@ -83,7 +84,7 @@ export const BACKEND_FEATURE_CLOSURE_MANIFESTS=Object.freeze({
     kind:'dao',
     closureReady:false,
     benchmarkCommand:'tools\\web\\RUN_MIND_M5_BENCHMARK.cmd',
-    // M2B is closed, but Mastery/Parity/Benchmark/Tuning are still open.
+    // M2C implementation is integrated, but parity/benchmark/tuning and exact closure evidence remain open.
     // M4 must replace this placeholder with the real identity-valid harness contract before closureReady=true.
     benchmarkContractGate:'mind-dao-production-contract-test.js',
     lockedRegressionFeatures:['dao-sword','dao-fist'],
