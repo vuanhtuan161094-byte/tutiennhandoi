@@ -88,6 +88,15 @@ export function canUseSkill(self, skill, registry, now) {
     }
     return true;
 }
+function autoFallbackAllows(skill, target) {
+    // M1: these Mind actions are tactical target-mark spenders. Their explicit
+    // rotation rules own eligibility; generic cooldown fallback must not fire
+    // them at zero Thần Ấn and bypass the resource contract.
+    if ((skill.id === 'skill.dao.mind.interfere' || skill.id === 'skill.dao.mind.burst')
+        && (target.marks['Thần Ấn'] ?? 0) < 1)
+        return false;
+    return true;
+}
 export function chooseSkill(self, target, registry, now) {
     const rules = [...self.aiProfile.rules].sort((a, b) => b.priority - a.priority);
     const swordMain = self.combatBuildV117?.mainDaoId === 'sword';
@@ -120,11 +129,12 @@ export function chooseSkill(self, target, registry, now) {
         if (rule.conditions.every(c => checkCondition(c, self, target, now)))
             return skill;
     }
-    // Counter actions are tactical-only. If their authored/auto rule did not match,
-    // the generic fallback must not bypass that condition and fire them blindly.
+    // Counter actions are tactical-only. Mind mark-spenders are also excluded
+    // from generic zero-context fallback when the target has no spendable marks.
     return self.skillIds
         .map(id => registry.skill(id))
         .filter(s => skillRuntimeV117(s).form !== 'counter')
+        .filter(s => autoFallbackAllows(s, target))
         .filter(s => canUseSkill(self, s, registry, now))
         .sort((a, b) => a.cooldown - b.cooldown)[0];
 }
