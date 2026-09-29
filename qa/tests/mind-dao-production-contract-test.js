@@ -9,7 +9,8 @@ const contract=fs.readFileSync(new URL('../../docs/runtime/MIND_DAO_PRODUCTION_C
 const m2bAudit=fs.readFileSync(new URL('../../docs/runtime/MIND_DAO_M2B_CLOSURE_AUDIT_20260929.md',import.meta.url),'utf8');
 const m2cAudit=fs.readFileSync(new URL('../../docs/runtime/MIND_DAO_M2C_CLOSURE_AUDIT_20260929.md',import.meta.url),'utf8');
 const m3Audit=fs.readFileSync(new URL('../../docs/runtime/MIND_DAO_M3_CLOSURE_AUDIT_20260929.md',import.meta.url),'utf8');
-const benchmarkGuard=fs.readFileSync(new URL('../../tools/web/RUN_MIND_M5_BENCHMARK.cmd',import.meta.url),'utf8');
+const benchmarkLauncher=fs.readFileSync(new URL('../../tools/web/RUN_MIND_M5_BENCHMARK.cmd',import.meta.url),'utf8');
+const benchmarkHarness=fs.readFileSync(new URL('../benchmarks/mind-dao-m4-benchmark.js',import.meta.url),'utf8');
 
 const expectedSkills=[
   'skill.dao.mind.basic','skill.dao.mind.mark','skill.dao.mind.split','skill.dao.mind.interfere','skill.dao.mind.guard',
@@ -37,12 +38,12 @@ assert.equal(mindDaoV2.tree.length,8,'V2 realm tree must remain eight rows');
 assert(mindSkills.every(skill=>skill.fiveStatScalingV5!==undefined),'M2A closure requires explicit five-stat families on all ten Mind skills');
 
 const manifest=backendFeatureClosureManifest('dao-mind');
-assert.equal(manifest.closureReady,false,'dao-mind must remain fail-closed until benchmark, tuning and final closure phases are complete');
-assert.equal(manifest.benchmarkContractGate,'mind-dao-production-contract-test.js','M4 has not yet replaced the fail-closed benchmark contract placeholder');
+assert.equal(manifest.closureReady,false,'dao-mind must remain fail-closed until benchmark evidence, tuning and final closure phases are complete');
+assert.equal(manifest.benchmarkContractGate,'mind-dao-m4-harness-contract-test.js','M4 must own the real identity-valid harness contract gate');
 for(const gate of [
   'mind-dao-production-contract-test.js','mind-dao-skill-form-contract-test.js','mind-dao-m1-seal-transaction-test.js',
   'mind-dao-m1-authority-test.js','mind-dao-m2-five-stat-test.js','mind-dao-m2-passive-architecture-test.js',
-  'mind-dao-m2-mastery-architecture-test.js','mind-dao-m3-consumer-parity-test.js',
+  'mind-dao-m2-mastery-architecture-test.js','mind-dao-m3-consumer-parity-test.js','mind-dao-m4-harness-contract-test.js',
 ]) assert(manifest.gates.includes(gate),`dao-mind scoped gate must retain ${gate}`);
 assert(manifest.lockedRegressionFeatures.includes('dao-sword'));
 assert(manifest.lockedRegressionFeatures.includes('dao-fist'));
@@ -64,14 +65,13 @@ assert.match(m2bAudit,/M2B CLOSED/);
 assert.match(m2bAudit,/24c608f1764c9e5a34c65e5c66602e3e30d3a499/);
 assert.match(m2cAudit,/M2C CLOSED \/ M3 OPEN/);
 assert.match(m2cAudit,/17ec773bb057e7e6145bea10de91e532bff0efdf/);
-assert.match(m2cAudit,/closureReady:false/);
-assert.match(m2cAudit,/0\.6s echo delay/);
 assert.match(m3Audit,/M3 CLOSED \/ M4 OPEN/);
 assert.match(m3Audit,/ee86e719c47d8f3f57f33ea95b676373224ea73c/);
 assert.match(m3Audit,/mind-dao-m3-consumer-parity-test\.js/);
-assert.match(m3Audit,/closureReady:false/);
 
-assert.match(benchmarkGuard,/MIND_M5_BENCHMARK_BLOCKED/,'benchmark launcher must remain fail closed until M4 identity harness exists');
-assert.match(benchmarkGuard,/exit \/b 2/i);
+assert.match(benchmarkLauncher,/mind-dao-m4-benchmark\.js/i,'M4 launcher must execute the deterministic Mind harness');
+assert.doesNotMatch(benchmarkLauncher,/MIND_M5_BENCHMARK_BLOCKED/,'M4 harness installation removes the bootstrap fail-closed placeholder');
+assert.match(benchmarkHarness,/MIND_M4_INVALID_IDENTITY_RUN/,'identity-invalid zero-mechanic runs must be rejected');
+assert.match(benchmarkHarness,/Diagnostic only: does not modify gameplay or auto-tune coefficients\./);
 
 console.log('MIND DAO PRODUCTION CONTRACT: PASS');
