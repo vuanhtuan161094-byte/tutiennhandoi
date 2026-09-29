@@ -970,7 +970,7 @@ export function remainingDaoPassiveBonusesV2(entity, now) {
             out.gaugeGainPct += scale(l8, 0, 20);
             // Quyền p8 refresh is event-owned: stat/damage reads must never extend Liên Kình by themselves.
             // Other Dao retain their historical behavior until their own migration slice.
-            if (dao !== 'fist') {
+            if (dao !== 'fist' && dao !== 'mind') {
                 st.expiresAt = Math.max(st.expiresAt, now + scale(l8, 1, 2));
                 st.nextDecayAt = undefined;
             }
@@ -1254,20 +1254,11 @@ export function finishRemainingDaoActionV2(entity, target, skill, action, now, c
             out.notices.push({ message: `${entity.name} Chủ Trận: Dưỡng ${Math.round(c.nurture)}/100 · Bền ${Math.round(c.integrity)}/100.`, data: { formationNurture: c.nurture, formationIntegrity: c.integrity, formationDeployed: c.deployed } });
         }
     }
-    if (main && dao === 'mind' && active) {
-        const c = holderV2(entity, 'mind')?.core;
-        if (c) {
-            c.eligibleActiveCount++;
-            c.snapshot = { sourceSkillId: skill.id, createdAt: now, payloadId: `${action.battleDaoV2?.rootActionId ?? skill.id}:snapshot`, procDepth: 0 };
-            if (c.eligibleActiveCount >= c.echoEvery) {
-                c.eligibleActiveCount = 0;
-                const claim = claimDamagingFollowUpV2(action, { kind: 'intrinsic', id: 'intrinsic.v2.mind.echo' });
-                if (claim)
-                    out.followUp = { kind: 'mind', delay: .6, coefficient: Math.max(.1, (action.battleDaoV2?.hpDamage ?? 0) / Math.max(1, entity.baseStats.attack)) * c.echoCoefficient, breakDamagePct: 0, label: 'Niệm Ảnh', claim };
-            }
-        }
+    if (main && dao === 'mind') {
+        // M1 authority: CombatEngine wrapper owns Thần Ấn / Niệm Ảnh / Phân Lưu.
+        // Keep the generic runtime mutation-free here so there is exactly one Main-Mind core owner.
     }
-    // Passive-stack mechanics are deliberately generic: a learned Secondary Dao passive must work at
+        // Passive-stack mechanics are deliberately generic: a learned Secondary Dao passive must work at
     // 100% without requiring (or allowing) the Secondary Dao's Active skills. Core mechanics above remain
     // Main-only and skill-bound; the loop below observes the root action itself.
     for (const passiveDao of REMAINING_V2_DAOS) {
@@ -1440,8 +1431,8 @@ export function v2ResourceProjection(entity, now) {
         out.formationPassiveStack = s.formation.stack.stacks;
         out.formationPassiveStackCap = s.formation.stack.cap;
     }
-    if (s.mind?.core)
-        out.mindEchoCounter = s.mind.core.eligibleActiveCount;
+    if (s.mind?.core && (s.mind.core.flowUntil ?? 0) > now)
+        out.mindFlowUntil = s.mind.core.flowUntil;
     if (s.mind?.stack) {
         out.mindPassiveStack = s.mind.stack.stacks;
         out.mindPassiveStackCap = s.mind.stack.cap;
