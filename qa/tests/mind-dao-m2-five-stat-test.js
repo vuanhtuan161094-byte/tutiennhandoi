@@ -39,7 +39,7 @@ for(const skill of skills.filter(x=>x.id!=='skill.dao.mind.guard')){
 
 // Guard is a TP+TT effect family, not dead metadata and not CL/Attack shield scaling.
 const guard=skills.find(x=>x.id==='skill.dao.mind.guard');
-assert.equal(mindGuardFiveStatMultiplierV2(equalStats,guard),1);
+assert(Math.abs(mindGuardFiveStatMultiplierV2(equalStats,guard)-1)<1e-9,'equal-axis Tâm Kính baseline must remain neutral');
 const mentalGuardStats={attack:100,primaryStatsV5:{power:100,body:150,agility:100,spirit:100,sense:200}};
 assert(mindGuardFiveStatMultiplierV2(mentalGuardStats,guard)>1,'TP+TT allocation must strengthen Tâm Kính');
 const powerOnlyGuardStats={attack:200,primaryStatsV5:{power:200,body:100,agility:100,spirit:100,sense:100}};
