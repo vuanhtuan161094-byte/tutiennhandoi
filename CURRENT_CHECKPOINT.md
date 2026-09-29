@@ -88,23 +88,38 @@ M3 closure limitation:
 - no GitHub Actions run is claimed for the exact M3 proof commits at closure time;
 - M3 is closed as production-path ownership/parity from audited source + registered guards, not as whole-feature FULL CLEAN evidence.
 
-### Immediate next action — M4 deterministic identity harness
+### M4 deterministic identity harness — OPEN
 
-Build the deterministic benchmark harness before any tuning. The harness must prove defining mechanics are actually exercised and reject invalid zero-mechanic runs.
+Harness candidate is installed:
+- runner: `qa/benchmarks/mind-dao-m4-benchmark.js` (`dbc60388911a44ae94c7a11541ec903046c9f0ef`);
+- harness contract gate: `qa/tests/mind-dao-m4-harness-contract-test.js` (`fba5f7875ddff86a46ca37221442dc4b2edeca9b`);
+- manifest benchmark gate: `mind-dao-m4-harness-contract-test.js` (`94f7e73a497994137afff40917366e501ef8dceb`);
+- launcher: `tools\web\RUN_MIND_M5_BENCHMARK.cmd` now executes the M4 harness (`73f0cb1fc367753ec24bbf399a7bad90d487aa9c`).
 
-Required archetypes remain:
-1. **Bạo Ấn** — normalized damage reference 100%;
-2. **Niệm Ảnh** — target 88–98% of Bạo Ấn, with 15–30% real echo contribution;
-3. **Nhiễu Thức** — target 75–90% of Bạo Ấn and highest real interference/control metric.
+Harness matrix:
+1. **Bạo Ấn** — normalized damage reference 100%, must perform real Bạo Ấn mark spends;
+2. **Niệm Ảnh** — target 88–98% of Bạo Ấn with 15–30% real echo contribution, must produce real `mindSnapshot` replay damage;
+3. **Nhiễu Thức** — target 75–90% of Bạo Ấn and highest real interference/control metric, must perform real Nhiễu mark spends.
 
-M4 work:
-- install a real Mind benchmark/harness contract gate;
-- replace the feature manifest benchmark placeholder only after that gate exists;
-- make `RUN_MIND_M5_BENCHMARK.cmd` execute the identity-valid deterministic harness instead of fail-closing;
-- record baseline only; **do not tune coefficients in M4**.
+Harness rules:
+- 12 deterministic seeds × 180 seconds × 3 archetypes;
+- 5 Active slots + Basic + Ultimate per profile;
+- equal 300-point five-stat allocation budget;
+- all 8 Mind passives Lv20 and all ten Mind mastery tiers 1000;
+- any run with zero defining mechanic is rejected as `MIND_M4_INVALID_IDENTITY_RUN`;
+- harness is diagnostic only and cannot auto-tune coefficients.
 
-After M4:
-- **M5:** minimal Mind-owned tuning only from valid deterministic baseline;
+### Immediate next action — execute M4 baseline
+
+Run `tools\web\RUN_MIND_M5_BENCHMARK.cmd --no-pause` in the repo and retain `qa\output\mind-m4-benchmark.json` plus the log as M4 evidence.
+
+Until a successful identity-valid output exists:
+- **M4 remains OPEN**;
+- **M5 remains BLOCKED**;
+- no coefficient tuning is authorized.
+
+After M4 baseline:
+- **M5:** minimal Mind-owned tuning only from valid deterministic evidence;
 - **M6:** FULL CLEAN + `DONG_BO_VA_TEST_FEATURE.cmd dao-mind` + dated closure record + lock.
 
 ## Full-game audit debt — separate from Mind feature closure
