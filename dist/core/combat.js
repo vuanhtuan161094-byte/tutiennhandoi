@@ -16,6 +16,8 @@ import {
     gainMindPassiveStackV2,
     mindMarkCountV2,
     mindGuardFiveStatMultiplierV2,
+    mindPassiveBonusesV2,
+    mindDirectArmorPenBonusV2,
     mindObserveProgressV2,
     resolveMindConsumeDamageV2,
     resolveMindInterfereV2,
@@ -52,21 +54,67 @@ function isCanonicalMindMarkV2(source, effect, skill) {
 export class CombatEngine extends CombatEngineBaseM1 {
     applyDamage(source, target, ctx, now) {
         let authored = ctx;
-        if (source?.combatBuildV117?.battleDaoV2Enabled === true && source?.combatBuildV117?.mainDaoId === 'mind' && ctx?.skillId && ctx.fiveStatScalingV5 === undefined) {
-            const skill = this.registry.skill(ctx.skillId);
-            if (skillRuntimeV117(skill).daoBinding === 'mind' && skill.fiveStatScalingV5) {
+        let mindSkill;
+        if (source?.combatBuildV117?.battleDaoV2Enabled === true && source?.combatBuildV117?.mainDaoId === 'mind' && ctx?.skillId) {
+            mindSkill = this.registry.skill(ctx.skillId);
+            if (skillRuntimeV117(mindSkill).daoBinding === 'mind' && mindSkill.fiveStatScalingV5 && ctx.fiveStatScalingV5 === undefined) {
                 authored = {
                     ...ctx,
-                    fiveStatScalingV5: skill.fiveStatScalingV5,
-                    fiveStatBaselineCoefficientV5: skill.fiveStatBaselineCoefficientV5,
+                    fiveStatScalingV5: mindSkill.fiveStatScalingV5,
+                    fiveStatBaselineCoefficientV5: mindSkill.fiveStatBaselineCoefficientV5,
                 };
             }
         }
-        return super.applyDamage(source, target, authored, now);
+        const directMind = Boolean(mindSkill)
+            && skillRuntimeV117(mindSkill).daoBinding === 'mind'
+            && (authored.sourceTag === 'ActiveHit' || authored.sourceTag === 'Counter');
+        if (!directMind)
+            return super.applyDamage(source, target, authored, now);
+        const passive = mindPassiveBonusesV2(source, now);
+        const armorPen = mindDirectArmorPenBonusV2(source, target, authored.mindRootActionV2, now);
+        if (armorPen > 0)
+            authored = { ...authored, runtimeArmorPenBonusPct: Math.max(0, Number(authored.runtimeArmorPenBonusPct ?? 0)) + armorPen };
+        source.pendingSetFlagsV117 ??= {};
+        const hadAccuracy = Object.prototype.hasOwnProperty.call(source.pendingSetFlagsV117, 'mindV2ActionAccuracyPct');
+        const previousAccuracy = source.pendingSetFlagsV117.mindV2ActionAccuracyPct;
+        source.pendingSetFlagsV117.mindV2ActionAccuracyPct = passive.accuracyPct;
+        try {
+            return super.applyDamage(source, target, authored, now);
+        }
+        finally {
+            if (hadAccuracy)
+                source.pendingSetFlagsV117.mindV2ActionAccuracyPct = previousAccuracy;
+            else
+                delete source.pendingSetFlagsV117.mindV2ActionAccuracyPct;
+        }
+    }
+
+    applyStatus(source, target, statusId, baseDuration, stacks, now, skillId) {
+        let skill;
+        try { skill = skillId ? this.registry.skill(skillId) : undefined; }
+        catch { skill = undefined; }
+        if (!isMainMindSkillV2(source, skill))
+            return super.applyStatus(source, target, statusId, baseDuration, stacks, now, skillId);
+        const passive = mindPassiveBonusesV2(source, now);
+        source.pendingSetFlagsV117 ??= {};
+        const hadControl = Object.prototype.hasOwnProperty.call(source.pendingSetFlagsV117, 'mindV2ActionControlPowerPct');
+        const previousControl = source.pendingSetFlagsV117.mindV2ActionControlPowerPct;
+        source.pendingSetFlagsV117.mindV2ActionControlPowerPct = passive.controlPowerPct;
+        try {
+            return super.applyStatus(source, target, statusId, baseDuration, stacks, now, skillId);
+        }
+        finally {
+            if (hadControl)
+                source.pendingSetFlagsV117.mindV2ActionControlPowerPct = previousControl;
+            else
+                delete source.pendingSetFlagsV117.mindV2ActionControlPowerPct;
+        }
     }
 
     damageContextFromEffect(source, effect, defaultSourceTag, skill, skillId, cooldownDamageBonusPct, runtimeAction) {
         const ctx = super.damageContextFromEffect(source, effect, defaultSourceTag, skill, skillId, cooldownDamageBonusPct, runtimeAction);
+        if (isMainMindSkillV2(source, skill) && runtimeAction?.battleDaoV2)
+            ctx.mindRootActionV2 = runtimeAction;
         captureMindDamagePacketV2(source, skill, runtimeAction, ctx);
         return ctx;
     }
@@ -185,6 +233,7 @@ export class CombatEngine extends CombatEngineBaseM1 {
             cooldownDamageBonusPct,
             runtimeEffectBonusPct: Math.max(0, runtimeAction?.effectBonusPct ?? 0),
             runtimeBreakBonusPct: Math.max(0, runtimeAction?.breakBonusPct ?? 0),
+            mindRootActionV2: runtimeAction,
         };
         captureMindDamagePacketV2(source, skill, runtimeAction, ctx);
         const outcome = this.applyDamage(source, target, ctx, now);
@@ -317,6 +366,7 @@ export class CombatEngine extends CombatEngineBaseM1 {
             return;
         const sourceSkill = this.registry.skill(follow.sourceSkillId);
         const echoCoefficient = Math.max(0, Math.min(.70, Number(follow.coefficient ?? 0)));
+        const echoBreakPct = mindPassiveBonusesV2(actor, now).echoBreakPct;
         let damage = 0;
         let shield = 0;
         let heal = 0;
@@ -327,7 +377,7 @@ export class CombatEngine extends CombatEngineBaseM1 {
                 const outcome = this.applyDamage(actor, target, {
                     sourceTag: 'ProcHit',
                     coefficient: Math.max(0, Number(packet.coefficient ?? 0)) * echoCoefficient,
-                    breakDamagePct: Math.max(0, Number(packet.breakDamagePct ?? 0)) * echoCoefficient,
+                    breakDamagePct: Math.max(0, Number(packet.breakDamagePct ?? 0)) * echoCoefficient * (1 + echoBreakPct / 100),
                     canCrit: packet.canCrit !== false,
                     canDodge: packet.canDodge !== false,
                     canHeart: packet.canHeart !== false,

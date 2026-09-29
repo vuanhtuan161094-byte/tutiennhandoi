@@ -51,7 +51,7 @@ assert(manifest.gates.includes('mind-dao-production-contract-test.js'));
 assert(manifest.lockedRegressionFeatures.includes('dao-sword'));
 assert(manifest.lockedRegressionFeatures.includes('dao-fist'));
 
-assert.match(contract,/M1 CLOSED \/ M2A OPEN/);
+assert.match(contract,/M2A CLOSED \/ M2B OPEN/);
 assert.match(contract,/Thần Ấn/);
 assert.match(contract,/Niệm Lực/);
 assert.match(contract,/Niệm Ảnh/);

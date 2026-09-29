@@ -1,5 +1,6 @@
 import { actionSpeedMultiplier, adjustedActionTime, combatMaxHp, defenseFactor as v2DefenseFactor, combineBoundedPct, combineStatPctV129, } from './combat-rules.js';
-import { fistPassiveDefensePctV2, swordIntentBonusesV2 } from './battle-dao-v2-runtime.js';
+import { fistPassiveDefensePctV2, swordIntentBonusesV2, syncBattleDaoV2Timers } from './battle-dao-v2-runtime.js';
+import { mindPassiveBonusesV2 } from './mind-dao-v2-runtime.js';
 function simpleSetParam(entity, mechanic, key) {
     return entity.combatBuildV117?.activeSetMechanics?.find(x => x.mechanic === mechanic)?.params[key] ?? 0;
 }
@@ -54,8 +55,12 @@ export function effectiveStats(entity, registry, now) {
         const bossEffectiveness = entity.tags.includes('Boss') ? 0.5 : 1;
         defenseMul *= 1 - 0.30 * bossEffectiveness;
     }
+    syncBattleDaoV2Timers(entity, now);
     const swordV2 = swordIntentBonusesV2(entity, now);
     const fistDefensePct = fistPassiveDefensePctV2(entity, now);
+    const mindV2 = mindPassiveBonusesV2(entity, now);
+    const mindActionAccuracyPct = Math.max(0, Number(entity.pendingSetFlagsV117?.mindV2ActionAccuracyPct ?? 0));
+    const mindActionControlPowerPct = Math.max(0, Number(entity.pendingSetFlagsV117?.mindV2ActionControlPowerPct ?? 0));
     heartChancePct = combineStatPctV129('heartChancePct', heartChancePct, swordV2.heartChancePct);
     const armorPenPct = combineStatPctV129('armorPenPct',
         combineStatPctV129('armorPenPct', entity.baseStats.armorPenPct ?? 0, setArmorPenPct),
@@ -66,10 +71,10 @@ export function effectiveStats(entity, registry, now) {
         attack: entity.baseStats.attack * attackMul,
         defense: entity.baseStats.defense * defenseMul * (1 + (setDefensePct + fistDefensePct) / 100),
         mobility: entity.baseStats.mobility * mobilityMul,
-        accuracy: entity.baseStats.accuracy * accuracyMul,
+        accuracy: entity.baseStats.accuracy * accuracyMul * (1 + mindActionAccuracyPct / 100),
         actionSpeed: actionSpeedMultiplier(entity.baseStats.actionSpeed * actionSpeedMul),
-        resolve: entity.baseStats.resolve * resolveMul,
-        controlPower: entity.baseStats.controlPower * controlPowerMul,
+        resolve: entity.baseStats.resolve * resolveMul * (1 + mindV2.resolvePct / 100),
+        controlPower: entity.baseStats.controlPower * controlPowerMul * (1 + mindActionControlPowerPct / 100),
         dodgeChancePct,
         heartChancePct,
         critChancePct: entity.baseStats.critChancePct + critFlat + setCritChancePct + swordV2.critChancePct,

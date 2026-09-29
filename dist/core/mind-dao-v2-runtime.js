@@ -21,6 +21,80 @@ function hasMindPassive(entity, n) {
 function mindPassiveLevel(entity, n) {
     return clampLevel(entity?.combatBuildV117?.passiveLevelsV125?.[mindPassiveId(n)] ?? 1);
 }
+function isSecondaryMind(entity) {
+    return entity?.combatBuildV117?.battleDaoV2Enabled === true
+        && entity?.combatBuildV117?.mainDaoId !== 'mind'
+        && entity?.combatBuildV117?.secondaryDaoId === 'mind';
+}
+export function mindPassiveBonusesV2(entity, now = 0) {
+    void now;
+    const out = {
+        echoCoefficientBonus: 0,
+        accuracyPct: 0,
+        controlPowerPct: 0,
+        interferencePct: 0,
+        echoBreakPct: 0,
+        resolvePct: 0,
+        conditionalArmorPenPct: 0,
+    };
+    if (entity?.combatBuildV117?.battleDaoV2Enabled !== true || !hasMindPassive(entity, 1))
+        return out;
+    const stack = entity.battleDaoStateV2?.mind?.stack;
+    const stacks = Math.max(0, Math.floor(stack?.stacks ?? 0));
+    if (!stack || stacks <= 0)
+        return out;
+    const groups = Math.floor(stacks / 10);
+    const atCap = stacks >= Math.max(1, Math.floor(stack.cap ?? 20));
+    if (isMainMind(entity)) {
+        if (groups > 0) {
+            const p1 = mindPassiveLevel(entity, 1);
+            const p1Control = groups * scaleLevel(p1, 2, 5);
+            out.echoCoefficientBonus += groups * scaleLevel(p1, .02, .04);
+            out.controlPowerPct += p1Control;
+            out.interferencePct += p1Control;
+            if (hasMindPassive(entity, 4)) {
+                const p4 = mindPassiveLevel(entity, 4);
+                out.accuracyPct += groups * scaleLevel(p4, 2, 6);
+                out.controlPowerPct += groups * scaleLevel(p4, 2, 6);
+            }
+            if (hasMindPassive(entity, 6)) {
+                const p6 = mindPassiveLevel(entity, 6);
+                out.interferencePct += groups * scaleLevel(p6, 3, 7);
+                out.echoBreakPct += groups * scaleLevel(p6, 2, 5);
+            }
+        }
+        if (stacks >= 20 && hasMindPassive(entity, 7))
+            out.conditionalArmorPenPct = scaleLevel(mindPassiveLevel(entity, 7), 5, 18);
+        if (atCap && hasMindPassive(entity, 8)) {
+            const p8 = mindPassiveLevel(entity, 8);
+            out.echoCoefficientBonus += scaleLevel(p8, .05, .10);
+            const peakControl = scaleLevel(p8, 5, 12);
+            out.controlPowerPct += peakControl;
+            out.interferencePct += peakControl;
+        }
+    }
+    else if (isSecondaryMind(entity)) {
+        if (groups > 0) {
+            out.resolvePct += groups * scaleLevel(mindPassiveLevel(entity, 1), 2, 5);
+            if (hasMindPassive(entity, 4))
+                out.resolvePct += groups * scaleLevel(mindPassiveLevel(entity, 4), 2, 6);
+        }
+        if (atCap && hasMindPassive(entity, 8))
+            out.resolvePct += scaleLevel(mindPassiveLevel(entity, 8), 5, 10);
+    }
+    return out;
+}
+export function mindDirectArmorPenBonusV2(source, target, action, now = 0) {
+    if (!isMainMind(source) || (action?.battleDaoV2?.procDepth ?? 0) !== 0)
+        return 0;
+    const bonus = mindPassiveBonusesV2(source, now).conditionalArmorPenPct;
+    if (bonus <= 0)
+        return 0;
+    const pressured = mindMarkCountV2(target) > 0
+        || Math.max(0, Number(target?.pendingSetFlagsV117?.mindRecoveryPenaltyPct ?? 0)) > 0
+        || Math.max(0, Number(action?.battleDaoV2?.mindMarksBefore ?? 0)) > 0;
+    return pressured ? bonus : 0;
+}
 
 export function mindGuardFiveStatMultiplierV2(stats, skill) {
     if (skill?.id !== 'skill.dao.mind.guard' || !skill?.fiveStatScalingV5)
@@ -152,11 +226,14 @@ export function resolveMindInterfereV2(source, target, skill, action, now) {
     if (!isMainMind(source, skill) || skill?.daoRuntimeV118?.signature !== 'mindInterfere')
         return { consumed: 0, targetCastDelaySeconds: 0, mentalStaggerSeconds: 0 };
     const spent = consumeMindMarksV2(source, target, 3);
-    if (action?.battleDaoV2)
+    if (action?.battleDaoV2) {
+        action.battleDaoV2.mindMarksBefore = spent.before;
         action.battleDaoV2.mindMarksSpent = spent.consumed;
+    }
     if (spent.consumed <= 0)
         return { consumed: 0, targetCastDelaySeconds: 0, mentalStaggerSeconds: 0 };
-    let potencyPct = spent.consumed * 6;
+    const passive = mindPassiveBonusesV2(source, now);
+    let potencyPct = spent.consumed * 6 * (1 + passive.interferencePct / 100);
     if (target?.tags?.includes('Boss'))
         potencyPct *= .5;
     const delay = Math.min(1.5, potencyPct / 100 * 2.5);
@@ -174,8 +251,10 @@ export function resolveMindConsumeDamageV2(source, target, skill, effect, action
     if (!isMainMind(source, skill) || effect?.mark !== MIND_V2_MARK)
         return undefined;
     const spent = consumeMindMarksV2(source, target, Math.min(MIND_V2_MARK_CAP, effect.maxConsume ?? MIND_V2_MARK_CAP));
-    if (action?.battleDaoV2)
+    if (action?.battleDaoV2) {
+        action.battleDaoV2.mindMarksBefore = spent.before;
         action.battleDaoV2.mindMarksSpent = spent.consumed;
+    }
     const coefficient = Math.max(0, Number(effect.baseCoefficient ?? 0))
         + spent.consumed * Math.max(0, Number(effect.coefficientPerStack ?? 0));
     const breakDamagePct = spent.consumed * Math.max(0, Number(effect.breakDamagePctPerStack ?? effect.stabilityDamagePerStack ?? 0));
@@ -233,7 +312,7 @@ export function finishMindRootV2(source, target, skill, action, now) {
         if (packets.length > 0) {
             out.echo = {
                 delay: MIND_V2_ECHO_DELAY_SECONDS,
-                coefficient: Math.min(.70, Math.max(0, Number(core.echoCoefficient ?? MIND_V2_BASE_ECHO_COEFFICIENT))),
+                coefficient: Math.min(.70, Math.max(0, Number(core.echoCoefficient ?? MIND_V2_BASE_ECHO_COEFFICIENT) + mindPassiveBonusesV2(source, now).echoCoefficientBonus)),
                 sourceSkillId: skill.id,
                 targetId: target?.id,
                 payloadId: core.snapshot.payloadId,

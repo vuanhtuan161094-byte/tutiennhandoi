@@ -956,15 +956,10 @@ export function remainingDaoPassiveBonusesV2(entity, now) {
             }
         }
         else if (dao === 'mind') {
-            out.directDamagePct += stacks * scale(p1, .5, 1.5);
-            if (at20)
-                out.armorPenPct += scale(p1, 8, 15);
-            if (hasPassiveN(entity, dao, 6))
-                out.directDamagePct += groups * scale(passiveLevelN(entity, dao, 6), 4, 12);
-            if (at20 && hasPassiveN(entity, dao, 7))
-                out.armorPenPct += scale(passiveLevelN(entity, dao, 7), 5, 18);
+            // M2B: Mind passive output is owned by mind-dao-v2-runtime.js.
+            // Generic damage/Gauge/Armor-Pen bonuses are deliberately retired.
         }
-        if (atCap && hasPassiveN(entity, dao, 8)) {
+        if (dao !== 'mind' && atCap && hasPassiveN(entity, dao, 8)) {
             const l8 = passiveLevelN(entity, dao, 8);
             out.directDamagePct += scale(l8, 10, dao === 'body' ? 25 : 30);
             out.gaugeGainPct += scale(l8, 0, 20);
@@ -1326,6 +1321,12 @@ export function finishRemainingDaoActionV2(entity, target, skill, action, now, c
                 if (hasPassiveN(entity, 'mind', 2) && chance(scale(passiveLevelN(entity, 'mind', 2), 10, 30)))
                     gain++;
                 addGenericStackV2(entity, 'mind', gain, now);
+                const st = holderV2(entity, 'mind')?.stack;
+                if (st && st.stacks >= st.cap && hasPassiveN(entity, 'mind', 8)) {
+                    const hold = scale(passiveLevelN(entity, 'mind', 8), 1, 2);
+                    st.expiresAt = Math.max(st.expiresAt, now + hold);
+                    st.nextDecayAt = undefined;
+                }
             }
         }
     }
