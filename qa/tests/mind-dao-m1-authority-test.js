@@ -18,7 +18,7 @@ const source = {
   combatBuildV117: { battleDaoV2Enabled: true, mainDaoId: 'mind' },
   battleDaoStateV2: { mind: { core: createMindCoreStateV2() } },
 };
-const target = { name: 'Target', marks: {}, tags: [], pendingSetFlagsV117: {} };
+const target = { id:'target', name: 'Target', marks: {}, tags: [], pendingSetFlagsV117: {} };
 const action = (id, packets = []) => ({ battleDaoV2: { rootActionId: `root:${id}`, procDepth: 0, mindSnapshotPackets: packets } });
 
 // Canonical Thần Ấn store is target.marks with a hard cap of five.
@@ -73,6 +73,7 @@ assert(third.echo);
 assert.equal(third.echo.coefficient, .35);
 assert.deepEqual(third.echo.packets, [cleanDamage]);
 assert.equal(source.battleDaoStateV2.mind.core.snapshot.sourceSkillId, markSkill.id);
+assert.equal(source.battleDaoStateV2.mind.core.snapshot.targetId, target.id);
 
 // Ultimate is outside ordinary cadence and may not replace the normal snapshot.
 const snapshotBeforeUltimate = structuredClone(source.battleDaoStateV2.mind.core.snapshot);
@@ -92,14 +93,18 @@ assert.equal(finishMindRootV2(source, target, markSkill, action('f1', [cleanDama
 assert.equal(finishMindRootV2(source, target, markSkill, action('f2', [cleanDamage]), 12).flowBonusMarkGain, 0);
 assert.equal(finishMindRootV2(source, target, markSkill, action('f3', [cleanDamage]), 13).flowBonusMarkGain, 1);
 
-// Integration guards: old pseudo-resource projection and hpDamage/attack echo inference must be gone.
+// Integration guards: generic runtime must be mutation-free for Main-Mind core;
+// CombatEngine wrapper is the single owner for M1 transactions/snapshot replay.
 const runtimeSource = fs.readFileSync(new URL('../../dist/core/battle-dao-v2-runtime.js', import.meta.url), 'utf8');
 const combatSource = fs.readFileSync(new URL('../../dist/core/combat.js', import.meta.url), 'utf8');
 assert(!runtimeSource.includes('out.mindEchoCounter ='), 'mindEchoCounter must remain internal, not a projected resource');
 assert(!runtimeSource.includes('(action.battleDaoV2?.hpDamage ?? 0) / Math.max(1, entity.baseStats.attack)'), 'Niệm Ảnh must not infer snapshots from realized HP damage');
-assert(runtimeSource.includes("finishMindRootV2(entity, target, skill, action, now)"));
+assert(runtimeSource.includes("if (dao !== 'fist' && dao !== 'mind')"), 'Mind p8 timer refresh must not be read-owned');
+assert(runtimeSource.includes('CombatEngine wrapper owns Thần Ấn / Niệm Ảnh / Phân Lưu'));
+assert(combatSource.includes('finishMindRootV2(actor, target, skill, action, now)'));
 assert(combatSource.includes('mindObserveProgressV2(actor, target, skill'));
 assert(combatSource.includes('resolveMindConsumeDamageV2(source, target, skill, effect, runtimeAction)'));
 assert(combatSource.includes("status.mind.interference_stagger"));
+assert(combatSource.includes("kind: 'mindSnapshot'"));
 
 console.log('MIND DAO M1 AUTHORITY: PASS');
