@@ -84,7 +84,7 @@ export const BACKEND_FEATURE_CLOSURE_MANIFESTS=Object.freeze({
     kind:'dao',
     closureReady:false,
     benchmarkCommand:'tools\\web\\RUN_MIND_M5_BENCHMARK.cmd',
-    // M2C implementation is integrated, but parity/benchmark/tuning and exact closure evidence remain open.
+    // M2C mastery architecture is closed. M3 parity, M4 benchmark, M5 tuning and exact M6 closure evidence remain open.
     // M4 must replace this placeholder with the real identity-valid harness contract before closureReady=true.
     benchmarkContractGate:'mind-dao-production-contract-test.js',
     lockedRegressionFeatures:['dao-sword','dao-fist'],
