@@ -109,6 +109,7 @@ export function resolveMindInterfereV2(source, target, skill, action, now) {
     if (target?.tags?.includes('Boss'))
         potencyPct *= .5;
     const delay = Math.min(1.5, potencyPct / 100 * 2.5);
+    target.pendingSetFlagsV117 ??= {};
     target.pendingSetFlagsV117['mindRecoveryPenaltyPct'] = Math.max(target.pendingSetFlagsV117['mindRecoveryPenaltyPct'] ?? 0, potencyPct);
     const acting = Boolean(target.casting || target.channeling);
     return {
@@ -156,15 +157,11 @@ export function finishMindRootV2(source, target, skill, action, now) {
     const core = source.battleDaoStateV2?.mind?.core;
     if (!core)
         return out;
-    if (skill.id === 'skill.dao.mind.flow') {
-        core.flowUntil = now + MIND_V2_FLOW_SECONDS;
-        core.flowEligibleActiveCount = 0;
-        out.notices.push({ message: `${source.name} mở Vạn Niệm Phân Lưu trong ${MIND_V2_FLOW_SECONDS}s.`, data: { mindFlowUntil: core.flowUntil } });
-    }
+    const opensFlow = skill.id === 'skill.dao.mind.flow';
     if (skillSlotClassV117(skill) !== 'active')
         return out;
     core.eligibleActiveCount = Math.max(0, Math.floor(core.eligibleActiveCount ?? 0)) + 1;
-    if ((core.flowUntil ?? 0) > now) {
+    if (!opensFlow && (core.flowUntil ?? 0) > now) {
         core.flowEligibleActiveCount = Math.max(0, Math.floor(core.flowEligibleActiveCount ?? 0)) + 1;
         if (core.flowEligibleActiveCount >= 3) {
             core.flowEligibleActiveCount = 0;
@@ -190,6 +187,11 @@ export function finishMindRootV2(source, target, skill, action, now) {
                 packets: packets.map(packet => ({ ...packet })),
             };
         }
+    }
+    if (opensFlow) {
+        core.flowUntil = now + MIND_V2_FLOW_SECONDS;
+        core.flowEligibleActiveCount = 0;
+        out.notices.push({ message: `${source.name} mở Vạn Niệm Phân Lưu trong ${MIND_V2_FLOW_SECONDS}s.`, data: { mindFlowUntil: core.flowUntil } });
     }
     return out;
 }
