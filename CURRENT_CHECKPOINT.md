@@ -51,7 +51,8 @@ Feature id: `dao-mind`
 Feature manifest: **`closureReady:false`**  
 Design target: `docs/runtime/MIND_DAO_PRODUCTION_SPEC_V1_20260929.md`  
 Production contract: `docs/runtime/MIND_DAO_PRODUCTION_CONTRACT_20260929.md`  
-M2B audit: `docs/runtime/MIND_DAO_M2B_CLOSURE_AUDIT_20260929.md`
+M2B audit: `docs/runtime/MIND_DAO_M2B_CLOSURE_AUDIT_20260929.md`  
+M2C audit: `docs/runtime/MIND_DAO_M2C_CLOSURE_AUDIT_20260929.md`
 
 ### Closed subphases
 
@@ -59,38 +60,44 @@ M2B audit: `docs/runtime/MIND_DAO_M2B_CLOSURE_AUDIT_20260929.md`
 - **M1 — CLOSED:** Thần Ấn authority, Nhiễu/Bạo Ấn transactions, Observe progress, Phân Lưu, sanitized Niệm Ảnh, no recursion / no duplicate authority.
 - **M2A — CLOSED:** all ten Mind skills have explicit five-stat families; no generic TT damage multiplier.
 - **M2B — CLOSED:** passive P1–P8 architecture and ownership.
+- **M2C — CLOSED:** all ten Mind mastery rows have runtime ownership for 100 / 250 / 500 / 750 / 1000 milestones through the Mind owner and narrow combat/decision seams.
 
 M2B runtime candidate:
 `24c608f1764c9e5a34c65e5c66602e3e30d3a499`
 
-Guarded M2B workflow:
-- run `36519206674` — SUCCESS;
-- Mind M2B + M2A + M1 targeted gates PASS;
-- locked Sword smoke PASS;
-- locked Quyền smoke PASS.
+M2C semantic-alignment candidate:
+`17ec773bb057e7e6145bea10de91e532bff0efdf`
 
-M2B production locks:
-- `mind-dao-v2-runtime.js` owns Mind passive output;
-- Main Mind gets localized echo/control/Accuracy/Nhiễu/echo-Break/conditional Armor Pen lanes;
-- Secondary Mind gets the explicit Resolve-safe lane only;
-- generic Mind Skill Damage/Gauge/Armor-Pen package is retired;
-- P8 peak refresh is event-owned, not passive/stat-read-owned;
-- P7 Armor Pen is Main-Mind, procDepth-0 and pressure-gated.
+M2C production locks:
+- mastery is Main-Mind-owned; Secondary does not gain Mind Active/Core/Ultimate mastery authority;
+- root extra-hit packages are procDepth-0 and once/root;
+- mastery may not replay Thần Ấn gain/consume through Niệm Ảnh;
+- Niệm Ảnh remains sanitized, non-recursive, shared-budgeted and capped at 70%;
+- Observe 1000 sixth-hit/instant-echo path requires completed channel resolution;
+- Flow 1000 reuses existing cadence/state ownership and does not create a second echo counter;
+- Ultimate remains outside ordinary snapshot authority;
+- Nhiễu 500 keys echo-Break to the current target's Nhiễu state, not snapshot source identity;
+- Ultimate 1000 improves echo cadence interval by 25% while preserving the canonical 0.6s echo delay and shared follow-up budget.
 
-### Immediate next action — M2C Mastery architecture
+M2C closure limitation:
+- exact SHA `17ec773b...` had no attached GitHub Actions run at audit time;
+- M2C is closed as architecture/ownership from source + registered guards, not as whole-feature FULL CLEAN evidence.
 
-Audit all ten `mindSkillMasteryV2` rows against `MIND_DAO_PRODUCTION_SPEC_V1_20260929.md` and live runtime.
+### Immediate next action — M3 production-path parity
 
-For each 100 / 250 / 500 / 750 / 1000 milestone:
-1. classify ownership: numeric, root behavior, snapshot/echo, Thần Ấn transaction, Niệm Lực event, control/Break, or timing;
-2. prove whether runtime already implements it;
-3. implement only missing authored behavior through the Mind owner;
-4. add narrow regression tests;
-5. preserve one root transaction, shared follow-up budget, procDepth non-recursion and canonical control/boss rules;
-6. do **not** balance/tune coefficients in M2C.
+Prove the same closed Mind semantics across:
+1. manual CombatKernel V3;
+2. Auto rotation;
+3. PvE and Boss;
+4. PvP;
+5. Hunt/offline representative combat;
+6. save/restore/carry state where applicable;
+7. Secondary Mind passive-only behavior;
+8. locked Sword and Quyền regressions after shared-seam changes.
 
-After M2C:
-- **M3:** Auto/manual/PvE/PvP/Hunt/save/carry/Secondary-passive parity;
+M3 must not tune coefficients. Any parity defect is fixed at the narrowest owner seam and guarded before M4 opens.
+
+After M3:
 - **M4:** replace blocked benchmark launcher with identity-valid deterministic harness;
 - **M5:** minimal Mind-owned tuning only after valid baseline;
 - **M6:** FULL CLEAN + `DONG_BO_VA_TEST_FEATURE.cmd dao-mind` + dated closure record + lock.
