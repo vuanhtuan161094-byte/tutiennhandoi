@@ -42,7 +42,7 @@ assert.equal(mindDaoV2.tree.length,8,'V2 realm tree must remain eight rows');
 assert(mindSkills.every(skill=>skill.fiveStatScalingV5!==undefined),'M2A closure requires explicit five-stat families on all ten Mind skills');
 
 const manifest=backendFeatureClosureManifest('dao-mind');
-assert.equal(manifest.closureReady,false,'dao-mind must remain fail-closed until Mastery, parity, benchmark and tuning phases are complete');
+assert.equal(manifest.closureReady,false,'dao-mind must remain fail-closed until parity, benchmark and tuning phases are complete');
 assert.equal(manifest.benchmarkContractGate,'mind-dao-production-contract-test.js','M4 has not yet replaced the fail-closed benchmark contract placeholder');
 for(const gate of [
   'mind-dao-production-contract-test.js',
@@ -51,6 +51,7 @@ for(const gate of [
   'mind-dao-m1-authority-test.js',
   'mind-dao-m2-five-stat-test.js',
   'mind-dao-m2-passive-architecture-test.js',
+  'mind-dao-m2-mastery-architecture-test.js',
 ]) assert(manifest.gates.includes(gate),`dao-mind scoped gate must retain ${gate}`);
 assert(manifest.lockedRegressionFeatures.includes('dao-sword'));
 assert(manifest.lockedRegressionFeatures.includes('dao-fist'));
