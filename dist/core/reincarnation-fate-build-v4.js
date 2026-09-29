@@ -1,4 +1,8 @@
-// Compatibility barrel: Fate V4 implementation lives in reincarnation-progression-v1102.js
+// Mệnh Lộ V4 compatibility barrel.
+// Five live paths are retained: Tu Mệnh, Chiến Mệnh, Thể Mệnh, Tài Mệnh, Nhàn Mệnh.
+// Historical "fate build" IDs/APIs remain unchanged for save/runtime compatibility.
+// Do not confuse Mệnh Lộ with Mệnh Cách, which is a randomized birth trait inside Mệnh Thai.
+// Implementation lives in reincarnation-progression-v1102.js.
 export {
   FATE_V4_TIERS, FATE_V4_TIER_NAMES, FATE_V4_UNLOCK_COST_BY_TIER,
   FATE_BUILD_DEFINITIONS_V4, FATE_BUILD_BY_ID_V4, FATE_BUILD_PATHS_V4, FATE_BUILD_TOTAL_UNLOCK_COST_V4,
