@@ -1,0 +1,78 @@
+name: Mind M2A guarded five-stat migration
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/mind-m2a-integrate.yml
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 10
+    steps:
+      - name: Checkout M2A candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Apply guarded M2A patch
+        shell: cmd
+        run: |
+          node --check tools\mind-m2a-integrate.mjs
+          if errorlevel 1 exit /b 1
+          node tools\mind-m2a-integrate.mjs
+          if errorlevel 1 exit /b 1
+          node --check dist\content\battle-dao-skill-pack-v118.js
+          if errorlevel 1 exit /b 1
+          node --check dist\core\mind-dao-v2-runtime.js
+          if errorlevel 1 exit /b 1
+          node --check dist\core\combat.js
+          if errorlevel 1 exit /b 1
+
+      - name: Mind M2A and M1 regression gates
+        shell: cmd
+        run: |
+          node qa\tests\mind-dao-m2-five-stat-test.js
+          if errorlevel 1 exit /b 1
+          node qa\tests\mind-dao-m1-seal-transaction-test.js
+          if errorlevel 1 exit /b 1
+          node qa\tests\mind-dao-m1-authority-test.js
+          if errorlevel 1 exit /b 1
+          node qa\tests\mind-dao-production-contract-test.js
+          if errorlevel 1 exit /b 1
+          node qa\tests\mind-dao-skill-form-contract-test.js
+          if errorlevel 1 exit /b 1
+
+      - name: Locked Dao smoke gates
+        shell: cmd
+        run: |
+          node qa\tests\sword-dao-f6-harness-contract-test.js
+          if errorlevel 1 exit /b 1
+          node qa\tests\fist-dao-counter-runtime-test.js
+          if errorlevel 1 exit /b 1
+
+      - name: Commit only after gates pass
+        shell: cmd
+        run: |
+          git rm .github\workflows\mind-m2a-integrate.yml tools\mind-m2a-integrate.mjs
+          if errorlevel 1 exit /b 1
+          git add dist\content\battle-dao-skill-pack-v118.js dist\core\mind-dao-v2-runtime.js dist\core\combat.js docs\runtime\MIND_DAO_PRODUCTION_CONTRACT_20260929.md qa\tests\mind-dao-production-contract-test.js
+          if errorlevel 1 exit /b 1
+          git config user.name "github-actions[bot]"
+          if errorlevel 1 exit /b 1
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if errorlevel 1 exit /b 1
+          git commit -m "feat(mind): migrate M2A five-stat families"
+          if errorlevel 1 exit /b 1
+          git push origin HEAD:main
+          if errorlevel 1 exit /b 1
