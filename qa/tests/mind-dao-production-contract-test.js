@@ -42,7 +42,7 @@ assert.equal(mindDaoV2.mastery.length,10,'M0 mastery inventory must remain one r
 assert.equal(mindDaoV2.tree.length,8,'M0 V2 realm tree must remain eight rows');
 
 // Workflow guard learned from Sword/Fist: do not accidentally tune/migrate stats before M1 seam correctness.
-assert(mindSkills.every(skill=>skill.fiveStatScalingV5===undefined),'M0 Thần Niệm must not gain five-stat coefficients before M1 runtime correctness is complete');
+assert(mindSkills.every(skill=>skill.fiveStatScalingV5!==undefined),'M2A requires explicit five-stat families on all ten Mind skills');
 
 const manifest=backendFeatureClosureManifest('dao-mind');
 assert.equal(manifest.closureReady,false,'dao-mind must fail closed while M0/M1 is open');
@@ -51,7 +51,7 @@ assert(manifest.gates.includes('mind-dao-production-contract-test.js'));
 assert(manifest.lockedRegressionFeatures.includes('dao-sword'));
 assert(manifest.lockedRegressionFeatures.includes('dao-fist'));
 
-assert.match(contract,/M0 \/ M1A OPEN/);
+assert.match(contract,/M1 CLOSED \/ M2A OPEN/);
 assert.match(contract,/Thần Ấn/);
 assert.match(contract,/Niệm Lực/);
 assert.match(contract,/Niệm Ảnh/);

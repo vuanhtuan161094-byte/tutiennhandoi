@@ -22,6 +22,20 @@ function mindPassiveLevel(entity, n) {
     return clampLevel(entity?.combatBuildV117?.passiveLevelsV125?.[mindPassiveId(n)] ?? 1);
 }
 
+export function mindGuardFiveStatMultiplierV2(stats, skill) {
+    if (skill?.id !== 'skill.dao.mind.guard' || !skill?.fiveStatScalingV5)
+        return 1;
+    const primary = stats?.primaryStatsV5;
+    if (!primary)
+        return 1;
+    const scaling = skill.fiveStatScalingV5;
+    const weighted = Math.max(0, Number(primary.body) || 0) * Math.max(0, Number(scaling.body) || 0)
+        + Math.max(0, Number(primary.sense) || 0) * Math.max(0, Number(scaling.sense) || 0);
+    const normalized = weighted / Math.max(0.0001, Number(skill.fiveStatBaselineCoefficientV5) || 1);
+    const powerAnchor = Math.max(0.0001, Number(primary.power) || 0);
+    return Math.max(0, normalized / powerAnchor);
+}
+
 export function mindMarkCountV2(target) {
     return Math.max(0, Math.min(MIND_V2_MARK_CAP, Math.floor(target?.marks?.[MIND_V2_MARK] ?? 0)));
 }

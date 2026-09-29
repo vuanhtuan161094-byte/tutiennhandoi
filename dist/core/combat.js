@@ -15,6 +15,7 @@ import {
     finishMindRootV2,
     gainMindPassiveStackV2,
     mindMarkCountV2,
+    mindGuardFiveStatMultiplierV2,
     mindObserveProgressV2,
     resolveMindConsumeDamageV2,
     resolveMindInterfereV2,
@@ -49,6 +50,21 @@ function isCanonicalMindMarkV2(source, effect, skill) {
  * byte-for-byte owned by the previous engine implementation.
  */
 export class CombatEngine extends CombatEngineBaseM1 {
+    applyDamage(source, target, ctx, now) {
+        let authored = ctx;
+        if (source?.combatBuildV117?.battleDaoV2Enabled === true && source?.combatBuildV117?.mainDaoId === 'mind' && ctx?.skillId && ctx.fiveStatScalingV5 === undefined) {
+            const skill = this.registry.skill(ctx.skillId);
+            if (skillRuntimeV117(skill).daoBinding === 'mind' && skill.fiveStatScalingV5) {
+                authored = {
+                    ...ctx,
+                    fiveStatScalingV5: skill.fiveStatScalingV5,
+                    fiveStatBaselineCoefficientV5: skill.fiveStatBaselineCoefficientV5,
+                };
+            }
+        }
+        return super.applyDamage(source, target, authored, now);
+    }
+
     damageContextFromEffect(source, effect, defaultSourceTag, skill, skillId, cooldownDamageBonusPct, runtimeAction) {
         const ctx = super.damageContextFromEffect(source, effect, defaultSourceTag, skill, skillId, cooldownDamageBonusPct, runtimeAction);
         captureMindDamagePacketV2(source, skill, runtimeAction, ctx);
@@ -178,8 +194,18 @@ export class CombatEngine extends CombatEngineBaseM1 {
     }
 
     resolveEffectShieldV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
-        captureMindShieldPacketV2(source, skill, runtimeAction, effect, runtimeEffectMultiplier);
-        return super.resolveEffectShieldV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
+        let authored = effect;
+        if (isMainMindSkillV2(source, skill) && skill.id === 'skill.dao.mind.guard' && skill.fiveStatScalingV5) {
+            const fiveStatMultiplier = mindGuardFiveStatMultiplierV2(effectiveStats(source, this.registry, now), skill);
+            authored = {
+                ...effect,
+                capacity: Math.max(0, Number(effect.capacity ?? 0)) * fiveStatMultiplier,
+                maxHpPct: Math.max(0, Number(effect.maxHpPct ?? 0)) * fiveStatMultiplier,
+                attackCoefficient: Math.max(0, Number(effect.attackCoefficient ?? 0)) * fiveStatMultiplier,
+            };
+        }
+        captureMindShieldPacketV2(source, skill, runtimeAction, authored, runtimeEffectMultiplier);
+        return super.resolveEffectShieldV141(source, target, authored, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier);
     }
 
     resolveEffectHealV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
