@@ -36,6 +36,10 @@ export const MIND_OPEN_GATES=freezeList([
   'mind-dao-m4-harness-contract-test.js',
 ]);
 
+export const BODY_OPEN_GATES=freezeList([
+  'body-dao-production-contract-test.js',
+]);
+
 const makeManifest=spec=>Object.freeze({
   schema:'feature-closure-manifest.v1',
   workflow:'docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md',
@@ -91,6 +95,16 @@ export const BACKEND_FEATURE_CLOSURE_MANIFESTS=Object.freeze({
     lockedRegressionFeatures:['dao-sword','dao-fist'],
     deferredFamilies:DAO_DEFERRED,
     gates:[...DAO_SHARED_CLOSURE_GATES,...SWORD_LOCK_REGRESSION_GATES,...FIST_LOCK_REGRESSION_GATES,...MIND_OPEN_GATES],
+  }),
+  'dao-body':makeManifest({
+    id:'dao-body',
+    label:'Body Dao / Thể Đạo',
+    kind:'dao',
+    closureReady:false,
+    // B0/B1 are open. Benchmark launcher is intentionally not registered until correctness/parity authority is installed.
+    lockedRegressionFeatures:['dao-sword','dao-fist'],
+    deferredFamilies:DAO_DEFERRED,
+    gates:[...DAO_SHARED_CLOSURE_GATES,...SWORD_LOCK_REGRESSION_GATES,...FIST_LOCK_REGRESSION_GATES,...BODY_OPEN_GATES],
   }),
 });
 
