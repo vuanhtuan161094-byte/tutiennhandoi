@@ -38,6 +38,7 @@ export const MIND_OPEN_GATES=freezeList([
 
 export const BODY_OPEN_GATES=freezeList([
   'body-dao-production-contract-test.js',
+  'body-dao-passive-architecture-test.js',
 ]);
 
 const makeManifest=spec=>Object.freeze({
@@ -101,7 +102,7 @@ export const BACKEND_FEATURE_CLOSURE_MANIFESTS=Object.freeze({
     label:'Body Dao / Thể Đạo',
     kind:'dao',
     closureReady:false,
-    // B0/B1 are open. Benchmark launcher is intentionally not registered until correctness/parity authority is installed.
+    // B0-B2 are source-open. Benchmark launcher is intentionally not registered until correctness/parity authority is installed.
     lockedRegressionFeatures:['dao-sword','dao-fist'],
     deferredFamilies:DAO_DEFERRED,
     gates:[...DAO_SHARED_CLOSURE_GATES,...SWORD_LOCK_REGRESSION_GATES,...FIST_LOCK_REGRESSION_GATES,...BODY_OPEN_GATES],
