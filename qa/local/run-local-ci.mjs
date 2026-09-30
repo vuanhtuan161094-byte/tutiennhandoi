@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 
 const preflightTests = [
   'qa/tests/nguhanh-equipment-retirement-regression-test.js',
+  'qa/tests/v145-spiritual-root-authority-test.js',
   'qa/tests/v145-spiritual-root-reincarnation-test.js',
 ];
 

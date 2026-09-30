@@ -5,8 +5,8 @@ import { adventureEnemies } from '../../dist/content/entities.js';
 import { createPlayableAdventureState, playablePlayerProfile } from '../../dist/content/adventure.js';
 import { SimulationSession } from '../../dist/core/session.js';
 import { runCombatKernelV2 } from '../../dist/core/combat-kernel-v2.js';
-import { buildBalanceEntityV120, evaluateBuildV120, potentialGridV120, thematicAttireSetIdV120 } from '../simulations/balance-lab-v120.js';
-import { LIVE_EQUIPMENT_SET_CATALOG_V12310 } from '../../dist/core/equipment-set-v116.js';
+import { buildBalanceEntityV120, evaluateBuildV120, potentialGridV120 } from '../simulations/balance-lab-v120.js';
+import { LIVE_EQUIPMENT_SET_CATALOG_V12310, RETIRED_EQUIPMENT_SET_IDS_V12310, activeEquipmentSetMechanicsV116, isLiveEquipmentSetV12310 } from '../../dist/core/equipment-set-v116.js';
 import { applyCorePotentialStats, corePotentialDefinitions, corePotentialPercentBonusV4 } from '../../dist/core/reincarnation-progression-v1102.js';
 import { BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_MID, BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V129_ENDGAME, BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V108, BATTLE_DAO_V2_MAIN_DAMAGE_TUNING_V82, battleDaoV2MainDamageTuningV129 } from '../../dist/core/battle-dao-v2-runtime.js';
 import { GLOBAL_BUILD_BALANCE_POLICY_V108, globalBuildBalanceSummaryV108 } from '../../dist/core/global-build-balance-v108.js';
@@ -28,34 +28,26 @@ check(corePotentialDefinitions.find(x=>x.id==='defense')?.perPoint?.includes('Ph
 const potApplied=applyCorePotentialStats({attack:100,defense:100,physique:100,maxHp:2000},{life:{unspent:0,lifetimeEarned:10,allocations:{power:0,body:0,defense:10},awardedMilestones:[]},permanent:{power:0,body:0,defense:0}});
 const expectedResonance=1+corePotentialPercentBonusV4(10)/100;
 check(Math.abs(potApplied.defense-130*expectedResonance)<1e-9&&Math.abs(potApplied.attack-100*expectedResonance)<1e-9,'V4 Potential keeps +3 Defense flat and applies one global resonance without axis leakage');
-check(LIVE_EQUIPMENT_SET_CATALOG_V12310.length===5&&LIVE_EQUIPMENT_SET_CATALOG_V12310.reduce((n,x)=>n+x.mechanics.length,0)===15,'V108 balance matrix covers exactly 5 live elemental Sets / 15 live 2-4-6 mechanics');
 
-// Role-aware Set envelope: same Dao/root/potential/resources, only the 6-piece elemental Set changes.
-const setMeans={};
-for(const set of LIVE_EQUIPMENT_SET_CATALOG_V12310){
-  const rows=daoIds.map(dao=>evaluateBuildV120({dao,root:'metal',totalPotential:1000,potential:{power:.3,body:.3,defense:.4},daoHanh:70,attireSetId:set.id,attirePieces:6,grade:'immortal'},0).balancedScore);
-  setMeans[set.id]=rows.reduce((a,b)=>a+b,0)/rows.length;
-}
-const setSpread=Math.max(...Object.values(setMeans))/Math.min(...Object.values(setMeans));
-check(setSpread<=1.15,`V108 5-Set aggregate role envelope stays within 15% (actual ${((setSpread-1)*100).toFixed(2)}%)`);
-check(Object.entries(setMeans).every(([,v])=>Number.isFinite(v)&&v>0),'V108 all five Sets execute through real CombatKernel benchmarks');
+// V145 retirement authority: historical elemental Set ids remain readable for migration, but never live.
+check(LIVE_EQUIPMENT_SET_CATALOG_V12310.length===0,'V145 balance authority exposes zero live elemental equipment Sets');
+check(RETIRED_EQUIPMENT_SET_IDS_V12310.length===5&&RETIRED_EQUIPMENT_SET_IDS_V12310.every(id=>!isLiveEquipmentSetV12310(id)),'V145 retains the five historical Set ids as inert migration metadata');
+check(activeEquipmentSetMechanicsV116({items:[],equipped:{},unlockedSetIds:[...RETIRED_EQUIPMENT_SET_IDS_V12310]}).length===0,'Retired equipment Sets cannot materialize combat mechanics in the current balance runtime');
 
-// Representative Potential role check: defense is a real survival choice rather than the old dead axis.
-const formationBase={dao:'formation',root:'metal',totalPotential:1000,daoHanh:70,attireSetId:'set.v116.attire.hautho_trannhac',attirePieces:6,grade:'immortal'};
+// Representative Potential role check: defense is a real survival choice without retired root/Set power.
+const formationBase={dao:'formation',totalPotential:1000,daoHanh:70};
 const purePower=evaluateBuildV120({...formationBase,potential:{power:1,body:0,defense:0}},0);
 const pureDefense=evaluateBuildV120({...formationBase,potential:{power:0,body:0,defense:1}},0);
 const balancedDefense=evaluateBuildV120({...formationBase,potential:{power:.3,body:.3,defense:.4}},0);
 check(pureDefense.survivalScore>purePower.survivalScore&&balancedDefense.survivalScore>purePower.survivalScore,'V108 Defense investment produces measurable survival gain in actual CombatKernel pressure');
 
-// V129 representative midgame round-robin. Do not tune the shared runtime against the obsolete V108 hand-picked build table.
-// The canonical V129 progression gate owns multi-stage (mid/endgame) balance; this global gate keeps one independent midgame sanity pass.
-const V129_ROOT={sword:'metal',fist:'fire',body:'earth',spell:'water',poison:'wood',artifact:'metal',formation:'earth',mind:'water'};
+// V129 representative midgame round-robin on current authority only.
 const V129_MID_POT={
   sword:{power:.6,body:.2,defense:.2}, fist:{power:.9,body:.1,defense:0}, body:{power:1,body:0,defense:0}, spell:{power:.8,body:.2,defense:0},
   poison:{power:.9,body:.1,defense:0}, artifact:{power:.7,body:0,defense:.3}, formation:{power:1,body:0,defense:0}, mind:{power:.9,body:.1,defense:0},
 };
 const registry=buildRegistry(); const score=Object.fromEntries(daoIds.map(id=>[id,{w:0,l:0,d:0}]));
-const spec=(dao)=>{const root=V129_ROOT[dao];return{dao,root,totalPotential:1000,potential:V129_MID_POT[dao],daoHanh:70,attireSetId:thematicAttireSetIdV120(dao,root),attirePieces:4,grade:'immortal'};};
+const spec=(dao)=>({dao,totalPotential:1000,potential:V129_MID_POT[dao],daoHanh:70});
 for(let i=0;i<daoIds.length;i++)for(let j=i+1;j<daoIds.length;j++)for(let seed=0;seed<12;seed++){
   const a={...buildBalanceEntityV120(spec(daoIds[i])),id:'A'},b={...buildBalanceEntityV120(spec(daoIds[j])),id:'B'};
   const battle=runCombatKernelV2({registry,seed:1500000+seed*431+i*809+j*59,entities:seed%2?[b,a]:[a,b],maxDuration:60,mode:'simulation'}).battle;
@@ -63,7 +55,7 @@ for(let i=0;i<daoIds.length;i++)for(let j=i+1;j<daoIds.length;j++)for(let seed=0
 }
 const matchPointPct={};
 for(const dao of daoIds){const x=score[dao],n=x.w+x.l+x.d;matchPointPct[dao]=(x.w+.5*x.d)/n*100;}
-check(Math.min(...Object.values(matchPointPct))>=35&&Math.max(...Object.values(matchPointPct))<=65,`V129 representative Dao Hanh 70 / 4p round robin stays inside 35–65% (${Object.entries(matchPointPct).map(([d,v])=>`${d}:${v.toFixed(1)}`).join(' · ')})`);
+check(Math.min(...Object.values(matchPointPct))>=35&&Math.max(...Object.values(matchPointPct))<=65,`V129 representative Dao Hanh 70 current-authority round robin stays inside 35–65% (${Object.entries(matchPointPct).map(([d,v])=>`${d}:${v.toFixed(1)}`).join(' · ')})`);
 check(daoIds.every(id=>score[id].w>0&&score[id].l>0),'V129 representative midgame has no universal auto-win/auto-lose Main Dao');
 
 // Collection axes: balance tuning is only allowed on active combat triggers; ownership-wide Bond/Fortune stays untouched.

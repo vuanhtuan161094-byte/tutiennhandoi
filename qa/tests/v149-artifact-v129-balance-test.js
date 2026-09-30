@@ -4,17 +4,17 @@ import { runCombatKernelV2 } from '../../dist/core/combat-kernel-v2.js';
 import { analyzeBattle } from '../../dist/core/combat-analytics.js';
 import { applyArtifactsV88ToEntity, ARTIFACTS_V88 } from '../../dist/core/artifact-v88.js';
 import { applyArtifactsV88ToEntity as applyArtifactsPreComboV149 } from '../../dist/core/artifact-v149-base.js';
-import { buildBalanceEntityV120, thematicAttireSetIdV120 } from '../simulations/balance-lab-v120.js';
+import { buildBalanceEntityV120 } from '../simulations/balance-lab-v120.js';
 
 const registry=buildRegistry();
 const IDLE='skill.v149.artifact.balance.idle';
 if(!registry.skills.has(IDLE))registry.registerSkill({id:IDLE,name:'Mộc Nhân Tĩnh Tọa',description:'Không gây sát thương.',tags:['BalanceSimV149'],spiritCost:0,cooldown:0,castTime:0,recoveryTime:1,effects:[]});
 
 const ARCHETYPES=[
-  {id:'sword-metal',label:'Kiếm–Kim · thiên Công',dao:'sword',root:'metal',totalPotential:1000,potential:{power:.65,body:.20,defense:.15},daoHanh:70,attirePieces:4,grade:'immortal'},
-  {id:'body-earth',label:'Thể–Thổ · sinh tồn',dao:'body',root:'earth',totalPotential:1000,potential:{power:.20,body:.50,defense:.30},daoHanh:70,attirePieces:4,grade:'immortal'},
-  {id:'mind-water',label:'Tâm–Thủy · khống chế',dao:'mind',root:'water',totalPotential:1000,potential:{power:.40,body:.20,defense:.40},daoHanh:70,attirePieces:4,grade:'immortal'},
-].map(x=>({...x,attireSetId:thematicAttireSetIdV120(x.dao,x.root)}));
+  {id:'sword-offense',label:'Kiếm · thiên Công',dao:'sword',totalPotential:1000,potential:{power:.65,body:.20,defense:.15},daoHanh:70},
+  {id:'body-survival',label:'Thể · sinh tồn',dao:'body',totalPotential:1000,potential:{power:.20,body:.50,defense:.30},daoHanh:70},
+  {id:'mind-control',label:'Thần Niệm · khống chế',dao:'mind',totalPotential:1000,potential:{power:.40,body:.20,defense:.40},daoHanh:70},
+];
 
 const LOADOUT=[
   'artifact.thunder_guiding_mirror',
@@ -65,10 +65,10 @@ for(const spec of ARCHETYPES){
   matrix.push({id:spec.id,label:spec.label,baseDamage,v88Damage,artifactDamage,totalGainPct,contributionSharePct,comboIncrementPct,triggers:avg(v149,'triggers'),lai:avg(v149,'lai')});
 }
 
-console.log('\nV149 PHÁP BẢO × V129 THREE-ARCHETYPE MATRIX');
+console.log('\nV149 PHÁP BẢO × V129 CURRENT-AUTHORITY THREE-ARCHETYPE MATRIX');
 for(const r of matrix)console.log(`${r.label.padEnd(24)} | BASE ${r.baseDamage.toFixed(0).padStart(10)} | V88 ${r.v88Damage.toFixed(0).padStart(10)} | V149 ${r.artifactDamage.toFixed(0).padStart(10)} | TOTAL ${r.totalGainPct.toFixed(1).padStart(6)}% | SHARE ${r.contributionSharePct.toFixed(1).padStart(5)}% | COMBO +${r.comboIncrementPct.toFixed(1)}% | trigger ${r.triggers.toFixed(1)}`);
 
-assert.equal(matrix.length,3,'V149 must benchmark exactly three canonical V129 archetypes');
+assert.equal(matrix.length,3,'V149 must benchmark exactly three canonical current-authority archetypes');
 for(const r of matrix){
   assert.ok(Object.values(r).filter(v=>typeof v==='number').every(Number.isFinite),`${r.label}: all balance metrics must be finite`);
   assert.ok(r.v88Damage>r.baseDamage,`${r.label}: canonical V88 artifact package must contribute real combat output`);
@@ -79,7 +79,7 @@ for(const r of matrix){
   assert.ok(r.lai>=1,`${r.label}: Lôi Ấn setup must actually occur in shared combat runtime`);
 }
 const shares=matrix.map(x=>x.contributionSharePct);
-assert.ok(Math.max(...shares)-Math.min(...shares)<25,'Artifact share of final output must not spread by >25pp across V129 archetypes');
+assert.ok(Math.max(...shares)-Math.min(...shares)<25,'Artifact share of final output must not spread by >25pp across current-authority archetypes');
 assert.ok(avg(matrix,'comboIncrementPct')>0,'V149 state-based combo must create measurable combat synergy on aggregate');
 
 const state=artifactState(5);
@@ -90,4 +90,4 @@ assert.deepEqual(raw,{attack:65,physique:5,defense:15},'Bảo Hồn rank 5 remai
 assert.equal(withRaw.combatBuildV117?.artifactV88?.comboV149?.hardSetLock,false,'Cross-build benchmark keeps combos state-based, never same-set locked');
 assert.ok(withRaw.triggers.some(t=>t.runtimeV88?.itemId==='artifact.thunder_punishment_sword'&&t.effects.some(e=>e.type==='consumeMarkDamage'&&e.mark==='Lôi Ấn')),'Cross-build benchmark includes real Lôi Ấn consumer in shared CombatEngine trigger graph');
 
-console.log('\nV149 ARTIFACT × V129 THREE-ARCHETYPE BALANCE PASS');
+console.log('\nV149 ARTIFACT × V129 CURRENT-AUTHORITY THREE-ARCHETYPE BALANCE PASS');
