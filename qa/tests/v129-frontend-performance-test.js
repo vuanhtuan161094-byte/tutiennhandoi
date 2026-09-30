@@ -55,12 +55,13 @@ ok('initial static graph stays under 4.40 MiB',()=>assert.ok(bytes<=4.40*1024*10
 // V142 deliberately decomposes the equipment economy into five small domain modules.
 // V149 adds exactly three bounded adapters while preserving the large pre-V149 modules
 // byte-for-byte: economy mutation/read, GameplayFacade authority, and artifact combo/runtime.
-// Combat V3 keeps its logical entity / encounter / typed-result / settlement boundaries,
-// but consolidates their eager browser implementation so the existing hard lock is preserved.
-// Ngũ Hành equipment retirement moves historical implementations behind read-only compatibility
-// facades. This adds six reachable physical modules without increasing the 4.40 MiB byte budget;
-// 199 is therefore the post-retirement structural ceiling, not permission for runtime growth.
-ok('initial static graph stays at or below 199 modules',()=>assert.ok(graph.length<=199,`initial graph ${graph.length} modules`));
+// Combat V3 keeps its logical entity / encounter / typed-result / settlement boundaries.
+// Ngũ Hành equipment retirement moved six historical implementations behind read-only
+// compatibility facades, establishing the 199-module structural ceiling.
+// Later authority-preserving refactors split four already-eager runtime owners into dedicated
+// modules: combat-m1-base, combat-m2b-base, life-runtime-core, and mind-dao-v2-runtime.
+// They raise the physical-module ceiling to 203 without relaxing the 4.40 MiB payload budget.
+ok('initial static graph stays at or below 203 modules',()=>assert.ok(graph.length<=203,`initial graph ${graph.length} modules`));
 const hunt=await import('../../modules/hunt-combat-v2.js');
 const dongfu=await import('../../modules/dongfu-pixi-scene-v139.js');
 ok('lazy Hunt module exports full route contract',()=>{for(const k of ['renderHuntCombatV2','mountHuntCombatV2','syncHuntCombatV2','stopHuntCombatV2'])assert.equal(typeof hunt[k],'function',k)});
