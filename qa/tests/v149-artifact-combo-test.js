@@ -59,7 +59,11 @@ const thunderView=artifactViewV88(state,ids.thunder);
 check(thunderView?.comboV149?.kind==='finisher'&&thunderView?.v149?.hardSetLock===false,'Artifact detail read-model explains finisher combo and no-set-lock rule');
 check(thunderView?.resourceV150?.baoQiEnabled===false&&!('baoQiCost' in thunderView.skill),'Artifact detail no longer exposes a Bảo Khí cost');
 
-const combat=fs.readFileSync('./dist/core/combat.js','utf8');
+const combat=[
+  fs.readFileSync('./dist/core/combat-m1-base.js','utf8'),
+  fs.readFileSync('./dist/core/combat-m2b-base.js','utf8'),
+  fs.readFileSync('./dist/core/combat.js','utf8'),
+].join('\n');
 check(combat.includes("case 'consumeMarkDamage':")&&combat.includes('resolveEffectConsumeMarkDamageV141'),'Combo damage is executed by the existing shared CombatEngine mark consumer');
 const adapter=fs.readFileSync('./dist/core/artifact-v88.js','utf8');
 check(!adapter.includes('class ArtifactCombat')&&!adapter.includes('new CombatEngine'),'Artifact adapter does not introduce a second combat resolver/engine');
