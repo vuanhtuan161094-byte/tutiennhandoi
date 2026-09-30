@@ -206,7 +206,7 @@ testCase('Sword auto rotation owns explicit kill-window and perfect-Ultimate rul
 });
 
 testCase('Thái Hư Kiếm Vực is realm-gated at Tiên Vương, not granted only by Ultimate mastery 1000', () => {
-  const combatSource = fs.readFileSync(new URL('../../dist/core/combat.js', import.meta.url), 'utf8');
+  const combatSource = fs.readFileSync(new URL('../../dist/core/combat-m1-base.js', import.meta.url), 'utf8');
   const at = combatSource.indexOf("skill.id === 'skill.dao.sword.ultimate' && (actor.combatBuildV117?.realmOrder ?? 0) >= 78");
   assert.ok(at >= 0, 'missing Tiên Vương realm gate for Sword Domain');
   const block = combatSource.slice(at, at + 650);
