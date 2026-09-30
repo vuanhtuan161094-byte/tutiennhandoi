@@ -113,6 +113,8 @@ export function skillRuntimeV117(skill) {
     };
 }
 export function skillSlotClassV117(skill) {
+    if (!skill)
+        return undefined;
     return skillRuntimeV117(skill).slotClass ?? inferSlot(skill);
 }
 export function skillStandardCostPctV117(skill) {
