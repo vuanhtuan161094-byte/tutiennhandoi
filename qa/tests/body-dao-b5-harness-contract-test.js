@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { buildRegistry } from '../../dist/content/registry.js';
 import {
   BODY_B5_DURATION_SECONDS,
   BODY_B5_PROFILES,
@@ -31,10 +32,16 @@ const target=createBodyB5Target();
 assert(target.skillIds.includes('skill.boss.v81.crushing_slam'));
 assert(target.skillIds.includes('skill.boss.v81.cataclysm'));
 
+// Production Body reactions are governed by targetIsCasting in Auto. They must
+// not also require the unrelated encounter-script activeCounterWindow gate.
+const registry=buildRegistry();
+assert.equal(registry.skills.get('skill.dao.body.transform').runtimeV117.requiresCounterWindow,false);
+assert.equal(registry.skills.get('skill.dao.body.counter').runtimeV117.requiresCounterWindow,false);
+
 const source=fs.readFileSync(new URL('../benchmarks/body-dao-b5-benchmark.js',import.meta.url),'utf8');
 assert(source.includes("runCombatKernelV3({registry,seed,entities:[player,target]"),'harness must use production CombatKernel V3');
 assert(source.includes('BODY_B5_INVALID_IDENTITY_RUN'),'zero-mechanic runs must be rejected as invalid benchmark evidence');
-assert(source.includes("x.skillId==='skill.dao.body.counter'"),'Phản Kình must measure real Counter damage hits');
+assert(source.includes("damageLogsFor(logs,playerId,'skill.dao.body.counter')"),'Phản Kình must measure real Counter damage hits');
 assert(source.includes("x.skillId==='skill.dao.body.immovable'"),'Bất Động must measure completed defensive channels');
 assert(source.includes("x.data?.broken===true"),'Phá Kình must measure real Broken events');
 assert(source.includes('postBreakPayoffs'),'Phá Kình must require a payoff inside the Broken window');
