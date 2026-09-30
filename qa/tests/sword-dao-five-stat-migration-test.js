@@ -95,7 +95,7 @@ testCase('F2 Control vs Resolve keeps equal ratings neutral and pressure bounded
 });
 
 testCase('F2 locked combat source consumes the new Dodge and Control contest helpers',()=>{
-  const src=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
+  const src=fs.readFileSync(new URL('../../dist/core/combat-m1-base.js',import.meta.url),'utf8');
   assert(src.includes('contestedDodgeChancePctV5(dstStats.mobility, srcStats.accuracy'));
   assert(src.includes('duration *= controlContestDurationMultiplierV5(src.controlPower, dst.resolve, pressure)'));
   assert(src.includes('target.controlPressure[pressureKey] = pressure + 1'));
@@ -105,7 +105,7 @@ testCase('F2 locked combat source consumes the new Dodge and Control contest hel
 
 testCase('F4 Control Pressure resets after exactly 8 seconds of no same-group control',()=>{
   assert.equal(COMBAT_RULES.controlPressureResetSeconds,8);
-  const src=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
+  const src=fs.readFileSync(new URL('../../dist/core/combat-m1-base.js',import.meta.url),'utf8');
   assert(src.includes('now - lastPressureAt >= COMBAT_RULES.controlPressureResetSeconds ? 0'));
   assert(src.includes('target.controlPressureLastAt[pressureKey] = now'));
 });
@@ -131,8 +131,8 @@ testCase('F3 Sword has exactly the locked 10 five-stat scaling profiles',()=>{
     assert.deepEqual(skill.fiveStatScalingV5,e.scaling,`${skill.id} scaling mismatch`);
     assert.equal(skill.fiveStatBaselineCoefficientV5,e.baseline,`${skill.id} baseline mismatch`);
   }
-  const untouchedDao=battleDaoSkillsV118.filter(x=>!['sword','fist'].includes(x.runtimeV117?.daoBinding));
-  assert(untouchedDao.every(x=>x.fiveStatScalingV5===undefined),'F3 Sword lock must not migrate Dao outside the separately opened Fist Q2 slice');
+  const untouchedDao=battleDaoSkillsV118.filter(x=>!['sword','fist','mind'].includes(x.runtimeV117?.daoBinding));
+  assert(untouchedDao.every(x=>x.fiveStatScalingV5===undefined),'F3 Sword lock must not migrate Dao outside the separately opened Fist and Mind slices');
 });
 
 testCase('F3 normalized five-stat power reproduces contract totals at baseline hit shape',()=>{
@@ -157,13 +157,13 @@ testCase('F6 Vạn Kiếm Cực Ý uses fourteen channel hits and the authored 1
   const profile=swordV2ChannelProfile(entity,skill,{battleDaoV2:{swordQiBefore:4}});
   assert.equal(profile.hitCountOverride,14);
   assert.equal(profile.lastHitMultiplier,1.5);
-  const src=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
+  const src=fs.readFileSync(new URL('../../dist/core/combat-m1-base.js',import.meta.url),'utf8');
   assert(src.includes('lastHitMultiplier: swordChannel.lastHitMultiplier'));
   assert(src.includes('channel.resolvedHits >= channel.totalHits'));
 });
 
 testCase('F3 CombatKernel consumes primaryStatsV5 scaling for root and bounded follow-up hits',()=>{
-  const src=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
+  const src=fs.readFileSync(new URL('../../dist/core/combat-m1-base.js',import.meta.url),'utf8');
   assert(src.includes('fiveStatSkillPowerV5(srcStats, ctx.fiveStatScalingV5, ctx.fiveStatBaselineCoefficientV5)'));
   assert(src.includes('fiveStatScalingV5: skill?.fiveStatScalingV5'));
   assert(src.includes('fiveStatScalingV5: sourceSkill?.fiveStatScalingV5'));
@@ -299,7 +299,7 @@ testCase('F5 legacy NPCs snapshot five primary stats once so runtime Mobility/Ac
   assert(effective.accuracy>65);
   assert.equal(effective.primaryStatsV5.agility,70);
   assert.equal(effective.primaryStatsV5.sense,65);
-  const src=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
+  const src=fs.readFileSync(new URL('../../dist/core/combat-m1-base.js',import.meta.url),'utf8');
   assert(src.includes('const snapshottedStats = ensurePrimaryStatsV5SnapshotV5(def.stats)'));
 });
 
