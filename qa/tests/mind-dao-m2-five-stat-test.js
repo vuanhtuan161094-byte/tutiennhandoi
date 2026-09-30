@@ -45,7 +45,12 @@ assert(mindGuardFiveStatMultiplierV2(mentalGuardStats,guard)>1,'TP+TT allocation
 const powerOnlyGuardStats={attack:200,primaryStatsV5:{power:200,body:100,agility:100,spirit:100,sense:100}};
 assert(mindGuardFiveStatMultiplierV2(powerOnlyGuardStats,guard)<1,'CL-only allocation must not masquerade as Tâm Kính scaling');
 
-const combatSource=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
+// Combat is split into the frozen base plus Mind wrappers; source-audit the owning seams, not only the thin top-level wrapper.
+const combatSource=[
+  fs.readFileSync(new URL('../../dist/core/combat-m1-base.js',import.meta.url),'utf8'),
+  fs.readFileSync(new URL('../../dist/core/combat-m2b-base.js',import.meta.url),'utf8'),
+  fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8'),
+].join('\n');
 assert(combatSource.includes('mindGuardFiveStatMultiplierV2'),'CombatEngine must consume the Tâm Kính TP+TT effect family');
 assert(/fiveStatBaselineCoefficientV5:\s*(?:skill|mindSkill)\.fiveStatBaselineCoefficientV5/.test(combatSource),'Mind packets must carry five-stat metadata into applyDamage regardless of wrapper-local variable name');
 
