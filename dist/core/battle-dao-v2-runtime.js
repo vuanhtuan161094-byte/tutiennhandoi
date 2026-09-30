@@ -1,4 +1,4 @@
-// B2 Body production facade.
+// B2/B3 Body production facade.
 // The historical all-Dao implementation is preserved verbatim in battle-dao-v2-runtime-base.js.
 // Explicit exports below override only Main Body behavior; every unrelated Dao remains delegated.
 export * from './battle-dao-v2-runtime-base.js';
@@ -12,6 +12,12 @@ const BODY_COUNTER_PAYOFF_SKILLS=new Set([
   'skill.dao.body.break',
   'skill.dao.body.finisher',
 ]);
+const BODY_CASHOUT_V1=Object.freeze({
+  'skill.dao.body.counter':Object.freeze({amount:30,minimum:20}),
+  'skill.dao.body.break':Object.freeze({amount:20,minimum:20}),
+  'skill.dao.body.recover':Object.freeze({amount:40,minimum:20}),
+  'skill.dao.body.finisher':Object.freeze({amount:'all',minimum:30}),
+});
 
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,Number.isFinite(v)?v:min));
 const scale=(level,a,b)=>a+(b-a)*((clamp(level,1,20)-1)/19);
@@ -56,10 +62,6 @@ function ensureBodyProductionState(entity,now=0){
   }
   return core;
 }
-function masked(entity,now=0){
-  ensureBodyProductionState(entity,now);
-  return bodyView(entity);
-}
 function bodyGuardWindowSeconds(entity){
   return 2+(hasBodyPassive(entity,3)?scale(bodyPassiveLevel(entity,3),1,3):0);
 }
@@ -70,6 +72,9 @@ function bodyCycleWindowActive(entity,now){
   return (entity?.battleDaoStateV2?.body?.core?.bodyCycleWindowUntil??0)>now;
 }
 function isBodySkillId(skillId){ return String(skillId??'').startsWith('skill.dao.body.'); }
+function isMainBodySkill(entity,skill){
+  return mainBody(entity)&&skill?.runtimeV117?.daoBinding==='body'&&isBodySkillId(skill?.id);
+}
 
 export function createBattleDaoRuntimeStateV2(entity,now=0){
   if(!mainBody(entity)) return base.createBattleDaoRuntimeStateV2(entity,now);
@@ -179,21 +184,50 @@ export function onBattleDaoV2Mitigation(entity,eventBudget,mitigatedRatio,now){
 }
 
 export function prepareRemainingDaoCoreActionV2(entity,target,skill,action,now,...rest){
-  if(!mainBody(entity)) return base.prepareRemainingDaoCoreActionV2(entity,target,skill,action,now,...rest);
-  ensureBodyProductionState(entity,now);
-  return base.prepareRemainingDaoCoreActionV2(bodyView(entity),target,skill,action,now,...rest);
+  if(!isMainBodySkill(entity,skill)){
+    return base.prepareRemainingDaoCoreActionV2(mainBody(entity)?bodyView(entity):entity,target,skill,action,now,...rest);
+  }
+  const core=ensureBodyProductionState(entity,now);
+  if(!core||!action?.battleDaoV2) return;
+  const d=action.battleDaoV2.daoData??(action.battleDaoV2.daoData={});
+  const before=clamp(Number(core.counterForce)||0,0,core.counterForceCap??100);
+  const spendRule=BODY_CASHOUT_V1[skill.id];
+  let spent=0;
+  let perfect=false;
+
+  d.counterForceBefore=before;
+  d.counterForceSpent=0;
+  d.counterForceAfter=before;
+  d.bodyCashoutSkillId=undefined;
+  d.bodyPerfectCashout=false;
+
+  if(spendRule&&before+1e-9>=spendRule.minimum){
+    const wanted=spendRule.amount==='all'?before:Math.max(0,Number(spendRule.amount)||0);
+    spent=Math.min(before,wanted);
+    perfect=before>=100-1e-9&&spent>0;
+    core.counterForce=Math.max(0,before-spent);
+    core.bodyCashoutEvents+=1;
+    d.counterForceSpent=spent;
+    d.counterForceAfter=core.counterForce;
+    d.bodyCashoutSkillId=skill.id;
+    d.bodyPerfectCashout=perfect;
+
+    // Chân Thân Viên Mãn empowers the deliberately chosen cash-out only.
+    if(perfect) action.effectBonusPct+=40;
+  }
+
+  // Preserve the shared V2 recovery multiplier without invoking the old Body cap auto-spend branch.
+  action.recoveryMultiplier*=battleDaoV2RecoveryMultiplier(entity,now);
 }
 
 export function finishRemainingDaoActionV2(entity,target,skill,action,now,chance,...rest){
   if(!mainBody(entity)) return base.finishRemainingDaoActionV2(entity,target,skill,action,now,chance,...rest);
   const core=ensureBodyProductionState(entity,now);
-  const before=Math.max(0,Number(core?.counterForce)||0);
   const result=base.finishRemainingDaoActionV2(bodyView(entity),target,skill,action,now,chance,...rest);
   ensureBodyProductionState(entity,now);
-  const after=Math.max(0,Number(core?.counterForce)||0);
-  if(core&&before>after+1e-9&&isBodySkillId(skill?.id)){
-    core.bodyCashoutEvents+=1;
-    if(hasBodyPassive(entity,8)) core.bodyCycleWindowUntil=Math.max(core.bodyCycleWindowUntil,now+scale(bodyPassiveLevel(entity,8),2,4));
+  const spent=Math.max(0,Number(action?.battleDaoV2?.daoData?.counterForceSpent)||0);
+  if(core&&spent>0&&isBodySkillId(skill?.id)&&hasBodyPassive(entity,8)){
+    core.bodyCycleWindowUntil=Math.max(core.bodyCycleWindowUntil,now+scale(bodyPassiveLevel(entity,8),2,4));
   }
   return result;
 }
