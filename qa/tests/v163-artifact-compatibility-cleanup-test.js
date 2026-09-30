@@ -110,7 +110,7 @@ test('V163 B4 snapshot/restore clones legacy Artifact, canonical Collection, and
 test('V163 B4 compatibility consumers remain explicit and Collection combat authority remains separate', () => {
   const sessionSource = readFileSync(new URL('../../dist/core/session.js', import.meta.url), 'utf8');
   const worldSource = readFileSync(new URL('../../dist/core/world.js', import.meta.url), 'utf8');
-  const lifeSource = readFileSync(new URL('../../dist/core/life.js', import.meta.url), 'utf8');
+  const lifeSource = readFileSync(new URL('../../dist/core/life-runtime-core.js', import.meta.url), 'utf8');
   const integrationSource = readFileSync(new URL('../../dist/core/integration.js', import.meta.url), 'utf8');
 
   assert(sessionSource.includes('legacyArtifactIds: [...this.stateValue.artifacts.activeIds]'));
