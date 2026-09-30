@@ -40,6 +40,7 @@ export const BODY_OPEN_GATES=freezeList([
   'body-dao-production-contract-test.js',
   'body-dao-passive-architecture-test.js',
   'body-dao-resource-transaction-test.js',
+  'body-dao-b4-consumer-parity-test.js',
 ]);
 
 const makeManifest=spec=>Object.freeze({
@@ -103,7 +104,7 @@ export const BACKEND_FEATURE_CLOSURE_MANIFESTS=Object.freeze({
     label:'Body Dao / Thể Đạo',
     kind:'dao',
     closureReady:false,
-    // B0-B3 are source-open. Benchmark launcher is intentionally not registered until consumer parity authority is installed.
+    // B0-B4 are source-open. Benchmark launcher remains unregistered until B4 parity evidence is green.
     lockedRegressionFeatures:['dao-sword','dao-fist'],
     deferredFamilies:DAO_DEFERRED,
     gates:[...DAO_SHARED_CLOSURE_GATES,...SWORD_LOCK_REGRESSION_GATES,...FIST_LOCK_REGRESSION_GATES,...BODY_OPEN_GATES],
