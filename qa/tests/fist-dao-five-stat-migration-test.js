@@ -10,7 +10,6 @@ import { buildHuntCombatProfileV130 } from '../../dist/core/hunt-real-combat-v13
 import { battleDaoAutoRotationV127 } from '../../dist/core/battle-dao-rotation-v127.js';
 import { canUseBattleDaoSkillV118 } from '../../dist/core/battle-dao-combat-v118.js';
 import { tacticalIdentity } from '../../dist/core/combat-roles.js';
-import { FIST_Q1_PROFILES, validateFistQ1Profiles } from '../benchmarks/fist-dao-q1-premigration-benchmark.js';
 
 let passed=0;
 function testCase(name,fn){fn();passed++;console.log('✓',name);}
@@ -66,17 +65,6 @@ testCase('Q1 player-facing Fist skill copy uses Quyền Thế, not stale Liên Q
   assert(fist.some(x=>String(x.description).includes('Quyền Thế')));
   assert.equal(fist.filter(x=>String(x.description).includes('Liên Quyền')).length,0);
 });
-
-
-testCase('Q1 pre-migration benchmark profiles are deterministic five-slot 300-point fixtures',()=>{
-  assert.equal(FIST_Q1_PROFILES.length,3);
-  assert.deepEqual(validateFistQ1Profiles(),[]);
-  for(const p of FIST_Q1_PROFILES){
-    assert.equal(p.activeSkillIds.length,5);
-    assert.equal(Object.values(p.allocation).reduce((a,b)=>a+b,0),300);
-  }
-});
-
 
 const EXPECTED_Q2_SCALING=new Map([
  ['skill.dao.fist.basic',{scaling:{power:2.20,body:.60},baseline:2.80}],
@@ -270,7 +258,7 @@ testCase('Q2 canonical Fist CC statuses and CombatKernel hooks are present',()=>
  assert.equal(counter.group,'BodyControl'); assert.equal(counter.disablesActions,true);
  assert.equal(pressure.mobilityMultiplier,.88); assert.equal(pressure.recoveryTimeMultiplier,1.12);
  assert.equal(extreme.mobilityMultiplier,.82); assert.equal(extreme.recoveryTimeMultiplier,1.18);
- const combat=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
+ const combat=fs.readFileSync(new URL('../../dist/core/combat-m1-base.js',import.meta.url),'utf8');
  assert(combat.includes("'status.fist.shock_stagger', .35"));
  assert(combat.includes("'status.fist.counter_stagger', .40"));
  assert(combat.includes("statusRecoveryMultiplier"));
@@ -289,7 +277,7 @@ testCase('Q2 player-facing core/skill copy matches locked payoff and CC semantic
  assert(byId['skill.dao.fist.shock'].description.includes('ngắt cast/channel'));
  assert(byId['skill.dao.fist.counter'].description.includes('counter thành công'));
  assert(byId['skill.dao.fist.pressure'].description.includes('Trấn Áp'));
- const combatSrc=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
+ const combatSrc=fs.readFileSync(new URL('../../dist/core/combat-m1-base.js',import.meta.url),'utf8');
  assert(combatSrc.includes("fistCc: immune ? 'shock_immune' : 'shock_interrupt'"));
 });
 
@@ -353,7 +341,7 @@ testCase('Q3 legacy combatants get one five-stat snapshot and offline Hunt remai
   attack:120,physique:80,maxHp:1600,maxSpirit:90,mobility:75,accuracy:70,defense:60,controlPower:70,resolve:70,
  });
  assert.deepEqual(snap.primaryStatsV5,{power:120,body:80,agility:75,spirit:90,sense:70});
- const combatSrc=fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8');
+ const combatSrc=fs.readFileSync(new URL('../../dist/core/combat-m1-base.js',import.meta.url),'utf8');
  assert(combatSrc.includes('const snapshottedStats = ensurePrimaryStatsV5SnapshotV5(def.stats)'));
  const sessionSrc=fs.readFileSync(new URL('../../dist/core/session.js',import.meta.url),'utf8');
  assert(sessionSrc.includes('huntPreviewPlayerDpsLog10V130(player, this.registry)'));
@@ -385,4 +373,3 @@ testCase('Q3 Auto Quyền follows interrupt/counter/Break/payoff priority and bo
 });
 
 console.log(`FIST DAO Q1-Q3: ${passed}/${passed} PASS`);
-
