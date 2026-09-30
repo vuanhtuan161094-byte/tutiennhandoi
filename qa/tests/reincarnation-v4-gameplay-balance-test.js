@@ -6,10 +6,10 @@ import { adventureEnemies, heavySwordCultivator, playableMortalCultivator } from
 import { thanhHaWorld } from '../../dist/content/world.js';
 import { SimulationSession } from '../../dist/core/session.js';
 import { combatMaxHp } from '../../dist/core/combat-rules.js';
-import { runCombatKernelV2 } from '../../dist/core/combat-kernel-v2.js';
+import { runCombatKernelV3 } from '../../dist/core/combat-kernel-v2.js';
 import { cultivationRateV140 } from '../../dist/core/cultivation-v140.js';
 import {
-  FATE_BUILD_TOTAL_UNLOCK_COST_V4, REINCARNATION_PERMANENT_POTENTIAL_BASE_PCT_V127, REINCARNATION_PERMANENT_POTENTIAL_MAX_PCT_V127,
+  CORE_POTENTIAL_AXIS_VERSION_V5, FATE_BUILD_TOTAL_UNLOCK_COST_V4, REINCARNATION_PERMANENT_POTENTIAL_BASE_PCT_V127, REINCARNATION_PERMANENT_POTENTIAL_MAX_PCT_V127,
   REINCARNATION_DEPTH_CONFIG, applyCorePotentialStats, applyFateSpiritStoneGainV4, corePotentialPercentBonusV4,
   lifePotentialMilestonesThroughRealmOrder, previewReincarnationV2Reward, reincarnationPowerBonusPctV4, reincarnationStageFactorV4,
   totalTreeMaxCostV127,
@@ -43,21 +43,21 @@ test('Chiến/Thể Mệnh materialize into the canonical personal CombatEntity'
   assert.equal(b.combatBuildV117.fateV4.bossDamagePct,12);
 });
 
-test('Damage của Chiến Mệnh is consumed as real outgoing damage inside CombatKernel V2',()=>{
+test('Damage của Chiến Mệnh is consumed as real outgoing damage inside CombatKernel V3',()=>{
   const player={...structuredClone(playableMortalCultivator),id:'p',stats:{...playableMortalCultivator.stats,attack:500},combatBuildV117:{fateV4:{damagePct:0}}};
   const boosted=structuredClone(player); boosted.combatBuildV117.fateV4.damagePct=20;
   const target={...structuredClone(heavySwordCultivator),id:'t',stats:{...heavySwordCultivator.stats,maxHp:20000,physique:1000}};
-  const a=runCombatKernelV2({mode:'realtime',registry,seed:8181,entities:[player,target],maxDuration:8}).battle;
-  const b=runCombatKernelV2({mode:'realtime',registry,seed:8181,entities:[boosted,target],maxDuration:8}).battle;
+  const a=runCombatKernelV3({mode:'realtime',registry,seed:8181,entities:[player,target],maxDuration:8}).battle;
+  const b=runCombatKernelV3({mode:'realtime',registry,seed:8181,entities:[boosted,target],maxDuration:8}).battle;
   assert(b.finalState.t.hp<a.finalState.t.hp,`${a.finalState.t.hp} -> ${b.finalState.t.hp}`);
 });
 
-test('Boss Damage của Chiến Mệnh is consumed inside CombatKernel V2',()=>{
+test('Boss Damage của Chiến Mệnh is consumed inside CombatKernel V3',()=>{
   const player={...structuredClone(playableMortalCultivator),id:'p',stats:{...playableMortalCultivator.stats,attack:500},combatBuildV117:{fateV4:{bossDamagePct:0}}};
   const boosted=structuredClone(player); boosted.combatBuildV117.fateV4.bossDamagePct=12;
   const boss={...structuredClone(heavySwordCultivator),id:'b',tags:[...(heavySwordCultivator.tags??[]),'Boss'],stats:{...heavySwordCultivator.stats,maxHp:20000,physique:1000}};
-  const a=runCombatKernelV2({mode:'realtime',registry,seed:9191,entities:[player,boss],maxDuration:8}).battle;
-  const b=runCombatKernelV2({mode:'realtime',registry,seed:9191,entities:[boosted,boss],maxDuration:8}).battle;
+  const a=runCombatKernelV3({mode:'realtime',registry,seed:9191,entities:[player,boss],maxDuration:8}).battle;
+  const b=runCombatKernelV3({mode:'realtime',registry,seed:9191,entities:[boosted,boss],maxDuration:8}).battle;
   assert(b.finalState.b.hp<a.finalState.b.hp,`${a.finalState.b.hp} -> ${b.finalState.b.hp}`);
 });
 
@@ -95,19 +95,29 @@ test('Current Phase-1 tree cannot be full in 2–3 Sáng Thế lives even at ext
   const lives=Math.ceil(sink/max.reincarnationPoints); assert(lives>=10,`sink=${sink} maxRP=${max.reincarnationPoints} lives=${lives}`);
 });
 
-test('Tiềm Năng soft-cap remains meaningful at 1/10/50/100 late-game reincarnations without runaway',()=>{
+test('Permanent Potential stays bounded and applies only authored five-axis point effects',()=>{
   const baseLife=lifePotentialMilestonesThroughRealmOrder(117).reduce((s,x)=>s+x.amount,0);
   const maxLife=lifePotentialMilestonesThroughRealmOrder(117).reduce((s,x)=>s+Math.round(x.amount*1.25),0);
   const perLife3=Math.round(baseLife*.03),perLife10=Math.round(maxLife*.10);
   const rows=[];
   for(const lives of [1,10,50,100]){
-    const balanced3=Math.floor(perLife3*lives/3),balanced10=Math.floor(perLife10*lives/3);
     const p3=corePotentialPercentBonusV4(perLife3*lives),p10=corePotentialPercentBonusV4(perLife10*lives);
-    rows.push({lives,permanent3:perLife3*lives,resonanceBonus3Pct:Number(p3.toFixed(2)),permanent10:perLife10*lives,resonanceBonus10Pct:Number(p10.toFixed(2))});
+    rows.push({lives,permanent3:perLife3*lives,legacySoftCap3Pct:Number(p3.toFixed(2)),permanent10:perLife10*lives,legacySoftCap10Pct:Number(p10.toFixed(2))});
     assert(p10>p3); assert(p10<35);
   }
-  const sample=applyCorePotentialStats({attack:1_000_000,defense:800_000,physique:50_000,maxHp:1_000_000},{life:{unspent:0,lifetimeEarned:0,allocations:{power:0,body:0,defense:0},awardedMilestones:[]},permanent:{power:Math.floor(perLife10*10/3),body:Math.floor(perLife10*10/3),defense:Math.floor(perLife10*10/3)}});
-  assert(sample.attack>1_000_000*1.05); assert(sample.defense>800_000*1.05); assert(sample.maxHp>1_000_000*1.05);
+  const points=Math.floor(perLife10*10/5);
+  const allocation={power:points,body:points,agility:points,spirit:points,sense:points};
+  const base={attack:1_000_000,defense:800_000,physique:50_000,maxHp:1_000_000,maxSpirit:100_000,mobility:500,accuracy:600,controlPower:700,resolve:800};
+  const sample=applyCorePotentialStats(base,{life:{axisVersion:CORE_POTENTIAL_AXIS_VERSION_V5,unspent:0,lifetimeEarned:0,allocations:{power:0,body:0,agility:0,spirit:0,sense:0},awardedMilestones:[]},permanent:allocation});
+  assert.equal(sample.attack,base.attack+points);
+  assert.equal(sample.defense,base.defense+points);
+  assert.equal(sample.physique,base.physique+points);
+  assert.equal(sample.maxHp,(base.physique+points)*20);
+  assert.equal(sample.mobility,base.mobility+points);
+  assert.equal(sample.maxSpirit,base.maxSpirit+points);
+  assert.equal(sample.accuracy,base.accuracy+points);
+  assert.equal(sample.controlPower,base.controlPower+points);
+  assert.equal(sample.resolve,base.resolve+points);
   console.log('POTENTIAL SIM',rows);
 });
 
