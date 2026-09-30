@@ -20,7 +20,7 @@ assert.deepEqual(EQUIPMENT_SET_CATALOG_V142,[],'V143 Set Resonance cannot remain
 const setId='set.v142.attire.metal';
 assert.equal(equipmentSetDefinitionV142(setId)?.retired,true,'historical Set identity remains readable only as metadata');
 
-const state={equipmentProgressionV142:{setFragments:{[setId]:'150'},setResonanceBySetId:{[setId]:3}}};
+const state={equipmentSetFragmentsV142:{schema:'equipment.set-fragments.v143',bySetId:{[setId]:150},resonanceBySetId:{[setId]:3},resonanceUnlockedSetIds:[setId],totalDrops:0,totalEngraved:0,totalResonanceLevels:3}};
 const equipment={items:[{id:'legacy.v143',schema:'equipment.v142',slot:'weapon',equipmentRankIndex:5,setId,setResonanceLevelV143:3,setResonanceBonusStatsV143:{attack:999},stats:{attack:1234}}],equipped:{weapon:'legacy.v143'}};
 
 assert.equal(equipmentSetHasFullIdentityV143(equipment,setId),false);
