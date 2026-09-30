@@ -52,16 +52,19 @@ function rulesForDao(dao, skillIds, offset = 0) {
             add('basic', 10);
             break;
         case 'body':
-            // Thể Tuyệt Kỹ là cứu nguy, không xả Gauge khi đang đầy máu.
-            add('ultimate', 134, gauge, { type: 'selfHpBelow', pct: 78 });
-            add('recover', 128, { type: 'selfHpBelow', pct: 55 }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 40 });
-            add('guard', 120, { type: 'selfShieldBelow', pct: 8 });
-            add('immovable', 116, { type: 'selfHpBelow', pct: 72 });
-            add('finisher', 112, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 70 });
-            add('counter', 110, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 30 });
-            add('break', 104, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 20 });
-            add('transform', 102);
-            add('elephant', 92);
+            // Body B1: Chịu → Hóa → Phản. Emergency survival is allowed to beat offense,
+            // otherwise react to real cast pressure and cash Phản Thế into the correct target window.
+            add('ultimate', 180, gauge, { type: 'selfHpBelow', pct: 35 });
+            add('recover', 176, { type: 'selfHpBelow', pct: 45 }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 40 });
+            add('transform', 170, { type: 'targetIsCasting' });
+            add('counter', 166, { type: 'targetIsCasting' }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 30 });
+            add('finisher', 160, { type: 'targetIsBroken' }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 70 });
+            add('break', 154, { type: 'targetIsNotBroken' }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 20 });
+            add('guard', 144, { type: 'selfHpBelow', pct: 85 }, { type: 'selfShieldBelow', pct: 8 });
+            add('immovable', 138, { type: 'selfHpBelow', pct: 65 });
+            // Non-emergency Ultimate is still held for a meaningful pressure state instead of full-HP dumping.
+            add('ultimate', 132, gauge, { type: 'selfHpBelow', pct: 60 });
+            add('elephant', 100);
             add('basic', 10);
             break;
         case 'spell':
