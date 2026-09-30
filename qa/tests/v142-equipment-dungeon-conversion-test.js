@@ -11,32 +11,33 @@ assert.equal(genericDrop.genericFragments, 6);
 assert.equal(genericDrop.setFragments, 0);
 assert.equal(equipmentFragmentBalanceV142(generic, genericDrop.rankIndex), 6);
 
+// Former Set dungeons remain valid generic equipment-fragment sources, but no longer mint Tàn Ấn.
 const elementState = {};
-const elementSet = targetSetForDungeonFloorV142('dungeon.v122.ngu_hanh_dao_kho', 1);
-assert.ok(elementSet && elementSet.category === 'attire');
+assert.equal(targetSetForDungeonFloorV142('dungeon.v122.ngu_hanh_dao_kho', 1), undefined);
 const elementDrop = settleDungeonEquipmentEventsV142(elementState, {
   dungeonId: 'dungeon.v122.ngu_hanh_dao_kho', floor: 1, requiredRealmOrder: 10, equipmentEvents: 1, firstClear: true, source: 'qa',
 });
 assert.equal(elementDrop.genericFragments, 10);
-assert.equal(elementDrop.setFragments, 15);
-assert.equal(equipmentSetFragmentBalanceV142(elementState, elementSet.id), 15);
+assert.equal(elementDrop.setFragments, 0);
+assert.equal(elementDrop.targetSetId, '');
+assert.equal(elementDrop.role, 'retired-set');
 
 const jewelryState = {};
-const jewelrySet = targetSetForDungeonFloorV142('dungeon.v122.hop_dao_bao_kho', 4);
-assert.ok(jewelrySet && jewelrySet.category === 'jewelry');
+assert.equal(targetSetForDungeonFloorV142('dungeon.v122.hop_dao_bao_kho', 4), undefined);
 const jewelryDrop = settleDungeonEquipmentEventsV142(jewelryState, {
   dungeonId: 'dungeon.v122.hop_dao_bao_kho', floor: 4, requiredRealmOrder: 34, equipmentEvents: 2, firstClear: false, source: 'qa',
 });
 assert.equal(jewelryDrop.genericFragments, 6);
-assert.equal(jewelryDrop.setFragments, 10);
-assert.equal(equipmentSetFragmentBalanceV142(jewelryState, jewelrySet.id), 10);
+assert.equal(jewelryDrop.setFragments, 0);
+assert.equal(jewelryDrop.role, 'retired-set');
+assert.equal(equipmentSetFragmentBalanceV142(jewelryState, 'set.v142.jewelry.any'), 0);
 
 const retiredDao = {};
 const daoDrop = settleDungeonEquipmentEventsV142(retiredDao, {
   dungeonId: 'dungeon.v122.bat_dao_chan_dien', floor: 3, requiredRealmOrder: 26, equipmentEvents: 3, firstClear: false, source: 'qa',
 });
-assert.equal(daoDrop.role, 'retired-dao-attire');
-assert.equal(daoDrop.setFragments, 0, '8 bộ Đạo cũ không được sống lại dưới dạng Set V142.');
+assert.equal(daoDrop.role, 'retired-set');
+assert.equal(daoDrop.setFragments, 0, 'retired Set dungeons must never revive Tàn Ấn.');
 assert.equal(daoDrop.genericFragments, 9);
 
-console.log('V142 dungeon equipment fragment conversion PASS');
+console.log('V142 dungeon equipment retirement conversion PASS');
