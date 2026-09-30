@@ -8,6 +8,7 @@ import { bloodlines, characterPhysiques, characterTechniques, spiritualRoots } f
 import { craftedProducts, professionDefinitions, professionRecipes } from './professions.js';
 import { daoDefinitions } from './daos.js';
 import { battleDaoSkillsV118, daoPassivesV118, daoVariantsV118 } from './battle-dao-skill-pack-v118.js';
+import { bodyDaoProductionSkillsV1 } from './body-dao-production-v1.js';
 export function buildRegistry() {
     const registry = new GameRegistry();
     for (const dao of daoDefinitions)
@@ -44,7 +45,7 @@ export function buildRegistry() {
         registry.registerStatus(status);
     for (const skill of skills)
         registry.registerSkill(skill);
-    for (const skill of battleDaoSkillsV118)
+    for (const skill of bodyDaoProductionSkillsV1(battleDaoSkillsV118))
         registry.registerSkill(skill);
     const errors = registry.validate();
     if (errors.length)
