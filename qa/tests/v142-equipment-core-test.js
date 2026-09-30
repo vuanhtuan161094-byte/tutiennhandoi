@@ -6,6 +6,7 @@ import {
   EQUIPMENT_SET_CATALOG_V142,
   EQUIPMENT_SLOTS_V142,
   EQUIPMENT_SANG_THE_INDEX_V142,
+  equipmentSetDefinitionV142,
   equipmentSetPowerV142,
 } from '../../dist/core/equipment-v142.js';
 
@@ -14,30 +15,16 @@ assert.equal(EQUIPMENT_SANG_THE_INDEX_V142, 28);
 assert.equal(EQUIPMENT_ATTIRE_SLOTS_V142.length, 6);
 assert.equal(EQUIPMENT_JEWELRY_SLOTS_V142.length, 4);
 assert.equal(EQUIPMENT_SLOTS_V142.length, 10);
-assert.equal(EQUIPMENT_SET_CATALOG_V142.filter(x => x.category === 'attire').length, 5);
-assert.equal(EQUIPMENT_SET_CATALOG_V142.filter(x => x.category === 'jewelry').length, 4);
 
-for (const set of EQUIPMENT_SET_CATALOG_V142.filter(x => x.category === 'attire')) {
-  assert.ok(set.bonuses.some(x => x.pieces === 6), `${set.name} phải có mốc 6 món.`);
-}
-for (const set of EQUIPMENT_SET_CATALOG_V142.filter(x => x.category === 'jewelry')) {
-  assert.ok(set.bonuses.some(x => x.pieces === 4), `${set.name} phải có mốc 4 món.`);
-}
+// Ngũ Hành equipment Set gameplay is retired. Historical ids remain readable only as inert metadata.
+assert.deepEqual(EQUIPMENT_SET_CATALOG_V142, []);
+const legacySet = equipmentSetDefinitionV142('set.v142.attire.fire');
+assert.equal(legacySet?.retired, true);
+assert.equal(legacySet?.category, 'attire');
+assert.deepEqual(legacySet?.bonuses, []);
 
-const attireSet = EQUIPMENT_SET_CATALOG_V142.find(x => x.category === 'attire');
-const jewelrySet = EQUIPMENT_SET_CATALOG_V142.find(x => x.category === 'jewelry');
-const items = [];
-const equipped = {};
-for (const slot of EQUIPMENT_ATTIRE_SLOTS_V142) {
-  const item = { id: `i.${slot}`, schema: 'equipment.v142', slot, setId: attireSet.id };
-  items.push(item); equipped[slot] = item.id;
-}
-for (const slot of EQUIPMENT_JEWELRY_SLOTS_V142) {
-  const item = { id: `j.${slot}`, schema: 'equipment.v142', slot, setId: jewelrySet.id };
-  items.push(item); equipped[slot] = item.id;
-}
-const power = equipmentSetPowerV142({ items, equipped });
-assert.ok(power.activeSets.some(x => x.setId === attireSet.id && x.pieces === 6));
-assert.ok(power.activeSets.some(x => x.setId === jewelrySet.id && x.pieces === 4));
+const legacyItems = [{ id:'legacy.weapon', schema:'equipment.v142', slot:'weapon', setId:'set.v142.attire.fire' }];
+const power = equipmentSetPowerV142({ items:legacyItems, equipped:{weapon:'legacy.weapon'} });
+assert.deepEqual(power, { flatStats:{}, statMultipliers:{}, activeSets:[] });
 
-console.log('V142 equipment core PASS');
+console.log('V142 equipment core retirement PASS');
