@@ -7,9 +7,10 @@ import * as legacy from './equipment-set-v116-legacy.js';
 export * from './equipment-set-v116-legacy.js';
 
 export const LIVE_EQUIPMENT_SET_CATALOG_V12310 = Object.freeze([]);
-// Preserve the historical retirement list so the five formerly-live element Set ids are not
-// destructively erased during save normalization; they remain readable but inert.
-export const RETIRED_EQUIPMENT_SET_IDS_V12310 = legacy.RETIRED_EQUIPMENT_SET_IDS_V12310;
+// The five Ngũ Hành attire Sets were the live equipment Sets immediately before retirement.
+// Preserve exactly those ids as inert compatibility metadata; the legacy module's
+// RETIRED_EQUIPMENT_SET_IDS_V12310 refers to an older pre-retirement classification.
+export const RETIRED_EQUIPMENT_SET_IDS_V12310 = Object.freeze(legacy.LIVE_EQUIPMENT_SET_CATALOG_V12310.map(set => set.id));
 export function isLiveEquipmentSetV12310(_id) { return false; }
 export function activeEquipmentSetMechanicsV116(_state) { return []; }
 export function equipmentSetMechanicTagsV116(_active) { return []; }
