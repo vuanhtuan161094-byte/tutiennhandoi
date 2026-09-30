@@ -8,7 +8,6 @@ const session=read('../../dist/core/session.js');
 const pvp=read('../../dist/core/pvp-v91.js');
 const huntKernel=read('../../dist/core/endless-hunt-combat-kernel-v2.js');
 const mindRuntime=read('../../dist/core/mind-dao-v2-runtime.js');
-const mindM2B=read('./mind-dao-m2-passive-architecture-test.js');
 
 // Shared production combat authority: V3 still instantiates the canonical CombatEngine,
 // and every compiled V3 encounter is routed through runCombatKernelV3.
@@ -38,9 +37,10 @@ assert.doesNotMatch(session,/runCompiledCombatEncounterV2\(/,'production session
 assert.match(session,/initialBattleDaoStateV2: huntRuntime\?\.battleDaoStateV2 \? structuredClone\(huntRuntime\.battleDaoStateV2\)/);
 assert.match(mindRuntime,/carryAcrossHuntKill|battleDaoStateV2|mind/i);
 
-// Secondary Mind remains the already-closed passive-only Resolve lane; M3 must preserve that guard.
-assert.match(mindM2B,/Secondary Mind/i);
-assert.match(mindM2B,/resolvePct/);
+// Secondary Mind remains the already-closed passive-only Resolve lane; source-audit the runtime
+// owner directly instead of depending on prose/comments inside another test file.
+assert.match(mindRuntime,/function isSecondaryMind\(entity\)/);
+assert.match(mindRuntime,/out\.resolvePct/);
 
 // Feature-scoped closure must keep shared V3 parity plus locked Sword/Fist regressions.
 const manifest=backendFeatureClosureManifest('dao-mind');
