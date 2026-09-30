@@ -18,7 +18,11 @@ const expectedEvents=['OnCrit','OnDamageTaken','OnEnemyHeal','OnHit','OnShieldBr
 const expectedEffects=['addMark','applyStatus','damage','damageOverTime','heal','removeStatus','restoreSpirit','shield'];
 check(JSON.stringify(v.triggerEvents)===JSON.stringify(expectedEvents),'V107 authored Pháp Kỹ use only the 6 audited CombatKernel trigger events');
 check(JSON.stringify(v.effectTypes)===JSON.stringify(expectedEffects),'V107 authored Pháp Kỹ use only the 8 audited CombatKernel effect types');
-const combat=fs.readFileSync('./dist/core/combat.js','utf8');
+const combat=[
+  fs.readFileSync('./dist/core/combat-m1-base.js','utf8'),
+  fs.readFileSync('./dist/core/combat-m2b-base.js','utf8'),
+  fs.readFileSync('./dist/core/combat.js','utf8'),
+].join('\n');
 check(expectedEvents.every(x=>combat.includes(x)),'V107 every authored trigger event has a CombatKernel consumer');
 check(expectedEffects.every(x=>combat.includes(`case '${x}'`)||combat.includes(`case\"${x}\"`)||combat.includes(`case \"${x}\"`)),'V107 every authored effect type has an explicit CombatKernel effect consumer');
 const [a,b,c]=ARTIFACTS_V88.slice(0,3),[ra,rb]=RELICS_V88.slice(0,2);
