@@ -1,4 +1,4 @@
-// B2/B3 Body production facade.
+// B2/B3/B4 Body production facade.
 // The historical all-Dao implementation is preserved verbatim in battle-dao-v2-runtime-base.js.
 // Explicit exports below override only Main Body behavior; every unrelated Dao remains delegated.
 export * from './battle-dao-v2-runtime-base.js';
@@ -200,6 +200,7 @@ export function prepareRemainingDaoCoreActionV2(entity,target,skill,action,now,.
   d.counterForceAfter=before;
   d.bodyCashoutSkillId=undefined;
   d.bodyPerfectCashout=false;
+  d.bodyRecoverySpendBonusPct=0;
 
   if(spendRule&&before+1e-9>=spendRule.minimum){
     const wanted=spendRule.amount==='all'?before:Math.max(0,Number(spendRule.amount)||0);
@@ -214,6 +215,17 @@ export function prepareRemainingDaoCoreActionV2(entity,target,skill,action,now,.
 
     // Chân Thân Viên Mãn empowers the deliberately chosen cash-out only.
     if(perfect) action.effectBonusPct+=40;
+
+    // p6 keeps its historical 4→12% coefficient, but ownership is now intentional
+    // Phản Thế spend: each full 20 spent by Quy Nguyên strengthens that root's heal/shield.
+    if(skill.id==='skill.dao.body.recover'&&hasBodyPassive(entity,6)){
+      const groups=Math.min(2,Math.floor(spent/20));
+      if(groups>0){
+        const bonusPct=groups*scale(bodyPassiveLevel(entity,6),4,12);
+        d.bodyRecoverySpendBonusPct=bonusPct;
+        action.effectBonusPct+=bonusPct;
+      }
+    }
   }
 
   // Preserve the shared V2 recovery multiplier without invoking the old Body cap auto-spend branch.
