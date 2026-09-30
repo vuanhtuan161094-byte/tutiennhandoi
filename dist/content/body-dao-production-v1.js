@@ -17,6 +17,9 @@ export const BODY_DAO_PRODUCTION_PATCH_V1 = Object.freeze({
     effects: Object.freeze([shieldPct(12, 3.5)]),
   }),
   'skill.dao.body.transform': Object.freeze({
+    // Body B5: this is a production reaction to a real target cast/channel,
+    // not an encounter-scripted counterWindow action.
+    runtimeV117: Object.freeze({ requiresCounterWindow: false }),
     fiveStatScalingV5: Object.freeze({ body: 1.20, agility: 0.80, sense: 0.80 }),
     fiveStatBaselineCoefficientV5: 2.80,
   }),
@@ -24,6 +27,9 @@ export const BODY_DAO_PRODUCTION_PATCH_V1 = Object.freeze({
     effects: Object.freeze([shieldPct(18, 3)]),
   }),
   'skill.dao.body.counter': Object.freeze({
+    // Auto eligibility is targetIsCasting + Phản Thế. Do not require the
+    // separate Boss encounter counterWindow contract as a second hidden gate.
+    runtimeV117: Object.freeze({ requiresCounterWindow: false }),
     fiveStatScalingV5: Object.freeze({ power: 1.20, body: 1.20, sense: 0.80 }),
     fiveStatBaselineCoefficientV5: 3.20,
   }),
@@ -55,6 +61,7 @@ export function bodyDaoProductionSkillV1(skill) {
     ...patch,
     productionAuthorityV1: BODY_DAO_PRODUCTION_SCHEMA_V1,
     effects: patch.effects ? patch.effects.map(effect => ({ ...effect })) : (skill.effects ?? []).map(effect => ({ ...effect })),
+    runtimeV117: patch.runtimeV117 ? { ...(skill.runtimeV117 ?? {}), ...patch.runtimeV117 } : skill.runtimeV117,
     fiveStatScalingV5: patch.fiveStatScalingV5 ? { ...patch.fiveStatScalingV5 } : skill.fiveStatScalingV5,
   };
 }
