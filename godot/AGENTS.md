@@ -41,6 +41,28 @@ Bug / parser / runtime / import / export problem:
 - `/skills/godot-debugging/SKILL.md`
 - `/skills/godot-code-review/SKILL.md` when a structural cause is plausible.
 
+### 2.1 Source-video animation intake — LOCKED
+
+For **Home / Tu luyện / Character** animation work, a user-provided MP4/WebM/MOV is **source material only**, not a runtime video asset.
+
+When the user says phrases such as `đưa hoạt ảnh vào`, `đẩy hoạt ảnh vào`, `thêm animation`, `đưa video này vào Home/Tu luyện/Character`, or an equivalent instruction, the default interpretation is locked to this workflow unless the user explicitly asks for real video playback:
+
+`source video -> tools/video_to_godot_animation.py -> transparent stable-canvas frames -> WebP atlas -> SpriteFrames .tres -> existing animation registry -> AnimatedSprite2D`
+
+Mandatory rules:
+- read `docs/tools/VIDEO_TO_GODOT_ANIMATION.md` before processing source video;
+- use `TAO_ANIMATION_TU_VIDEO.cmd` / `tools/video_to_godot_animation.py`; do not invent a parallel conversion path when the canonical tool can handle the source;
+- do **not** add `VideoStreamPlayer`, ship the MP4 as the character loop, or build a separate video-playback subsystem for these animations;
+- preserve stable union crop and a stable canvas so the subject does not jump between frames;
+- chroma-key/despill/matte cleanup belongs in the asset pipeline, not in gameplay code;
+- use the existing `HomeAnimationRegistry` + `meditation_hero.gd` path for Home and `CharacterAnimationRegistry` + `standing_hero.gd` for Character;
+- keep animation presentation-only. It must not alter cultivation EXP, realm progression, stats, combat, save authority, or canonical JS gameplay timing;
+- classify by pose/semantic role rather than filename: seated/meditation cultivation belongs to Home cultivation; relaxed/idle/low-pose activity belongs to Home rest; standing character presentation belongs to Character, unless the user explicitly assigns a different role;
+- match the nearest production preset conventions for FPS, frame width, bottom anchoring, looping/restart semantics and lazy loading instead of choosing new values ad hoc;
+- source videos and pipeline previews are not runtime proof. After resource integration run import + `KIEM_TRA_GAME.cmd`, inspect the real 390x844 runtime, then request user visual approval before calling the asset locked.
+
+If an older chat description conflicts with the live registries/tool/docs, live `main` wins.
+
 ## 3. Architecture rules
 
 Prefer:
