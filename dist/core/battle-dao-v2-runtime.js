@@ -1,11 +1,19 @@
-// B2/B3/B4 Body production facade.
+// B2/B3/B4/B6 Body production facade.
 // The historical all-Dao implementation is preserved verbatim in battle-dao-v2-runtime-base.js.
 // Explicit exports below override only Main Body behavior; every unrelated Dao remains delegated.
 export * from './battle-dao-v2-runtime-base.js';
 import * as base from './battle-dao-v2-runtime-base.js';
 
 export const BODY_DAO_RUNTIME_PRODUCTION_SCHEMA_V1 = 'body-dao.runtime.production.v1';
+export const BODY_BLOOD_RUSH_SKILL_ID_V1 = 'skill.dao.body.elephant';
+export const BODY_BLOOD_RUSH_HP_COST_PCT_V1 = 10;
+export const BODY_BLOOD_RUSH_MIN_HP_PCT_V1 = 35;
+export const BODY_BLOOD_RUSH_DURATION_SECONDS_V1 = 6;
+export const BODY_BLOOD_RUSH_DAMAGE_BONUS_PCT_V1 = 20;
+export const BODY_IMMOVABLE_CHANNEL_DR_PCT_V1 = 25;
+
 const BODY_PASSIVE_PREFIX='passive.v2.body.';
+const BODY_IMMOVABLE_SKILL_ID='skill.dao.body.immovable';
 const BODY_COUNTER_PAYOFF_SKILLS=new Set([
   'skill.dao.body.transform',
   'skill.dao.body.counter',
@@ -25,6 +33,8 @@ const mainBody=entity=>entity?.combatBuildV117?.mainDaoId==='body';
 const bodyPassiveId=n=>`${BODY_PASSIVE_PREFIX}p${n}`;
 const hasBodyPassive=(entity,n)=>Boolean(entity?.combatBuildV117?.learnedDaoPassiveIdsV118?.includes(bodyPassiveId(n)));
 const bodyPassiveLevel=(entity,n)=>clamp(Math.floor(entity?.combatBuildV117?.passiveLevelsV125?.[bodyPassiveId(n)]??1),1,20);
+const bodyMaxHp=entity=>Math.max(1,Number(entity?.baseStats?.maxHp)||Number(entity?.hp)||1);
+const bodyHpPct=entity=>Math.max(0,Number(entity?.hp)||0)/bodyMaxHp(entity)*100;
 
 function bodyMaskedBuild(entity){
   const build=entity?.combatBuildV117;
@@ -59,6 +69,10 @@ function ensureBodyProductionState(entity,now=0){
     core.bodyCycleWindowUntil=Math.max(0,Number(core.bodyCycleWindowUntil)||0);
     core.bodyMitigationEvents=Math.max(0,Math.floor(Number(core.bodyMitigationEvents)||0));
     core.bodyCashoutEvents=Math.max(0,Math.floor(Number(core.bodyCashoutEvents)||0));
+    core.bodyBloodRushUntil=Math.max(0,Number(core.bodyBloodRushUntil)||0);
+    core.bodyBloodRushActivations=Math.max(0,Math.floor(Number(core.bodyBloodRushActivations)||0));
+    core.bodyBloodRushHpPaid=Math.max(0,Number(core.bodyBloodRushHpPaid)||0);
+    if(core.bodyBloodRushUntil>0&&now>=core.bodyBloodRushUntil) core.bodyBloodRushUntil=0;
   }
   return core;
 }
@@ -70,6 +84,12 @@ function bodyGuardWindowActive(entity,now){
 }
 function bodyCycleWindowActive(entity,now){
   return (entity?.battleDaoStateV2?.body?.core?.bodyCycleWindowUntil??0)>now;
+}
+function bodyBloodRushActive(entity,now){
+  return (entity?.battleDaoStateV2?.body?.core?.bodyBloodRushUntil??0)>now;
+}
+function bodyImmovableChannelActive(entity){
+  return entity?.channeling?.skillId===BODY_IMMOVABLE_SKILL_ID;
 }
 function isBodySkillId(skillId){ return String(skillId??'').startsWith('skill.dao.body.'); }
 function isMainBodySkill(entity,skill){
@@ -87,6 +107,9 @@ export function createBattleDaoRuntimeStateV2(entity,now=0){
       state.body.core.bodyCycleWindowUntil=0;
       state.body.core.bodyMitigationEvents=0;
       state.body.core.bodyCashoutEvents=0;
+      state.body.core.bodyBloodRushUntil=0;
+      state.body.core.bodyBloodRushActivations=0;
+      state.body.core.bodyBloodRushHpPaid=0;
     }
   }
   return state;
@@ -109,6 +132,9 @@ export function battleDaoV2OutgoingMultiplier(entity,target,now,sourceTag,skillI
   ensureBodyProductionState(entity,now);
   // Zero the legacy “hold Phản Thế = free damage” lane; production payoff comes from executed windows/cash-outs.
   let multiplier=base.battleDaoV2OutgoingMultiplier(bodyView(entity,{zeroCounter:true}),target,now,sourceTag,skillId);
+  if(isBodySkillId(skillId)&&bodyBloodRushActive(entity,now)){
+    multiplier*=1+BODY_BLOOD_RUSH_DAMAGE_BONUS_PCT_V1/100;
+  }
   if(isBodySkillId(skillId)&&BODY_COUNTER_PAYOFF_SKILLS.has(skillId)&&bodyGuardWindowActive(entity,now)&&hasBodyPassive(entity,4)){
     multiplier*=1+scale(bodyPassiveLevel(entity,4),4,12)/100;
   }
@@ -123,6 +149,10 @@ export function battleDaoV2IncomingDamageMultiplier(entity,now){
   ensureBodyProductionState(entity,now);
   // Remove legacy passive DR from simply holding resource.
   let multiplier=base.battleDaoV2IncomingDamageMultiplier(bodyView(entity,{zeroCounter:true}),now);
+  // B6 Bất Động identity: the actor is actually harder to hurt only while the channel is live.
+  if(bodyImmovableChannelActive(entity)){
+    multiplier*=1-BODY_IMMOVABLE_CHANNEL_DR_PCT_V1/100;
+  }
   if(bodyGuardWindowActive(entity,now)&&hasBodyPassive(entity,7)){
     const reduction=scale(bodyPassiveLevel(entity,7),4,12);
     multiplier*=1-reduction/100;
@@ -201,6 +231,29 @@ export function prepareRemainingDaoCoreActionV2(entity,target,skill,action,now,.
   d.bodyCashoutSkillId=undefined;
   d.bodyPerfectCashout=false;
   d.bodyRecoverySpendBonusPct=0;
+  d.bodyBloodRushActivated=false;
+  d.bodyBloodRushSuppressedLowHp=false;
+  d.bodyBloodRushHpPaid=0;
+  d.bodyBloodRushUntil=core.bodyBloodRushUntil;
+
+  if(skill.id===BODY_BLOOD_RUSH_SKILL_ID_V1){
+    const hpPct=bodyHpPct(entity);
+    if(hpPct+1e-9>=BODY_BLOOD_RUSH_MIN_HP_PCT_V1){
+      const requested=bodyMaxHp(entity)*BODY_BLOOD_RUSH_HP_COST_PCT_V1/100;
+      const paid=Math.min(requested,Math.max(0,(Number(entity.hp)||0)-1));
+      if(paid>0){
+        entity.hp=Math.max(1,(Number(entity.hp)||0)-paid);
+        core.bodyBloodRushUntil=now+BODY_BLOOD_RUSH_DURATION_SECONDS_V1;
+        core.bodyBloodRushActivations+=1;
+        core.bodyBloodRushHpPaid+=paid;
+        d.bodyBloodRushActivated=true;
+        d.bodyBloodRushHpPaid=paid;
+        d.bodyBloodRushUntil=core.bodyBloodRushUntil;
+      }
+    }else{
+      d.bodyBloodRushSuppressedLowHp=true;
+    }
+  }
 
   if(spendRule&&before+1e-9>=spendRule.minimum){
     const wanted=spendRule.amount==='all'?before:Math.max(0,Number(spendRule.amount)||0);
@@ -253,11 +306,16 @@ export function v2ResourceProjection(entity,now){
   syncBattleDaoV2Timers(entity,now);
   const out=base.v2ResourceProjection(bodyView(entity),now);
   if(out&&typeof out==='object'){
+    const core=entity.battleDaoStateV2?.body?.core;
     out.bodyProductionAuthorityV1=BODY_DAO_RUNTIME_PRODUCTION_SCHEMA_V1;
     out.bodyGuardWindowActive=bodyGuardWindowActive(entity,now);
     out.bodyCycleWindowActive=bodyCycleWindowActive(entity,now);
-    out.bodyMitigationEvents=entity.battleDaoStateV2?.body?.core?.bodyMitigationEvents??0;
-    out.bodyCashoutEvents=entity.battleDaoStateV2?.body?.core?.bodyCashoutEvents??0;
+    out.bodyMitigationEvents=core?.bodyMitigationEvents??0;
+    out.bodyCashoutEvents=core?.bodyCashoutEvents??0;
+    out.bodyBloodRushActive=bodyBloodRushActive(entity,now);
+    out.bodyBloodRushRemainingSeconds=Math.max(0,(core?.bodyBloodRushUntil??0)-now);
+    out.bodyBloodRushActivations=core?.bodyBloodRushActivations??0;
+    out.bodyBloodRushHpPaid=core?.bodyBloodRushHpPaid??0;
     delete out.bodyPassiveStack;
     delete out.bodyPassiveStackCap;
   }
