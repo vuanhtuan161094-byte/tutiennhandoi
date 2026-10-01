@@ -72,6 +72,10 @@ function bloodRule(profile){
 function bloodThreshold(profile){
   return bloodRule(profile)?.conditions?.find(x=>x.type==='selfHpAbove')?.pct;
 }
+function bloodForceThreshold(profile){
+  const condition=bloodRule(profile)?.conditions?.find(x=>x.type==='selfDaoV2ResourceAtLeast'&&x.resource==='counterForce');
+  return condition?.value;
+}
 
 // Successful Nhiên Huyết is a direct HP payment, not incoming damage or Phản Thế generation.
 {
@@ -125,8 +129,8 @@ function bloodThreshold(profile){
   assert.ok(Math.abs(after-baseline)<1e-9,'Bất Động DR must end with the channel');
 }
 
-// Selectable Auto contract: three user-facing presets rewrite the Nhiên Huyết HP threshold,
-// while canonical Body Auto keeps defense ahead of voluntary blood sacrifice.
+// Selectable Auto contract: presets rewrite only the HP appetite. Canonical Body Auto keeps
+// defense first and requires banked Phản Thế before voluntarily paying HP for Huyết Bạo.
 {
   assert.equal(BODY_DAO_AUTO_DEFAULT_PRESET_V1,'balanced');
   assert.deepEqual(
@@ -150,6 +154,7 @@ function bloodThreshold(profile){
   assert(rotation.rules.find(x=>x.skillId==='skill.dao.body.guard').priority>bloodRules[0].priority);
   assert(rotation.rules.find(x=>x.skillId==='skill.dao.body.immovable').priority>bloodRules[0].priority);
   assert.equal(bloodThreshold(rotation),75,'default Body Auto must preserve the balanced 75% behavior');
+  assert.equal(bloodForceThreshold(rotation),20,'Auto Nhiên Huyết must wait for a real Phản Thế payoff window');
   assert.equal(bodyDaoAutoPresetFromProfileV1(rotation),'balanced');
 
   const nonBlood=x=>x.rules.filter(rule=>rule.skillId!==BODY_BLOOD_RUSH_SKILL_ID_V1);
@@ -157,6 +162,8 @@ function bloodThreshold(profile){
   const aggressive=applyBodyDaoAutoPresetV1(rotation,'aggressive');
   assert.equal(bloodThreshold(cautious),85);
   assert.equal(bloodThreshold(aggressive),60);
+  assert.equal(bloodForceThreshold(cautious),20,'preset changes must preserve the Phản Thế payoff gate');
+  assert.equal(bloodForceThreshold(aggressive),20,'preset changes must preserve the Phản Thế payoff gate');
   assert.equal(bloodRule(cautious).priority,136);
   assert.equal(bloodRule(aggressive).priority,136);
   assert.equal(bodyDaoAutoPresetFromProfileV1(cautious),'cautious');
@@ -175,6 +182,7 @@ function bloodThreshold(profile){
 
   const aiSource=fs.readFileSync(new URL('../../dist/core/ai.js',import.meta.url),'utf8');
   assert(aiSource.includes("case 'selfHpAbove'"),'AI must support the selectable high-HP Blood Rush condition');
+  assert(aiSource.includes("case 'selfDaoV2ResourceAtLeast'"),'AI must support the Phản Thế payoff gate');
   assert(aiSource.includes('BODY_BLOOD_RUSH_MIN_HP_PCT_V1'),'manual/explicit use must retain the 35% hard safety floor');
   assert(aiSource.includes('bodyBloodRushAutoMinHpPct'),'generic Auto fallback must read the selected preset threshold');
   assert(aiSource.includes('projection.bodyBloodRushActive'),'generic fallback must not re-open an already active Blood Rush window');
