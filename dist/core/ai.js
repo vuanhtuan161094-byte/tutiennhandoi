@@ -4,16 +4,21 @@ import { canUseBattleDaoSkillV118, daoResourceValueV118, daoSpiritCostMultiplier
 import { BODY_BLOOD_RUSH_MIN_HP_PCT_V1, BODY_BLOOD_RUSH_SKILL_ID_V1, v2ResourceProjection } from './battle-dao-v2-runtime.js';
 import { skillRuntimeV117 } from './skill-runtime-v117.js';
 import { effectiveStats } from './stats.js';
-const BODY_BLOOD_RUSH_AUTO_MIN_HP_PCT_V1 = 75;
 function daoV2AiResourceValue(self, _target, resource, now) {
     const projected = v2ResourceProjection(self, now)[resource];
     return typeof projected === 'number' ? projected : undefined;
+}
+function bodyBloodRushAutoMinHpPct(self) {
+    const rule = self?.aiProfile?.rules?.find?.(row => row?.skillId === BODY_BLOOD_RUSH_SKILL_ID_V1);
+    const condition = rule?.conditions?.find?.(row => row?.type === 'selfHpAbove');
+    const pct = Number(condition?.pct);
+    return Number.isFinite(pct) ? Math.max(BODY_BLOOD_RUSH_MIN_HP_PCT_V1, pct) : 75;
 }
 function checkCondition(condition, self, target, now) {
     switch (condition.type) {
         case 'always': return true;
         case 'selfHpBelow': return self.hp / combatMaxHp(self.baseStats) * 100 < condition.pct;
-        case 'selfHpAbove': return self.hp / combatMaxHp(self.baseStats) * 100 > condition.pct;
+        case 'selfHpAbove': return self.hp / combatMaxHp(self.baseStats) * 100 + 1e-9 >= condition.pct;
         case 'selfSpiritBelow': return self.spirit / Math.max(1, self.baseStats.maxSpirit) * 100 < condition.pct;
         case 'targetHpBelow': return target.hp / combatMaxHp(target.baseStats) * 100 < condition.pct;
         case 'targetHpAbove': return target.hp / combatMaxHp(target.baseStats) * 100 > condition.pct;
@@ -105,7 +110,7 @@ function autoFallbackAllows(self, skill, target, now) {
     if (skill.id === BODY_BLOOD_RUSH_SKILL_ID_V1 && self.combatBuildV117?.mainDaoId === 'body') {
         const hpPct = self.hp / Math.max(1, combatMaxHp(self.baseStats)) * 100;
         const projection = v2ResourceProjection(self, now);
-        if (hpPct + 1e-9 < BODY_BLOOD_RUSH_AUTO_MIN_HP_PCT_V1 || projection.bodyBloodRushActive)
+        if (hpPct + 1e-9 < bodyBloodRushAutoMinHpPct(self) || projection.bodyBloodRushActive)
             return false;
     }
     return true;
