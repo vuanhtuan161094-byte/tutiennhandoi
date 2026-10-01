@@ -1,9 +1,10 @@
 import { combatMaxHp, skillTrueEssenceCost } from './combat-rules.js';
 import { canUseSkillRuntimeV117, resourceValueV117, skillSpiritCostMultiplierFromRuntimeV117 } from './five-element-combat-v117.js';
 import { canUseBattleDaoSkillV118, daoResourceValueV118, daoSpiritCostMultiplierV118 } from './battle-dao-combat-v118.js';
-import { v2ResourceProjection } from './battle-dao-v2-runtime.js';
+import { BODY_BLOOD_RUSH_MIN_HP_PCT_V1, BODY_BLOOD_RUSH_SKILL_ID_V1, v2ResourceProjection } from './battle-dao-v2-runtime.js';
 import { skillRuntimeV117 } from './skill-runtime-v117.js';
 import { effectiveStats } from './stats.js';
+const BODY_BLOOD_RUSH_AUTO_MIN_HP_PCT_V1 = 75;
 function daoV2AiResourceValue(self, _target, resource, now) {
     const projected = v2ResourceProjection(self, now)[resource];
     return typeof projected === 'number' ? projected : undefined;
@@ -12,6 +13,7 @@ function checkCondition(condition, self, target, now) {
     switch (condition.type) {
         case 'always': return true;
         case 'selfHpBelow': return self.hp / combatMaxHp(self.baseStats) * 100 < condition.pct;
+        case 'selfHpAbove': return self.hp / combatMaxHp(self.baseStats) * 100 > condition.pct;
         case 'selfSpiritBelow': return self.spirit / Math.max(1, self.baseStats.maxSpirit) * 100 < condition.pct;
         case 'targetHpBelow': return target.hp / combatMaxHp(target.baseStats) * 100 < condition.pct;
         case 'targetHpAbove': return target.hp / combatMaxHp(target.baseStats) * 100 > condition.pct;
@@ -69,6 +71,11 @@ export function canUseSkill(self, skill, registry, now) {
         return false;
     if ((self.cooldownUntil[skill.id] ?? 0) > now)
         return false;
+    if (skill.id === BODY_BLOOD_RUSH_SKILL_ID_V1 && self.combatBuildV117?.mainDaoId === 'body') {
+        const hpPct = self.hp / Math.max(1, combatMaxHp(self.baseStats)) * 100;
+        if (hpPct + 1e-9 < BODY_BLOOD_RUSH_MIN_HP_PCT_V1)
+            return false;
+    }
     const stats = effectiveStats(self, registry, now);
     const cost = skillTrueEssenceCost(skill, stats, activeSpiritCostMultiplier(self, registry, now) * skillSpiritCostMultiplierFromRuntimeV117(self, skill, now) * daoSpiritCostMultiplierV118(self, skill));
     if (self.spirit + 1e-9 < cost)
@@ -88,13 +95,19 @@ export function canUseSkill(self, skill, registry, now) {
     }
     return true;
 }
-function autoFallbackAllows(skill, target) {
+function autoFallbackAllows(self, skill, target, now) {
     // M1: these Mind actions are tactical target-mark spenders. Their explicit
     // rotation rules own eligibility; generic cooldown fallback must not fire
     // them at zero Thần Ấn and bypass the resource contract.
     if ((skill.id === 'skill.dao.mind.interfere' || skill.id === 'skill.dao.mind.burst')
         && (target.marks['Thần Ấn'] ?? 0) < 1)
         return false;
+    if (skill.id === BODY_BLOOD_RUSH_SKILL_ID_V1 && self.combatBuildV117?.mainDaoId === 'body') {
+        const hpPct = self.hp / Math.max(1, combatMaxHp(self.baseStats)) * 100;
+        const projection = v2ResourceProjection(self, now);
+        if (hpPct + 1e-9 < BODY_BLOOD_RUSH_AUTO_MIN_HP_PCT_V1 || projection.bodyBloodRushActive)
+            return false;
+    }
     return true;
 }
 export function chooseSkill(self, target, registry, now) {
@@ -129,12 +142,12 @@ export function chooseSkill(self, target, registry, now) {
         if (rule.conditions.every(c => checkCondition(c, self, target, now)))
             return skill;
     }
-    // Counter actions are tactical-only. Mind mark-spenders are also excluded
-    // from generic zero-context fallback when the target has no spendable marks.
+    // Counter actions are tactical-only. Mind mark-spenders and Body Huyết–Công
+    // are also protected from generic zero-context fallback when their contract is not met.
     return self.skillIds
         .map(id => registry.skill(id))
         .filter(s => skillRuntimeV117(s).form !== 'counter')
-        .filter(s => autoFallbackAllows(s, target))
+        .filter(s => autoFallbackAllows(self, s, target, now))
         .filter(s => canUseSkill(self, s, registry, now))
         .sort((a, b) => a.cooldown - b.cooldown)[0];
 }
