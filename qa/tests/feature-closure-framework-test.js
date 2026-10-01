@@ -82,10 +82,17 @@ for(const gate of [
 assert.deepEqual(mind.lockedRegressionFeatures,['dao-sword','dao-fist']);
 
 const body=backendFeatureClosureManifest('dao-body');
-assert.equal(body.closureReady,false,'Body B0/B1 must remain fail-closed before passive migration/parity/benchmark evidence');
-assert.equal(body.benchmarkCommand,undefined,'Body benchmark must not be invented before B3/B4 correctness and parity are installed');
-assert.equal(body.benchmarkContractGate,undefined,'Body benchmark contract is deferred until the benchmark harness is actually authored');
-assert(body.gates.includes('body-dao-production-contract-test.js'),'dao-body must lock its B0/B1 production contract');
+assert.equal(body.closureReady,false,'Body B6 must remain fail-closed until Huyết–Công/Hybrid benchmark and B7 closure evidence exist');
+assert.equal(body.benchmarkCommand,'tools\\web\\RUN_BODY_B5_BENCHMARK.cmd','Body B5 benchmark launcher must remain registered while B6 is open');
+assert.equal(body.benchmarkContractGate,'body-dao-b5-harness-contract-test.js','Body B5 harness contract must remain registered while B6 is open');
+for(const gate of [
+  'body-dao-production-contract-test.js',
+  'body-dao-passive-architecture-test.js',
+  'body-dao-resource-transaction-test.js',
+  'body-dao-b4-consumer-parity-test.js',
+  'body-dao-b5-harness-contract-test.js',
+  'body-dao-b6-blood-immovable-correctness-test.js',
+]) assert(body.gates.includes(gate),`dao-body missing installed Body gate ${gate}`);
 for(const gate of [
   'sword-dao-production-contract-test.js',
   'sword-dao-five-stat-migration-test.js',
