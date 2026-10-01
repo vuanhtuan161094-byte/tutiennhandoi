@@ -81,14 +81,21 @@ Initial B6 candidate values are deliberately local and benchmarkable:
 - activation cost: **10% Max HP** paid directly by the actor;
 - the cost must never reduce HP below 1;
 - below **35% current HP**, activation is suppressed and pays no HP;
-- Auto should only attempt activation at **75% HP or higher**;
 - successful activation opens **Huyết Bạo** for **6s**;
 - while Huyết Bạo is active, outgoing **Body-skill damage** gains **+20%**;
 - the activation itself has no direct damage packet;
 - self-paid HP bypasses incoming-damage hooks: no `Phản Thế`, no body mitigation event, no get-hit passive reward;
 - recasting may refresh the window only through the normal skill cooldown; it must not stack multiplicatively.
 
-These values are a B6 candidate, not final balance evidence. A new identity-valid Huyết–Công/Hybrid benchmark is required before B7 closure.
+Player-facing Auto is selectable and changes only the HP threshold for automatically opening Nhiên Huyết:
+
+- **Thận trọng (`cautious`)** — activate at **≥85% HP**;
+- **Cân bằng (`balanced`)** — activate at **≥75% HP** and is the default;
+- **Liều mạng (`aggressive`)** — activate at **≥55% HP**.
+
+The **35% hard safety floor is independent of the preset** and may not be lowered by Auto configuration. Auto also may not reopen Nhiên Huyết while Huyết Bạo is already active. The selected preset is stored in the character combat Auto profile so the current Godot save/restore path preserves the selection.
+
+These values are B6 candidates, not final balance evidence. A new identity-valid Huyết–Công/Hybrid benchmark is required before B7 closure.
 
 ## 7. B6 Bất Động repair
 
@@ -159,13 +166,15 @@ Canonical Body Auto priority:
 2. emergency recovery at low HP only when sufficient `Phản Thế` exists;
 3. cash high `Phản Thế` with Finisher into a Broken target;
 4. cash moderate `Phản Thế` with Break into a non-Broken target;
-5. if HP is **≥75%** and Nhiên Huyết is ready, open the Huyết–Công window;
+5. if HP satisfies the selected **Thận trọng / Cân bằng / Liều mạng** threshold and Nhiên Huyết is ready, open the Huyết–Công window;
 6. establish Guard/Immovable when survival pressure justifies the lost tempo;
 7. counter spender only in a real casting/counter window;
 8. Basic is normal filler;
 9. Ultimate is held for a meaningful survival window, not dumped at full HP.
 
-Auto must not use Nhiên Huyết below the authored safety threshold or when its blood-rush window is already active.
+The preset changes only Nhiên Huyết Auto aggression. It must not rewrite unrelated Body tactical rules. Auto must not use Nhiên Huyết below the **35% hard safety floor** or while its blood-rush window is already active.
+
+Godot exposes the selector under **Nhân vật → Hồ Sơ Tu Hành → Kỹ Năng → AUTO THỂ ĐẠO**. The UI action must update canonical character Auto state rather than maintaining a presentation-only toggle.
 
 ## 12. Production parity required before closure
 
@@ -201,6 +210,8 @@ Must execute Nhiên Huyết activations with real HP payment, maintain zero self
 ### E. Hybrid
 Must use both a real defensive conversion/cash-out cycle and at least one Nhiên Huyết window. A build that only spams one side is not valid Hybrid evidence.
 
+The B6 benchmark should also compare the selectable Auto thresholds so the aggressive preset cannot pass merely by burning more HP without meaningful offensive gain.
+
 Any run with zero defining-mechanic count is invalid regardless of DPS.
 
 ## 14. Deferred systems
@@ -225,7 +236,7 @@ Do not tune any of these to make Body green.
 - **B3 — Correctness + resource transaction gates:** PASS on exact local candidate evidence.
 - **B4 — Consumer parity:** PASS on exact local candidate evidence.
 - **B5 — identity-valid deterministic benchmark:** baseline identity evidence recorded by user; all three profiles valid.
-- **B6 — evidence-driven redesign/tune:** **OPEN** — Bất Động repair + Huyết–Công branch.
+- **B6 — evidence-driven redesign/tune:** **OPEN** — Bất Động repair + Huyết–Công branch + selectable Auto presets.
 - **B7 — FULL CLEAN + exact-SHA feature closure + lock:** BLOCKED until B6 correctness/parity/identity evidence passes.
 
 `closureReady` remains `false` through B6.
