@@ -10,6 +10,29 @@ Tool nội bộ cho pipeline asset động của **Game Tu Tiên Nhàn Dỗi**.
 
 Tool không thay đổi gameplay/backend và không tự đưa asset vào `approved/`.
 
+## Quy ước lệnh ngắn — LOCKED
+
+Trong project này, khi người dùng gửi video rồi nói `đưa/đẩy hoạt ảnh vào Home`, `đưa vào Tu luyện`, `đưa vào Character`, `thêm animation` hoặc câu tương đương, phải hiểu mặc định rằng **video chỉ là nguồn tạo asset**.
+
+Không được tự đổi yêu cầu đó thành phát MP4/WebM trực tiếp bằng `VideoStreamPlayer` hoặc một video-player runtime khác. Chỉ làm vậy nếu người dùng nói rõ họ muốn phát video thật.
+
+Pipeline mặc định bắt buộc là:
+
+`video nguồn -> tool này -> frame trong suốt ổn định -> atlas WebP -> SpriteFrames .tres -> registry hiện có -> AnimatedSprite2D`
+
+Phân vai mặc định theo nội dung/chuyển động, không theo tên file:
+
+- tư thế thiền/ngồi tu luyện -> `HomeAnimationRegistry.MODE_CULTIVATION`;
+- hoạt động nhàn nhã/nghỉ ngơi/tư thế thấp không phải thiền -> `HomeAnimationRegistry.MODE_REST`;
+- tư thế đứng/trình diễn nhân vật -> `CharacterAnimationRegistry`;
+- nếu người dùng chỉ định vai khác thì chỉ định của người dùng thắng.
+
+Khi tích hợp vào runtime, phải dùng đúng `meditation_hero.gd` hoặc `standing_hero.gd` và registry hiện hữu. Không tạo player song song chỉ vì source mới là video.
+
+Thông số không được đoán lại tùy hứng. Hãy kiểm preset production gần nhất và giữ cùng quy ước FPS, frame width, stable canvas, bottom alignment, loop/restart và lazy-loading. Ví dụ pack Character hiện hành dùng atlas/SpriteFrames với frame rộng 320 px và nhiều preset chạy 8 FPS.
+
+Đây là lớp presentation-only. Không được để animation nguồn tác động EXP tu luyện, cảnh giới, chỉ số, chiến đấu, save authority hoặc nhịp canonical JS.
+
 ## Cài dependency
 
 Windows:
