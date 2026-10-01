@@ -7,7 +7,10 @@ export const BODY_DAO_AUTO_PRESETS_V1 = Object.freeze([
 ]);
 
 const BODY_BLOOD_RUSH_SKILL_ID = 'skill.dao.body.elephant';
+const BODY_BREAK_SKILL_ID = 'skill.dao.body.break';
 const BODY_BLOOD_RUSH_AUTO_PRIORITY_V1 = 136;
+const BODY_BLOOD_RUSH_PAYOFF_PRIORITY_V1 = 135;
+const BODY_BLOOD_RUSH_COUNTER_FORCE_GATE_V1 = 20;
 const PRESET_BY_ID = new Map(BODY_DAO_AUTO_PRESETS_V1.map(row => [row.id, row]));
 const NAME_TOKEN = '|body-auto:';
 
@@ -22,6 +25,13 @@ export function bodyDaoAutoPresetDefinitionV1(value) {
 
 export function bodyDaoAutoMinHpPctV1(value) {
   return bodyDaoAutoPresetDefinitionV1(value)?.minHpPct ?? 75;
+}
+
+export function bodyDaoAutoCounterForceMinV1(profile) {
+  const rule = profile?.rules?.find?.(row => row?.skillId === BODY_BLOOD_RUSH_SKILL_ID);
+  const condition = rule?.conditions?.find?.(row => row?.type === 'selfDaoV2ResourceAtLeast' && row?.resource === 'counterForce');
+  const value = Number(condition?.value);
+  return Number.isFinite(value) ? Math.max(0, value) : BODY_BLOOD_RUSH_COUNTER_FORCE_GATE_V1;
 }
 
 function presetFromName(name) {
@@ -65,17 +75,29 @@ export function applyBodyDaoAutoPresetV1(profile, presetId) {
   const id = normalizeBodyDaoAutoPresetV1(presetId);
   const minHpPct = bodyDaoAutoMinHpPctV1(id);
   const sourceRules = Array.isArray(profile?.rules) ? profile.rules : [];
+  const hasBloodRush = sourceRules.some(rule => rule?.skillId === BODY_BLOOD_RUSH_SKILL_ID);
   const rules = sourceRules.map(rule => {
     const next = { ...rule, conditions: (rule?.conditions ?? []).map(condition => ({ ...condition })) };
+    // When Huyết–Công is equipped, routine Break becomes the payoff after Huyết Bạo opens.
+    // Guard/Bất Động remain above both lanes; only this Break cash-out is staged behind Nhiên Huyết.
+    if (hasBloodRush && next.skillId === BODY_BREAK_SKILL_ID) next.priority = BODY_BLOOD_RUSH_PAYOFF_PRIORITY_V1;
     if (next.skillId !== BODY_BLOOD_RUSH_SKILL_ID) return next;
     next.priority = BODY_BLOOD_RUSH_AUTO_PRIORITY_V1;
-    let found = false;
+    let hpFound = false;
+    let forceFound = false;
     next.conditions = next.conditions.map(condition => {
-      if (condition.type !== 'selfHpAbove') return condition;
-      found = true;
-      return { ...condition, pct: minHpPct };
+      if (condition.type === 'selfHpAbove') {
+        hpFound = true;
+        return { ...condition, pct: minHpPct };
+      }
+      if (condition.type === 'selfDaoV2ResourceAtLeast' && condition.resource === 'counterForce') {
+        forceFound = true;
+        return { ...condition, value: BODY_BLOOD_RUSH_COUNTER_FORCE_GATE_V1 };
+      }
+      return condition;
     });
-    if (!found) next.conditions.push({ type: 'selfHpAbove', pct: minHpPct });
+    if (!hpFound) next.conditions.push({ type: 'selfHpAbove', pct: minHpPct });
+    if (!forceFound) next.conditions.push({ type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: BODY_BLOOD_RUSH_COUNTER_FORCE_GATE_V1 });
     return next;
   });
   return {
