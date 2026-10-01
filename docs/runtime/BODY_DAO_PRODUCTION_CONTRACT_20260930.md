@@ -91,9 +91,11 @@ Player-facing Auto is selectable and changes only the HP threshold for automatic
 
 - **Thận trọng (`cautious`)** — activate at **≥85% HP**;
 - **Cân bằng (`balanced`)** — activate at **≥75% HP** and is the default;
-- **Liều mạng (`aggressive`)** — activate at **≥55% HP**.
+- **Liều mạng (`aggressive`)** — activate at **≥60% HP**.
 
 The **35% hard safety floor is independent of the preset** and may not be lowered by Auto configuration. Auto also may not reopen Nhiên Huyết while Huyết Bạo is already active. The selected preset is stored in the character combat Auto profile so the current Godot save/restore path preserves the selection.
+
+B6 benchmark evidence on the first `55%` aggressive candidate produced one death in `blood/aggressive@65159` despite valid Huyết–Công execution (`7` activations, `26` Huyết Bạo damage hits). The first evidence-driven tune therefore changes only the aggressive Auto threshold from **55% → 60%**. HP cost, Huyết Bạo duration, damage bonus, hard safety floor and other presets remain unchanged until rerun evidence says otherwise.
 
 These values are B6 candidates, not final balance evidence. A new identity-valid Huyết–Công/Hybrid benchmark is required before B7 closure.
 
