@@ -6,6 +6,7 @@ import {
   BODY_DAO_AUTO_DEFAULT_PRESET_V1,
   BODY_DAO_AUTO_PRESETS_V1,
   applyBodyDaoAutoPresetV1,
+  bodyDaoAutoCounterForceMinV1,
   bodyDaoAutoMinHpPctV1,
   bodyDaoAutoPresetFromProfileV1,
   bodyDaoAutoUiV1,
@@ -130,7 +131,7 @@ function bloodForceThreshold(profile){
 }
 
 // Selectable Auto contract: presets rewrite only the HP appetite. Canonical Body Auto keeps
-// defense first and requires banked Phản Thế before voluntarily paying HP for Huyết Bạo.
+// routine defense ahead of voluntary blood sacrifice, then opens Huyết Bạo before routine Break cash-out.
 {
   assert.equal(BODY_DAO_AUTO_DEFAULT_PRESET_V1,'balanced');
   assert.deepEqual(
@@ -150,28 +151,44 @@ function bloodForceThreshold(profile){
   const rotation=battleDaoAutoRotationV127('body',ids);
   const bloodRules=rotation.rules.filter(x=>x.skillId===BODY_BLOOD_RUSH_SKILL_ID_V1);
   assert.equal(bloodRules.length,1);
-  assert.equal(bloodRules[0].priority,136,'Nhiên Huyết must wait until after Guard and Bất Động in canonical Body Auto');
+  assert.equal(bloodRules[0].priority,136,'Nhiên Huyết must remain behind routine Guard and Bất Động');
   assert(rotation.rules.find(x=>x.skillId==='skill.dao.body.guard').priority>bloodRules[0].priority);
   assert(rotation.rules.find(x=>x.skillId==='skill.dao.body.immovable').priority>bloodRules[0].priority);
   assert.equal(bloodThreshold(rotation),75,'default Body Auto must preserve the balanced 75% behavior');
   assert.equal(bloodForceThreshold(rotation),20,'Auto Nhiên Huyết must wait for a real Phản Thế payoff window');
+  assert.equal(bodyDaoAutoCounterForceMinV1(rotation),20);
   assert.equal(bodyDaoAutoPresetFromProfileV1(rotation),'balanced');
 
-  const nonBlood=x=>x.rules.filter(rule=>rule.skillId!==BODY_BLOOD_RUSH_SKILL_ID_V1);
-  const cautious=applyBodyDaoAutoPresetV1(rotation,'cautious');
-  const aggressive=applyBodyDaoAutoPresetV1(rotation,'aggressive');
+  const payoffRotation=battleDaoAutoRotationV127('body',[
+    'skill.dao.body.basic',BODY_BLOOD_RUSH_SKILL_ID_V1,'skill.dao.body.guard','skill.dao.body.immovable','skill.dao.body.break',
+  ]);
+  const payoffBlood=bloodRule(payoffRotation);
+  const payoffBreak=payoffRotation.rules.find(x=>x.skillId==='skill.dao.body.break');
+  assert.equal(payoffBlood.priority,136);
+  assert.equal(payoffBreak.priority,135,'when Nhiên Huyết is equipped, routine Break must wait until Huyết Bạo can open');
+  assert(payoffRotation.rules.find(x=>x.skillId==='skill.dao.body.guard').priority>payoffBlood.priority);
+  assert(payoffRotation.rules.find(x=>x.skillId==='skill.dao.body.immovable').priority>payoffBlood.priority);
+  assert(payoffBlood.priority>payoffBreak.priority,'Nhiên Huyết must stage the next Break cash-out instead of losing its Phản Thế gate to Break');
+
+  const nonBlood=x=>x.rules.filter(rule=>rule.skillId!==BODY_BLOOD_RUSH_SKILL_ID_V1&&rule.skillId!=='skill.dao.body.break');
+  const cautious=applyBodyDaoAutoPresetV1(payoffRotation,'cautious');
+  const aggressive=applyBodyDaoAutoPresetV1(payoffRotation,'aggressive');
   assert.equal(bloodThreshold(cautious),85);
   assert.equal(bloodThreshold(aggressive),60);
   assert.equal(bloodForceThreshold(cautious),20,'preset changes must preserve the Phản Thế payoff gate');
   assert.equal(bloodForceThreshold(aggressive),20,'preset changes must preserve the Phản Thế payoff gate');
+  assert.equal(bodyDaoAutoCounterForceMinV1(cautious),20);
+  assert.equal(bodyDaoAutoCounterForceMinV1(aggressive),20);
   assert.equal(bloodRule(cautious).priority,136);
   assert.equal(bloodRule(aggressive).priority,136);
+  assert.equal(cautious.rules.find(x=>x.skillId==='skill.dao.body.break').priority,135);
+  assert.equal(aggressive.rules.find(x=>x.skillId==='skill.dao.body.break').priority,135);
   assert.equal(bodyDaoAutoPresetFromProfileV1(cautious),'cautious');
   assert.equal(bodyDaoAutoPresetFromProfileV1(aggressive),'aggressive');
   assert.match(cautious.name,/\|body-auto:cautious$/);
   assert.match(aggressive.name,/\|body-auto:aggressive$/);
-  assert.deepEqual(nonBlood(cautious),nonBlood(rotation),'preset must not rewrite unrelated Body Auto rules');
-  assert.deepEqual(nonBlood(aggressive),nonBlood(rotation),'preset must not rewrite unrelated Body Auto rules');
+  assert.deepEqual(nonBlood(cautious),nonBlood(payoffRotation),'preset must not rewrite unrelated Body Auto rules');
+  assert.deepEqual(nonBlood(aggressive),nonBlood(payoffRotation),'preset must not rewrite unrelated Body Auto rules');
 
   const ui=bodyDaoAutoUiV1(aggressive,true);
   assert.equal(ui.available,true);
@@ -185,7 +202,9 @@ function bloodForceThreshold(profile){
   assert(aiSource.includes("case 'selfDaoV2ResourceAtLeast'"),'AI must support the Phản Thế payoff gate');
   assert(aiSource.includes('BODY_BLOOD_RUSH_MIN_HP_PCT_V1'),'manual/explicit use must retain the 35% hard safety floor');
   assert(aiSource.includes('bodyBloodRushAutoMinHpPct'),'generic Auto fallback must read the selected preset threshold');
+  assert(aiSource.includes('bodyDaoAutoCounterForceMinV1'),'generic Auto fallback must enforce the same Phản Thế gate as the explicit rule');
   assert(aiSource.includes('projection.bodyBloodRushActive'),'generic fallback must not re-open an already active Blood Rush window');
+  assert(aiSource.includes('projection.counterForce'),'generic fallback must not bypass the Phản Thế payoff gate');
   assert(!aiSource.includes('BODY_BLOOD_RUSH_AUTO_MIN_HP_PCT_V1 = 75'),'Auto fallback must not be hard-coded to balanced after preset selection');
 }
 
