@@ -7,6 +7,7 @@ export const BODY_DAO_AUTO_PRESETS_V1 = Object.freeze([
 ]);
 
 const BODY_BLOOD_RUSH_SKILL_ID = 'skill.dao.body.elephant';
+const BODY_BLOOD_RUSH_AUTO_PRIORITY_V1 = 136;
 const PRESET_BY_ID = new Map(BODY_DAO_AUTO_PRESETS_V1.map(row => [row.id, row]));
 const NAME_TOKEN = '|body-auto:';
 
@@ -67,6 +68,7 @@ export function applyBodyDaoAutoPresetV1(profile, presetId) {
   const rules = sourceRules.map(rule => {
     const next = { ...rule, conditions: (rule?.conditions ?? []).map(condition => ({ ...condition })) };
     if (next.skillId !== BODY_BLOOD_RUSH_SKILL_ID) return next;
+    next.priority = BODY_BLOOD_RUSH_AUTO_PRIORITY_V1;
     let found = false;
     next.conditions = next.conditions.map(condition => {
       if (condition.type !== 'selfHpAbove') return condition;
