@@ -121,7 +121,8 @@ function bloodThreshold(profile){
   assert.ok(Math.abs(after-baseline)<1e-9,'Bất Động DR must end with the channel');
 }
 
-// Selectable Auto contract: three user-facing presets rewrite only the Nhiên Huyết HP threshold.
+// Selectable Auto contract: three user-facing presets rewrite the Nhiên Huyết HP threshold,
+// while canonical Body Auto keeps defense ahead of voluntary blood sacrifice.
 {
   assert.equal(BODY_DAO_AUTO_DEFAULT_PRESET_V1,'balanced');
   assert.deepEqual(
@@ -137,12 +138,14 @@ function bloodThreshold(profile){
   assert.equal(bodyDaoAutoMinHpPctV1('aggressive'),60);
   assert.equal(bodyDaoAutoMinHpPctV1('unknown'),75,'unknown preset must normalize to balanced');
 
-  const ids=['skill.dao.body.basic',BODY_BLOOD_RUSH_SKILL_ID_V1,'skill.dao.body.guard'];
+  const ids=['skill.dao.body.basic',BODY_BLOOD_RUSH_SKILL_ID_V1,'skill.dao.body.guard','skill.dao.body.immovable'];
   const rotation=battleDaoAutoRotationV127('body',ids);
   const bloodRules=rotation.rules.filter(x=>x.skillId===BODY_BLOOD_RUSH_SKILL_ID_V1);
   assert.equal(bloodRules.length,1);
-  assert.equal(bloodRules[0].priority,149);
-  assert.equal(bloodThreshold(rotation),75,'default Body Auto must preserve the previous balanced 75% behavior');
+  assert.equal(bloodRules[0].priority,136,'Nhiên Huyết must wait until after Guard and Bất Động in canonical Body Auto');
+  assert(rotation.rules.find(x=>x.skillId==='skill.dao.body.guard').priority>bloodRules[0].priority);
+  assert(rotation.rules.find(x=>x.skillId==='skill.dao.body.immovable').priority>bloodRules[0].priority);
+  assert.equal(bloodThreshold(rotation),75,'default Body Auto must preserve the balanced 75% behavior');
   assert.equal(bodyDaoAutoPresetFromProfileV1(rotation),'balanced');
 
   const nonBlood=x=>x.rules.filter(rule=>rule.skillId!==BODY_BLOOD_RUSH_SKILL_ID_V1);
@@ -150,6 +153,8 @@ function bloodThreshold(profile){
   const aggressive=applyBodyDaoAutoPresetV1(rotation,'aggressive');
   assert.equal(bloodThreshold(cautious),85);
   assert.equal(bloodThreshold(aggressive),60);
+  assert.equal(bloodRule(cautious).priority,136);
+  assert.equal(bloodRule(aggressive).priority,136);
   assert.equal(bodyDaoAutoPresetFromProfileV1(cautious),'cautious');
   assert.equal(bodyDaoAutoPresetFromProfileV1(aggressive),'aggressive');
   assert.match(cautious.name,/\|body-auto:cautious$/);
