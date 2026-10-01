@@ -29,8 +29,6 @@ for(const id of ids){
   assert.equal(new Set(manifest.gates).size,manifest.gates.length,`${id} has duplicate gates`);
   assert(manifest.gates.includes('feature-closure-framework-test.js'),`${id} must guard the generic feature framework`);
 
-  // An OPEN feature may be registered at Scope Lock before its deterministic benchmark exists.
-  // A READY feature may never close without both benchmark launcher and benchmark contract gate.
   if(manifest.closureReady){
     assert(manifest.benchmarkContractGate,`${id} READY feature must register its benchmark contract gate`);
     assert(manifest.gates.includes(manifest.benchmarkContractGate),`${id} benchmark contract must be in feature closure`);
@@ -82,9 +80,9 @@ for(const gate of [
 assert.deepEqual(mind.lockedRegressionFeatures,['dao-sword','dao-fist']);
 
 const body=backendFeatureClosureManifest('dao-body');
-assert.equal(body.closureReady,false,'Body B6 must remain fail-closed until Huyết–Công/Hybrid benchmark and B7 closure evidence exist');
-assert.equal(body.benchmarkCommand,'tools\\web\\RUN_BODY_B5_BENCHMARK.cmd','Body B5 benchmark launcher must remain registered while B6 is open');
-assert.equal(body.benchmarkContractGate,'body-dao-b5-harness-contract-test.js','Body B5 harness contract must remain registered while B6 is open');
+assert.equal(body.closureReady,false,'Body B6 must remain fail-closed until benchmark evidence is reviewed and B7 closure completes');
+assert.equal(body.benchmarkCommand,'tools\\web\\RUN_BODY_B6_BENCHMARK.cmd','Body B6 benchmark launcher must be the current Body evidence command');
+assert.equal(body.benchmarkContractGate,'body-dao-b6-benchmark-contract-test.js','Body B6 benchmark contract must be registered');
 for(const gate of [
   'body-dao-production-contract-test.js',
   'body-dao-passive-architecture-test.js',
@@ -92,6 +90,7 @@ for(const gate of [
   'body-dao-b4-consumer-parity-test.js',
   'body-dao-b5-harness-contract-test.js',
   'body-dao-b6-blood-immovable-correctness-test.js',
+  'body-dao-b6-benchmark-contract-test.js',
 ]) assert(body.gates.includes(gate),`dao-body missing installed Body gate ${gate}`);
 for(const gate of [
   'sword-dao-production-contract-test.js',
