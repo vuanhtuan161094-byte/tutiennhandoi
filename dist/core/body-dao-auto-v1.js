@@ -3,7 +3,7 @@ export const BODY_DAO_AUTO_DEFAULT_PRESET_V1 = 'balanced';
 export const BODY_DAO_AUTO_PRESETS_V1 = Object.freeze([
   Object.freeze({ id: 'cautious', label: 'Thận trọng', minHpPct: 85, description: 'Chỉ Nhiên Huyết khi Khí Huyết còn rất cao.' }),
   Object.freeze({ id: 'balanced', label: 'Cân bằng', minHpPct: 75, description: 'Mặc định: giữ nhịp công thủ cân bằng.' }),
-  Object.freeze({ id: 'aggressive', label: 'Liều mạng', minHpPct: 55, description: 'Chấp nhận hao máu sớm hơn để giữ Huyết Bạo.' }),
+  Object.freeze({ id: 'aggressive', label: 'Liều mạng', minHpPct: 60, description: 'Chấp nhận hao máu sớm hơn để giữ Huyết Bạo, nhưng vẫn chừa biên sống sót.' }),
 ]);
 
 const BODY_BLOOD_RUSH_SKILL_ID = 'skill.dao.body.elephant';
