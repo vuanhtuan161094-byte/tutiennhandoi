@@ -190,6 +190,10 @@ function assertDefensePresetIsolation(runs){
   }
 }
 
+function invalidRunLabel(x){
+  return `${x.styleId}/${x.presetId}@${x.seed}[hp=${x.finalHpPct} dps=${x.dps} blood=${x.bloodActivations} paid=${x.bloodHpPaid} windowHits=${x.bloodWindowHits} mit=${x.mitigationEvents} cash=${x.cashoutEvents} counter=${x.counterHits} imm=${x.immovableCompletions}]`;
+}
+
 export function runBodyB6Benchmark({duration=BODY_B6_DURATION_SECONDS,seeds=BODY_B6_SEEDS}={}){
   const problems=validateBodyB6Matrix();
   if(problems.length) throw new Error(`Body B6 matrix contract invalid:\n- ${problems.join('\n- ')}`);
@@ -204,19 +208,17 @@ export function runBodyB6Benchmark({duration=BODY_B6_DURATION_SECONDS,seeds=BODY
     }
   }
   assertDefensePresetIsolation(runs);
-  const invalid=runs.filter(x=>!x.identityValid);
-  if(invalid.length){
-    const rows=invalid.map(x=>`${x.styleId}/${x.presetId}@${x.seed}[hp=${x.finalHpPct} dps=${x.dps} blood=${x.bloodActivations} paid=${x.bloodHpPaid} windowHits=${x.bloodWindowHits} mit=${x.mitigationEvents} cash=${x.cashoutEvents} counter=${x.counterHits} imm=${x.immovableCompletions}]`).join(', ');
-    throw new Error(`BODY_B6_INVALID_IDENTITY_RUN: ${rows}`);
-  }
   const aggregates=[];
   for(const style of BODY_B6_STYLES){
     for(const presetId of BODY_B6_PRESET_IDS){
       aggregates.push(aggregate(style,presetId,runs.filter(x=>x.styleId===style.id&&x.presetId===presetId)));
     }
   }
+  const invalid=runs.filter(x=>!x.identityValid);
   return {
     schema:'body-dao-b6-benchmark.v1',generatedAt:new Date().toISOString(),engine:'combat.v3',durationSeconds:duration,seeds:[...seeds],presetIds:[...BODY_B6_PRESET_IDS],
+    passed:invalid.length===0,
+    invalidRuns:invalid.map(x=>({styleId:x.styleId,presetId:x.presetId,seed:x.seed,reason:invalidRunLabel(x),...x})),
     notes:[
       'Diagnostic only: this harness does not modify gameplay or auto-tune coefficients.',
       'Matrix is 3 playstyles × 3 selectable Auto presets against the exact B5 pressure target.',
@@ -224,6 +226,7 @@ export function runBodyB6Benchmark({duration=BODY_B6_DURATION_SECONDS,seeds=BODY
       'Thủ–Phản intentionally does not equip Nhiên Huyết; all three presets must therefore produce identical mechanics for the same seed.',
       'Huyết–Công validity requires real Nhiên Huyết activation, real HP payment, and real damage inside the 6s Huyết Bạo window.',
       'Hybrid validity requires both Huyết–Công evidence and a real mitigation → Phản Thế cash-out/counter cycle with completed Bất Động channel.',
+      'Invalid identity runs are preserved in JSON and aggregate output before the CLI returns failure, so tuning decisions use the full matrix instead of the first exception only.',
       'No DPS/survival target band is enforced here. B6 numbers are evidence for the next tune/closure decision, not targets chosen in advance.',
     ],
     aggregates:addRelativeDps(aggregates),runs,
@@ -245,6 +248,9 @@ function printSummary(result){
   for(const row of result.aggregates){
     console.log(`${row.styleId.padEnd(8)} ${row.presetId.padEnd(10)} DPS=${String(row.dps.mean).padStart(9)} rel=${String(row.relativeDpsVsDefenseBalanced).padStart(6)}% HP=${String(row.finalHpPctMean).padStart(6)} blood=${String(row.bloodActivationsMean).padStart(5)} paid=${String(row.bloodHpPaidMean).padStart(8)} window=${String(row.bloodWindowDamageMean).padStart(9)} mit=${String(row.mitigationEventsMean).padStart(5)} cash=${String(row.cashoutEventsMean).padStart(5)} valid=${row.validRuns}/${row.seeds}`);
   }
+  if(!result.passed){
+    console.error(`BODY_B6_INVALID_IDENTITY_RUN: ${result.invalidRuns.map(x=>x.reason).join(', ')}`);
+  }
   console.log('B6 diagnostic only; no coefficient was changed by this harness.');
 }
 
@@ -257,6 +263,7 @@ if(process.argv[1]&&path.resolve(process.argv[1])===path.resolve(entry)){
     fs.writeFileSync(opts.out,`${JSON.stringify(result,null,2)}\n`,'utf8');
     printSummary(result);
     console.log(`Output: ${opts.out}`);
+    if(!result.passed) process.exitCode=1;
   }catch(error){
     console.error(error?.stack??String(error));
     process.exitCode=1;
