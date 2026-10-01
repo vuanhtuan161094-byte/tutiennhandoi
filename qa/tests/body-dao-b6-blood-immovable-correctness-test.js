@@ -30,7 +30,11 @@ assert(bloodSkill,'B6 blood-rush skill must remain registered under the stable B
 assert.equal(bloodSkill.name,'Nhiên Huyết Chấn Thân');
 assert.equal(bloodSkill.cooldown,12);
 assert.equal(bloodSkill.castTime,0);
-assert.equal(bloodSkill.recoveryTime,.7);
+assert.equal(
+  bloodSkill.recoveryTime,
+  .15,
+  'Nhiên Huyết must keep a small positive activation lock instead of the old 0.7s action tax or same-timestamp zero-GCD',
+);
 assert.equal(bloodSkill.effects.length,0,'Nhiên Huyết activation must not keep the old direct-damage packet');
 assert.equal(bloodSkill.daoRuntimeV118?.signature,'bodyBloodRush');
 assert.equal(BODY_BLOOD_RUSH_HP_COST_PCT_V1,10);
