@@ -54,8 +54,8 @@ function rulesForDao(dao, skillIds, offset = 0) {
             add('basic', 10);
             break;
         case 'body': {
-            // Body B6: Chịu → Hóa → Phản remains primary. Huyết–Công opens only
-            // while healthy, after tactical counter/cash-out windows but before routine guarding.
+            // Body B6: Chịu → Hóa → Phản remains primary. Auto Nhiên Huyết is a payoff setup,
+            // so it requires both healthy HP and banked Phản Thế instead of paying HP on cadence alone.
             const bodyAutoHp = bodyDaoAutoMinHpPctV1(BODY_DAO_AUTO_DEFAULT_PRESET_V1);
             add('ultimate', 180, gauge, { type: 'selfHpBelow', pct: 35 });
             add('recover', 176, { type: 'selfHpBelow', pct: 45 }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 40 });
@@ -63,7 +63,7 @@ function rulesForDao(dao, skillIds, offset = 0) {
             add('counter', 166, { type: 'targetIsCasting' }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 30 });
             add('finisher', 160, { type: 'targetIsBroken' }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 70 });
             add('break', 154, { type: 'targetIsNotBroken' }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 20 });
-            add('elephant', 149, { type: 'selfHpAbove', pct: bodyAutoHp });
+            add('elephant', 149, { type: 'selfHpAbove', pct: bodyAutoHp }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 20 });
             add('guard', 144, { type: 'selfHpBelow', pct: 85 }, { type: 'selfShieldBelow', pct: 8 });
             add('immovable', 138, { type: 'selfHpBelow', pct: 65 });
             // Non-emergency Ultimate is still held for a meaningful pressure state instead of full-HP dumping.
