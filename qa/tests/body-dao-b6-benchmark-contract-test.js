@@ -32,7 +32,14 @@ for(const style of BODY_B6_STYLES){
     }else{
       assert(player.skillIds.includes('skill.dao.body.elephant'),`${style.id}: must equip Nhiên Huyết`);
       assert(bloodRule,`${style.id}/${presetId}: missing Nhiên Huyết Auto rule`);
-      assert.deepEqual(bloodRule.conditions,[{type:'selfHpAbove',pct:thresholdByPreset[presetId]}],`${style.id}/${presetId}: wrong Auto threshold`);
+      assert.deepEqual(
+        bloodRule.conditions,
+        [
+          {type:'selfHpAbove',pct:thresholdByPreset[presetId]},
+          {type:'selfDaoV2ResourceAtLeast',resource:'counterForce',value:20},
+        ],
+        `${style.id}/${presetId}: wrong Auto HP/Phản Thế gate`,
+      );
     }
   }
 }
