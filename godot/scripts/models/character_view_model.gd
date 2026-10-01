@@ -121,6 +121,7 @@ static func build(payload: Dictionary) -> Dictionary:
 			"bloodlines": _array_copy(character.get("bloodlines", [])),
 			"physiques": _array_copy(character.get("physiques", [])),
 			"known_skills": _array_copy(character.get("knownSkills", [])),
+			"body_auto": _dict_copy(payload.get("bodyAuto", {})),
 		},
 		"potential": {
 			"unspent": maxi(0, int(potential.get("unspent", 0))),
