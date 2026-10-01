@@ -1,3 +1,5 @@
+import { applyBodyDaoAutoPresetV1, BODY_DAO_AUTO_DEFAULT_PRESET_V1, bodyDaoAutoMinHpPctV1 } from './body-dao-auto-v1.js';
+
 export const BATTLE_DAO_AUTO_ROTATION_PREFIX_V127 = 'battle-dao.auto.v127';
 const DAOS = ['sword', 'fist', 'body', 'spell', 'poison', 'artifact', 'formation', 'mind'];
 function daoFromSkillId(id) {
@@ -51,22 +53,24 @@ function rulesForDao(dao, skillIds, offset = 0) {
             add('nurture', 82, { type: 'selfDaoV2ResourceBelow', resource: 'fistForce', value: 3 });
             add('basic', 10);
             break;
-        case 'body':
+        case 'body': {
             // Body B6: Chịu → Hóa → Phản remains primary. Huyết–Công opens only
             // while healthy, after tactical counter/cash-out windows but before routine guarding.
+            const bodyAutoHp = bodyDaoAutoMinHpPctV1(BODY_DAO_AUTO_DEFAULT_PRESET_V1);
             add('ultimate', 180, gauge, { type: 'selfHpBelow', pct: 35 });
             add('recover', 176, { type: 'selfHpBelow', pct: 45 }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 40 });
             add('transform', 170, { type: 'targetIsCasting' });
             add('counter', 166, { type: 'targetIsCasting' }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 30 });
             add('finisher', 160, { type: 'targetIsBroken' }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 70 });
             add('break', 154, { type: 'targetIsNotBroken' }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 20 });
-            add('elephant', 149, { type: 'selfHpAbove', pct: 75 });
+            add('elephant', 149, { type: 'selfHpAbove', pct: bodyAutoHp });
             add('guard', 144, { type: 'selfHpBelow', pct: 85 }, { type: 'selfShieldBelow', pct: 8 });
             add('immovable', 138, { type: 'selfHpBelow', pct: 65 });
             // Non-emergency Ultimate is still held for a meaningful pressure state instead of full-HP dumping.
             add('ultimate', 132, gauge, { type: 'selfHpBelow', pct: 60 });
             add('basic', 10);
             break;
+        }
         case 'spell':
             add('ultimate', 132, gauge);
             add('restore', 126, { type: 'selfSpiritBelow', pct: 32 });
@@ -166,7 +170,8 @@ export function battleDaoAutoRotationV127(mainDao, activeSkillIds, secondaryDao)
         rules.push(...rulesForDao(dao, set, -28));
     }
     rules.sort((a, b) => b.priority - a.priority);
-    return { name: `${BATTLE_DAO_AUTO_ROTATION_PREFIX_V127}:${mainDao}${secondaryDao ? `+${secondaryDao}` : ''}`, rules };
+    const profile = { name: `${BATTLE_DAO_AUTO_ROTATION_PREFIX_V127}:${mainDao}${secondaryDao ? `+${secondaryDao}` : ''}`, rules };
+    return mainDao === 'body' ? applyBodyDaoAutoPresetV1(profile, BODY_DAO_AUTO_DEFAULT_PRESET_V1) : profile;
 }
 export function isBattleDaoAutoRotationV127(profile) { return Boolean(profile?.name?.startsWith(BATTLE_DAO_AUTO_ROTATION_PREFIX_V127)); }
 export function isBattleDaoSkillIdV127(id) { return Boolean(daoFromSkillId(id)); }
