@@ -43,6 +43,7 @@ export const BODY_OPEN_GATES=freezeList([
   'body-dao-b4-consumer-parity-test.js',
   'body-dao-b5-harness-contract-test.js',
   'body-dao-b6-blood-immovable-correctness-test.js',
+  'body-dao-b6-benchmark-contract-test.js',
 ]);
 
 const makeManifest=spec=>Object.freeze({
@@ -106,9 +107,9 @@ export const BACKEND_FEATURE_CLOSURE_MANIFESTS=Object.freeze({
     label:'Body Dao / Thể Đạo',
     kind:'dao',
     closureReady:false,
-    benchmarkCommand:'tools\\web\\RUN_BODY_B5_BENCHMARK.cmd',
-    // B5 remains the last installed identity benchmark; B6 correctness is open and a Huyết–Công/Hybrid benchmark is still required before B7 closure.
-    benchmarkContractGate:'body-dao-b5-harness-contract-test.js',
+    benchmarkCommand:'tools\\web\\RUN_BODY_B6_BENCHMARK.cmd',
+    // B6 harness is installed; closure stays fail-closed until exact local benchmark evidence is reviewed and B7 completes.
+    benchmarkContractGate:'body-dao-b6-benchmark-contract-test.js',
     lockedRegressionFeatures:['dao-sword','dao-fist'],
     deferredFamilies:DAO_DEFERRED,
     gates:[...DAO_SHARED_CLOSURE_GATES,...SWORD_LOCK_REGRESSION_GATES,...FIST_LOCK_REGRESSION_GATES,...BODY_OPEN_GATES],
