@@ -436,6 +436,7 @@ func _render_profile_physique() -> void:
 
 func _render_profile_skills() -> void:
 	var profile: Dictionary = _vm.get("profile", {})
+	_render_body_auto(profile)
 	var skills: Array = profile.get("known_skills", [])
 	var card := _card()
 	_add_card_title(card, "KỸ NĂNG ĐÃ LĨNH NGỘ", "%d" % skills.size())
@@ -457,6 +458,57 @@ func _render_profile_skills() -> void:
 			_add_body_text(skill_card, description, MUTED, 8)
 		_add_pair(skill_card, "Chân Nguyên", _fmt_num(float(skill.get("spiritCost", 0))))
 		_add_pair(skill_card, "Hồi chiêu", "%.1fs" % float(skill.get("cooldown", 0)))
+
+func _render_body_auto(profile: Dictionary) -> void:
+	var auto: Dictionary = profile.get("body_auto", {})
+	if not bool(auto.get("available", false)):
+		return
+	var current_id := str(auto.get("currentPresetId", "balanced"))
+	var card := _card()
+	_add_card_title(card, "AUTO THỂ ĐẠO", str(auto.get("currentLabel", "Cân bằng")))
+	_add_body_text(card, "Chọn mức độ chủ động dùng Nhiên Huyết. Dưới %d%% Khí Huyết luôn khóa để tránh tự sát." % int(auto.get("hardSafetyMinHpPct", 35)), MUTED, 8)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	card.add_child(row)
+	var presets = auto.get("presets", [])
+	if typeof(presets) != TYPE_ARRAY:
+		return
+	for preset_variant in presets:
+		if typeof(preset_variant) != TYPE_DICTIONARY:
+			continue
+		var preset: Dictionary = preset_variant
+		var preset_id := str(preset.get("id", ""))
+		if preset_id == "":
+			continue
+		var label := str(preset.get("label", preset_id))
+		var min_hp := int(preset.get("minHpPct", 75))
+		var active := preset_id == current_id
+		var button := Button.new()
+		button.name = "BodyAuto_%s" % preset_id
+		button.text = "%s\n≥%d%%" % [label, min_hp]
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.custom_minimum_size = Vector2(0, 44)
+		button.focus_mode = Control.FOCUS_NONE
+		button.disabled = active
+		button.add_theme_font_size_override("font_size", 8)
+		button.add_theme_color_override("font_color", GOLD_HI if active else TEXT)
+		button.add_theme_stylebox_override("normal", _box(Color(0.025, 0.06, 0.072, 0.94), 9, Color(0.36, 0.67, 0.72, 0.30), 1))
+		button.add_theme_stylebox_override("hover", _box(Color(0.045, 0.075, 0.078, 0.98), 9, Color(0.77, 0.74, 0.42, 0.58), 1))
+		button.add_theme_stylebox_override("pressed", _box(Color(0.09, 0.085, 0.05, 0.99), 9, GOLD_HI, 2))
+		button.add_theme_stylebox_override("disabled", _box(Color(0.08, 0.075, 0.045, 0.94), 9, Color(0.92, 0.74, 0.30, 0.72), 2))
+		button.pressed.connect(_select_body_auto_preset.bind(preset_id, label))
+		row.add_child(button)
+
+func _select_body_auto_preset(preset_id: String, label: String) -> void:
+	var profile: Dictionary = _vm.get("profile", {}).duplicate(true)
+	var auto: Dictionary = profile.get("body_auto", {}).duplicate(true)
+	auto["currentPresetId"] = preset_id
+	auto["currentLabel"] = label
+	profile["body_auto"] = auto
+	_vm["profile"] = profile
+	_clear_body()
+	_render_profile()
+	_emit_profile_action("setBodyAutoPresetV1", {"presetId": preset_id})
 
 func _set_profile_tab(tab: String) -> void:
 	_profile_tab = tab
