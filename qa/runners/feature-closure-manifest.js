@@ -42,6 +42,7 @@ export const BODY_OPEN_GATES=freezeList([
   'body-dao-resource-transaction-test.js',
   'body-dao-b4-consumer-parity-test.js',
   'body-dao-b5-harness-contract-test.js',
+  'body-dao-b6-blood-immovable-correctness-test.js',
 ]);
 
 const makeManifest=spec=>Object.freeze({
@@ -106,7 +107,7 @@ export const BACKEND_FEATURE_CLOSURE_MANIFESTS=Object.freeze({
     kind:'dao',
     closureReady:false,
     benchmarkCommand:'tools\\web\\RUN_BODY_B5_BENCHMARK.cmd',
-    // B5 identity harness is installed; baseline evidence must be identity-valid before any B6 tuning or B7 closure.
+    // B5 remains the last installed identity benchmark; B6 correctness is open and a Huyết–Công/Hybrid benchmark is still required before B7 closure.
     benchmarkContractGate:'body-dao-b5-harness-contract-test.js',
     lockedRegressionFeatures:['dao-sword','dao-fist'],
     deferredFamilies:DAO_DEFERRED,
