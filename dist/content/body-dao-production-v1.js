@@ -1,4 +1,4 @@
-// Body Dao production authority (B1).
+// Body Dao production authority (B1/B6).
 // Keeps historical skill ids stable while moving live registry values onto the five-stat model.
 
 export const BODY_DAO_PRODUCTION_SCHEMA_V1 = 'body-dao.production.v1';
@@ -34,8 +34,19 @@ export const BODY_DAO_PRODUCTION_PATCH_V1 = Object.freeze({
     fiveStatBaselineCoefficientV5: 3.20,
   }),
   'skill.dao.body.elephant': Object.freeze({
-    fiveStatScalingV5: Object.freeze({ power: 1.50, body: 1.50 }),
-    fiveStatBaselineCoefficientV5: 3.00,
+    // B6 keeps the historical id for save/loadout compatibility but replaces
+    // the redundant independent heavy strike with an intentional Huyết–Công activation.
+    name: 'Nhiên Huyết Chấn Thân',
+    description: 'Chủ động hao 10% Max HP để mở Huyết Bạo 6 giây, tăng damage skill Thể; Sinh Mệnh tự trả không sinh Phản Thế.',
+    cooldown: 12,
+    castTime: 0,
+    recoveryTime: .7,
+    effects: Object.freeze([]),
+    daoRuntimeV118: Object.freeze({ signature: 'bodyBloodRush', elementRole: 'signature' }),
+    runtimeV117: Object.freeze({
+      form: 'instant',
+      domains: Object.freeze(['Dao:body', 'NormalActive', 'Utility', 'BodyBloodRush']),
+    }),
   }),
   'skill.dao.body.break': Object.freeze({
     fiveStatScalingV5: Object.freeze({ power: 1.20, body: 0.80, sense: 1.20 }),
@@ -61,7 +72,12 @@ export function bodyDaoProductionSkillV1(skill) {
     ...patch,
     productionAuthorityV1: BODY_DAO_PRODUCTION_SCHEMA_V1,
     effects: patch.effects ? patch.effects.map(effect => ({ ...effect })) : (skill.effects ?? []).map(effect => ({ ...effect })),
-    runtimeV117: patch.runtimeV117 ? { ...(skill.runtimeV117 ?? {}), ...patch.runtimeV117 } : skill.runtimeV117,
+    daoRuntimeV118: patch.daoRuntimeV118 ? { ...(skill.daoRuntimeV118 ?? {}), ...patch.daoRuntimeV118 } : skill.daoRuntimeV118,
+    runtimeV117: patch.runtimeV117 ? {
+      ...(skill.runtimeV117 ?? {}),
+      ...patch.runtimeV117,
+      domains: patch.runtimeV117.domains ? [...patch.runtimeV117.domains] : [...(skill.runtimeV117?.domains ?? [])],
+    } : skill.runtimeV117,
     fiveStatScalingV5: patch.fiveStatScalingV5 ? { ...patch.fiveStatScalingV5 } : skill.fiveStatScalingV5,
   };
 }
