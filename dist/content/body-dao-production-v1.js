@@ -40,7 +40,7 @@ export const BODY_DAO_PRODUCTION_PATCH_V1 = Object.freeze({
     description: 'Chủ động hao 10% Max HP để mở Huyết Bạo 6 giây, tăng damage skill Thể; Sinh Mệnh tự trả không sinh Phản Thế.',
     cooldown: 12,
     castTime: 0,
-    recoveryTime: .7,
+    recoveryTime: .15,
     effects: Object.freeze([]),
     daoRuntimeV118: Object.freeze({ signature: 'bodyBloodRush', elementRole: 'signature' }),
     runtimeV117: Object.freeze({
