@@ -52,19 +52,19 @@ function rulesForDao(dao, skillIds, offset = 0) {
             add('basic', 10);
             break;
         case 'body':
-            // Body B1: Chịu → Hóa → Phản. Emergency survival is allowed to beat offense,
-            // otherwise react to real cast pressure and cash Phản Thế into the correct target window.
+            // Body B6: Chịu → Hóa → Phản remains primary. Huyết–Công opens only
+            // while healthy, after tactical counter/cash-out windows but before routine guarding.
             add('ultimate', 180, gauge, { type: 'selfHpBelow', pct: 35 });
             add('recover', 176, { type: 'selfHpBelow', pct: 45 }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 40 });
             add('transform', 170, { type: 'targetIsCasting' });
             add('counter', 166, { type: 'targetIsCasting' }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 30 });
             add('finisher', 160, { type: 'targetIsBroken' }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 70 });
             add('break', 154, { type: 'targetIsNotBroken' }, { type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: 20 });
+            add('elephant', 149, { type: 'selfHpAbove', pct: 75 });
             add('guard', 144, { type: 'selfHpBelow', pct: 85 }, { type: 'selfShieldBelow', pct: 8 });
             add('immovable', 138, { type: 'selfHpBelow', pct: 65 });
             // Non-emergency Ultimate is still held for a meaningful pressure state instead of full-HP dumping.
             add('ultimate', 132, gauge, { type: 'selfHpBelow', pct: 60 });
-            add('elephant', 100);
             add('basic', 10);
             break;
         case 'spell':
