@@ -1,6 +1,7 @@
 import { combatMaxHp, skillTrueEssenceCost } from './combat-rules.js';
 import { canUseSkillRuntimeV117, resourceValueV117, skillSpiritCostMultiplierFromRuntimeV117 } from './five-element-combat-v117.js';
 import { canUseBattleDaoSkillV118, daoResourceValueV118, daoSpiritCostMultiplierV118 } from './battle-dao-combat-v118.js';
+import { bodyDaoAutoCounterForceMinV1 } from './body-dao-auto-v1.js';
 import { BODY_BLOOD_RUSH_MIN_HP_PCT_V1, BODY_BLOOD_RUSH_SKILL_ID_V1, v2ResourceProjection } from './battle-dao-v2-runtime.js';
 import { skillRuntimeV117 } from './skill-runtime-v117.js';
 import { effectiveStats } from './stats.js';
@@ -110,7 +111,10 @@ function autoFallbackAllows(self, skill, target, now) {
     if (skill.id === BODY_BLOOD_RUSH_SKILL_ID_V1 && self.combatBuildV117?.mainDaoId === 'body') {
         const hpPct = self.hp / Math.max(1, combatMaxHp(self.baseStats)) * 100;
         const projection = v2ResourceProjection(self, now);
-        if (hpPct + 1e-9 < bodyBloodRushAutoMinHpPct(self) || projection.bodyBloodRushActive)
+        const minCounterForce = bodyDaoAutoCounterForceMinV1(self.aiProfile);
+        if (hpPct + 1e-9 < bodyBloodRushAutoMinHpPct(self)
+            || projection.bodyBloodRushActive
+            || (Number(projection.counterForce) || 0) + 1e-9 < minCounterForce)
             return false;
     }
     return true;
