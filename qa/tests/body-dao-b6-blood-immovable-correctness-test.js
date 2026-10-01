@@ -3,6 +3,14 @@ import fs from 'node:fs';
 import { buildRegistry } from '../../dist/content/registry.js';
 import { battleDaoAutoRotationV127 } from '../../dist/core/battle-dao-rotation-v127.js';
 import {
+  BODY_DAO_AUTO_DEFAULT_PRESET_V1,
+  BODY_DAO_AUTO_PRESETS_V1,
+  applyBodyDaoAutoPresetV1,
+  bodyDaoAutoMinHpPctV1,
+  bodyDaoAutoPresetFromProfileV1,
+  bodyDaoAutoUiV1,
+} from '../../dist/core/body-dao-auto-v1.js';
+import {
   BODY_BLOOD_RUSH_DAMAGE_BONUS_PCT_V1,
   BODY_BLOOD_RUSH_DURATION_SECONDS_V1,
   BODY_BLOOD_RUSH_HP_COST_PCT_V1,
@@ -54,6 +62,12 @@ function entity({hp=10000,maxHp=10000,force=50}={}){
   return e;
 }
 function action(){return{battleDaoV2:{daoData:{}},effectBonusPct:0,breakBonusPct:0,recoveryMultiplier:1};}
+function bloodRule(profile){
+  return profile.rules.find(x=>x.skillId===BODY_BLOOD_RUSH_SKILL_ID_V1);
+}
+function bloodThreshold(profile){
+  return bloodRule(profile)?.conditions?.find(x=>x.type==='selfHpAbove')?.pct;
+}
 
 // Successful Nhiên Huyết is a direct HP payment, not incoming damage or Phản Thế generation.
 {
@@ -107,20 +121,71 @@ function action(){return{battleDaoV2:{daoData:{}},effectBonusPct:0,breakBonusPct
   assert.ok(Math.abs(after-baseline)<1e-9,'Bất Động DR must end with the channel');
 }
 
-// Auto contract: Nhiên Huyết has one explicit high-HP rule and no unconditional Body rule.
+// Selectable Auto contract: three user-facing presets rewrite only the Nhiên Huyết HP threshold.
 {
+  assert.equal(BODY_DAO_AUTO_DEFAULT_PRESET_V1,'balanced');
+  assert.deepEqual(
+    BODY_DAO_AUTO_PRESETS_V1.map(x=>[x.id,x.label,x.minHpPct]),
+    [
+      ['cautious','Thận trọng',85],
+      ['balanced','Cân bằng',75],
+      ['aggressive','Liều mạng',55],
+    ],
+  );
+  assert.equal(bodyDaoAutoMinHpPctV1('cautious'),85);
+  assert.equal(bodyDaoAutoMinHpPctV1('balanced'),75);
+  assert.equal(bodyDaoAutoMinHpPctV1('aggressive'),55);
+  assert.equal(bodyDaoAutoMinHpPctV1('unknown'),75,'unknown preset must normalize to balanced');
+
   const ids=['skill.dao.body.basic',BODY_BLOOD_RUSH_SKILL_ID_V1,'skill.dao.body.guard'];
   const rotation=battleDaoAutoRotationV127('body',ids);
   const bloodRules=rotation.rules.filter(x=>x.skillId===BODY_BLOOD_RUSH_SKILL_ID_V1);
   assert.equal(bloodRules.length,1);
   assert.equal(bloodRules[0].priority,149);
-  assert.deepEqual(bloodRules[0].conditions,[{type:'selfHpAbove',pct:75}]);
+  assert.equal(bloodThreshold(rotation),75,'default Body Auto must preserve the previous balanced 75% behavior');
+  assert.equal(bodyDaoAutoPresetFromProfileV1(rotation),'balanced');
+
+  const nonBlood=x=>x.rules.filter(rule=>rule.skillId!==BODY_BLOOD_RUSH_SKILL_ID_V1);
+  const cautious=applyBodyDaoAutoPresetV1(rotation,'cautious');
+  const aggressive=applyBodyDaoAutoPresetV1(rotation,'aggressive');
+  assert.equal(bloodThreshold(cautious),85);
+  assert.equal(bloodThreshold(aggressive),55);
+  assert.equal(bodyDaoAutoPresetFromProfileV1(cautious),'cautious');
+  assert.equal(bodyDaoAutoPresetFromProfileV1(aggressive),'aggressive');
+  assert.match(cautious.name,/\|body-auto:cautious$/);
+  assert.match(aggressive.name,/\|body-auto:aggressive$/);
+  assert.deepEqual(nonBlood(cautious),nonBlood(rotation),'preset must not rewrite unrelated Body Auto rules');
+  assert.deepEqual(nonBlood(aggressive),nonBlood(rotation),'preset must not rewrite unrelated Body Auto rules');
+
+  const ui=bodyDaoAutoUiV1(aggressive,true);
+  assert.equal(ui.available,true);
+  assert.equal(ui.currentPresetId,'aggressive');
+  assert.equal(ui.currentLabel,'Liều mạng');
+  assert.equal(ui.hardSafetyMinHpPct,35);
+  assert.equal(ui.presets.length,3);
 
   const aiSource=fs.readFileSync(new URL('../../dist/core/ai.js',import.meta.url),'utf8');
-  assert(aiSource.includes("case 'selfHpAbove'"),'AI must support the high-HP Blood Rush condition');
+  assert(aiSource.includes("case 'selfHpAbove'"),'AI must support the selectable high-HP Blood Rush condition');
   assert(aiSource.includes('BODY_BLOOD_RUSH_MIN_HP_PCT_V1'),'manual/explicit use must retain the 35% hard safety floor');
-  assert(aiSource.includes('BODY_BLOOD_RUSH_AUTO_MIN_HP_PCT_V1 = 75'),'generic Auto fallback must retain the 75% safety floor');
+  assert(aiSource.includes('bodyBloodRushAutoMinHpPct'),'generic Auto fallback must read the selected preset threshold');
   assert(aiSource.includes('projection.bodyBloodRushActive'),'generic fallback must not re-open an already active Blood Rush window');
+  assert(!aiSource.includes('BODY_BLOOD_RUSH_AUTO_MIN_HP_PCT_V1 = 75'),'Auto fallback must not be hard-coded to balanced after preset selection');
 }
 
-console.log('BODY DAO B6 BLOOD/IMMOVABLE CORRECTNESS PASS');
+// Godot source contract: the selector is a real bridge action and updates the saved combat Auto profile.
+{
+  const bridge=fs.readFileSync(new URL('../../godot/backend/bridge_server.mjs',import.meta.url),'utf8');
+  const vm=fs.readFileSync(new URL('../../godot/scripts/models/character_view_model.gd',import.meta.url),'utf8');
+  const sheet=fs.readFileSync(new URL('../../godot/scripts/character/character_detail_sheet.gd',import.meta.url),'utf8');
+  assert(bridge.includes("id==='setBodyAutoPresetV1'"),'Godot bridge must expose the Body Auto preset action');
+  assert(bridge.includes('bodyDaoAutoUiV1'),'Character DTO must expose the current Body Auto preset');
+  assert(bridge.includes('state.character.combatAiProfile=next'),'selected preset must write back into canonical character Auto state');
+  assert(vm.includes('"body_auto"'),'Character VM must carry Body Auto data to UI');
+  assert(sheet.includes('AUTO THỂ ĐẠO'),'Character skills tab must render the Auto selector');
+  assert(sheet.includes('setBodyAutoPresetV1'),'selector must invoke the canonical bridge action');
+  for(const id of ['cautious','balanced','aggressive']){
+    assert(BODY_DAO_AUTO_PRESETS_V1.some(x=>x.id===id),`missing Body Auto preset ${id}`);
+  }
+}
+
+console.log('BODY DAO B6 BLOOD/IMMOVABLE/AUTO CORRECTNESS PASS');
