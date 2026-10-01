@@ -40,6 +40,12 @@ for(const style of BODY_B6_STYLES){
         ],
         `${style.id}/${presetId}: wrong Auto HP/Phản Thế gate`,
       );
+      assert.equal(bloodRule.priority,136,`${style.id}/${presetId}: Nhiên Huyết must remain after routine defense`);
+      const breakRule=player.aiProfile.rules.find(x=>x.skillId==='skill.dao.body.break');
+      if(breakRule){
+        assert.equal(breakRule.priority,135,`${style.id}/${presetId}: Break must be staged immediately after Nhiên Huyết`);
+        assert(bloodRule.priority>breakRule.priority,`${style.id}/${presetId}: Huyết Bạo must open before Break cash-out`);
+      }
     }
   }
 }
