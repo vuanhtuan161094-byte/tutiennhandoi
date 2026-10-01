@@ -48,6 +48,8 @@ assert(source.includes('bodyBloodRushActivations'),'B6 must measure real Nhiên 
 assert(source.includes('bodyBloodRushHpPaid'),'B6 must measure real Nhiên Huyết HP payment');
 assert(source.includes('bloodWindowDamage'),'B6 must measure offensive conversion inside Huyết Bạo');
 assert(source.includes("style.identity==='hybrid'"),'B6 must have explicit Hybrid identity validity');
+assert(source.includes('invalidRuns:invalid.map'),'B6 must preserve invalid run evidence in JSON instead of throwing it away');
+assert(source.indexOf('fs.writeFileSync(opts.out')<source.indexOf('if(!result.passed) process.exitCode=1'),'B6 CLI must write evidence before returning fail-closed exit code');
 assert(source.includes('No DPS/survival target band is enforced here'),'B6 must remain diagnostic before evidence-driven tuning');
 
 const launcher=fs.readFileSync(new URL('../../tools/web/RUN_BODY_B6_BENCHMARK.cmd',import.meta.url),'utf8');
