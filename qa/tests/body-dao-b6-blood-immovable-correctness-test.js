@@ -129,12 +129,12 @@ function bloodThreshold(profile){
     [
       ['cautious','Thận trọng',85],
       ['balanced','Cân bằng',75],
-      ['aggressive','Liều mạng',55],
+      ['aggressive','Liều mạng',60],
     ],
   );
   assert.equal(bodyDaoAutoMinHpPctV1('cautious'),85);
   assert.equal(bodyDaoAutoMinHpPctV1('balanced'),75);
-  assert.equal(bodyDaoAutoMinHpPctV1('aggressive'),55);
+  assert.equal(bodyDaoAutoMinHpPctV1('aggressive'),60);
   assert.equal(bodyDaoAutoMinHpPctV1('unknown'),75,'unknown preset must normalize to balanced');
 
   const ids=['skill.dao.body.basic',BODY_BLOOD_RUSH_SKILL_ID_V1,'skill.dao.body.guard'];
@@ -149,7 +149,7 @@ function bloodThreshold(profile){
   const cautious=applyBodyDaoAutoPresetV1(rotation,'cautious');
   const aggressive=applyBodyDaoAutoPresetV1(rotation,'aggressive');
   assert.equal(bloodThreshold(cautious),85);
-  assert.equal(bloodThreshold(aggressive),55);
+  assert.equal(bloodThreshold(aggressive),60);
   assert.equal(bodyDaoAutoPresetFromProfileV1(cautious),'cautious');
   assert.equal(bodyDaoAutoPresetFromProfileV1(aggressive),'aggressive');
   assert.match(cautious.name,/\|body-auto:cautious$/);
