@@ -19,6 +19,7 @@ import { tribulationMilestoneBlockersV113 } from '../../dist/core/progression-cl
 import { equipmentSetDefinitionV142 } from '../../dist/core/equipment-v142.js';
 import { grantEquipmentFragmentRankV142 } from '../../dist/core/equipment-fragments-v142.js';
 import { grantEquipmentSetFragmentV142 } from '../../dist/core/equipment-set-fragments-v142.js';
+import { applyBodyDaoAutoPresetV1, bodyDaoAutoUiV1, normalizeBodyDaoAutoPresetV1 } from '../../dist/core/body-dao-auto-v1.js';
 
 const HERE=dirname(fileURLToPath(import.meta.url));
 const BRIDGE_VERSION='godot-bridge.v2';
@@ -359,6 +360,9 @@ class GodotCanonicalRuntime {
       ...equipmentSystem,
       v142:{...v142,setRows:v142SetRows},
     };
+    const state=this.session.stateValue;
+    const mainDaoId=String(state?.character?.buildFoundation?.battleDao?.mainDaoId||'');
+    const bodyAuto=bodyDaoAutoUiV1(state?.character?.combatAiProfile,mainDaoId==='body');
     return {
       ok:true,
       schema:'godot-character-bridge.v1',
@@ -373,6 +377,7 @@ class GodotCanonicalRuntime {
       overview:patch.overview||{},
       character:patch.character||{},
       spiritualRoot:patch.spiritualRoot||{},
+      bodyAuto,
       equipment:Array.isArray(patch.equipment)?patch.equipment:[],
       equipmentInventory,
       equipmentSelection:{selectedItemId:selectedEquipmentId},
@@ -387,6 +392,17 @@ class GodotCanonicalRuntime {
     else if(id==='useCultivationPill')result=this.api.useCultivationPill();
     else if(id==='ascendRealmV140')result=this.api.ascendRealm();
     else if(id==='tribulationV140')result=this.api.perform({type:'tribulation',intensity:1});
+    else if(id==='setBodyAutoPresetV1'){
+      const state=this.session.stateValue;
+      const mainDaoId=String(state?.character?.buildFoundation?.battleDao?.mainDaoId||'');
+      if(mainDaoId!=='body')throw new Error('Auto Thể Đạo chỉ khả dụng khi Thể Đạo là Chủ Đạo.');
+      const presetId=normalizeBodyDaoAutoPresetV1(payload.presetId);
+      const profile=state?.character?.combatAiProfile;
+      if(!profile||!Array.isArray(profile.rules))throw new Error('Chưa có Auto Bản Đạo để áp dụng preset.');
+      const next=applyBodyDaoAutoPresetV1(profile,presetId);
+      state.character.combatAiProfile=next;
+      result=bodyDaoAutoUiV1(next,true);
+    }
     else if(id==='equipItem'){
       const itemId=String(payload.itemId||'').trim();
       if(!itemId)throw new Error('Thiếu itemId trang bị.');
