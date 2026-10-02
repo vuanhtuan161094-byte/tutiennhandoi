@@ -3,7 +3,7 @@ export const BODY_DAO_AUTO_DEFAULT_PRESET_V1 = 'balanced';
 export const BODY_DAO_AUTO_PRESETS_V1 = Object.freeze([
   Object.freeze({ id: 'cautious', label: 'Thận trọng', minHpPct: 85, description: 'Chỉ Nhiên Huyết khi Khí Huyết còn rất cao.' }),
   Object.freeze({ id: 'balanced', label: 'Cân bằng', minHpPct: 75, description: 'Mặc định: giữ nhịp công thủ cân bằng.' }),
-  Object.freeze({ id: 'aggressive', label: 'Liều mạng', minHpPct: 60, description: 'Chấp nhận hao máu sớm hơn để giữ Huyết Bạo, nhưng vẫn chừa biên sống sót.' }),
+  Object.freeze({ id: 'aggressive', label: 'Liều mạng', minHpPct: 65, description: 'Chấp nhận hao máu sớm hơn để giữ Huyết Bạo, nhưng không đốt máu vô ích khi áp lực đã cao.' }),
 ]);
 
 const BODY_BLOOD_RUSH_SKILL_ID = 'skill.dao.body.elephant';
@@ -29,7 +29,10 @@ export function bodyDaoAutoMinHpPctV1(value) {
 
 export function bodyDaoAutoCounterForceMinV1(profile) {
   const rule = profile?.rules?.find?.(row => row?.skillId === BODY_BLOOD_RUSH_SKILL_ID);
-  const condition = rule?.conditions?.find?.(row => row?.type === 'selfDaoV2ResourceAtLeast' && row?.resource === 'counterForce');
+  const condition = rule?.conditions?.find?.(row =>
+    row?.type === 'bodyBloodRushPayoffReady'
+    || (row?.type === 'selfDaoV2ResourceAtLeast' && row?.resource === 'counterForce')
+  );
   const value = Number(condition?.value);
   return Number.isFinite(value) ? Math.max(0, value) : BODY_BLOOD_RUSH_COUNTER_FORCE_GATE_V1;
 }
@@ -84,20 +87,21 @@ export function applyBodyDaoAutoPresetV1(profile, presetId) {
     if (next.skillId !== BODY_BLOOD_RUSH_SKILL_ID) return next;
     next.priority = BODY_BLOOD_RUSH_AUTO_PRIORITY_V1;
     let hpFound = false;
-    let forceFound = false;
+    let payoffFound = false;
     next.conditions = next.conditions.map(condition => {
       if (condition.type === 'selfHpAbove') {
         hpFound = true;
         return { ...condition, pct: minHpPct };
       }
-      if (condition.type === 'selfDaoV2ResourceAtLeast' && condition.resource === 'counterForce') {
-        forceFound = true;
-        return { ...condition, value: BODY_BLOOD_RUSH_COUNTER_FORCE_GATE_V1 };
+      if (condition.type === 'bodyBloodRushPayoffReady'
+          || (condition.type === 'selfDaoV2ResourceAtLeast' && condition.resource === 'counterForce')) {
+        payoffFound = true;
+        return { type: 'bodyBloodRushPayoffReady', resource: 'counterForce', value: BODY_BLOOD_RUSH_COUNTER_FORCE_GATE_V1 };
       }
       return condition;
     });
     if (!hpFound) next.conditions.push({ type: 'selfHpAbove', pct: minHpPct });
-    if (!forceFound) next.conditions.push({ type: 'selfDaoV2ResourceAtLeast', resource: 'counterForce', value: BODY_BLOOD_RUSH_COUNTER_FORCE_GATE_V1 });
+    if (!payoffFound) next.conditions.push({ type: 'bodyBloodRushPayoffReady', resource: 'counterForce', value: BODY_BLOOD_RUSH_COUNTER_FORCE_GATE_V1 });
     return next;
   });
   return {
