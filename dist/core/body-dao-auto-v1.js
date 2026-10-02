@@ -6,6 +6,7 @@ export const BODY_DAO_AUTO_PRESETS_V1 = Object.freeze([
   Object.freeze({ id: 'aggressive', label: 'Liều mạng', minHpPct: 65, description: 'Chấp nhận hao máu sớm hơn để giữ Huyết Bạo, nhưng không đốt máu vô ích khi áp lực đã cao.' }),
 ]);
 
+export const BODY_BLOOD_RUSH_OFFENSE_EMERGENCY_HP_PCT_V1 = 45;
 const BODY_BLOOD_RUSH_SKILL_ID = 'skill.dao.body.elephant';
 const BODY_BREAK_SKILL_ID = 'skill.dao.body.break';
 const BODY_BLOOD_RUSH_AUTO_PRIORITY_V1 = 136;
@@ -81,8 +82,9 @@ export function applyBodyDaoAutoPresetV1(profile, presetId) {
   const hasBloodRush = sourceRules.some(rule => rule?.skillId === BODY_BLOOD_RUSH_SKILL_ID);
   const rules = sourceRules.map(rule => {
     const next = { ...rule, conditions: (rule?.conditions ?? []).map(condition => ({ ...condition })) };
-    // When Huyết–Công is equipped, routine Break becomes the payoff after Huyết Bạo opens.
-    // Guard/Bất Động remain above both lanes; only this Break cash-out is staged behind Nhiên Huyết.
+    // When Huyết–Công is equipped, routine Break becomes the immediate payoff after Huyết Bạo opens.
+    // Routine defense still stages ahead of the opener, but ai.js protects the live 6s offense window
+    // until the actor falls into the 45% emergency band.
     if (hasBloodRush && next.skillId === BODY_BREAK_SKILL_ID) next.priority = BODY_BLOOD_RUSH_PAYOFF_PRIORITY_V1;
     if (next.skillId !== BODY_BLOOD_RUSH_SKILL_ID) return next;
     next.priority = BODY_BLOOD_RUSH_AUTO_PRIORITY_V1;
@@ -122,6 +124,7 @@ export function bodyDaoAutoUiV1(profile, available = true) {
     currentPresetId,
     currentLabel: current?.label ?? 'Cân bằng',
     hardSafetyMinHpPct: 35,
+    offenseEmergencyHpPct: BODY_BLOOD_RUSH_OFFENSE_EMERGENCY_HP_PCT_V1,
     presets: BODY_DAO_AUTO_PRESETS_V1.map(row => ({ ...row })),
   };
 }
