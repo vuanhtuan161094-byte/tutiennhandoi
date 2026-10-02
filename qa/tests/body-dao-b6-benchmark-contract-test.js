@@ -81,9 +81,10 @@ assert(launcher.includes('qa\\output\\body-b6-benchmark.json'));
 assert(launcher.includes('qa\\output\\body-b6-benchmark.log'));
 
 const manifest=backendFeatureClosureManifest('dao-body');
-assert.equal(manifest.closureReady,false,'Body must remain OPEN until B6 evidence is reviewed and B7 closes');
+assert.equal(manifest.closureReady,true,'B6 evidence is accepted and Body B7 source is now a closure candidate');
 assert.equal(manifest.benchmarkCommand,'tools\\web\\RUN_BODY_B6_BENCHMARK.cmd');
 assert.equal(manifest.benchmarkContractGate,'body-dao-b6-benchmark-contract-test.js');
 assert(manifest.gates.includes('body-dao-b6-benchmark-contract-test.js'));
+assert(manifest.gates.includes('body-dao-b7-content-closure-test.js'));
 
 console.log('BODY DAO B6 BENCHMARK CONTRACT: PASS');
