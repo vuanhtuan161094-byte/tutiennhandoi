@@ -19,6 +19,7 @@ assert.deepEqual(BODY_B6_STYLES.map(x=>x.id),['defense','blood','hybrid']);
 assert.deepEqual(validateBodyB6Matrix(),[]);
 
 const thresholdByPreset=Object.fromEntries(BODY_DAO_AUTO_PRESETS_V1.map(x=>[x.id,x.minHpPct]));
+assert.deepEqual(thresholdByPreset,{cautious:85,balanced:75,aggressive:65});
 for(const style of BODY_B6_STYLES){
   assert.equal(style.activeSkillIds.length,5,`${style.id}: exactly five Active slots required`);
   assert.equal(Object.values(style.allocation).reduce((a,b)=>a+b,0),300,`${style.id}: same +300 five-stat budget required`);
@@ -36,9 +37,9 @@ for(const style of BODY_B6_STYLES){
         bloodRule.conditions,
         [
           {type:'selfHpAbove',pct:thresholdByPreset[presetId]},
-          {type:'selfDaoV2ResourceAtLeast',resource:'counterForce',value:20},
+          {type:'bodyBloodRushPayoffReady',resource:'counterForce',value:20},
         ],
-        `${style.id}/${presetId}: wrong Auto HP/Phản Thế gate`,
+        `${style.id}/${presetId}: wrong Auto HP/opener/repeat payoff gate`,
       );
       assert.equal(bloodRule.priority,136,`${style.id}/${presetId}: Nhiên Huyết must remain after routine defense`);
       const breakRule=player.aiProfile.rules.find(x=>x.skillId==='skill.dao.body.break');
@@ -61,6 +62,9 @@ assert(source.includes('bodyBloodRushActivations'),'B6 must measure real Nhiên 
 assert(source.includes('bodyBloodRushHpPaid'),'B6 must measure real Nhiên Huyết HP payment');
 assert(source.includes('bloodWindowDamage'),'B6 must measure offensive conversion inside Huyết Bạo');
 assert(source.includes("style.identity==='hybrid'"),'B6 must have explicit Hybrid identity validity');
+assert(source.includes('combatMaxHp(state.baseStats'),'B6 HP% must use canonical runtime HP authority');
+assert(source.includes('maxHp:round(maxHp)'),'B6 evidence must expose the runtime Max HP denominator');
+assert(!source.includes('maxHp=stylePrimary(style).body*100'),'B6 must not report HP% from a benchmark-only denominator');
 assert(source.includes('invalidRuns:invalid.map'),'B6 must preserve invalid run evidence in JSON instead of throwing it away');
 assert(source.indexOf('fs.writeFileSync(opts.out')<source.indexOf('if(!result.passed) process.exitCode=1'),'B6 CLI must write evidence before returning fail-closed exit code');
 assert(source.includes('No DPS/survival target band is enforced here'),'B6 must remain diagnostic before evidence-driven tuning');
