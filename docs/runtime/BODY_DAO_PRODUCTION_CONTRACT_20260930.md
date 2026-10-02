@@ -87,15 +87,29 @@ Initial B6 candidate values are deliberately local and benchmarkable:
 - self-paid HP bypasses incoming-damage hooks: no `Phản Thế`, no body mitigation event, no get-hit passive reward;
 - recasting may refresh the window only through the normal skill cooldown; it must not stack multiplicatively.
 
-Player-facing Auto is selectable and changes only the HP threshold for automatically opening Nhiên Huyết:
+Player-facing Auto is selectable and changes the HP appetite for automatically opening Nhiên Huyết:
 
 - **Thận trọng (`cautious`)** — activate at **≥85% HP**;
 - **Cân bằng (`balanced`)** — activate at **≥75% HP** and is the default;
-- **Liều mạng (`aggressive`)** — activate at **≥60% HP**.
+- **Liều mạng (`aggressive`)** — activate at **≥65% HP**.
+
+Auto staging rule:
+
+- the **first** Nhiên Huyết activation may open as a deliberate healthy opener when the selected HP threshold is satisfied;
+- from the **second activation onward**, Auto additionally requires **`Phản Thế ≥20`** before paying HP again;
+- this repeat gate does not spend `Phản Thế` by itself; it only proves the character has completed a real pressure/conversion cycle before another voluntary HP payment;
+- routine Guard/Bất Động remain ahead of the voluntary sacrifice; when Nhiên Huyết is equipped, routine Break is staged immediately after the Huyết Bạo opener so it cannot consume the same payoff opportunity first.
 
 The **35% hard safety floor is independent of the preset** and may not be lowered by Auto configuration. Auto also may not reopen Nhiên Huyết while Huyết Bạo is already active. The selected preset is stored in the character combat Auto profile so the current Godot save/restore path preserves the selection.
 
-B6 benchmark evidence on the first `55%` aggressive candidate produced one death in `blood/aggressive@65159` despite valid Huyết–Công execution (`7` activations, `26` Huyết Bạo damage hits). The first evidence-driven tune therefore changes only the aggressive Auto threshold from **55% → 60%**. HP cost, Huyết Bạo duration, damage bonus, hard safety floor and other presets remain unchanged until rerun evidence says otherwise.
+Evidence history:
+
+- the first aggressive candidate at `55%` produced one death, so the first tune moved **55% → 60%**;
+- the 2026-10-02 3×3 B6 rerun at `60%` showed `blood/aggressive` averaging **7.833** activations but only **244.74 DPS**, effectively the same as `blood/balanced` at **244.45 DPS**, while aggressive still had **2/12 deaths**;
+- the same rerun showed `blood/cautious` and `hybrid/cautious` at **0 activations in 12/12 runs**, because the `85% HP + Phản Thế ≥20` conjunction could miss the first usable window entirely;
+- therefore the next evidence-driven candidate does **not** change HP cost, duration or damage coefficient. It changes Auto staging to **healthy first opener → repeat requires Phản Thế**, and raises aggressive from **60% → 65%** to reduce repeated HP burn that was not buying meaningful output.
+
+The B6 harness also had a reporting defect: synthetic benchmark entities use canonical `combatMaxHp` authority, which for unmarked entities is `physique × 20`, while the summary divided final HP by `body × 100`. B6 evidence must therefore report HP% from canonical `combatMaxHp(state.baseStats)` and expose the runtime Max HP denominator. This is a benchmark-reporting correction, not a gameplay HP change.
 
 These values are B6 candidates, not final balance evidence. A new identity-valid Huyết–Công/Hybrid benchmark is required before B7 closure.
 
@@ -167,10 +181,10 @@ Canonical Body Auto priority:
 1. react to an enemy cast/threat with the counter/mitigation tool that can actually answer it;
 2. emergency recovery at low HP only when sufficient `Phản Thế` exists;
 3. cash high `Phản Thế` with Finisher into a Broken target;
-4. cash moderate `Phản Thế` with Break into a non-Broken target;
-5. if HP satisfies the selected **Thận trọng / Cân bằng / Liều mạng** threshold and Nhiên Huyết is ready, open the Huyết–Công window;
-6. establish Guard/Immovable when survival pressure justifies the lost tempo;
-7. counter spender only in a real casting/counter window;
+4. establish routine Guard/Immovable when survival pressure justifies the lost tempo;
+5. if HP satisfies the selected **Thận trọng / Cân bằng / Liều mạng** threshold and Nhiên Huyết is ready, open Huyết Bạo; the first opener does not require pre-banked `Phản Thế`, repeats require **≥20**;
+6. when Nhiên Huyết is equipped, routine Break is the immediate payoff after the opener; without Huyết–Công equipped, Break keeps its normal moderate-`Phản Thế` role;
+7. counter spender remains tied to a real casting/counter window;
 8. Basic is normal filler;
 9. Ultimate is held for a meaningful survival window, not dumped at full HP.
 
@@ -213,6 +227,8 @@ Must execute Nhiên Huyết activations with real HP payment, maintain zero self
 Must use both a real defensive conversion/cash-out cycle and at least one Nhiên Huyết window. A build that only spams one side is not valid Hybrid evidence.
 
 The B6 benchmark should also compare the selectable Auto thresholds so the aggressive preset cannot pass merely by burning more HP without meaningful offensive gain.
+
+Benchmark survival percentages must use the same canonical Max HP authority as combat runtime. A benchmark-only denominator is invalid evidence.
 
 Any run with zero defining-mechanic count is invalid regardless of DPS.
 
