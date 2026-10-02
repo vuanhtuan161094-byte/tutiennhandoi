@@ -144,17 +144,18 @@ export function summarizeBodyB6Run(kernel,style,presetId,seed,requestedDuration=
   const maxHp=Math.max(1,Number(runtimeMaxHp)||authoredMaxHp);
   const alive=state.alive!==false&&finalHp>0;
   const fullDuration=duration>=requestedDuration-.05;
+  const survivedFullDuration=alive&&fullDuration;
   let identityValid=false;
   if(style.identity==='defense'){
-    identityValid=alive&&fullDuration&&bloodActivations===0&&mitigationEvents>0&&cashoutEvents>0&&counterHits>0&&immovableCompletions>0;
+    identityValid=survivedFullDuration&&bloodActivations===0&&mitigationEvents>0&&cashoutEvents>0&&counterHits>0&&immovableCompletions>0;
   }else if(style.identity==='blood'){
-    identityValid=alive&&fullDuration&&bloodCasts>0&&bloodActivations>0&&bloodHpPaid>0&&bloodWindowDamageLogs.length>0&&bloodWindowDamage>0;
+    identityValid=bloodCasts>0&&bloodActivations>0&&bloodHpPaid>0&&bloodWindowDamageLogs.length>0&&bloodWindowDamage>0;
   }else if(style.identity==='hybrid'){
-    identityValid=alive&&fullDuration&&bloodActivations>0&&bloodHpPaid>0&&bloodWindowDamageLogs.length>0&&mitigationEvents>0&&cashoutEvents>0&&counterHits>0&&immovableCompletions>0;
+    identityValid=bloodActivations>0&&bloodHpPaid>0&&bloodWindowDamageLogs.length>0&&mitigationEvents>0&&cashoutEvents>0&&counterHits>0&&immovableCompletions>0;
   }
   return {
     styleId:style.id,label:style.label,presetId,seed,duration:round(duration),damage:round(damage),dps:round(damage/duration),
-    alive,fullDuration,finalHp:round(finalHp),maxHp:round(maxHp),finalHpPct:round(maxHp>0?finalHp/maxHp*100:0,2),
+    alive,fullDuration,survivedFullDuration,finalHp:round(finalHp),maxHp:round(maxHp),finalHpPct:round(maxHp>0?finalHp/maxHp*100:0,2),
     counterForceGenerated:round(counterForceGenerated),finalCounterForce:round(core.counterForce??0),
     mitigationEvents,cashoutEvents,counterHits,immovableCompletions,
     bloodCasts,bloodActivations,bloodHpPaid:round(bloodHpPaid),bloodWindowHits:bloodWindowDamageLogs.length,bloodWindowDamage:round(bloodWindowDamage),
@@ -168,7 +169,7 @@ function aggregate(style,presetId,runs){
   const field=name=>runs.map(x=>Number(x[name])||0);
   return {
     styleId:style.id,label:style.label,presetId,allocation:{...style.allocation},primaryStatsV5:stylePrimary(style),activeSkillIds:[...style.activeSkillIds],
-    seeds:runs.length,validRuns:runs.filter(x=>x.identityValid).length,
+    seeds:runs.length,validRuns:runs.filter(x=>x.identityValid).length,survivedRuns:runs.filter(x=>x.survivedFullDuration).length,
     dps:{mean:round(mean(field('dps'))),min:round(min(field('dps'))),max:round(max(field('dps')))},
     damageMean:round(mean(field('damage'))),finalHpPctMean:round(mean(field('finalHpPct')),2),
     counterForceGeneratedMean:round(mean(field('counterForceGenerated'))),mitigationEventsMean:round(mean(field('mitigationEvents'))),cashoutEventsMean:round(mean(field('cashoutEvents'))),
@@ -219,20 +220,22 @@ export function runBodyB6Benchmark({duration=BODY_B6_DURATION_SECONDS,seeds=BODY
     }
   }
   const invalid=runs.filter(x=>!x.identityValid);
+  const survivalWarnings=runs.filter(x=>!x.survivedFullDuration);
   return {
     schema:'body-dao-b6-benchmark.v1',generatedAt:new Date().toISOString(),engine:'combat.v3',durationSeconds:duration,seeds:[...seeds],presetIds:[...BODY_B6_PRESET_IDS],
     passed:invalid.length===0,
     invalidRuns:invalid.map(x=>({styleId:x.styleId,presetId:x.presetId,seed:x.seed,reason:invalidRunLabel(x),...x})),
+    survivalWarnings:survivalWarnings.map(x=>({styleId:x.styleId,presetId:x.presetId,seed:x.seed,reason:invalidRunLabel(x),...x})),
     notes:[
       'Diagnostic only: this harness does not modify gameplay or auto-tune coefficients.',
       'Matrix is 3 playstyles × 3 selectable Auto presets against the exact B5 pressure target.',
       'Every playstyle uses exactly 5 Body Active slots plus Basic and Ultimate, all 8 Body passives Lv20, mastery tier 1000, and the same +300 five-stat allocation budget.',
-      'Thủ–Phản intentionally does not equip Nhiên Huyết; all three presets must therefore produce identical mechanics for the same seed.',
-      'Huyết–Công validity requires real Nhiên Huyết activation, real HP payment, and real damage inside the 6s Huyết Bạo window.',
-      'Hybrid validity requires both Huyết–Công evidence and a real mitigation → Phản Thế cash-out/counter cycle with completed Bất Động channel.',
+      'Thủ–Phản intentionally does not equip Nhiên Huyết; all three presets must therefore produce identical mechanics for the same seed and must survive the full pressure window.',
+      'Huyết–Công identity validity requires real Nhiên Huyết activation, real HP payment, and real damage inside the 6s Huyết Bạo window. Survival is recorded separately because voluntary HP sacrifice is balance evidence, not correctness authority.',
+      'Hybrid identity validity requires both Huyết–Công evidence and a real mitigation → Phản Thế cash-out/counter cycle with completed Bất Động channel. Survival remains separately visible.',
       'HP% uses canonical combatMaxHp from the authored player stats before CombatKernel V3 runs; battle.finalState is intentionally compact and does not retain baseStats.',
-      'Invalid identity runs are preserved in JSON and aggregate output before the CLI returns failure, so tuning decisions use the full matrix instead of the first exception only.',
-      'No DPS/survival target band is enforced here. B6 numbers are evidence for the next tune/closure decision, not targets chosen in advance.',
+      'Invalid identity runs are preserved in JSON and fail the harness. Survival warnings are also preserved but do not masquerade as missing-mechanic failures for Huyết–Công/Hybrid.',
+      'No DPS/survival target band is enforced here. B6 numbers are evidence for the closure decision, not targets chosen in advance.',
     ],
     aggregates:addRelativeDps(aggregates),runs,
   };
@@ -251,10 +254,13 @@ function parseCli(argv){
 function printSummary(result){
   console.log(`BODY DAO B6 BENCHMARK · Combat V3 · ${result.durationSeconds}s · ${result.seeds.length} seeds · 3x3 matrix`);
   for(const row of result.aggregates){
-    console.log(`${row.styleId.padEnd(8)} ${row.presetId.padEnd(10)} DPS=${String(row.dps.mean).padStart(9)} rel=${String(row.relativeDpsVsDefenseBalanced).padStart(6)}% HP=${String(row.finalHpPctMean).padStart(6)} blood=${String(row.bloodActivationsMean).padStart(5)} paid=${String(row.bloodHpPaidMean).padStart(8)} window=${String(row.bloodWindowDamageMean).padStart(9)} mit=${String(row.mitigationEventsMean).padStart(5)} cash=${String(row.cashoutEventsMean).padStart(5)} valid=${row.validRuns}/${row.seeds}`);
+    console.log(`${row.styleId.padEnd(8)} ${row.presetId.padEnd(10)} DPS=${String(row.dps.mean).padStart(9)} rel=${String(row.relativeDpsVsDefenseBalanced).padStart(6)}% HP=${String(row.finalHpPctMean).padStart(6)} blood=${String(row.bloodActivationsMean).padStart(5)} paid=${String(row.bloodHpPaidMean).padStart(8)} window=${String(row.bloodWindowDamageMean).padStart(9)} mit=${String(row.mitigationEventsMean).padStart(5)} cash=${String(row.cashoutEventsMean).padStart(5)} valid=${row.validRuns}/${row.seeds} surv=${row.survivedRuns}/${row.seeds}`);
   }
   if(!result.passed){
     console.error(`BODY_B6_INVALID_IDENTITY_RUN: ${result.invalidRuns.map(x=>x.reason).join(', ')}`);
+  }
+  if(result.survivalWarnings.length){
+    console.warn(`BODY_B6_SURVIVAL_WARNING: ${result.survivalWarnings.map(x=>x.reason).join(', ')}`);
   }
   console.log('B6 diagnostic only; no coefficient was changed by this harness.');
 }
