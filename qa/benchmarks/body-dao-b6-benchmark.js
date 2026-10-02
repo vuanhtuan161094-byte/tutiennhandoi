@@ -6,6 +6,7 @@ import { battleDaoV2Catalog } from '../../dist/content/battle-dao-v2-catalog.js'
 import { battleDaoAutoRotationV127 } from '../../dist/core/battle-dao-rotation-v127.js';
 import { applyBodyDaoAutoPresetV1, BODY_DAO_AUTO_PRESETS_V1 } from '../../dist/core/body-dao-auto-v1.js';
 import { runCombatKernelV3 } from '../../dist/core/combat-kernel-v2.js';
+import { combatMaxHp } from '../../dist/core/combat-rules.js';
 import { BODY_B5_SEEDS, createBodyB5Target } from './body-dao-b5-benchmark.js';
 
 export const BODY_B6_DURATION_SECONDS=180;
@@ -138,7 +139,8 @@ export function summarizeBodyB6Run(kernel,style,presetId,seed,requestedDuration=
   const bloodHpPaid=Number(core.bodyBloodRushHpPaid??0);
   const mitigationEvents=Number(core.bodyMitigationEvents??0);
   const cashoutEvents=Number(core.bodyCashoutEvents??0);
-  const finalHp=Number(state.hp??0),maxHp=stylePrimary(style).body*100;
+  const finalHp=Number(state.hp??0);
+  const maxHp=combatMaxHp(state.baseStats??{});
   const alive=state.alive!==false&&finalHp>0;
   const fullDuration=duration>=requestedDuration-.05;
   let identityValid=false;
@@ -151,7 +153,7 @@ export function summarizeBodyB6Run(kernel,style,presetId,seed,requestedDuration=
   }
   return {
     styleId:style.id,label:style.label,presetId,seed,duration:round(duration),damage:round(damage),dps:round(damage/duration),
-    alive,fullDuration,finalHp:round(finalHp),finalHpPct:round(maxHp>0?finalHp/maxHp*100:0,2),
+    alive,fullDuration,finalHp:round(finalHp),maxHp:round(maxHp),finalHpPct:round(maxHp>0?finalHp/maxHp*100:0,2),
     counterForceGenerated:round(counterForceGenerated),finalCounterForce:round(core.counterForce??0),
     mitigationEvents,cashoutEvents,counterHits,immovableCompletions,
     bloodCasts,bloodActivations,bloodHpPaid:round(bloodHpPaid),bloodWindowHits:bloodWindowDamageLogs.length,bloodWindowDamage:round(bloodWindowDamage),
@@ -226,6 +228,7 @@ export function runBodyB6Benchmark({duration=BODY_B6_DURATION_SECONDS,seeds=BODY
       'Thủ–Phản intentionally does not equip Nhiên Huyết; all three presets must therefore produce identical mechanics for the same seed.',
       'Huyết–Công validity requires real Nhiên Huyết activation, real HP payment, and real damage inside the 6s Huyết Bạo window.',
       'Hybrid validity requires both Huyết–Công evidence and a real mitigation → Phản Thế cash-out/counter cycle with completed Bất Động channel.',
+      'HP% is computed with canonical combatMaxHp authority from the runtime final state, not a benchmark-only body×100 denominator.',
       'Invalid identity runs are preserved in JSON and aggregate output before the CLI returns failure, so tuning decisions use the full matrix instead of the first exception only.',
       'No DPS/survival target band is enforced here. B6 numbers are evidence for the next tune/closure decision, not targets chosen in advance.',
     ],
