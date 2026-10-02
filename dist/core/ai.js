@@ -15,6 +15,9 @@ function bodyBloodRushAutoMinHpPct(self) {
     const pct = Number(condition?.pct);
     return Number.isFinite(pct) ? Math.max(BODY_BLOOD_RUSH_MIN_HP_PCT_V1, pct) : 75;
 }
+function bodyBloodRushActivationCount(self) {
+    return Math.max(0, Number(self?.battleDaoStateV2?.body?.core?.bodyBloodRushActivations) || 0);
+}
 function checkCondition(condition, self, target, now) {
     switch (condition.type) {
         case 'always': return true;
@@ -38,6 +41,14 @@ function checkCondition(condition, self, target, now) {
         case 'selfDaoV2ResourceBelow': {
             const value = daoV2AiResourceValue(self, target, condition.resource, now);
             return typeof value === 'number' && value < condition.value - 1e-9;
+        }
+        case 'bodyBloodRushPayoffReady': {
+            // First Huyết–Công activation is the deliberate opener while the actor is still healthy.
+            // Repeats must prove a real Chịu→Hóa cycle by banking enough Phản Thế first.
+            if (bodyBloodRushActivationCount(self) <= 0)
+                return true;
+            const value = daoV2AiResourceValue(self, target, condition.resource ?? 'counterForce', now);
+            return typeof value === 'number' && value + 1e-9 >= condition.value;
         }
         case 'targetIsBroken': return target.breakDebuffUntil > now;
         case 'targetIsNotBroken': return target.breakDebuffUntil <= now;
@@ -112,9 +123,10 @@ function autoFallbackAllows(self, skill, target, now) {
         const hpPct = self.hp / Math.max(1, combatMaxHp(self.baseStats)) * 100;
         const projection = v2ResourceProjection(self, now);
         const minCounterForce = bodyDaoAutoCounterForceMinV1(self.aiProfile);
+        const repeatNeedsForce = bodyBloodRushActivationCount(self) > 0;
         if (hpPct + 1e-9 < bodyBloodRushAutoMinHpPct(self)
             || projection.bodyBloodRushActive
-            || (Number(projection.counterForce) || 0) + 1e-9 < minCounterForce)
+            || (repeatNeedsForce && (Number(projection.counterForce) || 0) + 1e-9 < minCounterForce))
             return false;
     }
     return true;
