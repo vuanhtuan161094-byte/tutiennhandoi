@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { buildRegistry } from '../../dist/content/registry.js';
 import { battleDaoAutoRotationV127 } from '../../dist/core/battle-dao-rotation-v127.js';
 import {
+  BODY_BLOOD_RUSH_OFFENSE_EMERGENCY_HP_PCT_V1,
   BODY_DAO_AUTO_DEFAULT_PRESET_V1,
   BODY_DAO_AUTO_PRESETS_V1,
   applyBodyDaoAutoPresetV1,
@@ -43,6 +44,7 @@ assert.equal(BODY_BLOOD_RUSH_MIN_HP_PCT_V1,35);
 assert.equal(BODY_BLOOD_RUSH_DURATION_SECONDS_V1,6);
 assert.equal(BODY_BLOOD_RUSH_DAMAGE_BONUS_PCT_V1,20);
 assert.equal(BODY_IMMOVABLE_CHANNEL_DR_PCT_V1,25);
+assert.equal(BODY_BLOOD_RUSH_OFFENSE_EMERGENCY_HP_PCT_V1,45);
 
 function entity({hp=10000,maxHp=10000,force=50}={}){
   const e={
@@ -131,7 +133,8 @@ function bloodPayoffThreshold(profile){
 }
 
 // Selectable Auto contract: the first blood-rush activation is a healthy opener.
-// Repeats require banked Phản Thế; routine defense remains ahead of the blood sacrifice.
+// Repeats require banked Phản Thế. Routine defense may stage ahead of the opener,
+// but once Huyết Bạo is live the 6s window stays offensive until HP enters the 45% emergency band.
 {
   assert.equal(BODY_DAO_AUTO_DEFAULT_PRESET_V1,'balanced');
   assert.deepEqual(
@@ -151,7 +154,7 @@ function bloodPayoffThreshold(profile){
   const rotation=battleDaoAutoRotationV127('body',ids);
   const bloodRules=rotation.rules.filter(x=>x.skillId===BODY_BLOOD_RUSH_SKILL_ID_V1);
   assert.equal(bloodRules.length,1);
-  assert.equal(bloodRules[0].priority,136,'Nhiên Huyết must remain behind routine Guard and Bất Động');
+  assert.equal(bloodRules[0].priority,136,'Nhiên Huyết must remain behind routine Guard and Bất Động before the window opens');
   assert(rotation.rules.find(x=>x.skillId==='skill.dao.body.guard').priority>bloodRules[0].priority);
   assert(rotation.rules.find(x=>x.skillId==='skill.dao.body.immovable').priority>bloodRules[0].priority);
   assert.equal(bloodThreshold(rotation),75,'default Body Auto must preserve the balanced 75% behavior');
@@ -195,6 +198,7 @@ function bloodPayoffThreshold(profile){
   assert.equal(ui.currentPresetId,'aggressive');
   assert.equal(ui.currentLabel,'Liều mạng');
   assert.equal(ui.hardSafetyMinHpPct,35);
+  assert.equal(ui.offenseEmergencyHpPct,45);
   assert.equal(ui.presets.length,3);
 
   const aiSource=fs.readFileSync(new URL('../../dist/core/ai.js',import.meta.url),'utf8');
@@ -202,6 +206,12 @@ function bloodPayoffThreshold(profile){
   assert(aiSource.includes("case 'bodyBloodRushPayoffReady'"),'AI must support opener-then-repeat payoff semantics');
   assert(aiSource.includes('bodyBloodRushActivationCount'),'AI must distinguish first activation from repeats');
   assert(aiSource.includes('BODY_BLOOD_RUSH_MIN_HP_PCT_V1'),'manual/explicit use must retain the 35% hard safety floor');
+  assert(aiSource.includes('BODY_BLOOD_RUSH_OFFENSE_EMERGENCY_HP_PCT_V1'),'AI must use the canonical 45% emergency boundary for the live Huyết Bạo window');
+  assert(aiSource.includes('bodyBloodRushProtectsOffenseWindow'),'AI must detect the live Huyết Bạo offense window');
+  assert(aiSource.includes('bodyBloodRushSuppressesRoutineDefense'),'explicit rules and fallback must not waste a healthy Huyết Bạo window on routine defense');
+  for(const id of ['skill.dao.body.guard','skill.dao.body.immovable','skill.dao.body.ultimate']){
+    assert(aiSource.includes(id),`AI offense-window guard must cover ${id}`);
+  }
   assert(aiSource.includes('bodyBloodRushAutoMinHpPct'),'generic Auto fallback must read the selected preset threshold');
   assert(aiSource.includes('bodyDaoAutoCounterForceMinV1'),'generic Auto fallback must enforce the same repeat Phản Thế gate as the explicit rule');
   assert(aiSource.includes('projection.bodyBloodRushActive'),'generic fallback must not re-open an already active Blood Rush window');
