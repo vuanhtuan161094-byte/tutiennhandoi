@@ -72,21 +72,24 @@ assert.ok(rulesFor('skill.dao.body.transform').some(r=>hasCondition(r,'targetIsC
 assert.ok(rulesFor('skill.dao.body.counter').some(r=>hasCondition(r,'targetIsCasting')&&hasCondition(r,'selfDaoV2ResourceAtLeast',c=>c.resource==='counterForce'&&c.value>=30)),'counter cash-out must require threat + Phản Thế');
 assert.ok(rulesFor('skill.dao.body.finisher').some(r=>hasCondition(r,'targetIsBroken')&&hasCondition(r,'selfDaoV2ResourceAtLeast',c=>c.resource==='counterForce'&&c.value>=70)),'finisher must cash high Phản Thế into Broken window');
 assert.ok(rulesFor('skill.dao.body.break').some(r=>hasCondition(r,'targetIsNotBroken')&&hasCondition(r,'selfDaoV2ResourceAtLeast',c=>c.resource==='counterForce'&&c.value>=20)),'Break cash-out must target a non-Broken opponent');
-assert.ok(rulesFor(BLOOD_RUSH_ID).some(r=>hasCondition(r,'selfHpAbove',c=>c.pct===75)),'Nhiên Huyết Auto must require the high-HP Huyết–Công window');
+assert.ok(rulesFor(BLOOD_RUSH_ID).some(r=>hasCondition(r,'selfHpAbove',c=>c.pct===75)),'Nhiên Huyết Auto must require the balanced high-HP Huyết–Công window');
 assert.equal(rulesFor('skill.dao.body.transform').some(r=>r.conditions.some(c=>c.type==='always')),false,'Hóa Kình must not be unconditional Auto filler');
 assert.equal(rulesFor('skill.dao.body.counter').some(r=>r.conditions.some(c=>c.type==='always')),false,'counter must not be unconditional Auto filler');
 assert.equal(rulesFor(BLOOD_RUSH_ID).some(r=>r.conditions.some(c=>c.type==='always')),false,'Nhiên Huyết must not be unconditional Auto filler');
 
 const manifest=backendFeatureClosureManifest('dao-body');
-assert.equal(manifest.closureReady,false,'Body remains OPEN through B6 until correctness/parity/identity evidence completes');
+assert.equal(manifest.closureReady,true,'Body B7 source must be a closure candidate before the exact-SHA local FULL CLEAN');
 assert.ok(manifest.gates.includes('body-dao-production-contract-test.js'));
 assert.ok(manifest.gates.includes('body-dao-b6-blood-immovable-correctness-test.js'));
+assert.ok(manifest.gates.includes('body-dao-b7-content-closure-test.js'));
 assert.deepEqual(manifest.lockedRegressionFeatures,['dao-sword','dao-fist']);
 
 const contract=fs.readFileSync('docs/runtime/BODY_DAO_PRODUCTION_CONTRACT_20260930.md','utf8');
 assert.match(contract,/Chịu → Hóa → Phản/);
 assert.match(contract,/Huyết–Công/);
 assert.match(contract,/old HP-loss-driven stack gain is removed/);
-assert.match(contract,/closureReady.*false/s);
+assert.match(contract,/B7 CLOSURE CANDIDATE/);
+assert.match(contract,/closureReady.*true/s);
+assert.match(contract,/FULL CLEAN/);
 
-console.log('BODY DAO B0/B1/B6 PRODUCTION CONTRACT PASS');
+console.log('BODY DAO B0/B1/B6/B7 PRODUCTION CONTRACT PASS');
