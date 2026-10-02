@@ -36,7 +36,7 @@ export const MIND_OPEN_GATES=freezeList([
   'mind-dao-m4-harness-contract-test.js',
 ]);
 
-export const BODY_OPEN_GATES=freezeList([
+export const BODY_CLOSURE_GATES=freezeList([
   'body-dao-production-contract-test.js',
   'body-dao-passive-architecture-test.js',
   'body-dao-resource-transaction-test.js',
@@ -44,6 +44,7 @@ export const BODY_OPEN_GATES=freezeList([
   'body-dao-b5-harness-contract-test.js',
   'body-dao-b6-blood-immovable-correctness-test.js',
   'body-dao-b6-benchmark-contract-test.js',
+  'body-dao-b7-content-closure-test.js',
 ]);
 
 const makeManifest=spec=>Object.freeze({
@@ -106,13 +107,13 @@ export const BACKEND_FEATURE_CLOSURE_MANIFESTS=Object.freeze({
     id:'dao-body',
     label:'Body Dao / Thể Đạo',
     kind:'dao',
-    closureReady:false,
+    // Source is complete through B7. Final CLOSED/LOCKED status still requires one exact-SHA local FULL CLEAN run.
+    closureReady:true,
     benchmarkCommand:'tools\\web\\RUN_BODY_B6_BENCHMARK.cmd',
-    // B6 harness is installed; closure stays fail-closed until exact local benchmark evidence is reviewed and B7 completes.
     benchmarkContractGate:'body-dao-b6-benchmark-contract-test.js',
     lockedRegressionFeatures:['dao-sword','dao-fist'],
     deferredFamilies:DAO_DEFERRED,
-    gates:[...DAO_SHARED_CLOSURE_GATES,...SWORD_LOCK_REGRESSION_GATES,...FIST_LOCK_REGRESSION_GATES,...BODY_OPEN_GATES],
+    gates:[...DAO_SHARED_CLOSURE_GATES,...SWORD_LOCK_REGRESSION_GATES,...FIST_LOCK_REGRESSION_GATES,...BODY_CLOSURE_GATES],
   }),
 });
 
