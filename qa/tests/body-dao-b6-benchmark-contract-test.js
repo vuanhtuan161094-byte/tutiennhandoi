@@ -62,8 +62,10 @@ assert(source.includes('bodyBloodRushActivations'),'B6 must measure real Nhiên 
 assert(source.includes('bodyBloodRushHpPaid'),'B6 must measure real Nhiên Huyết HP payment');
 assert(source.includes('bloodWindowDamage'),'B6 must measure offensive conversion inside Huyết Bạo');
 assert(source.includes("style.identity==='hybrid'"),'B6 must have explicit Hybrid identity validity');
-assert(source.includes('combatMaxHp(state.baseStats'),'B6 HP% must use canonical runtime HP authority');
+assert(source.includes('const runtimeMaxHp=combatMaxHp(player.stats)'),'B6 must capture canonical Max HP from authored player stats before combat');
+assert(source.includes('summarizeBodyB6Run(kernel,style,presetId,seed,duration,runtimeMaxHp)'),'B6 summary must receive the pre-combat runtime Max HP denominator');
 assert(source.includes('maxHp:round(maxHp)'),'B6 evidence must expose the runtime Max HP denominator');
+assert(!source.includes('combatMaxHp(state.baseStats'),'battle.finalState is compact and must not be treated as retaining baseStats');
 assert(!source.includes('maxHp=stylePrimary(style).body*100'),'B6 must not report HP% from a benchmark-only denominator');
 assert(source.includes('invalidRuns:invalid.map'),'B6 must preserve invalid run evidence in JSON instead of throwing it away');
 assert(source.indexOf('fs.writeFileSync(opts.out')<source.indexOf('if(!result.passed) process.exitCode=1'),'B6 CLI must write evidence before returning fail-closed exit code');
