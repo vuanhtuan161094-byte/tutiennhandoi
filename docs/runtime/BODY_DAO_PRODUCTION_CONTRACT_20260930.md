@@ -1,6 +1,6 @@
 # BODY DAO PRODUCTION CONTRACT — 2026-09-30
 
-Status: **OPEN / B6 TUNING**
+Status: **B7 CLOSURE CANDIDATE / AWAITING LOCAL FULL CLEAN**
 Feature id: `dao-body`
 Workflow: `docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md`
 
@@ -8,7 +8,7 @@ Workflow: `docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md`
 
 **Thể Đạo = Chịu → Hóa → Phản**, with an optional **Huyết–Công** branch.
 
-The player does not become strong merely because HP was lost. Main Body has two deliberate combat loops:
+Main Body has two deliberate combat loops:
 
 1. **Thủ–Phản** — enter a defensive/counter window, convert real mitigated pressure into `Phản Thế`, then cash it into counter damage, Break, recovery or a finishing blow.
 2. **Huyết–Công** — intentionally pay a bounded portion of Max HP to open a short offensive window, then use Body skills aggressively before resetting through Guard/Recover/Bất Động.
@@ -36,32 +36,33 @@ Body production must not:
 - range: **0–100**;
 - gain source: actual pressure that was meaningfully mitigated/blocked by Body defensive play;
 - no gain from synthetic self-damage or simply losing HP without mitigation;
-- resource spending must remain visible in combat state/projection;
-- reaching 100 represents **Chân Thân Viên Mãn** and empowers one chosen Body action rather than creating an unrelated permanent multiplier.
+- resource spending remains visible in combat state/projection;
+- reaching 100 represents **Chân Thân Viên Mãn** and empowers one chosen Body cash-out rather than creating a permanent hold-resource multiplier.
 
-The existing `counterForce` save/runtime field is retained for compatibility and remains the storage key for `Phản Thế` during this production slice.
+The existing `counterForce` save/runtime field is retained for compatibility and remains the storage key for `Phản Thế`.
 
 ## 4. Huyết Khí migration
 
-The historical `bodyPassiveStack` / `Huyết Khí` meter is **legacy design debt** for Main Body and must not remain a second live “get hit → become stronger” meter at closure.
+The historical `bodyPassiveStack` / `Huyết Khí` meter is legacy compatibility data only for Main Body.
 
 Compatibility requirements:
 
 - existing passive IDs `passive.v2.body.p1` … `p8` remain stable;
 - save/content identity remains readable;
-- live passive effects are authored around successful mitigation, counter execution, defensive-channel completion and intentional `Phản Thế` spending;
-- old HP-loss-driven stack gain is removed from Main Body authority.
+- live passive effects are authored around successful mitigation, defensive/counter windows and intentional `Phản Thế` spending;
+- old HP-loss-driven stack gain is removed from Main Body authority;
+- player-facing content must not claim that the retired stack still grants production combat bonuses.
 
 ## 5. Ten production skills
 
-Skill IDs remain stable. `skill.dao.body.elephant` is intentionally retained as the save/loadout-compatible ID while its production role is re-authored from the redundant independent heavy strike into Huyết–Công.
+Skill IDs remain stable. `skill.dao.body.elephant` is retained as the save/loadout-compatible ID while its production role is re-authored from the redundant heavy strike into Huyết–Công.
 
 | Skill | Production role | Resource intent |
 | --- | --- | --- |
 | `skill.dao.body.basic` | Thiết Cốt Khai Bi — reliable filler/body strike | no forced spend |
 | `skill.dao.body.guard` | Kim Cang Hộ Thể — proactive guard | creates a mitigation window |
 | `skill.dao.body.transform` | Hóa Kình Tán Lực — reaction/counter setup | successful defense converts pressure |
-| `skill.dao.body.immovable` | Bất Động Như Sơn — committed defensive channel | loses offensive tempo for real channel mitigation + shield payoff |
+| `skill.dao.body.immovable` | Bất Động Như Sơn — committed defensive channel | real channel mitigation + shield payoff |
 | `skill.dao.body.counter` | Chấn Cốt Phản Kình — counter cash-out | medium `Phản Thế` spend |
 | `skill.dao.body.elephant` | **Nhiên Huyết Chấn Thân** — Huyết–Công activation | pays HP; never generates `Phản Thế` from that payment |
 | `skill.dao.body.break` | Cương Thân Phá Kình — Break cash-out | controlled `Phản Thế` spend |
@@ -73,68 +74,62 @@ No new skill slot or second resource is introduced.
 
 ## 6. B6 Huyết–Công contract — Nhiên Huyết Chấn Thân
 
-Initial B6 candidate values are deliberately local and benchmarkable:
+Accepted B6 production values:
 
 - production ID remains `skill.dao.body.elephant`;
-- active name: **Nhiên Huyết Chấn Thân**;
 - cooldown: **12s**;
 - activation cost: **10% Max HP** paid directly by the actor;
-- the cost must never reduce HP below 1;
+- cost cannot reduce HP below 1;
 - below **35% current HP**, activation is suppressed and pays no HP;
 - successful activation opens **Huyết Bạo** for **6s**;
 - while Huyết Bạo is active, outgoing **Body-skill damage** gains **+20%**;
-- the activation itself has no direct damage packet;
-- self-paid HP bypasses incoming-damage hooks: no `Phản Thế`, no body mitigation event, no get-hit passive reward;
-- recasting may refresh the window only through the normal skill cooldown; it must not stack multiplicatively.
+- activation itself has no direct damage packet;
+- self-paid HP bypasses incoming-damage hooks: no `Phản Thế`, no mitigation event, no get-hit passive reward;
+- normal cooldown owns recast cadence; the buff does not stack multiplicatively.
 
-Player-facing Auto is selectable and changes the HP appetite for automatically opening Nhiên Huyết:
+Player-facing Auto presets:
 
-- **Thận trọng (`cautious`)** — activate at **≥85% HP**;
-- **Cân bằng (`balanced`)** — activate at **≥75% HP** and is the default;
-- **Liều mạng (`aggressive`)** — activate at **≥65% HP**.
+- **Thận trọng (`cautious`)** — open at **≥85% HP**;
+- **Cân bằng (`balanced`)** — open at **≥75% HP**, default;
+- **Liều mạng (`aggressive`)** — open at **≥65% HP**.
 
-Auto staging rule:
+Auto staging:
 
-- the **first** Nhiên Huyết activation may open as a deliberate healthy opener when the selected HP threshold is satisfied;
-- from the **second activation onward**, Auto additionally requires **`Phản Thế ≥20`** before paying HP again;
-- this repeat gate does not spend `Phản Thế` by itself; it only proves the character has completed a real pressure/conversion cycle before another voluntary HP payment;
-- before Huyết Bạo opens, routine Guard/Bất Động may still stage ahead of the voluntary sacrifice;
-- while **Huyết Bạo is already active** and current HP is **≥45%**, Auto suppresses routine Guard, Bất Động and the non-emergency Ultimate so the paid 6s window is actually spent on offense;
-- once HP falls below **45%**, the offense lock ends immediately and normal emergency recovery/defense may take over;
-- when Nhiên Huyết is equipped, routine Break is staged immediately after the Huyết Bạo opener so it cannot consume the same payoff opportunity first.
+- first activation may be a healthy opener when the selected HP threshold is met;
+- second and later activations additionally require **`Phản Thế ≥20`**;
+- this repeat gate proves a real pressure/conversion cycle and does not itself spend `Phản Thế`;
+- before Huyết Bạo, normal defensive staging may take priority;
+- while Huyết Bạo is active and HP is **≥45%**, routine Guard/Bất Động/non-emergency Ultimate are suppressed so the paid 6s window remains offensive;
+- below **45%**, emergency recovery/defense immediately regains authority;
+- when Nhiên Huyết is equipped, routine Break is staged immediately after the opener;
+- the **35% hard safety floor** cannot be lowered by presets;
+- Auto cannot reopen Nhiên Huyết while Huyết Bạo is active.
 
-The **35% hard safety floor is independent of the preset** and may not be lowered by Auto configuration. Auto also may not reopen Nhiên Huyết while Huyết Bạo is already active. The selected preset is stored in the character combat Auto profile so the current Godot save/restore path preserves the selection.
+### Accepted B6 evidence — 2026-10-02
 
-Evidence history:
+Final 3×3 matrix used **12 seeds × 180s** against the same B5 pressure target.
 
-- the first aggressive candidate at `55%` produced one death, so the first tune moved **55% → 60%**;
-- the first 2026-10-02 3×3 B6 rerun at `60%` showed `blood/aggressive` averaging **7.833** activations but only **244.74 DPS**, effectively the same as `blood/balanced` at **244.45 DPS**, while aggressive still had **2/12 deaths**;
-- the same rerun showed `blood/cautious` and `hybrid/cautious` at **0 activations in 12/12 runs**, because the `85% HP + Phản Thế ≥20` conjunction could miss the first usable window entirely;
-- the next candidate therefore changed Auto staging to **healthy first opener → repeat requires Phản Thế**, and raised aggressive from **60% → 65%**, without changing HP cost, duration or damage coefficient;
-- the next 3×3 rerun fixed Cautious identity execution: `blood/cautious` and `hybrid/cautious` both became **12/12 valid**, while `blood/balanced` and both Hybrid Balanced/Aggressive were also **12/12 valid**;
-- however `blood/aggressive` remained only **11/12 valid** with one death at seed `65197`; it averaged **5.0** Nhiên Huyết activations and **248.99 DPS** versus Balanced **2.417** activations and **248.916 DPS**. The extra HP payments therefore still bought almost no net DPS;
-- inspection of Auto priority showed why: at the lower post-payment HP used by Aggressive, Guard/Bất Động/non-emergency Ultimate could immediately consume the paid Huyết Bạo window. The next candidate changes this **behavior only** by protecting the 6s offense window above the 45% emergency band. HP cost remains **10%**, damage bonus remains **+20%**, duration remains **6s**, and Aggressive remains **65%** until rerun evidence says otherwise.
+- **Thủ–Phản:** all three Auto rows are mechanically identical as required; **36/36 identity-valid and 36/36 survived full duration**. Baseline mean DPS **218.593**, mean final HP **59.25%**.
+- **Huyết–Công / cautious:** defining Huyết–Công mechanics execute in **12/12** after separating identity correctness from survival; one survival warning at seed `65119`. Mean DPS **248.801**, mean final HP **41.21%**, mean activations **1.0**.
+- **Huyết–Công / balanced:** defining mechanics execute in **12/12**; the same seed `65119` is the one survival warning. Mean DPS **248.689**, mean final HP **47.70%**, mean activations **2.083**.
+- **Huyết–Công / aggressive:** **12/12 identity-valid and 12/12 survived**. Mean DPS **250.436**, mean final HP **58.69%**, mean activations **5.417**.
+- **Hybrid cautious/balanced/aggressive:** **36/36 identity-valid and 36/36 survived**. Mean DPS **219.988 / 206.335 / 208.276** respectively.
 
-The B6 harness also had two reporting defects:
+The two Huyết–Công warnings are the same pressure seed and occur only after the build has already performed a real Nhiên Huyết activation, paid HP and dealt damage inside Huyết Bạo. They remain visible as **survival/balance evidence**, but are not classified as missing-mechanic correctness failures. A voluntary-HP-risk playstyle is not required to survive every deterministic pressure seed in order to prove that its identity executes correctly.
 
-1. the original summary divided final HP by `body × 100`, while synthetic combat actually used canonical `combatMaxHp` authority;
-2. the first correction attempted `combatMaxHp(state.baseStats)`, but compact `battle.finalState` does not retain `baseStats`, causing the denominator to fall back to `1` and producing impossible values such as `284387%` HP.
+The B6 harness records identity validity and survival separately. It also captures canonical `combatMaxHp(player.stats)` before CombatKernel V3 runs; compact `battle.finalState` is not used as an HP-authority source.
 
-B6 evidence must therefore capture `combatMaxHp(player.stats)` **before** CombatKernel V3 runs and pass that exact denominator into the summary. This is a benchmark-reporting correction, not a gameplay HP change.
-
-These values are B6 candidates, not final balance evidence. A new identity-valid Huyết–Công/Hybrid benchmark is required before B7 closure.
+**B6 is accepted. No additional B6 coefficient/Auto tuning is authorized before B7 closure.** Cross-build/global balance remains deferred to the all-eight-Dao balance phase.
 
 ## 7. B6 Bất Động repair
 
-B6 ablation evidence showed Bất Động had a real survival effect but the defensive payoff was weak relative to its lost offensive tempo. The first repair changes only the missing defensive identity lever:
+Accepted behavior:
 
-- while the actor is actively channeling `skill.dao.body.immovable`, incoming damage is reduced by **25%**;
-- the reduction exists only during the channel and ends immediately when the channel ends or is interrupted;
-- the existing production shield payoff remains unchanged;
-- channel duration is **not** shortened in this repair;
-- shield amount is **not** increased in this repair.
-
-This keeps B6 evidence interpretable: one defensive lever changes before any further numerical tuning.
+- while actively channeling `skill.dao.body.immovable`, incoming damage is reduced by **25%**;
+- the reduction exists only during the channel and ends when the channel ends or is interrupted;
+- production shield payoff remains unchanged;
+- channel duration is not shortened by a Body-specific hidden mastery override;
+- shield amount is not secretly increased by a content-only promise.
 
 ## 8. Five-stat ownership
 
@@ -154,9 +149,9 @@ Body production ownership:
 - **LL** participates in defensive sustain/recovery efficiency;
 - **TT** participates in Break/counter precision and deliberate cash-out skills.
 
-Damage-bearing Body skills expose explicit `fiveStatScalingV5` metadata. Nhiên Huyết itself is a utility activation and does not need fake direct-damage five-stat scaling.
+Damage-bearing Body skills expose explicit `fiveStatScalingV5` metadata. Nhiên Huyết is a utility activation and does not carry fake direct-damage scaling.
 
-Current authored damage weight families remain:
+Current damage weight families:
 
 - Basic: `power 1.40 + body 1.40`, baseline `2.80`;
 - Transform: `body 1.20 + agility 0.80 + sense 0.80`, baseline `2.80`;
@@ -170,80 +165,67 @@ Body defensive skills use bounded HP-linked effects where the shared engine supp
 
 Bất Động channel mitigation is temporary action-state authority, not an always-on Body damage-reduction multiplier.
 
-## 10. Passive ownership after Huyết Khí retirement
+## 10. Passive and mastery ownership
 
-The eight stable passive IDs are owned as follows:
+The eight stable passive IDs are re-authored to the live production runtime:
 
-1. **Huyết Khí Quyết** — successful mitigation grants a small Body passive payoff; no raw HP-loss farming.
-2. **Dưỡng Huyết Chân Kinh** — improves conversion of meaningful mitigation into `Phản Thế`.
-3. **Huyết Khí Trường Tồn** — preserves a short successful-defense window, not a generic decaying “got hit” meter.
-4. **Thiết Cốt Chân Ý** — strengthens guarded/counter execution, not passive always-on defense stacking.
-5. **Huyết Hải Vô Cực** — rewards reaching a deliberate high-resource state without increasing the 0–100 resource cap.
-6. **Khí Huyết Quy Nguyên** — improves recovery only when `Phản Thế` is intentionally spent.
-7. **Bất Khuất Chân Thể** — limited defensive payoff during a proven guard/channel/counter window.
-8. **Huyết Khí Bất Diệt** — capstone for successful Chịu→Hóa→Phản cycles; ordinary incoming damage alone cannot maintain it.
+1. **p1 Huyết Khí Quyết** — successful mitigation adds a fixed conversion bonus; no raw HP-loss farming.
+2. **p2 Dưỡng Huyết Chân Kinh** — improves meaningful mitigation → `Phản Thế` conversion.
+3. **p3 Huyết Khí Trường Tồn** — extends the successful-defense guard window.
+4. **p4 Thiết Cốt Chân Ý** — empowers payoff skills only inside that guard window.
+5. **p5 Huyết Hải Vô Cực** — improves Ultimate-gauge gain at high `Phản Thế`; it does not raise resource cap.
+6. **p6 Khí Huyết Quy Nguyên** — improves Recover only from actual `Phản Thế` spend.
+7. **p7 Bất Khuất Chân Thể** — adds bounded DR only during the proven guard window.
+8. **p8 Huyết Khí Bất Diệt** — an actual cash-out opens a short offensive cycle; ordinary incoming damage cannot maintain it.
 
-Nhiên Huyết is an Active decision, not a passive auto-drain mechanic.
+The ten stable mastery rows remain for content/save/UI compatibility. Unsupported historical Body-specific milestone promises are retired from player-facing content. Production authority remains the shared skill-practice system plus `body-dao.runtime.production.v1`; a future Body-specific mastery extension must first exist in runtime and benchmark evidence before content may advertise it.
 
 ## 11. Auto intent
 
-Canonical Body Auto priority:
+Canonical Body Auto intent:
 
-1. react to an enemy cast/threat with the counter/mitigation tool that can actually answer it;
-2. emergency recovery at low HP only when sufficient `Phản Thế` exists;
-3. cash high `Phản Thế` with Finisher into a Broken target;
-4. before Huyết Bạo opens, establish routine Guard/Immovable when survival pressure justifies the lost tempo;
-5. if HP satisfies the selected **Thận trọng / Cân bằng / Liều mạng** threshold and Nhiên Huyết is ready, open Huyết Bạo; the first opener does not require pre-banked `Phản Thế`, repeats require **≥20**;
-6. while Huyết Bạo is active and HP is **≥45%**, keep the paid window offensive: routine Guard/Bất Động/non-emergency Ultimate are suppressed, while offensive payoff/reaction skills continue normally;
-7. below **45%**, emergency survival regains authority immediately;
-8. when Nhiên Huyết is equipped, routine Break is the immediate payoff after the opener; without Huyết–Công equipped, Break keeps its normal moderate-`Phản Thế` role;
-9. counter spender remains tied to a real casting/counter window;
-10. Basic is normal filler;
-11. Ultimate is otherwise held for a meaningful survival window, not dumped at full HP.
+1. react to real enemy casts/threats with an eligible reaction;
+2. emergency recovery at low HP when sufficient `Phản Thế` exists;
+3. cash high `Phản Thế` into meaningful Broken/payoff windows;
+4. establish routine defense before a Huyết Bạo window when pressure justifies it;
+5. open Nhiên Huyết according to the selected preset; first opener is healthy, repeats require `Phản Thế ≥20`;
+6. while Huyết Bạo is active and HP is **≥45%**, preserve the paid offensive window;
+7. below **45%**, emergency survival regains authority;
+8. Basic remains filler; Ultimate is reserved for meaningful survival state rather than full-HP dumping.
 
-The preset changes Nhiên Huyết Auto aggression through the opener HP threshold. The live-window offense lock is shared by all presets because it is part of Huyết–Công identity, not a separate preset coefficient. Auto must not use Nhiên Huyết below the **35% hard safety floor** or while its blood-rush window is already active.
+Godot exposes the selector under **Nhân vật → Hồ Sơ Tu Hành → Kỹ Năng → AUTO THỂ ĐẠO** and writes the selection back to canonical combat Auto state.
 
-Godot exposes the selector under **Nhân vật → Hồ Sơ Tu Hành → Kỹ Năng → AUTO THỂ ĐẠO**. The UI action must update canonical character Auto state rather than maintaining a presentation-only toggle.
+## 12. Production parity required for final lock
 
-## 12. Production parity required before closure
-
-Body must prove the same gameplay authority through:
+Body closure includes:
 
 - CombatKernel V3 / CombatEngine;
 - PvE/Boss;
 - PvP snapshot/replay;
 - Auto/tactical rotation;
 - Hunt/offline representative combat;
-- save/restore of compatible Body state;
+- save/restore compatibility;
 - five-stat materialization/provenance;
-- locked Sword/Fist regressions where shared counter/Break seams are touched.
+- locked Sword/Fist regressions where shared seams are touched.
 
-## 13. Identity-valid benchmark plan
+Targeted B0–B6 correctness/parity evidence has already been reported by the user. B7 now adds the content-debt gate and source closure manifest. Final lock still requires the generic exact-SHA **FULL CLEAN** feature workflow on the user's Windows checkout.
 
-Existing B5 identities remain useful regression evidence:
+## 13. Identity benchmark interpretation
 
-### A. Phản Kình
-Must execute real mitigation, `Phản Thế` generation, counter cash-out and successful Counter hits.
+B5 remains regression evidence for:
 
-### B. Bất Động
-Must complete the defensive channel, take real pressure and show measurable survival value without practical invulnerability.
-
-### C. Phá Kình
-Must generate/spend `Phản Thế`, create Broken and execute a payoff in the intended window.
+- **Phản Kình** — mitigation → `Phản Thế` → counter cash-out;
+- **Bất Động** — completed defensive channel under real pressure;
+- **Phá Kình** — generated/spent `Phản Thế`, Broken and payoff execution.
 
 B6 adds:
 
-### D. Huyết–Công
-Must execute Nhiên Huyết activations with real HP payment, maintain zero self-cost `Phản Thế` gain, and convert the 6s window into measurable offensive output without collapsing survival.
+- **Huyết–Công** — real Nhiên Huyết activation, HP payment and damage during Huyết Bạo;
+- **Hybrid** — both Huyết–Công evidence and a real mitigation → `Phản Thế` cash-out/counter cycle with completed Bất Động.
 
-### E. Hybrid
-Must use both a real defensive conversion/cash-out cycle and at least one Nhiên Huyết window. A build that only spams one side is not valid Hybrid evidence.
+Identity correctness and survival are both recorded, but they are not the same assertion. Thủ–Phản, whose identity is defensive, must survive the full pressure window. Risk-bearing Huyết–Công/Hybrid runs keep survival as explicit balance evidence while identity validity proves the defining mechanic actually executed.
 
-The B6 benchmark should also compare the selectable Auto thresholds so the aggressive preset cannot pass merely by burning more HP without meaningful offensive gain.
-
-Benchmark survival percentages must use the same canonical Max HP authority as combat runtime. A benchmark-only denominator or a compact final-state fallback is invalid evidence.
-
-Any run with zero defining-mechanic count is invalid regardless of DPS.
+No arbitrary DPS/survival target band is used to manufacture a PASS.
 
 ## 14. Deferred systems
 
@@ -257,17 +239,17 @@ Deferred until the all-eight-Dao global balance pass:
 - Economy;
 - Reincarnation/global collection balance.
 
-Do not tune any of these to make Body green.
+Do not tune any deferred system to make Body green.
 
 ## 15. Production phases
 
 - **B0 — Contract / scope:** CLOSED.
-- **B1 — Five-stat + Auto + defensive effect authority:** source + targeted evidence present.
-- **B2 — Huyết Khí passive runtime retirement/re-authoring:** source + targeted evidence present.
-- **B3 — Correctness + resource transaction gates:** PASS on exact local candidate evidence.
-- **B4 — Consumer parity:** PASS on exact local candidate evidence.
-- **B5 — identity-valid deterministic benchmark:** baseline identity evidence recorded by user; all three profiles valid.
-- **B6 — evidence-driven redesign/tune:** **OPEN** — Bất Động repair + Huyết–Công branch + selectable Auto presets.
-- **B7 — FULL CLEAN + exact-SHA feature closure + lock:** BLOCKED until B6 correctness/parity/identity evidence passes.
+- **B1 — Five-stat + Auto + defensive effect authority:** targeted evidence present.
+- **B2 — Huyết Khí passive runtime retirement/re-authoring:** targeted evidence present; stale player-facing content removed in B7.
+- **B3 — Correctness + resource transaction:** PASS on local evidence.
+- **B4 — Consumer parity:** PASS on local evidence.
+- **B5 — identity-valid deterministic benchmark:** PASS; all three baseline identities valid.
+- **B6 — evidence-driven redesign/tune:** ACCEPTED; final 3×3 evidence recorded above, no further B6 tuning planned.
+- **B7 — content debt + manifest + exact-SHA feature closure:** **SOURCE COMPLETE / AWAITING LOCAL FULL CLEAN**.
 
-`closureReady` remains `false` through B6.
+`closureReady` is now `true` as a **source closure candidate**. This does **not** by itself declare Thể Đạo PASS/CLOSED. Final CLOSED/LOCKED status requires the exact current SHA to pass `DONG_BO_VA_TEST_FEATURE.cmd dao-body` including its required FULL CLEAN step.
