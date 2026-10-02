@@ -1,7 +1,7 @@
 import { combatMaxHp, skillTrueEssenceCost } from './combat-rules.js';
 import { canUseSkillRuntimeV117, resourceValueV117, skillSpiritCostMultiplierFromRuntimeV117 } from './five-element-combat-v117.js';
 import { canUseBattleDaoSkillV118, daoResourceValueV118, daoSpiritCostMultiplierV118 } from './battle-dao-combat-v118.js';
-import { bodyDaoAutoCounterForceMinV1 } from './body-dao-auto-v1.js';
+import { BODY_BLOOD_RUSH_OFFENSE_EMERGENCY_HP_PCT_V1, bodyDaoAutoCounterForceMinV1 } from './body-dao-auto-v1.js';
 import { BODY_BLOOD_RUSH_MIN_HP_PCT_V1, BODY_BLOOD_RUSH_SKILL_ID_V1, v2ResourceProjection } from './battle-dao-v2-runtime.js';
 import { skillRuntimeV117 } from './skill-runtime-v117.js';
 import { effectiveStats } from './stats.js';
@@ -17,6 +17,22 @@ function bodyBloodRushAutoMinHpPct(self) {
 }
 function bodyBloodRushActivationCount(self) {
     return Math.max(0, Number(self?.battleDaoStateV2?.body?.core?.bodyBloodRushActivations) || 0);
+}
+function bodyBloodRushProtectsOffenseWindow(self, now) {
+    if (self?.combatBuildV117?.mainDaoId !== 'body')
+        return false;
+    const projection = v2ResourceProjection(self, now);
+    if (!projection.bodyBloodRushActive)
+        return false;
+    const hpPct = self.hp / Math.max(1, combatMaxHp(self.baseStats)) * 100;
+    return hpPct + 1e-9 >= BODY_BLOOD_RUSH_OFFENSE_EMERGENCY_HP_PCT_V1;
+}
+function bodyBloodRushSuppressesRoutineDefense(self, skill, now) {
+    if (!bodyBloodRushProtectsOffenseWindow(self, now))
+        return false;
+    return skill.id === 'skill.dao.body.guard'
+        || skill.id === 'skill.dao.body.immovable'
+        || skill.id === 'skill.dao.body.ultimate';
 }
 function checkCondition(condition, self, target, now) {
     switch (condition.type) {
@@ -119,6 +135,8 @@ function autoFallbackAllows(self, skill, target, now) {
     if ((skill.id === 'skill.dao.mind.interfere' || skill.id === 'skill.dao.mind.burst')
         && (target.marks['Thần Ấn'] ?? 0) < 1)
         return false;
+    if (bodyBloodRushSuppressesRoutineDefense(self, skill, now))
+        return false;
     if (skill.id === BODY_BLOOD_RUSH_SKILL_ID_V1 && self.combatBuildV117?.mainDaoId === 'body') {
         const hpPct = self.hp / Math.max(1, combatMaxHp(self.baseStats)) * 100;
         const projection = v2ResourceProjection(self, now);
@@ -135,6 +153,7 @@ export function chooseSkill(self, target, registry, now) {
     const rules = [...self.aiProfile.rules].sort((a, b) => b.priority - a.priority);
     const swordMain = self.combatBuildV117?.mainDaoId === 'sword';
     const fistMain = self.combatBuildV117?.mainDaoId === 'fist';
+    const bodyMain = self.combatBuildV117?.mainDaoId === 'body';
     const projection = swordMain || fistMain ? v2ResourceProjection(self, now) : {};
     const swordGaugeReady = swordMain && self.ultimateGaugeV117 + 1e-9 >= 100;
     const swordPerfectUltimate = swordGaugeReady && (projection.swordQi ?? 0) >= 5 && (projection.swordIntentV2 ?? 0) >= 20;
@@ -157,6 +176,8 @@ export function chooseSkill(self, target, registry, now) {
         if (swordMain && skill.id === 'skill.dao.sword.ultimate' && swordGaugeReady && !swordPerfectUltimate && now + 1e-9 < (self.pendingSetFlagsV117['swordUltimateHoldUntil'] ?? now))
             continue;
         if (fistMain && skill.id === 'skill.dao.fist.ultimate' && fistUltimateEligible && !fistPerfectUltimate && now + 1e-9 < (self.pendingSetFlagsV117['fistUltimateHoldUntil'] ?? now))
+            continue;
+        if (bodyMain && bodyBloodRushSuppressesRoutineDefense(self, skill, now))
             continue;
         if (!canUseSkill(self, skill, registry, now))
             continue;
