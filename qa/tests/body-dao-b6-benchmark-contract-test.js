@@ -67,9 +67,13 @@ assert(source.includes('summarizeBodyB6Run(kernel,style,presetId,seed,duration,r
 assert(source.includes('maxHp:round(maxHp)'),'B6 evidence must expose the runtime Max HP denominator');
 assert(!source.includes('combatMaxHp(state.baseStats'),'battle.finalState is compact and must not be treated as retaining baseStats');
 assert(!source.includes('maxHp=stylePrimary(style).body*100'),'B6 must not report HP% from a benchmark-only denominator');
-assert(source.includes('invalidRuns:invalid.map'),'B6 must preserve invalid run evidence in JSON instead of throwing it away');
+assert(source.includes('const survivedFullDuration=alive&&fullDuration'),'B6 must preserve survival as an explicit observation');
+assert(source.includes('survivalWarnings:runs.filter(x=>!x.survivedFullDuration)')||source.includes('const survivalWarnings=runs.filter(x=>!x.survivedFullDuration)'),'B6 must keep survival warnings separate from identity correctness');
+assert(source.includes('survivalWarnings:survivalWarnings.map'),'B6 JSON must retain survival-warning evidence');
+assert(source.includes('Survival is recorded separately'),'Huyết–Công survival must remain visible without masquerading as missing-mechanic correctness');
+assert(source.includes('invalidRuns:invalid.map'),'B6 must preserve invalid identity evidence in JSON instead of throwing it away');
 assert(source.indexOf('fs.writeFileSync(opts.out')<source.indexOf('if(!result.passed) process.exitCode=1'),'B6 CLI must write evidence before returning fail-closed exit code');
-assert(source.includes('No DPS/survival target band is enforced here'),'B6 must remain diagnostic before evidence-driven tuning');
+assert(source.includes('No DPS/survival target band is enforced here'),'B6 must remain diagnostic before evidence-driven closure');
 
 const launcher=fs.readFileSync(new URL('../../tools/web/RUN_BODY_B6_BENCHMARK.cmd',import.meta.url),'utf8');
 assert(launcher.includes('qa\\benchmarks\\body-dao-b6-benchmark.js'));
