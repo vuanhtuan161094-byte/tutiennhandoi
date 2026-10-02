@@ -116,7 +116,7 @@ function bloodActivationTimes(logs,playerId){
 }
 function inBloodWindow(time,activationTimes){return activationTimes.some(start=>time>=start-1e-9&&time<=start+6.001);}
 
-export function summarizeBodyB6Run(kernel,style,presetId,seed,requestedDuration=BODY_B6_DURATION_SECONDS){
+export function summarizeBodyB6Run(kernel,style,presetId,seed,requestedDuration=BODY_B6_DURATION_SECONDS,runtimeMaxHp=undefined){
   const playerId=`entity.qa.body_b6.${style.id}.${presetId}`;
   const result=kernel.combatResult,battle=kernel.battle,logs=battle.logs;
   const playerLogs=logs.filter(x=>x.actorId===playerId);
@@ -140,7 +140,8 @@ export function summarizeBodyB6Run(kernel,style,presetId,seed,requestedDuration=
   const mitigationEvents=Number(core.bodyMitigationEvents??0);
   const cashoutEvents=Number(core.bodyCashoutEvents??0);
   const finalHp=Number(state.hp??0);
-  const maxHp=combatMaxHp(state.baseStats??{});
+  const authoredMaxHp=combatMaxHp(createBodyB6Player(style,presetId).stats);
+  const maxHp=Math.max(1,Number(runtimeMaxHp)||authoredMaxHp);
   const alive=state.alive!==false&&finalHp>0;
   const fullDuration=duration>=requestedDuration-.05;
   let identityValid=false;
@@ -204,8 +205,9 @@ export function runBodyB6Benchmark({duration=BODY_B6_DURATION_SECONDS,seeds=BODY
     for(const presetId of BODY_B6_PRESET_IDS){
       for(const seed of seeds){
         const player=createBodyB6Player(style,presetId),target=createBodyB5Target();
+        const runtimeMaxHp=combatMaxHp(player.stats);
         const kernel=runCombatKernelV3({registry,seed,entities:[player,target],maxDuration:duration,mode:'simulation'});
-        runs.push(summarizeBodyB6Run(kernel,style,presetId,seed,duration));
+        runs.push(summarizeBodyB6Run(kernel,style,presetId,seed,duration,runtimeMaxHp));
       }
     }
   }
@@ -228,7 +230,7 @@ export function runBodyB6Benchmark({duration=BODY_B6_DURATION_SECONDS,seeds=BODY
       'Thủ–Phản intentionally does not equip Nhiên Huyết; all three presets must therefore produce identical mechanics for the same seed.',
       'Huyết–Công validity requires real Nhiên Huyết activation, real HP payment, and real damage inside the 6s Huyết Bạo window.',
       'Hybrid validity requires both Huyết–Công evidence and a real mitigation → Phản Thế cash-out/counter cycle with completed Bất Động channel.',
-      'HP% is computed with canonical combatMaxHp authority from the runtime final state, not a benchmark-only body×100 denominator.',
+      'HP% uses canonical combatMaxHp from the authored player stats before CombatKernel V3 runs; battle.finalState is intentionally compact and does not retain baseStats.',
       'Invalid identity runs are preserved in JSON and aggregate output before the CLI returns failure, so tuning decisions use the full matrix instead of the first exception only.',
       'No DPS/survival target band is enforced here. B6 numbers are evidence for the next tune/closure decision, not targets chosen in advance.',
     ],
