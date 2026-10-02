@@ -80,9 +80,9 @@ for(const gate of [
 assert.deepEqual(mind.lockedRegressionFeatures,['dao-sword','dao-fist']);
 
 const body=backendFeatureClosureManifest('dao-body');
-assert.equal(body.closureReady,false,'Body B6 must remain fail-closed until benchmark evidence is reviewed and B7 closure completes');
-assert.equal(body.benchmarkCommand,'tools\\web\\RUN_BODY_B6_BENCHMARK.cmd','Body B6 benchmark launcher must be the current Body evidence command');
-assert.equal(body.benchmarkContractGate,'body-dao-b6-benchmark-contract-test.js','Body B6 benchmark contract must be registered');
+assert.equal(body.closureReady,true,'Body B7 source must be READY for the final exact-SHA local FULL CLEAN');
+assert.equal(body.benchmarkCommand,'tools\\web\\RUN_BODY_B6_BENCHMARK.cmd','Body B6 benchmark launcher must remain registered as accepted evidence');
+assert.equal(body.benchmarkContractGate,'body-dao-b6-benchmark-contract-test.js','Body B6 benchmark contract must remain registered');
 for(const gate of [
   'body-dao-production-contract-test.js',
   'body-dao-passive-architecture-test.js',
@@ -91,6 +91,7 @@ for(const gate of [
   'body-dao-b5-harness-contract-test.js',
   'body-dao-b6-blood-immovable-correctness-test.js',
   'body-dao-b6-benchmark-contract-test.js',
+  'body-dao-b7-content-closure-test.js',
 ]) assert(body.gates.includes(gate),`dao-body missing installed Body gate ${gate}`);
 for(const gate of [
   'sword-dao-production-contract-test.js',
