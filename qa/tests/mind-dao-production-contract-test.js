@@ -11,6 +11,8 @@ const m2cAudit=fs.readFileSync(new URL('../../docs/runtime/MIND_DAO_M2C_CLOSURE_
 const m3Audit=fs.readFileSync(new URL('../../docs/runtime/MIND_DAO_M3_CLOSURE_AUDIT_20260929.md',import.meta.url),'utf8');
 const benchmarkLauncher=fs.readFileSync(new URL('../../tools/web/RUN_MIND_M5_BENCHMARK.cmd',import.meta.url),'utf8');
 const benchmarkHarness=fs.readFileSync(new URL('../benchmarks/mind-dao-m4-benchmark.js',import.meta.url),'utf8');
+const registrySource=fs.readFileSync(new URL('../../dist/content/registry.js',import.meta.url),'utf8');
+const mindRuntimeSource=fs.readFileSync(new URL('../../dist/core/mind-dao-v2-runtime.js',import.meta.url),'utf8');
 
 const expectedSkills=[
   'skill.dao.mind.basic','skill.dao.mind.mark','skill.dao.mind.split','skill.dao.mind.interfere','skill.dao.mind.guard',
@@ -63,8 +65,19 @@ assert.match(contract,/1004\.046/);
 assert.match(contract,/740\.728/);
 assert.match(contract,/556\.468/);
 assert.match(contract,/19\.565/);
+assert.match(contract,/890\.397/,'contract must retain measured M5-1 Echo DPS');
+assert.match(contract,/88\.68%/,'contract must retain measured M5-1 Echo relative DPS');
+assert.match(contract,/10\.49%/,'contract must retain measured M5-1 Echo contribution');
+assert.match(contract,/675\.563/,'contract must retain measured M5-1 Interference DPS');
+assert.match(contract,/67\.28%/,'contract must retain measured M5-1 Interference relative DPS');
+assert.match(contract,/40% → 70%/,'contract must declare the single M5-2 Burst snapshot-retention lever');
 assert.match(contract,/17ec773bb057e7e6145bea10de91e532bff0efdf/);
 assert.doesNotMatch(contract,/M4 — OPEN/,'M4 must not regress to open after identity-valid canonical baseline');
+
+assert.match(registrySource,/MIND_M5_OBSERVE_CHANNEL_DAMAGE_COEFFICIENT\s*=\s*1\.10/,'M5-1 retained Observe coefficient must stay at 1.10 while M5-2 is measured');
+assert.match(mindRuntimeSource,/MIND_M5_BURST_SNAPSHOT_RETENTION\s*=\s*\.70/,'M5-2 must change only the existing Burst snapshot-retention coefficient to 0.70');
+assert.match(mindRuntimeSource,/MIND_V2_BASE_ECHO_COEFFICIENT\s*=\s*\.35/,'M5 must not alter the canonical 35% base echo coefficient');
+assert.match(mindRuntimeSource,/Math\.min\(\.70,/,'M5 must retain the canonical 70% echo safety ceiling');
 
 assert.match(m2bAudit,/M2B CLOSED/);
 assert.match(m2bAudit,/24c608f1764c9e5a34c65e5c66602e3e30d3a499/);
@@ -76,7 +89,11 @@ assert.match(m3Audit,/mind-dao-m3-consumer-parity-test\.js/);
 
 assert.match(benchmarkLauncher,/mind-dao-m4-benchmark\.js/i,'M5 launcher must execute the accepted deterministic Mind harness');
 assert.doesNotMatch(benchmarkLauncher,/MIND_M5_BENCHMARK_BLOCKED/,'M4 harness installation removes the bootstrap fail-closed placeholder');
+assert.match(benchmarkLauncher,/sourceHead=/,'M5 log must stamp the exact source HEAD');
+assert.match(benchmarkLauncher,/observePatch=/,'M5 log must stamp the retained Observe tuning');
+assert.match(benchmarkLauncher,/burstSnapshotPatch=/,'M5 log must stamp the active Burst snapshot tuning');
 assert.match(benchmarkHarness,/MIND_M4_INVALID_IDENTITY_RUN/,'identity-invalid zero-mechanic runs must be rejected');
 assert.match(benchmarkHarness,/Diagnostic only: does not modify gameplay or auto-tune coefficients\./);
+assert.match(benchmarkHarness,/echoDamageBySkillMean/,'M5 diagnostics must expose source-local echo damage without changing gameplay');
 
 console.log('MIND DAO PRODUCTION CONTRACT: PASS');
