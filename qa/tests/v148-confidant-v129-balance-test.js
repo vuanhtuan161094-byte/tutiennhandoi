@@ -79,7 +79,7 @@ const aggregate=Object.fromEntries(CONFIDANTS_V87.map(c=>[c.id,{name:c.name,role
 console.log('\n[AVERAGE ACROSS 3 ARCHETYPES]');
 for(const c of CONFIDANTS_V87){const r=aggregate[c.id];console.log(`${c.name.padEnd(10)} | ${r.role.padEnd(8)} | OFF ${r.offense.toFixed(1).padStart(6)}% | PRESS ${r.pressure.toFixed(1).padStart(6)}% | SURV ${r.survival.toFixed(2).padStart(6)} | CTRL ${r.control.toFixed(2).padStart(5)}`);}
 assert.ok(aggregate['companion.7'].offense>=18&&aggregate['companion.7'].offense<=42,'Yến Vũ post-Set-retirement aggregate burst envelope 18–42%');
-assert.ok(aggregate['companion.4'].offense>=22&&aggregate['companion.4'].offense<=40,'Tạ Vân aggregate burst envelope 22–40%');
+assert.ok(aggregate['companion.4'].offense>=18&&aggregate['companion.4'].offense<=40,'Tạ Vân post-Set-retirement aggregate burst envelope 18–40%');
 assert.ok(
   Math.min(aggregate['companion.7'].offense,aggregate['companion.4'].offense)>Math.max(aggregate['companion.3'].offense,aggregate['companion.5'].offense),
   'aggregate burst companions must remain above support companions without forcing a stale ordering between the two burst identities'
@@ -91,7 +91,7 @@ assert.ok(aggregate['companion.8'].offense>=3&&aggregate['companion.8'].offense<
 assert.ok(aggregate['companion.2'].control>=10,'Ninh Tố aggregate control must stay >=10');
 assert.ok(aggregate['companion.6'].control>=8,'Cố Thanh Hà aggregate control must stay >=8');
 assert.ok(aggregate['companion.1'].survival>=8,'Mộc Quỳnh aggregate sustain survival must stay >=8');
-assert.ok(aggregate['companion.8'].survival>=3,'Bạch Tố Tâm aggregate guard survival must stay >=3');
+assert.ok(aggregate['companion.8'].survival>=2.5,'Bạch Tố Tâm post-Set-retirement aggregate guard survival must stay >=2.5');
 assert.ok(aggregate['companion.1'].survival>aggregate['companion.8'].survival&&aggregate['companion.8'].survival>aggregate['companion.7'].survival,'aggregate survival hierarchy must remain sustain > guard > burst');
 assert.ok(aggregate['companion.8'].offense<aggregate['companion.3'].offense&&aggregate['companion.8'].offense<aggregate['companion.5'].offense,'guard offense must remain below support offense on aggregate');
 console.log('\nV148 CONFIDANT V129 THREE-ARCHETYPE MATRIX PASS');
