@@ -9,6 +9,26 @@ import { craftedProducts, professionDefinitions, professionRecipes } from './pro
 import { daoDefinitions } from './daos.js';
 import { battleDaoSkillsV118, daoPassivesV118, daoVariantsV118 } from './battle-dao-skill-pack-v118.js';
 import { bodyDaoProductionSkillsV1 } from './body-dao-production-v1.js';
+
+// Thần Niệm M5 tuning candidate #1.
+// One lever only: Tịch Niệm Quan Tâm channel damage. Structure, costs,
+// Thần Ấn transactions, control and Niệm Ảnh cadence remain unchanged.
+const MIND_M5_OBSERVE_CHANNEL_DAMAGE_COEFFICIENT = 1.10;
+function mindDaoM5TuningCandidateV1(skill) {
+    if (skill?.id !== 'skill.dao.mind.observe')
+        return skill;
+    return {
+        ...skill,
+        productionAuthorityV1: 'mind-dao.m5-candidate.v1',
+        channel: {
+            ...(skill.channel ?? {}),
+            effects: (skill.channel?.effects ?? []).map(effect => effect?.type === 'damage'
+                ? { ...effect, coefficient: MIND_M5_OBSERVE_CHANNEL_DAMAGE_COEFFICIENT }
+                : { ...effect }),
+        },
+    };
+}
+
 export function buildRegistry() {
     const registry = new GameRegistry();
     for (const dao of daoDefinitions)
@@ -45,7 +65,7 @@ export function buildRegistry() {
         registry.registerStatus(status);
     for (const skill of skills)
         registry.registerSkill(skill);
-    for (const skill of bodyDaoProductionSkillsV1(battleDaoSkillsV118))
+    for (const skill of bodyDaoProductionSkillsV1(battleDaoSkillsV118).map(mindDaoM5TuningCandidateV1))
         registry.registerSkill(skill);
     const errors = registry.validate();
     if (errors.length)
