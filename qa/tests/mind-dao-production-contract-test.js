@@ -38,8 +38,8 @@ assert.equal(mindDaoV2.tree.length,8,'V2 realm tree must remain eight rows');
 assert(mindSkills.every(skill=>skill.fiveStatScalingV5!==undefined),'M2A closure requires explicit five-stat families on all ten Mind skills');
 
 const manifest=backendFeatureClosureManifest('dao-mind');
-assert.equal(manifest.closureReady,false,'dao-mind must remain fail-closed until benchmark evidence, tuning and final closure phases are complete');
-assert.equal(manifest.benchmarkContractGate,'mind-dao-m4-harness-contract-test.js','M4 must own the real identity-valid harness contract gate');
+assert.equal(manifest.closureReady,false,'dao-mind must remain fail-closed until M5 tuning and final closure phases are complete');
+assert.equal(manifest.benchmarkContractGate,'mind-dao-m4-harness-contract-test.js','M4/M5 must retain the deterministic identity-valid harness contract gate');
 for(const gate of [
   'mind-dao-production-contract-test.js','mind-dao-skill-form-contract-test.js','mind-dao-m1-seal-transaction-test.js',
   'mind-dao-m1-authority-test.js','mind-dao-m2-five-stat-test.js','mind-dao-m2-passive-architecture-test.js',
@@ -48,7 +48,7 @@ for(const gate of [
 assert(manifest.lockedRegressionFeatures.includes('dao-sword'));
 assert(manifest.lockedRegressionFeatures.includes('dao-fist'));
 
-assert.match(contract,/M3 CLOSED \/ M4 OPEN/);
+assert.match(contract,/M4 CLOSED \/ M5 ACTIVE/);
 assert.match(contract,/Thần Ấn/);
 assert.match(contract,/Niệm Lực/);
 assert.match(contract,/Niệm Ảnh/);
@@ -57,9 +57,14 @@ assert.match(contract,/M2A — CLOSED/);
 assert.match(contract,/M2B — CLOSED/);
 assert.match(contract,/M2C — CLOSED/);
 assert.match(contract,/M3 — CLOSED/);
-assert.match(contract,/M4 — OPEN/);
+assert.match(contract,/M4 — CLOSED/);
+assert.match(contract,/M5 — ACTIVE/);
+assert.match(contract,/1004\.046/);
+assert.match(contract,/740\.728/);
+assert.match(contract,/556\.468/);
+assert.match(contract,/19\.565/);
 assert.match(contract,/17ec773bb057e7e6145bea10de91e532bff0efdf/);
-assert.doesNotMatch(contract,/M3 — OPEN/,'M3 must not regress to open after closure');
+assert.doesNotMatch(contract,/M4 — OPEN/,'M4 must not regress to open after identity-valid canonical baseline');
 
 assert.match(m2bAudit,/M2B CLOSED/);
 assert.match(m2bAudit,/24c608f1764c9e5a34c65e5c66602e3e30d3a499/);
@@ -69,7 +74,7 @@ assert.match(m3Audit,/M3 CLOSED \/ M4 OPEN/);
 assert.match(m3Audit,/ee86e719c47d8f3f57f33ea95b676373224ea73c/);
 assert.match(m3Audit,/mind-dao-m3-consumer-parity-test\.js/);
 
-assert.match(benchmarkLauncher,/mind-dao-m4-benchmark\.js/i,'M4 launcher must execute the deterministic Mind harness');
+assert.match(benchmarkLauncher,/mind-dao-m4-benchmark\.js/i,'M5 launcher must execute the accepted deterministic Mind harness');
 assert.doesNotMatch(benchmarkLauncher,/MIND_M5_BENCHMARK_BLOCKED/,'M4 harness installation removes the bootstrap fail-closed placeholder');
 assert.match(benchmarkHarness,/MIND_M4_INVALID_IDENTITY_RUN/,'identity-invalid zero-mechanic runs must be rejected');
 assert.match(benchmarkHarness,/Diagnostic only: does not modify gameplay or auto-tune coefficients\./);
