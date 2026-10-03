@@ -70,12 +70,18 @@ assert.match(contract,/88\.68%/,'contract must retain measured M5-1 Echo relativ
 assert.match(contract,/10\.49%/,'contract must retain measured M5-1 Echo contribution');
 assert.match(contract,/675\.563/,'contract must retain measured M5-1 Interference DPS');
 assert.match(contract,/67\.28%/,'contract must retain measured M5-1 Interference relative DPS');
-assert.match(contract,/40% → 70%/,'contract must declare the single M5-2 Burst snapshot-retention lever');
+assert.match(contract,/1011\.576/,'contract must retain measured M5-2 Burst DPS');
+assert.match(contract,/906\.994/,'contract must retain measured M5-2 Echo DPS');
+assert.match(contract,/89\.66%/,'contract must retain measured M5-2 Echo relative DPS');
+assert.match(contract,/12\.13%/,'contract must retain measured M5-2 Echo contribution');
+assert.match(contract,/66\.78%/,'contract must retain measured M5-2 Interference relative DPS');
+assert.match(contract,/6971\.022/,'contract must retain measured M5-2 Burst-sourced Echo damage');
+assert.match(contract,/0\.70 → 1\.30/,'contract must declare the single M5-3 Burst snapshot multiplier refinement');
 assert.match(contract,/17ec773bb057e7e6145bea10de91e532bff0efdf/);
 assert.doesNotMatch(contract,/M4 — OPEN/,'M4 must not regress to open after identity-valid canonical baseline');
 
-assert.match(registrySource,/MIND_M5_OBSERVE_CHANNEL_DAMAGE_COEFFICIENT\s*=\s*1\.10/,'M5-1 retained Observe coefficient must stay at 1.10 while M5-2 is measured');
-assert.match(mindRuntimeSource,/MIND_M5_BURST_SNAPSHOT_RETENTION\s*=\s*\.70/,'M5-2 must change only the existing Burst snapshot-retention coefficient to 0.70');
+assert.match(registrySource,/MIND_M5_OBSERVE_CHANNEL_DAMAGE_COEFFICIENT\s*=\s*1\.10/,'M5-1 retained Observe coefficient must stay at 1.10 while later M5 iterations are measured');
+assert.match(mindRuntimeSource,/MIND_M5_BURST_SNAPSHOT_RETENTION\s*=\s*1\.30/,'M5-3 must refine only the existing Burst sanitized snapshot multiplier to 1.30');
 assert.match(mindRuntimeSource,/MIND_V2_BASE_ECHO_COEFFICIENT\s*=\s*\.35/,'M5 must not alter the canonical 35% base echo coefficient');
 assert.match(mindRuntimeSource,/Math\.min\(\.70,/,'M5 must retain the canonical 70% echo safety ceiling');
 
