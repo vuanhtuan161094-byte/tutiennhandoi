@@ -13,7 +13,24 @@ assert.equal(MIND_M4_SEEDS.length,12);
 assert.deepEqual(validateMindM4Profiles(),[]);
 assert.deepEqual(MIND_M4_PROFILES.map(x=>x.id),['burst','echo','interference']);
 
+const expectedProfiles={
+  burst:{
+    allocation:{power:150,body:30,agility:25,spirit:35,sense:60},
+    activeSkillIds:['skill.dao.mind.mark','skill.dao.mind.split','skill.dao.mind.chase','skill.dao.mind.burst','skill.dao.mind.flow'],
+  },
+  echo:{
+    allocation:{power:100,body:25,agility:40,spirit:45,sense:90},
+    activeSkillIds:['skill.dao.mind.split','skill.dao.mind.chase','skill.dao.mind.burst','skill.dao.mind.observe','skill.dao.mind.flow'],
+  },
+  interference:{
+    allocation:{power:70,body:35,agility:35,spirit:50,sense:110},
+    activeSkillIds:['skill.dao.mind.mark','skill.dao.mind.interfere','skill.dao.mind.guard','skill.dao.mind.observe','skill.dao.mind.flow'],
+  },
+};
+
 for(const profile of MIND_M4_PROFILES){
+  assert.deepEqual(profile.allocation,expectedProfiles[profile.id].allocation,`${profile.id} allocation must match the canonical production archetype`);
+  assert.deepEqual(profile.activeSkillIds,expectedProfiles[profile.id].activeSkillIds,`${profile.id} loadout must match the canonical production archetype`);
   assert.equal(profile.activeSkillIds.length,5,`${profile.id} must use exactly 5 Active slots`);
   assert.equal(Object.values(profile.allocation).reduce((a,b)=>a+b,0),300,`${profile.id} must use equal 300-point allocation budget`);
   const player=createMindM4Player(profile);
@@ -27,6 +44,7 @@ for(const profile of MIND_M4_PROFILES){
 }
 
 const source=fs.readFileSync(new URL('../benchmarks/mind-dao-m4-benchmark.js',import.meta.url),'utf8');
+assert(source.includes('three canonical production archetypes in MIND_DAO_PRODUCTION_SPEC_V1 section 12'),'harness must declare the canonical archetype source');
 assert(source.includes("runCombatKernelV3({registry,seed,entities:[player,target]"),'harness must use production CombatKernel V3');
 assert(source.includes('MIND_M4_INVALID_IDENTITY_RUN'),'zero-mechanic runs must be rejected as invalid benchmark evidence');
 assert(source.includes("x.data?.mindSnapshot===true"),'Niệm Ảnh contribution must come from real snapshot replay logs');
