@@ -1,6 +1,6 @@
 # THẦN NIỆM DAO PRODUCTION CONTRACT — 2026-09-29
 
-Status: **M4 CLOSED / M5 ACTIVE — IDENTITY-VALID CANONICAL BASELINE ACCEPTED; MINIMAL TUNING IN PROGRESS; M6 BLOCKED**
+Status: **M4 CLOSED / M5 ACTIVE — M5-1 MEASURED AND RETAINED; M5-2 BURST SNAPSHOT CANDIDATE AWAITING BENCHMARK; M6 BLOCKED**
 
 Repository: `vuanhtuan161094-byte/tutiennhandoi`  
 Branch: `main` only  
@@ -14,7 +14,7 @@ Parent locks:
 - Dao Production Workflow V3 — ACTIVE / LOCKED.
 - Ngũ Hành Equipment Retirement — CLOSED / LOCKED.
 
-Thần Niệm remains under the V3 sequence: **correctness → parity → identity-valid deterministic benchmark → minimal tuning → scoped closure**. The feature manifest remains `closureReady:false`. M4 identity evidence is now accepted and authorizes M5 tuning only under the one-lever-at-a-time rule; it does not authorize whole-feature closure.
+Thần Niệm remains under the V3 sequence: **correctness → parity → identity-valid deterministic benchmark → minimal tuning → scoped closure**. The feature manifest remains `closureReady:false`. M4 identity evidence is accepted. M5 tuning follows one-new-lever-per-benchmark iteration and does not authorize whole-feature closure.
 
 ## 1. Production identity
 
@@ -150,7 +150,7 @@ M2C locks:
 
 M2C semantic-alignment candidate: `17ec773bb057e7e6145bea10de91e532bff0efdf`. Detailed audit: `docs/runtime/MIND_DAO_M2C_CLOSURE_AUDIT_20260929.md`.
 
-No production balance tuning is authorized by M2C closure alone.
+M5 may tune numeric values inside these already-owned mastery behaviors, but may not change their ownership class, transaction semantics, cadence architecture, recursion rules, or safety ceilings.
 
 ## 8. M3 production-path parity — CLOSED
 
@@ -203,18 +203,29 @@ Benchmark target bands remain:
 
 M5 rules:
 - tune only Mind-owned local coefficients;
-- exactly one lever between benchmark runs;
+- add exactly one new tuning lever between deterministic benchmark runs;
+- retain a prior lever only after its measured effect is reviewed;
 - no change to the canonical archetype matrix;
 - no reopening M1/M2/M3 structural ownership;
 - no generic `TT → all damage` multiplier;
 - no Sword/Quyền/equipment rebalance to make Mind pass.
 
-### Candidate M5-1
+### M5-1 — MEASURED / RETAINED
 
-One production lever is active:
+Lever:
 - `Tịch Niệm Quan Tâm` / `skill.dao.mind.observe` channel damage coefficient: **0.28 → 1.10 per resolved channel hit**.
 
-Unchanged:
+Exact local benchmark evidence on source HEAD `93e8b6dcc6e65c325d2619ac389a6263fe670cfd`:
+- all 36 runs identity-valid; `invalidRuns = []`;
+- **Bạo Ấn:** DPS **1004.046**, **100%**, echo contribution **10.45%**;
+- **Niệm Ảnh:** DPS **890.397**, **88.68%**, echo contribution **10.49%**;
+- **Nhiễu Thức:** DPS **675.563**, **67.28%**, interference metric **19.565**, still highest.
+
+Decision:
+- retain Observe **1.10** because Niệm Ảnh moved into its 88–98% DPS band and Nhiễu also improved without changing the Burst reference;
+- M5 is not complete because Niệm Ảnh echo contribution remains below 15% and Nhiễu remains below its 75% DPS floor.
+
+M5-1 did not change:
 - skill id/name;
 - form/cost/CD/cast/recovery/channel timing;
 - channel hit count/mastery behavior;
@@ -223,7 +234,28 @@ Unchanged:
 - Nhiễu/control rules;
 - five-stat family.
 
-Candidate M5-1 is not accepted until the same deterministic benchmark is rerun. No second tuning lever may be added before that evidence is reviewed.
+### M5-2 — ACTIVE CANDIDATE / AWAITING BENCHMARK
+
+One new lever is added while the measured M5-1 Observe value remains retained:
+- `Bạo Ấn Phá Thức · Cực` mastery-1000 sanitized snapshot retention: **40% → 70% of the already-resolved Burst damage/Break packet**.
+
+Purpose:
+- increase real Niệm Ảnh contribution through an existing snapshot-local mastery behavior;
+- favor the Niệm Ảnh archetype, which uses Bạo Ấn more frequently than the Bạo Ấn reference profile in the accepted matrix;
+- avoid a global baseline echo buff.
+
+M5-2 explicitly does **not** change:
+- baseline Niệm Ảnh coefficient **35%**;
+- ordinary cadence **3 eligible Active roots**;
+- fixed echo delay **0.6s**;
+- hard echo coefficient safety ceiling **70%**;
+- shared follow-up budget / non-recursion;
+- Thần Ấn generation or consume transactions;
+- Bạo Ấn direct damage multiplier;
+- Nhiễu/control rules;
+- canonical benchmark matrix.
+
+The harness now records `echoDamageBySkillMean` and prints Burst-sourced echo damage for diagnosis. M5-2 is not accepted until the same 12×180×3 deterministic matrix is rerun on the exact current source SHA.
 
 ## 11. Phase state
 
@@ -231,10 +263,10 @@ Candidate M5-1 is not accepted until the same deterministic benchmark is rerun. 
 - **M1 — CLOSED** — runtime correctness / ownership.
 - **M2A — CLOSED** — explicit five-stat migration.
 - **M2B — CLOSED** — passive architecture / ownership.
-- **M2C — CLOSED** — mastery architecture / ownership.
+- **M2C — CLOSED** — mastery architecture / ownership; M5 numeric tuning may not reopen architecture.
 - **M3 — CLOSED** — production-path parity.
 - **M4 — CLOSED** — canonical deterministic identity baseline accepted: 36/36 valid.
-- **M5 — ACTIVE** — minimal one-lever tuning; candidate M5-1 awaiting benchmark evidence.
+- **M5 — ACTIVE** — M5-1 measured/retained; M5-2 awaiting deterministic benchmark evidence.
 - **M6 — BLOCKED** — exact clean feature-scoped closure.
 
 `dao-mind` remains `closureReady:false` until M5 target bands pass with deterministic evidence and M6 exact clean scoped closure is completed.
