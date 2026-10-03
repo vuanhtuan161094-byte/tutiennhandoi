@@ -1,6 +1,6 @@
 # THẦN NIỆM DAO PRODUCTION CONTRACT — 2026-09-29
 
-Status: **M4 CLOSED / M5 ACTIVE — M5-1 MEASURED AND RETAINED; M5-2 BURST SNAPSHOT CANDIDATE AWAITING BENCHMARK; M6 BLOCKED**
+Status: **M4 CLOSED / M5 ACTIVE — M5-1 + M5-2 MEASURED/RETAINED; M5-3 BURST SNAPSHOT REFINEMENT AWAITING BENCHMARK; M6 BLOCKED**
 
 Repository: `vuanhtuan161094-byte/tutiennhandoi`  
 Branch: `main` only  
@@ -234,17 +234,37 @@ M5-1 did not change:
 - Nhiễu/control rules;
 - five-stat family.
 
-### M5-2 — ACTIVE CANDIDATE / AWAITING BENCHMARK
+### M5-2 — MEASURED / RETAINED
 
-One new lever is added while the measured M5-1 Observe value remains retained:
+Lever measured on exact source HEAD `4c842a1ed9e7efa047c468e0031c7e47c90ad6e0`:
 - `Bạo Ấn Phá Thức · Cực` mastery-1000 sanitized snapshot retention: **40% → 70% of the already-resolved Burst damage/Break packet**.
 
-Purpose:
-- increase real Niệm Ảnh contribution through an existing snapshot-local mastery behavior;
-- favor the Niệm Ảnh archetype, which uses Bạo Ấn more frequently than the Bạo Ấn reference profile in the accepted matrix;
-- avoid a global baseline echo buff.
+Exact deterministic evidence:
+- all **36/36** runs identity-valid; `invalidRuns = []`;
+- **Bạo Ấn:** DPS **1011.576**, **100%**, echo contribution **11.27%**, Burst-sourced echo damage **4048.269/run**;
+- **Niệm Ảnh:** DPS **906.994**, **89.66%**, echo contribution **12.13%**, Burst-sourced echo damage **6971.022/run**;
+- **Nhiễu Thức:** DPS **675.563**, **66.78%**, interference metric **19.565**, still highest.
 
-M5-2 explicitly does **not** change:
+Decision:
+- retain the snapshot-local direction because Niệm Ảnh stays safely inside its 88–98% DPS band and real echo contribution rises from **10.49% → 12.13%**;
+- M5-2 is not sufficient for closure because Niệm Ảnh still misses the 15% echo floor;
+- Nhiễu is intentionally unaffected by this lever because its canonical loadout does not use Bạo Ấn; it remains below the 75% DPS floor and will receive its own feature-local tuning only after Niệm Ảnh passes.
+
+M5-2 did **not** change baseline echo cadence/coefficient, direct Burst damage, Thần Ấn transactions, Nhiễu/control rules or the benchmark matrix.
+
+### M5-3 — ACTIVE CANDIDATE / AWAITING BENCHMARK
+
+The same already-opened Burst snapshot-local lever is refined once, with no second gameplay lever added:
+- `MIND_M5_BURST_SNAPSHOT_RETENTION`: **0.70 → 1.30**.
+- This multiplier applies only to the sanitized Burst damage/Break packet **before** the normal Niệm Ảnh replay coefficient is applied.
+
+Evidence-based rationale from M5-2:
+- Niệm Ảnh produced **19,803.548** mean echo damage at 12.13% contribution;
+- **6,971.022** of that mean echo damage came from Burst-sourced snapshots;
+- scaling this one packet-local lever from 0.70 to 1.30 is expected to move Niệm Ảnh close to the 15% echo floor while leaving its relative DPS within the 88–98% band;
+- this estimate is diagnostic only and is **not** acceptance evidence; the exact 12×180×3 rerun is required.
+
+M5-3 explicitly does **not** change:
 - baseline Niệm Ảnh coefficient **35%**;
 - ordinary cadence **3 eligible Active roots**;
 - fixed echo delay **0.6s**;
@@ -255,7 +275,7 @@ M5-2 explicitly does **not** change:
 - Nhiễu/control rules;
 - canonical benchmark matrix.
 
-The harness now records `echoDamageBySkillMean` and prints Burst-sourced echo damage for diagnosis. M5-2 is not accepted until the same 12×180×3 deterministic matrix is rerun on the exact current source SHA.
+Nhiễu remains untouched during M5-3. If Niệm Ảnh passes both its DPS and echo-contribution bands on the exact deterministic rerun, its tuning is frozen before a separate Nhiễu-only lever is opened.
 
 ## 11. Phase state
 
@@ -266,7 +286,7 @@ The harness now records `echoDamageBySkillMean` and prints Burst-sourced echo da
 - **M2C — CLOSED** — mastery architecture / ownership; M5 numeric tuning may not reopen architecture.
 - **M3 — CLOSED** — production-path parity.
 - **M4 — CLOSED** — canonical deterministic identity baseline accepted: 36/36 valid.
-- **M5 — ACTIVE** — M5-1 measured/retained; M5-2 awaiting deterministic benchmark evidence.
+- **M5 — ACTIVE** — M5-1 + M5-2 measured/retained; M5-3 awaiting deterministic benchmark evidence.
 - **M6 — BLOCKED** — exact clean feature-scoped closure.
 
 `dao-mind` remains `closureReady:false` until M5 target bands pass with deterministic evidence and M6 exact clean scoped closure is completed.
