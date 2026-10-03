@@ -4,6 +4,7 @@ import { battleDaoSkillsV118 } from '../../dist/content/battle-dao-skill-pack-v1
 import { mindSkillMasteryV2 } from '../../dist/content/mind-dao-v2.js';
 import { createMindCoreStateV2 } from '../../dist/core/battle-dao-v2-contract.js';
 import {
+  MIND_M5_BURST_SNAPSHOT_RETENTION,
   captureMindDamagePacketV2,
   finishMindRootV2,
   mindEchoResolvedV2,
@@ -124,8 +125,9 @@ function packetSnapshot(skillId='skill.dao.mind.mark'){
   assert.equal(Number(a.battleDaoV2.mindSnapshotPackets[0].coefficient.toFixed(6)),.77);
   const b=source({'skill.dao.mind.burst':1000}); const ba=action('burst-snapshot');
   captureMindDamagePacketV2(b,skills['skill.dao.mind.burst'],ba,{coefficient:5.32,breakDamagePct:32.5,runtimeEffectBonusPct:0,runtimeBreakBonusPct:0});
-  assert.equal(Number(ba.battleDaoV2.mindSnapshotPackets[0].coefficient.toFixed(6)),Number((5.32*.4).toFixed(6)));
-  assert.equal(Number(ba.battleDaoV2.mindSnapshotPackets[0].breakDamagePct.toFixed(6)),13);
+  assert.equal(MIND_M5_BURST_SNAPSHOT_RETENTION,.70,'M5-2 tunes only the existing Burst snapshot-retention coefficient');
+  assert.equal(Number(ba.battleDaoV2.mindSnapshotPackets[0].coefficient.toFixed(6)),Number((5.32*MIND_M5_BURST_SNAPSHOT_RETENTION).toFixed(6)));
+  assert.equal(Number(ba.battleDaoV2.mindSnapshotPackets[0].breakDamagePct.toFixed(6)),Number((32.5*MIND_M5_BURST_SNAPSHOT_RETENTION).toFixed(6)));
 }
 
 {
