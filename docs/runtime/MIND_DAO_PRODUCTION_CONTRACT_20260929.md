@@ -1,6 +1,6 @@
 # THẦN NIỆM DAO PRODUCTION CONTRACT — 2026-09-29
 
-Status: **M3 CLOSED / M4 OPEN — DETERMINISTIC IDENTITY HARNESS INSTALLED; BASELINE EXECUTION PENDING; PRODUCTION TUNING NOT AUTHORIZED**
+Status: **M4 CLOSED / M5 ACTIVE — IDENTITY-VALID CANONICAL BASELINE ACCEPTED; MINIMAL TUNING IN PROGRESS; M6 BLOCKED**
 
 Repository: `vuanhtuan161094-byte/tutiennhandoi`  
 Branch: `main` only  
@@ -14,7 +14,7 @@ Parent locks:
 - Dao Production Workflow V3 — ACTIVE / LOCKED.
 - Ngũ Hành Equipment Retirement — CLOSED / LOCKED.
 
-Thần Niệm remains under the V3 sequence: **correctness → parity → identity-valid deterministic benchmark → minimal tuning → scoped closure**. The feature manifest remains `closureReady:false`; M3 closure and M4 harness installation are not whole-feature closure and do not authorize coefficient tuning.
+Thần Niệm remains under the V3 sequence: **correctness → parity → identity-valid deterministic benchmark → minimal tuning → scoped closure**. The feature manifest remains `closureReady:false`. M4 identity evidence is now accepted and authorizes M5 tuning only under the one-lever-at-a-time rule; it does not authorize whole-feature closure.
 
 ## 1. Production identity
 
@@ -150,7 +150,7 @@ M2C locks:
 
 M2C semantic-alignment candidate: `17ec773bb057e7e6145bea10de91e532bff0efdf`. Detailed audit: `docs/runtime/MIND_DAO_M2C_CLOSURE_AUDIT_20260929.md`.
 
-No production balance tuning is authorized by M2C closure.
+No production balance tuning is authorized by M2C closure alone.
 
 ## 8. M3 production-path parity — CLOSED
 
@@ -171,29 +171,61 @@ Detailed audit: `docs/runtime/MIND_DAO_M3_CLOSURE_AUDIT_20260929.md`.
 
 M3 made no coefficient or balance changes.
 
-## 9. Deterministic benchmark — M4 OPEN
+## 9. Deterministic benchmark — M4 CLOSED
 
 Feature command:
 
 `tools\web\RUN_MIND_M5_BENCHMARK.cmd`
 
-M4 identity harness is installed:
-- runner: `qa/benchmarks/mind-dao-m4-benchmark.js`;
-- contract gate: `qa/tests/mind-dao-m4-harness-contract-test.js`;
+Accepted canonical identity baseline:
 - engine: production CombatKernel V3;
-- deterministic matrix: 12 seeds × 180 seconds × 3 archetypes;
-- equal five-stat allocation budget: 300 points/profile;
+- matrix: **12 seeds × 180 seconds × 3 archetypes = 36 runs**;
+- canonical Section-12 allocation/loadout matrix;
+- all 36 runs identity-valid;
+- `invalidRuns = []`;
 - all Mind passives Lv20 and all ten mastery tiers 1000;
-- identity-invalid zero-mechanic runs are rejected rather than accepted as balance evidence.
+- equal five-stat allocation budget: 300 points/profile.
 
-Benchmark archetypes and target bands remain:
-- **Bạo Ấn** — normalized damage reference 100%, requires real Bạo Ấn Thần Ấn spend;
-- **Niệm Ảnh** — target 88–98% of Bạo Ấn, with 15–30% real echo contribution, requires real sanitized snapshot replay;
-- **Nhiễu Thức** — target 75–90% of Bạo Ấn and highest real interference/control metric, requires real Nhiễu Thần Ấn spend.
+Accepted aggregate evidence before tuning:
+- **Bạo Ấn:** DPS **1004.046**, normalized **100%**, 12/12 valid;
+- **Niệm Ảnh:** DPS **740.728**, **73.77%** of Bạo Ấn, echo contribution **12.62%**, 12/12 valid;
+- **Nhiễu Thức:** DPS **556.468**, **55.42%** of Bạo Ấn, interference metric **19.565**, 12/12 valid;
+- Nhiễu Thức is the highest real interference/control profile in the matrix.
 
-The launcher now executes the harness, but no deterministic output is recorded as authoritative evidence until the benchmark is actually run successfully. M4 therefore remains OPEN. Coefficient tuning remains blocked until an identity-valid baseline exists.
+Identity correctness therefore passes M4. Numerical target bands do not yet pass, so M5 is required.
 
-## 10. Phase state
+Benchmark target bands remain:
+- **Bạo Ấn** — normalized damage reference 100%;
+- **Niệm Ảnh** — 88–98% of Bạo Ấn with 15–30% real echo contribution;
+- **Nhiễu Thức** — 75–90% of Bạo Ấn and highest real interference/control metric.
+
+## 10. Minimal tuning — M5 ACTIVE
+
+M5 rules:
+- tune only Mind-owned local coefficients;
+- exactly one lever between benchmark runs;
+- no change to the canonical archetype matrix;
+- no reopening M1/M2/M3 structural ownership;
+- no generic `TT → all damage` multiplier;
+- no Sword/Quyền/equipment rebalance to make Mind pass.
+
+### Candidate M5-1
+
+One production lever is active:
+- `Tịch Niệm Quan Tâm` / `skill.dao.mind.observe` channel damage coefficient: **0.28 → 1.10 per resolved channel hit**.
+
+Unchanged:
+- skill id/name;
+- form/cost/CD/cast/recovery/channel timing;
+- channel hit count/mastery behavior;
+- Thần Ấn generation/progress semantics;
+- Niệm Ảnh cadence, sanitation and recursion limits;
+- Nhiễu/control rules;
+- five-stat family.
+
+Candidate M5-1 is not accepted until the same deterministic benchmark is rerun. No second tuning lever may be added before that evidence is reviewed.
+
+## 11. Phase state
 
 - **M0 — CLOSED** — scope / contract / registry.
 - **M1 — CLOSED** — runtime correctness / ownership.
@@ -201,8 +233,8 @@ The launcher now executes the harness, but no deterministic output is recorded a
 - **M2B — CLOSED** — passive architecture / ownership.
 - **M2C — CLOSED** — mastery architecture / ownership.
 - **M3 — CLOSED** — production-path parity.
-- **M4 — OPEN** — deterministic identity harness installed; baseline execution pending.
-- **M5 — BLOCKED** — minimal tuning.
+- **M4 — CLOSED** — canonical deterministic identity baseline accepted: 36/36 valid.
+- **M5 — ACTIVE** — minimal one-lever tuning; candidate M5-1 awaiting benchmark evidence.
 - **M6 — BLOCKED** — exact clean feature-scoped closure.
 
-`dao-mind` must remain `closureReady:false` until M4/M5 evidence and required regressions are complete. Whole-feature production tuning/closure is not authorized while M4 remains open.
+`dao-mind` remains `closureReady:false` until M5 target bands pass with deterministic evidence and M6 exact clean scoped closure is completed.
