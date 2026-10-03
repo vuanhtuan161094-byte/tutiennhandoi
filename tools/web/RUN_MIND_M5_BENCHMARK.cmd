@@ -3,7 +3,7 @@ chcp 65001 >nul
 setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0\..\.."
 if errorlevel 1 goto :badpath
-title Mind Dao M4 Benchmark
+title Mind Dao M5 Benchmark
 
 set "NO_PAUSE="
 for %%A in (%*) do if /I "%%~A"=="--no-pause" set "NO_PAUSE=1"
@@ -19,21 +19,32 @@ if not defined NODE_EXE (
 )
 if not defined NODE_EXE goto :nonode
 
+set "HEAD_SHA=UNKNOWN"
+for /f "delims=" %%G in ('git rev-parse HEAD 2^>nul') do set "HEAD_SHA=%%G"
+set "OBSERVE_PATCH=UNKNOWN"
+for /f "delims=" %%C in ('findstr /C:"MIND_M5_OBSERVE_CHANNEL_DAMAGE_COEFFICIENT" dist\content\registry.js 2^>nul') do set "OBSERVE_PATCH=%%C"
+
 echo ============================================================
-echo MIND DAO M4 - DETERMINISTIC IDENTITY BENCHMARK
+echo MIND DAO M5 - DETERMINISTIC TUNING BENCHMARK
 echo ============================================================
 echo Repo : %CD%
+echo Head : !HEAD_SHA!
+echo Patch: !OBSERVE_PATCH!
 echo Node : !NODE_EXE!
 echo Log  : %LOG%
 echo.
-"!NODE_EXE!" qa\benchmarks\mind-dao-m4-benchmark.js %* > "%LOG%" 2>&1
+
+> "%LOG%" echo sourceHead=!HEAD_SHA!
+>> "%LOG%" echo observePatch=!OBSERVE_PATCH!
+>> "%LOG%" echo.
+"!NODE_EXE!" qa\benchmarks\mind-dao-m4-benchmark.js %* >> "%LOG%" 2>&1
 set "RC=!ERRORLEVEL!"
 type "%LOG%"
 echo.
 
 if not "!RC!"=="0" (
   echo ============================================================
-  echo [FAIL] Mind M4 benchmark failed - exit code !RC!
+  echo [FAIL] Mind M5 benchmark failed - exit code !RC!
   echo ============================================================
   echo Gui file nay cho ChatGPT:
   echo   %LOG%
@@ -43,14 +54,14 @@ if not "!RC!"=="0" (
 )
 
 echo ============================================================
-echo [OK] Mind M4 benchmark completed
+echo [OK] Mind M5 benchmark completed
 echo ============================================================
 echo Output:
 echo   qa\output\mind-m4-benchmark.json
 echo Log:
 echo   %LOG%
 echo.
-echo Baseline only - M5 coefficient tuning is a separate phase.
+echo M5 tuning run - log now records exact source HEAD and active Observe patch.
 echo.
 if not defined NO_PAUSE pause
 exit /b 0
