@@ -151,6 +151,12 @@ export function summarizeMindM4Run(kernel,profile,seed){
   const casts=castCounts(result.summary,playerId);
   const echoLogs=logs.filter(x=>x.data?.mindSnapshot===true);
   const echoDamage=sum(echoLogs.map(x=>x.data?.damage??0));
+  const echoDamageBySkill={};
+  for(const log of echoLogs){
+    const id=log.skillId??'unknown';
+    echoDamageBySkill[id]=(echoDamageBySkill[id]??0)+Math.max(0,Number(log.data?.damage??0));
+  }
+  for(const id of Object.keys(echoDamageBySkill)) echoDamageBySkill[id]=round(echoDamageBySkill[id]);
   const markGain=sum(logs.map(x=>x.data?.mindSealGain??x.data?.mindObserveMarkGain??x.data?.mindFlowBonusMarkGain??0));
   const spentLogs=logs.filter(x=>Number(x.data?.consumed??0)>0&&x.data?.mindV2===true);
   const markSpent=sum(spentLogs.map(x=>x.data?.consumed??0));
@@ -171,7 +177,7 @@ export function summarizeMindM4Run(kernel,profile,seed){
   const realInterference=profile.id!=='interference'||interferenceDelaySeconds>0||interferenceControlSeconds>0;
   return {
     profileId:profile.id,label:profile.label,seed,duration:round(duration),damage:round(damage),dps:round(damage/duration),
-    echoEvents:echoLogs.length,echoDamage:round(echoDamage),echoContributionPct:round(echoContributionPct,2),
+    echoEvents:echoLogs.length,echoDamage:round(echoDamage),echoContributionPct:round(echoContributionPct,2),echoDamageBySkill,
     markGenerated:round(markGain),markSpent:round(markSpent),burstSpends,interferenceSpends,ultimateSpends,invalidSpends,
     interferenceDelayEvents:interferenceDelayLogs.length,interferenceDelaySeconds:round(interferenceDelaySeconds),
     mindControlEvents:mindControlLogs.length,mindControlSeconds:round(mindControlSeconds),
@@ -186,13 +192,15 @@ export function summarizeMindM4Run(kernel,profile,seed){
 
 function aggregateProfile(profile,runs){
   const field=name=>runs.map(x=>Number(x[name])||0);
+  const echoSkillIds=[...new Set(runs.flatMap(x=>Object.keys(x.echoDamageBySkill??{})))].sort();
+  const echoDamageBySkillMean=Object.fromEntries(echoSkillIds.map(id=>[id,round(mean(runs.map(x=>x.echoDamageBySkill?.[id]??0)))]));
   return {
     id:profile.id,label:profile.label,allocation:{...profile.allocation},primaryStatsV5:profilePrimary(profile),
     activeSkillIds:[...profile.activeSkillIds],targetRelativeDps:[...profile.targetRelativeDps],
     targetEchoContributionPct:profile.targetEchoContributionPct?[...profile.targetEchoContributionPct]:null,
     seeds:runs.length,validRuns:runs.filter(x=>x.identityValid).length,
     dps:{mean:round(mean(field('dps'))),min:round(min(field('dps'))),max:round(max(field('dps')))},
-    damageMean:round(mean(field('damage'))),echoEventsMean:round(mean(field('echoEvents'))),echoDamageMean:round(mean(field('echoDamage'))),
+    damageMean:round(mean(field('damage'))),echoEventsMean:round(mean(field('echoEvents'))),echoDamageMean:round(mean(field('echoDamage'))),echoDamageBySkillMean,
     echoContributionPctMean:round(mean(field('echoContributionPct')),2),markGeneratedMean:round(mean(field('markGenerated'))),
     markSpentMean:round(mean(field('markSpent'))),burstSpendsMean:round(mean(field('burstSpends'))),
     interferenceSpendsMean:round(mean(field('interferenceSpends'))),ultimateSpendsMean:round(mean(field('ultimateSpends'))),
@@ -254,6 +262,7 @@ export function runMindM4Benchmark({duration=MIND_M4_DURATION_SECONDS,seeds=MIND
       'Identity-invalid runs are preserved in JSON and fail the launcher only after evidence is written.',
       'Bạo Ấn needs real Burst mark spend; Niệm Ảnh needs real snapshot echo; Nhiễu Thức needs real interference mark spend plus real applied cast delay or control.',
       'Nhiễu evidence measures actual post-resistance cast-delay seconds from the controlled target plus actual Mind control-status duration.',
+      'Echo damage is also broken down by source skill for M5 tuning diagnostics; this does not change gameplay.',
       'Target bands are measured in M4 but are not tuning commands; coefficient changes remain blocked until M5.',
     ],aggregates,runs,
   };
@@ -276,7 +285,8 @@ function printSummary(result){
   for(const row of result.aggregates){
     const echo=`echo=${row.echoContributionPctMean}%`;
     const nhiễu=`int=${row.interferenceMetricMean}`;
-    console.log(`${row.id.padEnd(12)} DPS=${String(row.dps.mean).padStart(10)} rel=${String(row.relativeDps).padStart(6)}% ${echo.padEnd(13)} ${nhiễu.padEnd(10)} burst=${row.burstSpendsMean} nhiễu=${row.interferenceSpendsMean} valid=${row.validRuns}/${row.seeds}`);
+    const burstEcho=round(row.echoDamageBySkillMean?.['skill.dao.mind.burst']??0);
+    console.log(`${row.id.padEnd(12)} DPS=${String(row.dps.mean).padStart(10)} rel=${String(row.relativeDps).padStart(6)}% ${echo.padEnd(13)} ${nhiễu.padEnd(10)} burst=${row.burstSpendsMean} nhiễu=${row.interferenceSpendsMean} echoBurst=${burstEcho} valid=${row.validRuns}/${row.seeds}`);
   }
   if(!result.passed){
     console.error(`MIND_M4_INVALID_IDENTITY_RUN: ${result.invalidRuns.map(x=>x.reason).join(', ')}`);
@@ -285,7 +295,7 @@ function printSummary(result){
   if(interference){
     console.log(`Nhiễu Thức highest interference metric: ${interference.beatsOtherProfilesOnInterference?'YES':'NO'} (${interference.interferenceMetricMean})`);
   }
-  console.log('M4 baseline only; no coefficient was changed by this harness.');
+  console.log('M4/M5 diagnostic harness only; it never auto-tunes coefficients.');
 }
 
 const self=fileURLToPath(import.meta.url);
