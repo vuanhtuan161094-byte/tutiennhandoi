@@ -60,8 +60,11 @@ ok('initial static graph stays under 4.40 MiB',()=>assert.ok(bytes<=4.40*1024*10
 // compatibility facades, establishing the 199-module structural ceiling.
 // Later authority-preserving refactors split four already-eager runtime owners into dedicated
 // modules: combat-m1-base, combat-m2b-base, life-runtime-core, and mind-dao-v2-runtime.
-// They raise the physical-module ceiling to 203 without relaxing the 4.40 MiB payload budget.
-ok('initial static graph stays at or below 203 modules',()=>assert.ok(graph.length<=203,`initial graph ${graph.length} modules`));
+// They raised the physical-module ceiling to 203 without relaxing the 4.40 MiB payload budget.
+// Body Dao B7 production adds three intentional eager structural modules:
+// body-dao-production-v1, battle-dao-v2-runtime-base, and body-dao-auto-v1.
+// The resulting 206-module ceiling preserves the same 4.40 MiB payload budget.
+ok('initial static graph stays at or below 206 modules',()=>assert.ok(graph.length<=206,`initial graph ${graph.length} modules`));
 const hunt=await import('../../modules/hunt-combat-v2.js');
 const dongfu=await import('../../modules/dongfu-pixi-scene-v139.js');
 ok('lazy Hunt module exports full route contract',()=>{for(const k of ['renderHuntCombatV2','mountHuntCombatV2','syncHuntCombatV2','stopHuntCombatV2'])assert.equal(typeof hunt[k],'function',k)});
