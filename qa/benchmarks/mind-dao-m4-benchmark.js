@@ -14,26 +14,28 @@ export const MIND_M4_SEEDS=Object.freeze([
 const BASE_PRIMARY=Object.freeze({power:100,body:100,agility:100,spirit:100,sense:100});
 const allocate=x=>Object.fromEntries(Object.keys(BASE_PRIMARY).map(key=>[key,BASE_PRIMARY[key]+(x[key]??0)]));
 
+// Canonical production archetypes come from MIND_DAO_PRODUCTION_SPEC_V1 section 12.
+// M4/M5 target bands below retain the newer production-contract values.
 export const MIND_M4_PROFILES=Object.freeze([
   Object.freeze({
     id:'burst',label:'Bạo Ấn',targetRelativeDps:[100,100],identityMetric:'burstSpends',
-    allocation:{power:150,body:25,agility:20,spirit:25,sense:80},
+    allocation:{power:150,body:30,agility:25,spirit:35,sense:60},
     activeSkillIds:[
-      'skill.dao.mind.mark','skill.dao.mind.split','skill.dao.mind.chase','skill.dao.mind.burst','skill.dao.mind.observe',
+      'skill.dao.mind.mark','skill.dao.mind.split','skill.dao.mind.chase','skill.dao.mind.burst','skill.dao.mind.flow',
     ],
   }),
   Object.freeze({
     id:'echo',label:'Niệm Ảnh',targetRelativeDps:[88,98],targetEchoContributionPct:[15,30],identityMetric:'echoEvents',
-    allocation:{power:100,body:20,agility:60,spirit:20,sense:100},
+    allocation:{power:100,body:25,agility:40,spirit:45,sense:90},
     activeSkillIds:[
-      'skill.dao.mind.mark','skill.dao.mind.split','skill.dao.mind.chase','skill.dao.mind.observe','skill.dao.mind.flow',
+      'skill.dao.mind.split','skill.dao.mind.chase','skill.dao.mind.burst','skill.dao.mind.observe','skill.dao.mind.flow',
     ],
   }),
   Object.freeze({
     id:'interference',label:'Nhiễu Thức',targetRelativeDps:[75,90],identityMetric:'interferenceSpends',
-    allocation:{power:70,body:25,agility:30,spirit:25,sense:150},
+    allocation:{power:70,body:35,agility:35,spirit:50,sense:110},
     activeSkillIds:[
-      'skill.dao.mind.mark','skill.dao.mind.split','skill.dao.mind.interfere','skill.dao.mind.observe','skill.dao.mind.flow',
+      'skill.dao.mind.mark','skill.dao.mind.interfere','skill.dao.mind.guard','skill.dao.mind.observe','skill.dao.mind.flow',
     ],
   }),
 ]);
@@ -245,6 +247,7 @@ export function runMindM4Benchmark({duration=MIND_M4_DURATION_SECONDS,seeds=MIND
     invalidRuns:invalid.map(x=>({...x,reason:invalidRunReason(x)})),
     notes:[
       'Diagnostic only: does not modify gameplay or auto-tune coefficients.',
+      'Profile allocation/loadout shapes follow the three canonical production archetypes in MIND_DAO_PRODUCTION_SPEC_V1 section 12; current target bands remain owned by the newer production contract.',
       'Each profile uses exactly 5 Mind Active slots plus Basic and Ultimate.',
       'All 8 Mind passives are Lv20; all 10 Mind mastery tiers are 1000.',
       'Every profile uses the same 300-point allocation budget over the same five-stat base.',
