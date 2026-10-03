@@ -32,6 +32,14 @@ assert(source.includes('MIND_M4_INVALID_IDENTITY_RUN'),'zero-mechanic runs must 
 assert(source.includes("x.data?.mindSnapshot===true"),'Niệm Ảnh contribution must come from real snapshot replay logs');
 assert(source.includes("x.skillId==='skill.dao.mind.interfere'"),'Nhiễu profile must measure real interference spend transactions');
 assert(source.includes("x.skillId==='skill.dao.mind.burst'"),'Bạo Ấn profile must measure real Burst spend transactions');
+assert(source.includes('Number(x.data?.delaySeconds)>0'),'Nhiễu evidence must measure actual post-resistance cast delay, not only casts/spends');
+assert(source.includes("x.type==='status'&&['skill.dao.mind.interfere','skill.dao.mind.ultimate'].includes(x.skillId)"),'M4 must measure real Mind control status duration');
+assert(source.includes('interferenceMetric=interferenceDelaySeconds+mindControlSeconds'),'M4 must expose one comparable interference/control metric across profiles');
+assert(source.includes('beatsOtherProfilesOnInterference'),'M4 must report whether Nhiễu Thức actually leads the interference metric');
+assert(source.includes('invalidRuns:invalid.map'),'identity-invalid evidence must be retained in JSON for diagnosis');
+const writeAt=source.indexOf('fs.writeFileSync(opts.out');
+const failAt=source.indexOf('if(!result.passed) process.exitCode=1');
+assert(writeAt>=0&&failAt>writeAt,'CLI must write benchmark evidence before failing an identity-invalid baseline');
 assert(source.includes('Diagnostic only: does not modify gameplay or auto-tune coefficients.'),'M4 harness must remain diagnostic-only');
 
 console.log('MIND DAO M4 HARNESS CONTRACT: PASS');
