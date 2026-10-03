@@ -7,6 +7,7 @@ export const MIND_V2_BASE_ECHO_COEFFICIENT = .35;
 export const MIND_V2_FLOW_SECONDS = 5;
 export const MIND_V2_FLOW_MASTERY_SECONDS = 6;
 export const MIND_V2_ULTIMATE_DOMAIN_SECONDS = 5;
+export const MIND_M5_BURST_SNAPSHOT_RETENTION = .70;
 
 function isMainMind(entity, skill) {
     return entity?.combatBuildV117?.battleDaoV2Enabled === true
@@ -333,8 +334,8 @@ export function captureMindDamagePacketV2(source, skill, action, ctx) {
     if (skill.id === 'skill.dao.mind.mark' && tier >= 250)
         coefficient *= 1.10;
     if (skill.id === 'skill.dao.mind.burst' && tier >= 1000) {
-        coefficient *= .40;
-        breakDamagePct *= .40;
+        coefficient *= MIND_M5_BURST_SNAPSHOT_RETENTION;
+        breakDamagePct *= MIND_M5_BURST_SNAPSHOT_RETENTION;
     }
     store.push({
         type: 'damage',
