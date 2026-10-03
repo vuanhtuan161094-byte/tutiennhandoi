@@ -7,7 +7,7 @@ export const MIND_V2_BASE_ECHO_COEFFICIENT = .35;
 export const MIND_V2_FLOW_SECONDS = 5;
 export const MIND_V2_FLOW_MASTERY_SECONDS = 6;
 export const MIND_V2_ULTIMATE_DOMAIN_SECONDS = 5;
-export const MIND_M5_BURST_SNAPSHOT_RETENTION = .70;
+export const MIND_M5_BURST_SNAPSHOT_RETENTION = 1.30;
 
 function isMainMind(entity, skill) {
     return entity?.combatBuildV117?.battleDaoV2Enabled === true
