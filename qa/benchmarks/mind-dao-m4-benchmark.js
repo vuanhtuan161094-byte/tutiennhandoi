@@ -138,8 +138,10 @@ function castCounts(summary,playerId){return {...(summary.castCountsByActor?.[pl
 
 export function summarizeMindM4Run(kernel,profile,seed){
   const playerId=`entity.qa.mind_m4.${profile.id}`;
+  const targetId='entity.qa.mind_m4.target';
   const result=kernel.combatResult,battle=kernel.battle;
-  const logs=battle.logs.filter(x=>x.actorId===playerId);
+  const allLogs=battle.logs;
+  const logs=allLogs.filter(x=>x.actorId===playerId);
   const state=battle.finalState[playerId]??{};
   const mind=state.battleDaoStateV2?.mind;
   const damage=Number(result.summary.damageByActor?.[playerId]??0);
@@ -147,24 +149,36 @@ export function summarizeMindM4Run(kernel,profile,seed){
   const casts=castCounts(result.summary,playerId);
   const echoLogs=logs.filter(x=>x.data?.mindSnapshot===true);
   const echoDamage=sum(echoLogs.map(x=>x.data?.damage??0));
-  const markGain=sum(logs.map(x=>x.data?.mindSealGain??x.data?.mindObserveMarkGain??0));
+  const markGain=sum(logs.map(x=>x.data?.mindSealGain??x.data?.mindObserveMarkGain??x.data?.mindFlowBonusMarkGain??0));
   const spentLogs=logs.filter(x=>Number(x.data?.consumed??0)>0&&x.data?.mindV2===true);
   const markSpent=sum(spentLogs.map(x=>x.data?.consumed??0));
   const burstSpends=spentLogs.filter(x=>x.skillId==='skill.dao.mind.burst').length;
   const interferenceSpends=spentLogs.filter(x=>x.skillId==='skill.dao.mind.interfere').length;
   const ultimateSpends=spentLogs.filter(x=>x.skillId==='skill.dao.mind.ultimate').length;
   const invalidSpends=logs.filter(x=>x.data?.invalidMindSpend===true).length;
+  const interferenceDelayLogs=allLogs.filter(x=>x.actorId===targetId&&x.targetId===targetId&&x.type==='info'&&Number(x.data?.delaySeconds)>0);
+  const interferenceDelaySeconds=sum(interferenceDelayLogs.map(x=>x.data?.delaySeconds??0));
+  const mindControlLogs=logs.filter(x=>x.type==='status'&&['skill.dao.mind.interfere','skill.dao.mind.ultimate'].includes(x.skillId)&&Number(x.data?.duration)>0);
+  const mindControlSeconds=sum(mindControlLogs.map(x=>x.data?.duration??0));
+  const interferenceControlLogs=mindControlLogs.filter(x=>x.skillId==='skill.dao.mind.interfere');
+  const interferenceControlSeconds=sum(interferenceControlLogs.map(x=>x.data?.duration??0));
+  const interferenceMetric=interferenceDelaySeconds+mindControlSeconds;
   const stackSamples=logs.filter(x=>Number.isFinite(Number(x.data?.mindPassiveStack))).map(x=>Number(x.data.mindPassiveStack));
   const echoContributionPct=damage>0?echoDamage/damage*100:0;
   const definingValue=profile.identityMetric==='echoEvents'?echoLogs.length:profile.identityMetric==='burstSpends'?burstSpends:interferenceSpends;
+  const realInterference=profile.id!=='interference'||interferenceDelaySeconds>0||interferenceControlSeconds>0;
   return {
     profileId:profile.id,label:profile.label,seed,duration:round(duration),damage:round(damage),dps:round(damage/duration),
     echoEvents:echoLogs.length,echoDamage:round(echoDamage),echoContributionPct:round(echoContributionPct,2),
     markGenerated:round(markGain),markSpent:round(markSpent),burstSpends,interferenceSpends,ultimateSpends,invalidSpends,
+    interferenceDelayEvents:interferenceDelayLogs.length,interferenceDelaySeconds:round(interferenceDelaySeconds),
+    mindControlEvents:mindControlLogs.length,mindControlSeconds:round(mindControlSeconds),
+    interferenceControlEvents:interferenceControlLogs.length,interferenceControlSeconds:round(interferenceControlSeconds),
+    interferenceMetric:round(interferenceMetric),
     finalMindStacks:Number(mind?.stack?.stacks??0),maxMindStackSample:stackSamples.length?max(stackSamples):Number(mind?.stack?.stacks??0),
     finalEchoCounter:round(mind?.core?.echoCounter??0),finalCN:round(state.spirit??0),finalGauge:round(state.ultimateGaugeV117??0),
     casts,damageBySkill:{...(result.summary.damageBySkillByActor?.[playerId]??{})},outcome:result.outcome,
-    identityValid:definingValue>0&&markGain>0,
+    identityValid:definingValue>0&&markGain>0&&realInterference,
   };
 }
 
@@ -181,6 +195,10 @@ function aggregateProfile(profile,runs){
     markSpentMean:round(mean(field('markSpent'))),burstSpendsMean:round(mean(field('burstSpends'))),
     interferenceSpendsMean:round(mean(field('interferenceSpends'))),ultimateSpendsMean:round(mean(field('ultimateSpends'))),
     invalidSpendsMean:round(mean(field('invalidSpends'))),maxMindStackSampleMean:round(mean(field('maxMindStackSample'))),
+    interferenceDelayEventsMean:round(mean(field('interferenceDelayEvents'))),interferenceDelaySecondsMean:round(mean(field('interferenceDelaySeconds'))),
+    mindControlEventsMean:round(mean(field('mindControlEvents'))),mindControlSecondsMean:round(mean(field('mindControlSeconds'))),
+    interferenceControlEventsMean:round(mean(field('interferenceControlEvents'))),interferenceControlSecondsMean:round(mean(field('interferenceControlSeconds'))),
+    interferenceMetricMean:round(mean(field('interferenceMetric'))),
     finalCNMean:round(mean(field('finalCN'))),finalGaugeMean:round(mean(field('finalGauge'))),
   };
 }
@@ -193,8 +211,19 @@ function assessTargets(aggregates){
     const [lo,hi]=row.targetRelativeDps;
     const echoBand=row.targetEchoContributionPct;
     const echoWithin=echoBand?row.echoContributionPctMean>=echoBand[0]&&row.echoContributionPctMean<=echoBand[1]:null;
-    return {...row,relativeDps,withinDpsTarget:relativeDps>=lo&&relativeDps<=hi,withinEchoContributionTarget:echoWithin};
+    const otherMax=max(aggregates.filter(x=>x.id!==row.id).map(x=>x.interferenceMetricMean));
+    return {
+      ...row,
+      relativeDps,
+      withinDpsTarget:relativeDps>=lo&&relativeDps<=hi,
+      withinEchoContributionTarget:echoWithin,
+      beatsOtherProfilesOnInterference:row.interferenceMetricMean>otherMax+1e-9,
+    };
   });
+}
+
+function invalidRunReason(x){
+  return `${x.profileId}@${x.seed}[dps=${x.dps} marks=${x.markGenerated}/${x.markSpent} burst=${x.burstSpends} echo=${x.echoEvents} nhiễu=${x.interferenceSpends} delay=${x.interferenceDelaySeconds}s control=${x.interferenceControlSeconds}s]`;
 }
 
 export function runMindM4Benchmark({duration=MIND_M4_DURATION_SECONDS,seeds=MIND_M4_SEEDS}={}){
@@ -209,19 +238,19 @@ export function runMindM4Benchmark({duration=MIND_M4_DURATION_SECONDS,seeds=MIND
     }
   }
   const invalid=runs.filter(x=>!x.identityValid);
-  if(invalid.length){
-    const rows=invalid.map(x=>`${x.profileId}@${x.seed}`).join(', ');
-    throw new Error(`MIND_M4_INVALID_IDENTITY_RUN: defining mechanic missing in ${rows}`);
-  }
   const aggregates=assessTargets(MIND_M4_PROFILES.map(profile=>aggregateProfile(profile,runs.filter(x=>x.profileId===profile.id))));
   return {
     schema:'mind-dao-m4-benchmark.v1',generatedAt:new Date().toISOString(),engine:'combat.v3',durationSeconds:duration,seeds:[...seeds],
+    passed:invalid.length===0,
+    invalidRuns:invalid.map(x=>({...x,reason:invalidRunReason(x)})),
     notes:[
       'Diagnostic only: does not modify gameplay or auto-tune coefficients.',
       'Each profile uses exactly 5 Mind Active slots plus Basic and Ultimate.',
       'All 8 Mind passives are Lv20; all 10 Mind mastery tiers are 1000.',
       'Every profile uses the same 300-point allocation budget over the same five-stat base.',
-      'Identity-invalid runs are rejected: Bạo Ấn needs real Burst mark spend, Niệm Ảnh needs real snapshot echo, Nhiễu Thức needs real interference mark spend.',
+      'Identity-invalid runs are preserved in JSON and fail the launcher only after evidence is written.',
+      'Bạo Ấn needs real Burst mark spend; Niệm Ảnh needs real snapshot echo; Nhiễu Thức needs real interference mark spend plus real applied cast delay or control.',
+      'Nhiễu evidence measures actual post-resistance cast-delay seconds from the controlled target plus actual Mind control-status duration.',
       'Target bands are measured in M4 but are not tuning commands; coefficient changes remain blocked until M5.',
     ],aggregates,runs,
   };
@@ -243,19 +272,33 @@ function printSummary(result){
   console.log(`MIND DAO M4 BENCHMARK · Combat V3 · ${result.durationSeconds}s · ${result.seeds.length} seeds`);
   for(const row of result.aggregates){
     const echo=`echo=${row.echoContributionPctMean}%`;
-    console.log(`${row.id.padEnd(12)} DPS=${String(row.dps.mean).padStart(10)} rel=${String(row.relativeDps).padStart(6)}% ${echo.padEnd(13)} burst=${row.burstSpendsMean} nhiễu=${row.interferenceSpendsMean} valid=${row.validRuns}/${row.seeds}`);
+    const nhiễu=`int=${row.interferenceMetricMean}`;
+    console.log(`${row.id.padEnd(12)} DPS=${String(row.dps.mean).padStart(10)} rel=${String(row.relativeDps).padStart(6)}% ${echo.padEnd(13)} ${nhiễu.padEnd(10)} burst=${row.burstSpendsMean} nhiễu=${row.interferenceSpendsMean} valid=${row.validRuns}/${row.seeds}`);
+  }
+  if(!result.passed){
+    console.error(`MIND_M4_INVALID_IDENTITY_RUN: ${result.invalidRuns.map(x=>x.reason).join(', ')}`);
+  }
+  const interference=result.aggregates.find(x=>x.id==='interference');
+  if(interference){
+    console.log(`Nhiễu Thức highest interference metric: ${interference.beatsOtherProfilesOnInterference?'YES':'NO'} (${interference.interferenceMetricMean})`);
   }
   console.log('M4 baseline only; no coefficient was changed by this harness.');
 }
 
 const self=fileURLToPath(import.meta.url);
 if(process.argv[1]&&path.resolve(process.argv[1])===path.resolve(self)){
-  const opts=parseCli(process.argv.slice(2));
-  const result=runMindM4Benchmark(opts);
-  printSummary(result);
-  if(!opts.selfTest){
-    fs.mkdirSync(path.dirname(opts.out),{recursive:true});
-    fs.writeFileSync(opts.out,JSON.stringify(result,null,2)+'\n','utf8');
-    console.log(`Wrote ${opts.out}`);
+  try{
+    const opts=parseCli(process.argv.slice(2));
+    const result=runMindM4Benchmark(opts);
+    printSummary(result);
+    if(!opts.selfTest){
+      fs.mkdirSync(path.dirname(opts.out),{recursive:true});
+      fs.writeFileSync(opts.out,JSON.stringify(result,null,2)+'\n','utf8');
+      console.log(`Wrote ${opts.out}`);
+    }
+    if(!result.passed) process.exitCode=1;
+  }catch(error){
+    console.error(error?.stack??String(error));
+    process.exitCode=1;
   }
 }
