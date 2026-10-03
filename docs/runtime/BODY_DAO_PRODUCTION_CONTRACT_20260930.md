@@ -1,8 +1,10 @@
 # BODY DAO PRODUCTION CONTRACT — 2026-09-30
 
-Status: **B7 CLOSURE CANDIDATE / AWAITING LOCAL FULL CLEAN**
+Status: **CLOSED / LOCKED**
 Feature id: `dao-body`
 Workflow: `docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md`
+Closure record: `docs/runtime/BODY_DAO_PRODUCTION_CLOSURE_20261003.md`
+Verified closure SHA: `dbb823404afbe7c82811a3b7700eacc12dd8d265`
 
 ## 1. Identity
 
@@ -208,7 +210,7 @@ Body closure includes:
 - five-stat materialization/provenance;
 - locked Sword/Fist regressions where shared seams are touched.
 
-Targeted B0–B6 correctness/parity evidence has already been reported by the user. B7 now adds the content-debt gate and source closure manifest. Final lock still requires the generic exact-SHA **FULL CLEAN** feature workflow on the user's Windows checkout.
+Targeted B0–B6 correctness/parity evidence was already accepted before B7. The former **B7 CLOSURE CANDIDATE** state was promoted after the user's clean Windows checkout ran `DONG_BO_VA_TEST_FEATURE.cmd dao-body` at exact SHA `dbb823404afbe7c82811a3b7700eacc12dd8d265` and reported **FEATURE FULL CLEAN + SCOPED CLOSURE: PASS** with **V140 BACKEND FEATURE DAO-BODY: 23/23 PASS**. Full-game backend closure remains a separate audit.
 
 ## 13. Identity benchmark interpretation
 
@@ -244,12 +246,12 @@ Do not tune any deferred system to make Body green.
 ## 15. Production phases
 
 - **B0 — Contract / scope:** CLOSED.
-- **B1 — Five-stat + Auto + defensive effect authority:** targeted evidence present.
-- **B2 — Huyết Khí passive runtime retirement/re-authoring:** targeted evidence present; stale player-facing content removed in B7.
-- **B3 — Correctness + resource transaction:** PASS on local evidence.
-- **B4 — Consumer parity:** PASS on local evidence.
-- **B5 — identity-valid deterministic benchmark:** PASS; all three baseline identities valid.
-- **B6 — evidence-driven redesign/tune:** ACCEPTED; final 3×3 evidence recorded above, no further B6 tuning planned.
-- **B7 — content debt + manifest + exact-SHA feature closure:** **SOURCE COMPLETE / AWAITING LOCAL FULL CLEAN**.
+- **B1 — Five-stat + Auto + defensive effect authority:** CLOSED.
+- **B2 — Huyết Khí passive runtime retirement/re-authoring:** CLOSED; stale player-facing content removed in B7.
+- **B3 — Correctness + resource transaction:** PASS / CLOSED.
+- **B4 — Consumer parity:** PASS / CLOSED.
+- **B5 — identity-valid deterministic benchmark:** PASS / CLOSED; all three baseline identities valid.
+- **B6 — evidence-driven redesign/tune:** ACCEPTED / CLOSED; final 3×3 evidence recorded above.
+- **B7 — content debt + manifest + exact-SHA feature closure:** **PASS / CLOSED**.
 
-`closureReady` is now `true` as a **source closure candidate**. This does **not** by itself declare Thể Đạo PASS/CLOSED. Final CLOSED/LOCKED status requires the exact current SHA to pass `DONG_BO_VA_TEST_FEATURE.cmd dao-body` including its required FULL CLEAN step.
+`closureReady` remains `true` for registered scoped regression checks. Body Dao Production V1 is now **CLOSED / LOCKED** on exact verified gameplay/closure SHA `dbb823404afbe7c82811a3b7700eacc12dd8d265`. Later documentation/metadata commits do not replace that verified gameplay SHA. Reopen Body only for a proven regression or explicit user instruction.
