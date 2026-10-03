@@ -107,7 +107,7 @@ export const BACKEND_FEATURE_CLOSURE_MANIFESTS=Object.freeze({
     id:'dao-body',
     label:'Body Dao / Thể Đạo',
     kind:'dao',
-    // Source is complete through B7. Final CLOSED/LOCKED status still requires one exact-SHA local FULL CLEAN run.
+    // CLOSED/LOCKED: exact-SHA local FULL CLEAN + scoped closure passed on dbb823404afbe7c82811a3b7700eacc12dd8d265 (23/23 scoped backend).
     closureReady:true,
     benchmarkCommand:'tools\\web\\RUN_BODY_B6_BENCHMARK.cmd',
     benchmarkContractGate:'body-dao-b6-benchmark-contract-test.js',
