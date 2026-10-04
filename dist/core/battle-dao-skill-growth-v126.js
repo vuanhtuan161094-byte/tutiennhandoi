@@ -89,8 +89,10 @@ const GROWTH = {
     },
 };
 function clampTier(tier) { return Math.max(0, Math.min(1000, Math.floor(tier || 0))); }
-export function battleDaoSkillGrowthRoleV126(skill) { return ROLE_BY_SKILL_ID[skill.id]; }
+export function battleDaoSkillGrowthRoleV126(skill) { return skill.id.startsWith('skill.dao.spell.') ? SPELL_ROLES_V1[skill.id.slice('skill.dao.spell.'.length)] : ROLE_BY_SKILL_ID[skill.id]; }
 export function battleDaoSkillGrowthProfileV126(skill, rawTier) {
+    if (skill.id.startsWith('skill.dao.spell.'))
+        return spellSkillGrowthProfileV1(skill, rawTier);
     const role = battleDaoSkillGrowthRoleV126(skill);
     if (!role)
         return undefined;
@@ -110,6 +112,26 @@ export function battleDaoSkillGrowthProfileV126(skill, rawTier) {
         out.daoGeneratePct += d.daoGeneratePct;
         out.daoRefundPct += d.daoRefundPct;
         out.controlEffectPct += d.controlEffectPct;
+    }
+    return out;
+}
+// Spell milestones are executable, skill-local deltas. They never synthesize wheel forms,
+// completion, follow-ups, or refunds of the one-shot Diễn Pháp flag.
+const SPELL_ROLES_V1 = { basic: 'generator', light: 'burst', channel: 'channel', restore: 'defense', shield: 'defense', seal: 'generator', burst: 'burst', break: 'breaker', transform: 'defense', ultimate: 'channel' };
+export function spellSkillGrowthProfileV1(skill, rawTier) {
+    const suffix = skill.id.replace('skill.dao.spell.', '');
+    const role = SPELL_ROLES_V1[suffix];
+    if (!role) return undefined;
+    const steps = GROWTH[role];
+    const tier = clampTier(rawTier);
+    const out = { role, roleName: ROLE_NAME[role], ...ZERO, milestones: [] };
+    for (const at of [100, 250, 500, 750, 1000]) {
+        let d = steps[at];
+        if (at === 500 && ['basic', 'restore', 'transform', 'ultimate'].includes(suffix)) d = D('Chiêu không tiêu Chân Nguyên: hiệu quả riêng tăng thêm 3%.', { effectBonusPct: 3 });
+        if (suffix === 'light' && at === 1000) d = D('Linh Quang Cực Ý: +7% hiệu quả riêng; đúng chuỗi giảm 35% cast/recovery Thi Triển/Dẫn Pháp; full completion rút tối đa 1,5s CD Bạo Pháp.', { effectBonusPct: 7 });
+        if (d.daoGeneratePct) d = D('Hiệu quả riêng của chiêu +3%; vẫn cần hoàn thành đúng form.', { effectBonusPct: 3, ...(at === 1000 ? { recoveryReductionPct: 2 } : {}) });
+        out.milestones.push({ at, name: STAGE_NAME[at], summary: d.summary });
+        if (tier >= at) for (const key of Object.keys(ZERO)) out[key] += d[key];
     }
     return out;
 }

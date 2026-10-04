@@ -171,6 +171,7 @@ export function handleCombatDecisionV141(actor, target, now) {
             this.log(now, 'resource', notice.message, actor.id, actor.id, skill.id, notice.data);
         if (battleDaoV2Enabled(actor)) {
             prepared.action.battleDaoV2 = createRootActionV2(actor, skill, this.castToken + 1);
+            if (actor.combatBuildV117?.mainDaoId === 'spell' || actor.combatBuildV117?.secondaryDaoId === 'spell') (prepared.action.battleDaoV2.daoData ??= {}).spellCnPaid = spiritCost;
             prepareSwordCoreActionV2(actor, skill, prepared.action, now, target);
             const swordSpent = swordQiSpendBeforeActionV2(actor, skill, target, now);
             if (swordSpent > 0) {

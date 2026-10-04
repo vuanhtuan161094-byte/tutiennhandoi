@@ -108,6 +108,23 @@ export function syncBattleDaoV2Timers(entity, now) {
         return;
     if (!entity.battleDaoStateV2)
         entity.battleDaoStateV2 = createBattleDaoRuntimeStateV2(entity, now);
+    const spellCore = entity.battleDaoStateV2?.spell?.core;
+    if (spellCore && spellCore.schema !== 'spell-dao.runtime.production.v1') {
+        // A legacy unordered wheel cannot be losslessly mapped to an ordered production stage.
+        // Reset it deterministically; spellSeal remains compatibility data and never migrates into it.
+        Object.assign(spellCore, {
+            schema: 'spell-dao.runtime.production.v1',
+            lawWheelStage: 0,
+            expectedForm: 'Tốc Pháp',
+            quickCycle: false,
+            dienPhapReady: false,
+            completedCycles: 0,
+            dienPhapCommits: 0,
+            wastedReadyCycles: 0,
+        });
+        delete spellCore.lawWheelForms;
+        delete spellCore.lawWheelCap;
+    }
     const s = entity.battleDaoStateV2?.sword;
     if (s) {
         if (s.swordDomainUntil > 0 && now >= s.swordDomainUntil) {
@@ -843,6 +860,7 @@ export function carryBattleDaoV2StateToNextMonsterV2(state, battleEndedAt) {
             }
         }
     }
+    if (out.spell?.core) out.spell.core = createSpellCoreStateV2();
     if (out.poison?.core) {
         out.poison.core.targetId = undefined;
         out.poison.core.poisonSeedStage = 0;
@@ -912,15 +930,8 @@ export function remainingDaoPassiveBonusesV2(entity, now) {
                 out.damageReductionPct += scale(passiveLevelN(entity, dao, 7), 5, 15);
         }
         else if (dao === 'spell') {
-            out.directDamagePct += stacks * scale(p1, .5, 1.5);
-            if (stacks >= 10)
-                out.spiritCostReductionPct += scale(p1, 5, 10);
-            if (at20)
-                out.recoveryReductionPct += scale(p1, 5, 15);
-            if (hasPassiveN(entity, dao, 6))
-                out.directDamagePct += groups * scale(passiveLevelN(entity, dao, 6), 4, 12);
-            if (at20 && hasPassiveN(entity, dao, 7))
-                out.spiritCostReductionPct += scale(passiveLevelN(entity, dao, 7), 4, 10);
+            // Spell p1-p8 live bonuses are re-authored below as explicit form/CN/cycle actions.
+            // Never leak legacy generic damage or recovery output through the shared aggregator.
         }
         else if (dao === 'poison') {
             if (stacks >= 10)
@@ -959,7 +970,7 @@ export function remainingDaoPassiveBonusesV2(entity, now) {
             // M2B: Mind passive output is owned by mind-dao-v2-runtime.js.
             // Generic damage/Gauge/Armor-Pen bonuses are deliberately retired.
         }
-        if (dao !== 'mind' && atCap && hasPassiveN(entity, dao, 8)) {
+        if (dao !== 'mind' && dao !== 'spell' && atCap && hasPassiveN(entity, dao, 8)) {
             const l8 = passiveLevelN(entity, dao, 8);
             out.directDamagePct += scale(l8, 10, dao === 'body' ? 25 : 30);
             out.gaugeGainPct += scale(l8, 0, 20);
@@ -1024,10 +1035,6 @@ export function battleDaoV2OutgoingMultiplier(entity, target, now, sourceTag, sk
         const n = holderV2(entity, 'body')?.core?.counterForce ?? 0;
         pct += Math.floor(n / 20) * 3;
     }
-    if (main === 'spell') {
-        const n = holderV2(entity, 'spell')?.core?.lawWheelForms?.length ?? 0;
-        pct += n * 6;
-    }
     if (main === 'poison') {
         const core = holderV2(entity, 'poison')?.core;
         if (core) {
@@ -1083,8 +1090,19 @@ export function battleDaoV2SpiritCostMultiplier(entity, skill, now) {
     if (!battleDaoV2Enabled(entity))
         return 1;
     let pct = remainingDaoPassiveBonusesV2(entity, now).spiritCostReductionPct;
-    if (entity.combatBuildV117?.mainDaoId === 'spell' && skillRuntimeV117(skill).daoBinding === 'spell')
-        pct += (holderV2(entity, 'spell')?.core?.lawWheelForms?.length ?? 0) * 5;
+    if (canLearnDaoPassiveV2Runtime(entity, 'spell')) {
+        const st = stackV2(entity, 'spell', now);
+        const stacks = st?.stacks ?? 0;
+        if (entity.combatBuildV117?.mainDaoId === 'spell' && skillRuntimeV117(skill).daoBinding === 'spell') {
+            if (hasPassiveN(entity, 'spell', 4)) pct += Math.min(5, stacks * scale(passiveLevelN(entity, 'spell', 4), .10, .25));
+            if (stacks >= 20 && hasPassiveN(entity, 'spell', 7))
+                pct += scale(passiveLevelN(entity, 'spell', 7), 4, 10);
+        }
+        else if (entity.combatBuildV117?.secondaryDaoId === 'spell' && stacks >= 10 && hasPassiveN(entity, 'spell', 4)) {
+            // Secondary Pháp offers a small CN-sustain contribution only; it cannot grant Spell actions.
+            pct += scale(passiveLevelN(entity, 'spell', 4), 1, 3);
+        }
+    }
     return Math.max(.35, 1 - Math.min(65, pct) / 100);
 }
 export function battleDaoV2RecoveryMultiplier(entity, now) { return Math.max(.4, 1 - Math.min(60, remainingDaoPassiveBonusesV2(entity, now).recoveryReductionPct) / 100); }
@@ -1122,12 +1140,25 @@ export function prepareRemainingDaoCoreActionV2(entity, target, skill, action, n
         const c = holderV2(entity, 'spell')?.core;
         if (!c)
             return;
-        d.lawWheelBefore = c.lawWheelForms.length;
-        if (c.lawWheelForms.length >= 3 && active && damaging) {
+        if ((action.battleDaoV2?.procDepth ?? 0) > 0) return;
+        const role = skill.spellDaoV1 ?? {};
+        if (c.quickCycle && role.wheelForm && role.wheelForm === c.expectedForm && role.wheelForm !== 'Tốc Pháp') {
+            action.castTimeMultiplier = (action.castTimeMultiplier ?? 1) * .65;
+            action.recoveryMultiplier *= .65;
+        }
+        d.spellExpectedFormBefore = c.expectedForm;
+        d.spellWheelStageBefore = c.lawWheelStage;
+        d.dienPhapReadyBefore = c.dienPhapReady;
+        if (role.dienPhapEligible === true && c.dienPhapReady) {
             action.effectBonusPct += 35;
-            action.breakBonusPct += 20;
-            c.lawWheelForms = c.lawWheelForms.slice(-1);
-            d.lawWheelSpent = 2;
+            if (hasPassiveN(entity, 'spell', 6))
+                action.effectBonusPct += scale(passiveLevelN(entity, 'spell', 6), 4, 12);
+            const spellStack = holderV2(entity, 'spell')?.stack;
+            if (spellStack && spellStack.stacks >= spellStack.cap && hasPassiveN(entity, 'spell', 8))
+                action.effectBonusPct += scale(passiveLevelN(entity, 'spell', 8), 10, 20);
+            if (skill.id === 'skill.dao.spell.break')
+                action.breakBonusPct += 20;
+            d.spellDienPhapSnapshot = true;
         }
     }
     else if (dao === 'poison') {
@@ -1171,6 +1202,11 @@ function rootStackGainV2(entity, dao, action, now, chance, eligible) {
     const st = holderV2(entity, dao)?.stack;
     if (!st || !eligible)
         return 0;
+    if (dao === 'spell') {
+        const tx = action.battleDaoV2?.daoData;
+        if (!tx || tx.spellStackCommitted || (action.battleDaoV2?.procDepth ?? 0) > 0) return 0;
+        tx.spellStackCommitted = true;
+    }
     let gain = 1;
     if (hasPassiveN(entity, dao, 2) && chance(scale(passiveLevelN(entity, dao, 2), dao === 'poison' ? 8 : 10, dao === 'poison' ? 25 : 30)))
         gain += 1;
@@ -1181,8 +1217,18 @@ export function finishRemainingDaoActionV2(entity, target, skill, action, now, c
     if (!battleDaoV2Enabled(entity))
         return out;
     const dao = skillRuntimeV117(skill).daoBinding;
+    // Sword and unbound actions leave the generic Dao core branch early, but a
+    // learned Secondary Spell passive still observes their real CN-paid root once.
+    if ((!dao || dao === 'sword') && entity.combatBuildV117?.secondaryDaoId === 'spell' && hasPassiveN(entity, 'spell', 1))
+        rootStackGainV2(entity, 'spell', action, now, chance, (action.battleDaoV2?.daoData?.spellCnPaid ?? 0) > 0);
     if (!dao || dao === 'sword')
         return out;
+    if (dao === 'spell') {
+        const tx = action.battleDaoV2?.daoData;
+        if (!tx || tx.spellFinishCalled || (action.battleDaoV2?.procDepth ?? 0) > 0) return out;
+        tx.spellFinishCalled = true;
+        if (skill.channel && (target.alive === false || entity.alive === false)) return out;
+    }
     syncBattleDaoV2Timers(entity, now);
     const main = entity.combatBuildV117?.mainDaoId === dao;
     const damaging = (action.battleDaoV2?.directDamagingHitCount ?? 0) > 0;
@@ -1192,14 +1238,50 @@ export function finishRemainingDaoActionV2(entity, target, skill, action, now, c
     }
     if (main && dao === 'spell') {
         const c = holderV2(entity, 'spell')?.core;
-        if (c) {
-            const form = skillRuntimeV117(skill).form;
-            const bucket = form === 'channel' ? 'Dẫn Pháp' : form === 'cast' || form === 'charge' ? 'Cast' : 'Tốc Pháp';
-            if (!c.lawWheelForms.includes(bucket)) {
-                c.lawWheelForms.push(bucket);
-                if (c.lawWheelForms.length > c.lawWheelCap)
-                    c.lawWheelForms.shift();
-                out.notices.push({ message: `${entity.name} hoàn thiện Pháp Luân: ${c.lawWheelForms.join(' · ')}`, data: { lawWheel: c.lawWheelForms.length } });
+        const tx = action.battleDaoV2?.daoData;
+        if (c && tx && !tx.spellRootCommitted) {
+            tx.spellRootCommitted = true;
+            if (tx.spellDienPhapSnapshot && c.dienPhapReady) {
+                c.dienPhapReady = false;
+                c.dienPhapCommits = (c.dienPhapCommits ?? 0) + 1;
+                tx.spellDienPhapCommitted = true;
+                const st = holderV2(entity, 'spell')?.stack;
+                if (st && st.stacks >= st.cap && hasPassiveN(entity, 'spell', 8)) {
+                    st.expiresAt = Math.max(st.expiresAt, now + scale(passiveLevelN(entity, 'spell', 8), 1, 2));
+                    st.nextDecayAt = undefined;
+                }
+                out.notices.push({ message: `${entity.name} resolve Diễn Pháp bằng ${skill.name}.`, data: { dienPhapCommitted: true, spellSkillId: skill.id } });
+            }
+            const form = skill.spellDaoV1?.wheelForm;
+            if (form && form === c.expectedForm) {
+                if (form === 'Tốc Pháp') {
+                    c.quickCycle = skill.id === 'skill.dao.spell.light' && (entity.combatBuildV117?.skillPracticeTierV125?.[skill.id] ?? 0) >= 1000;
+                    c.lawWheelStage = 1;
+                    c.expectedForm = 'Thi Triển';
+                }
+                else if (form === 'Thi Triển') {
+                    c.lawWheelStage = 2;
+                    c.expectedForm = 'Dẫn Pháp';
+                }
+                else if (form === 'Dẫn Pháp') {
+                    if (c.quickCycle && entity.cooldownUntil?.['skill.dao.spell.burst'] > now)
+                        entity.cooldownUntil['skill.dao.spell.burst'] = Math.max(now, entity.cooldownUntil['skill.dao.spell.burst'] - 1.5);
+                    c.quickCycle = false;
+                    c.lawWheelStage = 0;
+                    c.expectedForm = 'Tốc Pháp';
+                    c.completedCycles = (c.completedCycles ?? 0) + 1;
+                    if (!c.dienPhapReady)
+                        c.dienPhapReady = true;
+                    else
+                        c.wastedReadyCycles = (c.wastedReadyCycles ?? 0) + 1;
+                    const st = holderV2(entity, 'spell')?.stack;
+                    if (st && st.stacks >= st.cap && hasPassiveN(entity, 'spell', 8)) {
+                        st.expiresAt = Math.max(st.expiresAt, now + scale(passiveLevelN(entity, 'spell', 8), 1, 2));
+                        st.nextDecayAt = undefined;
+                    }
+                }
+                tx.spellWheelCommitted = form;
+                out.notices.push({ message: `${entity.name} hoàn tất bước ${form}; chờ ${c.expectedForm}${c.dienPhapReady ? ' · Diễn Pháp sẵn sàng' : ''}.`, data: { spellWheelCommitted: form, lawWheel: c.lawWheelStage, lawWheelExpectedForm: c.expectedForm, dienPhapReady: c.dienPhapReady, completedCycles: c.completedCycles } });
             }
         }
     }
@@ -1269,7 +1351,7 @@ export function finishRemainingDaoActionV2(entity, target, skill, action, now, c
             }
         }
         else if (passiveDao === 'spell')
-            rootStackGainV2(entity, 'spell', action, now, chance, skillStandardCostPctV117(skill) > 0 || skill.spiritCost > 0);
+            rootStackGainV2(entity, 'spell', action, now, chance, (action.battleDaoV2?.daoData?.spellCnPaid ?? 0) > 0 && (entity.combatBuildV117?.mainDaoId !== 'spell' || dao === 'spell'));
         else if (passiveDao === 'poison') {
             const st = holderV2(entity, 'poison')?.stack;
             if (st && damaging) {
@@ -1405,8 +1487,14 @@ export function v2ResourceProjection(entity, now) {
         out.bodyPassiveStack = s.body.stack.stacks;
         out.bodyPassiveStackCap = s.body.stack.cap;
     }
-    if (s.spell?.core)
-        out.lawWheel = s.spell.core.lawWheelForms.length;
+    if (s.spell?.core) {
+        out.lawWheel = s.spell.core.lawWheelStage;
+        out.lawWheelExpectedForm = s.spell.core.expectedForm;
+        out.dienPhapReady = s.spell.core.dienPhapReady;
+        out.lawWheelCompletedCycles = s.spell.core.completedCycles;
+        out.dienPhapCommits = s.spell.core.dienPhapCommits;
+        out.dienPhapWastedReadyCycles = s.spell.core.wastedReadyCycles;
+    }
     if (s.spell?.stack) {
         out.spellPassiveStack = s.spell.stack.stacks;
         out.spellPassiveStackCap = s.spell.stack.cap;

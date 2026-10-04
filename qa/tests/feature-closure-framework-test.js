@@ -14,7 +14,7 @@ const runnerSource=fs.readFileSync(new URL('../runners/v140-backend-gates.js',im
 const launcherSource=fs.readFileSync(new URL('../../DONG_BO_VA_TEST_FEATURE.cmd',import.meta.url),'utf8');
 const ids=listBackendFeatureClosureIds();
 
-assert.deepEqual(ids,['dao-body','dao-fist','dao-mind','dao-sword'],'registered feature ids must be deterministic');
+assert.deepEqual(ids,['dao-body','dao-fist','dao-mind','dao-spell','dao-sword'],'registered feature ids must be deterministic');
 assert.equal(Object.keys(BACKEND_FEATURE_CLOSURE_MANIFESTS).length,ids.length,'feature registry must not hide duplicate ids');
 
 const deferredDaoPattern=/(artifact|relic|spirit-beast|confidant|alchemy|equipment|economy|reincarnation-v4-gameplay-balance|v121-balance-production|v129-global-build-balance|v129-power-budget|v168-combat-stat-runtime-authority)/i;

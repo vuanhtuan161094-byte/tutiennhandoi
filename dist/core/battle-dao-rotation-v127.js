@@ -72,16 +72,20 @@ function rulesForDao(dao, skillIds, offset = 0) {
             break;
         }
         case 'spell':
-            add('ultimate', 132, gauge);
-            add('restore', 126, { type: 'selfSpiritBelow', pct: 32 });
-            add('shield', 118, { type: 'selfHpBelow', pct: 62 });
-            // Đủ ba pháp thức trong Pháp Luân để mở Diễn Pháp, sau đó ưu tiên burst/break.
-            add('transform', 114, { type: 'selfDaoV2ResourceAtLeast', resource: 'lawWheel', value: 3 });
-            add('burst', 110);
-            add('break', 106);
-            add('channel', 98, { type: 'selfDaoV2ResourceBelow', resource: 'lawWheel', value: 3 });
-            add('seal', 94, { type: 'selfDaoV2ResourceBelow', resource: 'lawWheel', value: 3 });
-            add('light', 88);
+            add('shield', 168, { type: 'selfHpBelow', pct: 45 }, { type: 'selfShieldBelow', pct: 8 });
+            add('restore', 164, { type: 'spellNeedsSpirit' });
+            add('transform', 162, { type: 'spellNeedsSpirit' });
+            add('burst', 152, { type: 'spellPayoffReady', suffix: 'burst' });
+            add('break', 150, { type: 'spellPayoffReady', suffix: 'break' }, { type: 'targetIsNotBroken' });
+            add('break', 148, { type: 'spellPayoffReady', suffix: 'break' });
+            add('ultimate', 142, gauge);
+            add('light', 136, { type: 'spellWheelStepReady', form: 'Tốc Pháp' });
+            add('basic', 135, { type: 'spellWheelStepReady', form: 'Tốc Pháp' });
+            add('seal', 134, { type: 'spellWheelStepReady', form: 'Thi Triển' });
+            add('channel', 133, { type: 'spellWheelStepReady', form: 'Dẫn Pháp' });
+            // Payoffs are tactical-only: do not waste CN on a dry heavy cast while
+            // the next wheel form is cooling down. Dẫn kits may channel for output.
+            if (!skillIds.has('skill.dao.spell.burst')) add('channel', 90, { type: 'spellChannelWindow' });
             add('basic', 10);
             break;
         case 'poison':

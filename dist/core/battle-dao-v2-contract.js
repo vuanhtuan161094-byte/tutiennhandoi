@@ -52,7 +52,18 @@ export const REMAINING_DAO_V2_DEFAULTS = {
 };
 export function createFistCoreStateV2() { return { fistForce: 0, fistForceCap: REMAINING_DAO_V2_DEFAULTS.fist.coreCap, fistDomainUntil: 0, basicActionCounter: 0, fistDamageBuffUntil: 0, fistDamageBuffPct: 0 }; }
 export function createBodyCoreStateV2() { return { counterForce: 0, counterForceCap: REMAINING_DAO_V2_DEFAULTS.body.coreCap }; }
-export function createSpellCoreStateV2() { return { lawWheelForms: [], lawWheelCap: REMAINING_DAO_V2_DEFAULTS.spell.coreCap }; }
+export function createSpellCoreStateV2() {
+    return {
+        schema: 'spell-dao.runtime.production.v1',
+        lawWheelStage: 0,
+        expectedForm: 'Tốc Pháp',
+        quickCycle: false,
+        dienPhapReady: false,
+        completedCycles: 0,
+        dienPhapCommits: 0,
+        wastedReadyCycles: 0,
+    };
+}
 export function createPoisonCoreStateV2() { return { poisonSeedStage: 0, poisonSeedCap: REMAINING_DAO_V2_DEFAULTS.poison.coreCap }; }
 export function createArtifactCoreStateV2() { return { artifactSources: 1, artifactSourceCap: REMAINING_DAO_V2_DEFAULTS.artifact.coreCap }; }
 export function createFormationCoreStateV2() { return { deployed: false, nurture: 0, nurtureCap: 100, integrity: 0, integrityCap: 100 }; }

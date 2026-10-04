@@ -358,6 +358,7 @@ export class CombatEngine {
                 return;
             }
             actor.spirit = Math.max(0, actor.spirit - spiritCost);
+            if (skill.runtimeV117?.daoBinding === 'spell') this.log(now, 'resource', 'Pháp trả Chân Nguyên cho nhịp Dẫn Pháp.', actor.id, actor.id, skill.id, { spellChannelCnPaid: spiritCost, spellCnAfter: actor.spirit });
         }
         channel.resolvedHits = (channel.resolvedHits ?? 0) + 1;
         const lastHitMultiplier = channel.resolvedHits >= channel.totalHits ? Math.max(0, Number(channel.lastHitMultiplier) || 1) : 1;
@@ -874,7 +875,7 @@ export class CombatEngine {
     resolveEffectRestoreSpiritV141(source, target, effect, defaultSourceTag, now, skillId, cooldownDamageBonusPct, runtimeAction, skill, runtimeEffectMultiplier, runtimeBreakMultiplier) {
         do {
                     const before = source.spirit;
-                    const requested = Math.max(0, effect.flat);
+                    const requested = Math.max(0, effect.flat) * (skill?.runtimeV117?.daoBinding === 'spell' ? runtimeEffectMultiplier : 1);
                     source.spirit = Math.min(source.baseStats.maxSpirit, source.spirit + requested);
                     const restored = source.spirit - before;
                     const overflow = Math.max(0, requested - restored);
@@ -885,7 +886,7 @@ export class CombatEngine {
                         if (gauge > 0)
                             source.ultimateGaugeV117 = Math.min(100, source.ultimateGaugeV117 + gauge);
                     }
-                    this.log(now, 'resource', `${source.name} hồi ${restored.toFixed(0)} Chân Nguyên.`, source.id, source.id, skillId);
+                    this.log(now, 'resource', `${source.name} hồi ${restored.toFixed(0)} Chân Nguyên.`, source.id, source.id, skillId, skill?.runtimeV117?.daoBinding === 'spell' ? { spellCnRestored: restored, spellCnAfter: source.spirit } : undefined);
                     break;
                 
         } while (false);

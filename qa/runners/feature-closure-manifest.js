@@ -47,6 +47,16 @@ export const BODY_CLOSURE_GATES=freezeList([
   'body-dao-b7-content-closure-test.js',
 ]);
 
+export const SPELL_OPEN_GATES=freezeList([
+  'spell-dao-production-contract-test.js',
+  'spell-dao-p1-transaction-test.js',
+  'spell-dao-p2a-five-stat-test.js',
+  'spell-dao-p2b-passive-architecture-test.js',
+  'spell-dao-p2c-mastery-architecture-test.js',
+  'spell-dao-p3-consumer-parity-test.js',
+  'spell-dao-benchmark-contract-test.js',
+]);
+
 const makeManifest=spec=>Object.freeze({
   schema:'feature-closure-manifest.v1',
   workflow:'docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md',
@@ -114,6 +124,17 @@ export const BACKEND_FEATURE_CLOSURE_MANIFESTS=Object.freeze({
     lockedRegressionFeatures:['dao-sword','dao-fist'],
     deferredFamilies:DAO_DEFERRED,
     gates:[...DAO_SHARED_CLOSURE_GATES,...SWORD_LOCK_REGRESSION_GATES,...FIST_LOCK_REGRESSION_GATES,...BODY_CLOSURE_GATES],
+  }),
+  'dao-spell':makeManifest({
+    id:'dao-spell',
+    label:'Spell Dao / Pháp Đạo',
+    kind:'dao',
+    benchmarkCommand:'tools\\web\\RUN_SPELL_P4_BENCHMARK.cmd',
+    closureReady:true,
+    benchmarkContractGate:'spell-dao-benchmark-contract-test.js',
+    lockedRegressionFeatures:['dao-sword','dao-fist','dao-body','dao-mind'],
+    deferredFamilies:DAO_DEFERRED,
+    gates:[...DAO_SHARED_CLOSURE_GATES,...SWORD_LOCK_REGRESSION_GATES,...FIST_LOCK_REGRESSION_GATES,...BODY_CLOSURE_GATES,...MIND_OPEN_GATES,...SPELL_OPEN_GATES],
   }),
 });
 

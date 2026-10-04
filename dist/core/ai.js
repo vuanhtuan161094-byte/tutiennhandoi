@@ -37,6 +37,27 @@ function bodyBloodRushSuppressesRoutineDefense(self, skill, now) {
 function checkCondition(condition, self, target, now) {
     switch (condition.type) {
         case 'always': return true;
+        case 'spellNeedsSpirit': return self.combatBuildV117?.mainDaoId === 'spell' && self.spirit / Math.max(1, self.baseStats.maxSpirit) < .40;
+        case 'spellPayoffReady': {
+            const core = self.battleDaoStateV2?.spell?.core;
+            if (!core?.dienPhapReady) return false;
+            // Bạo keeps the single readiness for an equipped heavy spell when it is affordable
+            // and will be available within four seconds. Other kits can use Break immediately.
+            return condition.suffix !== 'break' || !self.skillIds.includes('skill.dao.spell.burst')
+                || (self.cooldownUntil['skill.dao.spell.burst'] ?? 0) > now + 4
+                || self.spirit < (self.baseStats.spiritStandard ?? 100) * .28;
+        }
+        case 'spellChannelWindow': {
+            // A short Basic windup is not an authored interrupt telegraph. Long casts
+            // and channels expose Dẫn Pháp; a Broken target is a safe window.
+            const risky = target.channeling || target.casting && (!Number.isFinite(target.casting.startedAt)
+                || target.casting.resolvesAt - target.casting.startedAt >= .75);
+            return self.combatBuildV117?.mainDaoId === 'spell'
+                && self.spirit >= (self.baseStats.spiritStandard ?? 100) * .24
+                && (!risky || target.breakDebuffUntil > now);
+        }
+        case 'spellWheelStepReady': return self.battleDaoStateV2?.spell?.core?.expectedForm === condition.form
+            && (condition.form !== 'Dẫn Pháp' || checkCondition({ type: 'spellChannelWindow' }, self, target, now));
         case 'selfHpBelow': return self.hp / combatMaxHp(self.baseStats) * 100 < condition.pct;
         case 'selfHpAbove': return self.hp / combatMaxHp(self.baseStats) * 100 + 1e-9 >= condition.pct;
         case 'selfSpiritBelow': return self.spirit / Math.max(1, self.baseStats.maxSpirit) * 100 < condition.pct;
