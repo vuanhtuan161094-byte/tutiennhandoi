@@ -95,9 +95,9 @@ export const BACKEND_FEATURE_CLOSURE_MANIFESTS=Object.freeze({
     id:'dao-mind',
     label:'Mind Dao / Thần Niệm Đạo',
     kind:'dao',
-    closureReady:false,
+    // M5 deterministic balance evidence passed 36/36 on 8814c6c064478540496cfd92d7611156f62479fb; M6 exact-SHA closure is now authorized.
+    closureReady:true,
     benchmarkCommand:'tools\\web\\RUN_MIND_M5_BENCHMARK.cmd',
-    // M4 identity harness is installed but baseline evidence is not yet recorded. M5 tuning and M6 exact closure remain blocked.
     benchmarkContractGate:'mind-dao-m4-harness-contract-test.js',
     lockedRegressionFeatures:['dao-sword','dao-fist'],
     deferredFamilies:DAO_DEFERRED,
