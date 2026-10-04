@@ -55,7 +55,7 @@ export function effectiveStats(entity, registry, now) {
         const bossEffectiveness = entity.tags.includes('Boss') ? 0.5 : 1;
         defenseMul *= 1 - 0.30 * bossEffectiveness;
     }
-    syncBattleDaoV2Timers(entity, now);
+    syncBattleDaoV2Timers(entity, now, true);
     const swordV2 = swordIntentBonusesV2(entity, now);
     const fistDefensePct = fistPassiveDefensePctV2(entity, now);
     const mindV2 = mindPassiveBonusesV2(entity, now);

@@ -105,7 +105,7 @@ function syncGenericStack(entity, dao, now) {
     }
     st.nextDecayAt = st.stacks > 0 ? next : undefined;
 }
-export function syncBattleDaoV2Timers(entity, now) {
+export function syncBattleDaoV2Timers(entity, now, readOnlyFormation = false) {
     if (!battleDaoV2Enabled(entity))
         return;
     if (!entity.battleDaoStateV2)
@@ -168,13 +168,13 @@ export function syncBattleDaoV2Timers(entity, now) {
         fistCore.fistForce = Math.min(fistCore.fistForceCap, Math.max(0, fistCore.fistForce));
     }
     for (const dao of ['fist', 'body', 'spell', 'poison', 'artifact', 'formation', 'mind'])
-        syncGenericStack(entity, dao, now);
+        if (!readOnlyFormation || dao !== 'formation') syncGenericStack(entity, dao, now);
 }
 export function swordIntentBonusesV2(entity, now) {
     const out = { attackPct: 0, critChancePct: 0, heartChancePct: 0, armorPenPct: 0, directDamagePct: 0, critHeartDamagePct: 0, gaugeGainPct: 0 };
     if (!battleDaoV2Enabled(entity) || !canLearnDaoPassiveV2Runtime(entity, 'sword') || !hasLearnedPassiveV2(entity, SWORD_V2_PASSIVE_IDS.intent))
         return out;
-    syncBattleDaoV2Timers(entity, now);
+    syncBattleDaoV2Timers(entity, now, true);
     const st = entity.battleDaoStateV2?.sword?.intent;
     if (!st || st.stacks <= 0)
         return out;
@@ -873,11 +873,21 @@ function holderV2(entity, dao) { return entity.battleDaoStateV2?.[dao]; }
 function passiveIdV2(dao, n) { return `passive.v2.${dao}.p${n}`; }
 function hasPassiveN(entity, dao, n) { return hasLearnedPassiveV2(entity, passiveIdV2(dao, n)); }
 function passiveLevelN(entity, dao, n) { return hasPassiveN(entity, dao, n) ? lv(entity, passiveIdV2(dao, n)) : 0; }
-function stackV2(entity, dao, now) { syncBattleDaoV2Timers(entity, now); return holderV2(entity, dao)?.stack; }
+function projectedFormationStack(entity, now) {
+    const live=holderV2(entity,'formation')?.stack;
+    if(!live)return undefined;
+    const st={...live},tune=genericStackTuning(entity,'formation');
+    st.cap=tune.cap;st.durationSeconds=tune.duration;st.decayEverySeconds=tune.decayEvery;st.stacks=Math.min(st.cap,Math.max(0,st.stacks));
+    const next=st.nextDecayAt??st.expiresAt+st.decayEverySeconds;
+    if(now>=st.expiresAt && now+1e-9>=next) st.stacks=Math.max(0,st.stacks-Math.floor((now+1e-9-next)/st.decayEverySeconds)-1);
+    return st;
+}
+function stackV2(entity, dao, now) { syncBattleDaoV2Timers(entity, now, true); return dao==='formation'?projectedFormationStack(entity,now):holderV2(entity, dao)?.stack; }
 function refreshGenericStackV2(entity, dao, now) { const st = holderV2(entity, dao)?.stack; if (!st)
     return; const tune = genericStackTuning(entity, dao); st.cap = tune.cap; st.durationSeconds = tune.duration; st.decayEverySeconds = tune.decayEvery; st.expiresAt = now + st.durationSeconds; st.nextDecayAt = undefined; }
 export function addGenericStackV2(entity, dao, amount, now) {
-    const st = stackV2(entity, dao, now);
+    if(dao==='formation')syncGenericStack(entity,dao,now);
+    const st = dao==='formation'?holderV2(entity,dao)?.stack:stackV2(entity, dao, now);
     if (!st || amount <= 0)
         return 0;
     const before = st.stacks;
@@ -1348,7 +1358,7 @@ export function consumePoisonSeedStageV2(entity, targetId, maxConsume, keepAfter
     return { consumed, stageBefore: before, heart };
 }
 export function v2ResourceProjection(entity, now) {
-    syncBattleDaoV2Timers(entity, now);
+    syncBattleDaoV2Timers(entity, now, true);
     const s = entity.battleDaoStateV2;
     const out = {};
     if (!s)
@@ -1406,8 +1416,9 @@ export function v2ResourceProjection(entity, now) {
         out.formationGrandReadyV1 = s.formation.core.deployed && s.formation.core.nurture === 100;
     }
     if (s.formation?.stack) {
-        out.formationPassiveStack = s.formation.stack.stacks;
-        out.formationPassiveStackCap = s.formation.stack.cap;
+        const st=projectedFormationStack(entity,now);
+        out.formationPassiveStack = st.stacks;
+        out.formationPassiveStackCap = st.cap;
     }
     if (s.mind?.core && (s.mind.core.flowUntil ?? 0) > now)
         out.mindFlowUntil = s.mind.core.flowUntil;

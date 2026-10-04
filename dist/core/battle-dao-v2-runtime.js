@@ -115,10 +115,10 @@ export function createBattleDaoRuntimeStateV2(entity,now=0){
   return state;
 }
 
-export function syncBattleDaoV2Timers(entity,now){
-  if(!mainBody(entity)) return base.syncBattleDaoV2Timers(entity,now);
+export function syncBattleDaoV2Timers(entity,now,readOnlyFormation=false){
+  if(!mainBody(entity)) return base.syncBattleDaoV2Timers(entity,now,readOnlyFormation);
   ensureBodyProductionState(entity,now);
-  const result=base.syncBattleDaoV2Timers(bodyView(entity),now);
+  const result=base.syncBattleDaoV2Timers(bodyView(entity),now,readOnlyFormation);
   ensureBodyProductionState(entity,now);
   return result;
 }

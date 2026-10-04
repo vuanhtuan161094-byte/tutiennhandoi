@@ -15,6 +15,7 @@ for(const row of formationDaoV2.mastery){const s=registry.skill(row.skillId);ass
  const{e,t,c}=setupFormation();c.deployed=true;c.nurture=0;e.battleDaoStateV2.formation.stack.stacks=30;e.battleDaoStateV2.formation.stack.cap=30;e.battleDaoStateV2.formation.stack.expiresAt=20;
  const mult=battleDaoV2OutgoingMultiplier(e,t,0,'ActiveHit','skill.dao.formation.basic'),br=battleDaoV2BreakMultiplier(e,0);c.nurture=100;assert.equal(battleDaoV2OutgoingMultiplier(e,t,0,'ActiveHit','skill.dao.formation.basic'),mult);assert.equal(battleDaoV2BreakMultiplier(e,0),br);
  const before=structuredClone(e.battleDaoStateV2);for(let i=0;i<10;i++){remainingDaoPassiveBonusesV2(e,0);v2ResourceProjection(e,0);}assert.deepEqual(e.battleDaoStateV2,before,'reads never refresh');
+ const lateBefore=structuredClone(e.battleDaoStateV2.formation);remainingDaoPassiveBonusesV2(e,25);assert(v2ResourceProjection(e,25).formationPassiveStack<30);assert.deepEqual(e.battleDaoStateV2.formation,lateBefore,'expired read projects decay without mutating stored timers');
 }
 for(const interrupted of [true,false]){
  const{engine,e,t,c}=setupFormation();c.deployed=true;c.nurture=0;c.integrity=100;e.aiProfile={rules:[{skillId:'skill.dao.formation.nourish',priority:100,conditions:[{type:'always'}]}]};engine.handleDecision(e,t,0);const cast=e.casting;engine.handleSkillResolve(e,t,cast.skillId,cast.token,1);const ch=e.channeling;assert(ch);
