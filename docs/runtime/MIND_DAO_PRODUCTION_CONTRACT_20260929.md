@@ -252,30 +252,47 @@ Decision:
 
 M5-2 did **not** change baseline echo cadence/coefficient, direct Burst damage, Thần Ấn transactions, Nhiễu/control rules or the benchmark matrix.
 
-### M5-3 — ACTIVE CANDIDATE / AWAITING BENCHMARK
+### M5-3 — MEASURED / RETAINED · NIỆM ẢNH FROZEN
 
-The same already-opened Burst snapshot-local lever is refined once, with no second gameplay lever added:
+Lever retained:
 - `MIND_M5_BURST_SNAPSHOT_RETENTION`: **0.70 → 1.30**.
-- This multiplier applies only to the sanitized Burst damage/Break packet **before** the normal Niệm Ảnh replay coefficient is applied.
+- This multiplier applies only to the sanitized Burst damage/Break packet before the normal Niệm Ảnh replay coefficient is applied.
 
-Evidence-based rationale from M5-2:
-- Niệm Ảnh produced **19,803.548** mean echo damage at 12.13% contribution;
-- **6,971.022** of that mean echo damage came from Burst-sourced snapshots;
-- scaling this one packet-local lever from 0.70 to 1.30 is expected to move Niệm Ảnh close to the 15% echo floor while leaving its relative DPS within the 88–98% band;
-- this estimate is diagnostic only and is **not** acceptance evidence; the exact 12×180×3 rerun is required.
+Exact deterministic evidence on source HEAD `6673bb304f1987ae974edf42f35bab6584ab30a3`:
+- all **36/36** runs identity-valid; `invalidRuns = []`;
+- **Bạo Ấn:** DPS **1033.595**, **100%**, echo contribution **12.80%**, Burst-sourced echo damage **7095.883/run**;
+- **Niệm Ảnh:** DPS **940.190**, **90.96%**, echo contribution **15.23%**, Burst-sourced echo damage **12946.185/run**;
+- **Nhiễu Thức:** DPS **675.563**, **65.36%**, interference metric **19.565**, still highest.
 
-M5-3 explicitly does **not** change:
-- baseline Niệm Ảnh coefficient **35%**;
-- ordinary cadence **3 eligible Active roots**;
-- fixed echo delay **0.6s**;
-- hard echo coefficient safety ceiling **70%**;
-- shared follow-up budget / non-recursion;
-- Thần Ấn generation or consume transactions;
-- Bạo Ấn direct damage multiplier;
-- Nhiễu/control rules;
-- canonical benchmark matrix.
+Decision:
+- M5-3 passes both locked Niệm Ảnh targets: **88–98% relative DPS** and **15–30% real echo contribution**;
+- freeze the Niệm Ảnh tuning package at Observe **1.10** plus Burst snapshot multiplier **1.30**;
+- do not retune Niệm Ảnh while opening the remaining Nhiễu-only miss;
+- Nhiễu identity remains healthy and highest on real interference, but its **65.36%** relative DPS remains below the **75%** floor.
 
-Nhiễu remains untouched during M5-3. If Niệm Ảnh passes both its DPS and echo-contribution bands on the exact deterministic rerun, its tuning is frozen before a separate Nhiễu-only lever is opened.
+M5-3 did **not** change baseline echo coefficient/cadence/delay, the 70% echo replay-coefficient ceiling, recursion/follow-up safety, Thần Ấn transactions, direct Burst damage, Nhiễu/control rules or the benchmark matrix.
+
+### M5-4 — ACTIVE CANDIDATE / AWAITING BENCHMARK
+
+One new Nhiễu-only feature-local lever is opened after Niệm Ảnh is frozen:
+- `Nhiễu Thần Chỉ` direct damage coefficient: **0.75 → 2.80**.
+
+Evidence-based rationale from the accepted M5-3 matrix:
+- current Nhiễu DPS is **675.563** versus the 75% floor of **775.196** against the current Bạo Ấn reference;
+- the build therefore needs about **17,934** additional damage over 180 seconds;
+- `Nhiễu Thần Chỉ` contributes about **7,085 damage/run** at coefficient 0.75 in the accepted matrix;
+- coefficient **2.80** is a single local numeric lever expected to place Nhiễu around **75–76%** relative DPS, with deterministic rerun required for acceptance.
+
+M5-4 explicitly does **not** change:
+- Nhiễu Thần Ấn spend count or commit timing;
+- interference potency, cast delay, recovery penalty, stagger duration or boss/control rules;
+- Niệm Ảnh tuning now frozen above;
+- five-stat family;
+- Auto priorities/loadout;
+- canonical benchmark matrix;
+- any Sword, Quyền, Body, equipment or deferred/global balance.
+
+The same 12×180×3 deterministic benchmark must confirm Nhiễu at **75–90%** relative DPS while it remains the highest real interference/control profile. M6 stays blocked until that evidence passes.
 
 ## 11. Phase state
 
@@ -286,7 +303,7 @@ Nhiễu remains untouched during M5-3. If Niệm Ảnh passes both its DPS and e
 - **M2C — CLOSED** — mastery architecture / ownership; M5 numeric tuning may not reopen architecture.
 - **M3 — CLOSED** — production-path parity.
 - **M4 — CLOSED** — canonical deterministic identity baseline accepted: 36/36 valid.
-- **M5 — ACTIVE** — M5-1 + M5-2 measured/retained; M5-3 awaiting deterministic benchmark evidence.
+- **M5 — ACTIVE** — M5-1/M5-2/M5-3 measured and retained; Niệm Ảnh frozen; M5-4 Nhiễu candidate awaiting deterministic benchmark evidence.
 - **M6 — BLOCKED** — exact clean feature-scoped closure.
 
 `dao-mind` remains `closureReady:false` until M5 target bands pass with deterministic evidence and M6 exact clean scoped closure is completed.
