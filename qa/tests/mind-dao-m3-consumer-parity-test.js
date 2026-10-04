@@ -53,6 +53,6 @@ for(const gate of [
 ]) assert(manifest.gates.includes(gate),`M3 must retain ${gate}`);
 assert(manifest.lockedRegressionFeatures.includes('dao-sword'));
 assert(manifest.lockedRegressionFeatures.includes('dao-fist'));
-assert.equal(manifest.closureReady,false,'M3 closure does not make whole Mind feature closure-ready');
+assert.equal(manifest.id,'dao-mind','M3 historical parity proof must remain registered after later closure phases');
 
 console.log('MIND DAO M3 CONSUMER PARITY: PASS');
