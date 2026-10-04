@@ -78,29 +78,41 @@ Reincarnation carry patch: `e3a3e4f0391944597925a99ad94e178ce3288129`; `dist/cor
 
 Delete only when there is no caller/save/regression dependency and a newer authority replaces the old one. Otherwise retain explicit LEGACY / FROZEN / COMPATIBILITY semantics. Do not delete tests merely because their filename contains `migration`; live manifests/contracts decide retention.
 
-## Thần Niệm Dao — ACTIVE
+## Thần Niệm Dao — M6 READY
 
 Feature id: `dao-mind`  
-Feature manifest: **`closureReady:false`**  
+Feature manifest: **`closureReady:true` — exact-SHA closure authorized, not yet CLOSED/LOCKED**  
 Design target: `docs/runtime/MIND_DAO_PRODUCTION_SPEC_V1_20260929.md`  
 Production contract: `docs/runtime/MIND_DAO_PRODUCTION_CONTRACT_20260929.md`  
 Audits: `docs/runtime/MIND_DAO_M2B_CLOSURE_AUDIT_20260929.md`, `MIND_DAO_M2C_CLOSURE_AUDIT_20260929.md`, `MIND_DAO_M3_CLOSURE_AUDIT_20260929.md`.
 
-Closed: M0, M1, M2A, M2B, M2C, M3, M4. M5 is active.
+Closed: M0, M1, M2A, M2B, M2C, M3, M4, M5. M6 exact-SHA feature closure is pending.
 
-### M4/M5 deterministic balance state
+### Accepted deterministic balance evidence
 
 - Runner: `qa/benchmarks/mind-dao-m4-benchmark.js`.
-- Contract gate: `qa/tests/mind-dao-m4-harness-contract-test.js`.
 - Launcher: `tools\web\RUN_MIND_M5_BENCHMARK.cmd --no-pause`.
-- Matrix remains Bạo Ấn / Niệm Ảnh / Nhiễu Thức; 12 seeds × 180s × 3 archetypes; equal 300-point five-stat budget; identity-invalid runs are rejected.
-- M4 identity baseline is CLOSED: 36/36 valid.
-- M5-1 retained Observe channel damage **1.10**.
-- M5-2 retained Burst sanitized snapshot direction.
-- M5-3 exact evidence on source SHA `6673bb304f1987ae974edf42f35bab6584ab30a3`: Bạo Ấn **1033.595 DPS**; Niệm Ảnh **940.190 DPS / 90.96% / 15.23% echo**; Nhiễu Thức **675.563 DPS / 65.36% / interference 19.565**. Niệm Ảnh now passes both target bands and is frozen at Burst snapshot multiplier **1.30**.
-- M5-4 active candidate: Nhiễu Thần Chỉ direct damage coefficient **0.75 → 2.80** only; Nhiễu spend/control/interference rules remain unchanged.
-- Immediate Mind action: run the same deterministic benchmark locally on the exact current source candidate and retain `qa\output\mind-m4-benchmark.json` plus log.
-- M6 remains BLOCKED until Nhiễu reaches **75–90%** relative DPS while retaining the highest real interference/control metric. Then run FULL CLEAN + `DONG_BO_VA_TEST_FEATURE.cmd dao-mind`, write the dated closure record, and lock.
+- Canonical matrix: 12 seeds × 180s × 3 archetypes; 36/36 identity-valid; `invalidRuns=[]`.
+- Accepted balance source SHA: `8814c6c064478540496cfd92d7611156f62479fb`.
+- **Bạo Ấn:** **1033.595 DPS / 100%**.
+- **Niệm Ảnh:** **940.190 DPS / 90.96% / 15.23% echo** — target 88–98% and 15–30% both pass.
+- **Nhiễu Thức:** **782.540 DPS / 75.71% / interference 19.565** — target 75–90% passes and interference remains highest.
+- Frozen M5 tuning package: Observe channel damage **1.10**; Burst sanitized snapshot multiplier **1.30**; Nhiễu Thần Chỉ direct damage coefficient **2.80**.
+- Do not retune Mind before closure unless exact-SHA closure reveals a proven regression.
+
+### Immediate Mind action
+
+Run only the canonical feature closure on a clean synchronized local checkout:
+
+`DONG_BO_VA_TEST_FEATURE.cmd dao-mind`
+
+Required evidence before CLOSED / LOCKED:
+- exact local source SHA reported by the launcher;
+- FULL CLEAN PASS;
+- registered scoped backend closure PASS for `dao-mind`;
+- no required locked Sword/Fist regression failure.
+
+Full-game backend/frontend closure remains a separate audit and must not be made green by retuning unrelated/deferred systems. After exact-SHA feature closure passes, write the dated Mind closure record, update the production contract/checkpoint, and lock the Dao.
 
 ## Full-game audit debt
 
