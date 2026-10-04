@@ -86,19 +86,21 @@ Design target: `docs/runtime/MIND_DAO_PRODUCTION_SPEC_V1_20260929.md`
 Production contract: `docs/runtime/MIND_DAO_PRODUCTION_CONTRACT_20260929.md`  
 Audits: `docs/runtime/MIND_DAO_M2B_CLOSURE_AUDIT_20260929.md`, `MIND_DAO_M2C_CLOSURE_AUDIT_20260929.md`, `MIND_DAO_M3_CLOSURE_AUDIT_20260929.md`.
 
-Closed: M0, M1, M2A, M2B, M2C, M3.
+Closed: M0, M1, M2A, M2B, M2C, M3, M4. M5 is active.
 
-### M4 deterministic identity harness — OPEN
+### M4/M5 deterministic balance state
 
 - Runner: `qa/benchmarks/mind-dao-m4-benchmark.js`.
 - Contract gate: `qa/tests/mind-dao-m4-harness-contract-test.js`.
 - Launcher: `tools\web\RUN_MIND_M5_BENCHMARK.cmd --no-pause`.
-- Matrix: Bạo Ấn / Niệm Ảnh / Nhiễu Thức; 12 seeds × 180s × 3 archetypes; equal 300-point five-stat budget; identity-invalid runs are rejected.
-- Harness is diagnostic only and cannot auto-tune coefficients.
-
-Immediate Mind action: run the M4 baseline locally and retain `qa\output\mind-m4-benchmark.json` plus log. Until identity-valid output exists: M4 OPEN, M5 BLOCKED, M6 BLOCKED, no Mind coefficient tuning.
-
-After M4: M5 minimal Mind-owned tuning only from valid evidence; M6 FULL CLEAN + `DONG_BO_VA_TEST_FEATURE.cmd dao-mind` + dated closure record + lock.
+- Matrix remains Bạo Ấn / Niệm Ảnh / Nhiễu Thức; 12 seeds × 180s × 3 archetypes; equal 300-point five-stat budget; identity-invalid runs are rejected.
+- M4 identity baseline is CLOSED: 36/36 valid.
+- M5-1 retained Observe channel damage **1.10**.
+- M5-2 retained Burst sanitized snapshot direction.
+- M5-3 exact evidence on source SHA `6673bb304f1987ae974edf42f35bab6584ab30a3`: Bạo Ấn **1033.595 DPS**; Niệm Ảnh **940.190 DPS / 90.96% / 15.23% echo**; Nhiễu Thức **675.563 DPS / 65.36% / interference 19.565**. Niệm Ảnh now passes both target bands and is frozen at Burst snapshot multiplier **1.30**.
+- M5-4 active candidate: Nhiễu Thần Chỉ direct damage coefficient **0.75 → 2.80** only; Nhiễu spend/control/interference rules remain unchanged.
+- Immediate Mind action: run the same deterministic benchmark locally on the exact current source candidate and retain `qa\output\mind-m4-benchmark.json` plus log.
+- M6 remains BLOCKED until Nhiễu reaches **75–90%** relative DPS while retaining the highest real interference/control metric. Then run FULL CLEAN + `DONG_BO_VA_TEST_FEATURE.cmd dao-mind`, write the dated closure record, and lock.
 
 ## Full-game audit debt
 
