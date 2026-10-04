@@ -40,7 +40,7 @@ assert.equal(mindDaoV2.tree.length,8,'V2 realm tree must remain eight rows');
 assert(mindSkills.every(skill=>skill.fiveStatScalingV5!==undefined),'M2A closure requires explicit five-stat families on all ten Mind skills');
 
 const manifest=backendFeatureClosureManifest('dao-mind');
-assert.equal(manifest.closureReady,false,'dao-mind must remain fail-closed until M5 tuning and final closure phases are complete');
+assert.equal(manifest.closureReady,true,'dao-mind may become closure-ready only after deterministic M5 targets pass; exact-SHA M6 proof still decides CLOSED/LOCKED status');
 assert.equal(manifest.benchmarkContractGate,'mind-dao-m4-harness-contract-test.js','M4/M5 must retain the deterministic identity-valid harness contract gate');
 for(const gate of [
   'mind-dao-production-contract-test.js','mind-dao-skill-form-contract-test.js','mind-dao-m1-seal-transaction-test.js',
@@ -50,7 +50,7 @@ for(const gate of [
 assert(manifest.lockedRegressionFeatures.includes('dao-sword'));
 assert(manifest.lockedRegressionFeatures.includes('dao-fist'));
 
-assert.match(contract,/M4 CLOSED \/ M5 ACTIVE/);
+assert.match(contract,/M4 CLOSED \/ M5 CLOSED \/ M6 READY/);
 assert.match(contract,/Thần Ấn/);
 assert.match(contract,/Niệm Lực/);
 assert.match(contract,/Niệm Ảnh/);
@@ -60,7 +60,8 @@ assert.match(contract,/M2B — CLOSED/);
 assert.match(contract,/M2C — CLOSED/);
 assert.match(contract,/M3 — CLOSED/);
 assert.match(contract,/M4 — CLOSED/);
-assert.match(contract,/M5 — ACTIVE/);
+assert.match(contract,/M5 — CLOSED/);
+assert.match(contract,/M6 — READY \/ PENDING EXACT-SHA PROOF/);
 assert.match(contract,/1004\.046/);
 assert.match(contract,/740\.728/);
 assert.match(contract,/556\.468/);
@@ -82,8 +83,11 @@ assert.match(contract,/90\.96%/,'contract must retain measured M5-3 Echo relativ
 assert.match(contract,/15\.23%/,'contract must retain measured M5-3 Echo contribution');
 assert.match(contract,/65\.36%/,'contract must retain measured M5-3 Interference relative DPS');
 assert.match(contract,/12946\.185/,'contract must retain measured M5-3 Burst-sourced Echo damage');
-assert.match(contract,/NIỆM ẢNH FROZEN/,'M5-3 must freeze the passing Echo tuning package before Nhiễu tuning');
-assert.match(contract,/0\.75 → 2\.80/,'contract must declare the single M5-4 Nhiễu direct-damage lever');
+assert.match(contract,/782\.540/,'contract must retain measured M5-4 Interference DPS');
+assert.match(contract,/75\.71%/,'contract must retain measured M5-4 Interference relative DPS');
+assert.match(contract,/12\.23%/,'contract must retain measured M5-4 Interference echo contribution');
+assert.match(contract,/M5-4 — MEASURED \/ RETAINED · M5 CLOSED/,'contract must record accepted M5-4 evidence');
+assert.match(contract,/0\.75 → 2\.80/,'contract must retain the accepted M5-4 Nhiễu direct-damage lever');
 assert.match(contract,/17ec773bb057e7e6145bea10de91e532bff0efdf/);
 assert.doesNotMatch(contract,/M4 — OPEN/,'M4 must not regress to open after identity-valid canonical baseline');
 
