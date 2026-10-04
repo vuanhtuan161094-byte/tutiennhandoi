@@ -95,7 +95,7 @@ export const BACKEND_FEATURE_CLOSURE_MANIFESTS=Object.freeze({
     id:'dao-mind',
     label:'Mind Dao / Thần Niệm Đạo',
     kind:'dao',
-    // M5 deterministic balance evidence passed 36/36 on 8814c6c064478540496cfd92d7611156f62479fb; M6 exact-SHA closure is now authorized.
+    // CLOSED/LOCKED: exact-SHA local FULL CLEAN + scoped closure passed on d69b33c80b874fb28471855324afbdf95712b730 (24/24 scoped backend; browser smoke 4/4).
     closureReady:true,
     benchmarkCommand:'tools\\web\\RUN_MIND_M5_BENCHMARK.cmd',
     benchmarkContractGate:'mind-dao-m4-harness-contract-test.js',
