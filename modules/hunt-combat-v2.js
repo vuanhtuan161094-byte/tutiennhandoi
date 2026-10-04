@@ -84,7 +84,7 @@ function visualElement(skill={}){
 
 const DAO_UI={
   sword:{name:'Kiếm Đạo',resource:'Kiếm Ý'},fist:{name:'Quyền Đạo',resource:'Quyền Thế / Liên Kình'},body:{name:'Thể Đạo',resource:'Phản Thế / Huyết Khí'},
-  spell:{name:'Pháp Đạo',resource:'Pháp Luân / Pháp Ý'},poison:{name:'Độc Đạo',resource:'Độc Chủng / Độc Tức'},artifact:{name:'Ngự Khí',resource:'Nguồn Pháp Bảo / Khí Cảm'},
+  spell:{name:'Pháp Đạo',resource:'Pháp Luân / Pháp Ý'},poison:{name:'Độc Đạo',resource:'Độc Chủng / Độc Tức'},artifact:{name:'Ngự Khí',resource:'Nguồn Khí Linh / Khí Cảm'},
   formation:{name:'Trận Đạo',resource:'Dưỡng Độ / Độ Bền / Trận Văn'},mind:{name:'Thần Niệm',resource:'Niệm Ảnh / Niệm Lực'}
 };
 function daoHudMeta(model={},skills=[]){

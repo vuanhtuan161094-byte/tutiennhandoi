@@ -66,6 +66,13 @@ This file is the compact source of truth for a new chat. Current `main` and live
 - Freeze Formation gameplay for Artifact work; repeat its complete scoped/benchmark proof on final combined HEAD. Candidate metadata checkpoint is the commit containing this entry.
 - Not CLOSED/LOCKED. Global balance remains deferred.
 
+### Ngự Khí Đạo — READY combined candidate
+- Feature `dao-artifact`; identity PHÂN → NGỰ → HỢP / THU. Internal Khí Linh1/cap3; real Recall/Merge, one Command scaler/shared snapshot follow-up budget; no external collection authority.
+- Contract/reference/benchmark/preparation: `docs/runtime/ARTIFACT_DAO_*_20261005.*`.
+- `closureReady:true`;50/50 correctness/parity/benchmark/locked regression prerequisites PASS. Final36 runs: Hợp415.927/100%; Tam401.821/96.608%; Hộ355.863/85.559%, all identity/bands PASS. Formation's complete36 frozen outputs remain exact.
+- Combined candidate is the commit containing this entry; require FULL CLEAN/browser and both registered scoped suites on that clean exact HEAD. Evidence directory `artifacts/local-ci/*-<SHA8>-clean-full/` identifies actual validated SHA.
+- Trận + Ngự Khí remain NOT CLOSED/LOCKED until user same-final-exact-SHA Windows acceptance for both canonical feature launchers. Whole-game closure/global balance remain separate.
+
 - Feature manifests: `qa/runners/feature-closure-manifest.js`.
 - Final feature closure: `DONG_BO_VA_TEST_FEATURE.cmd <feature-id>`.
 - New/open Dao stays `closureReady:false` until correctness, parity, identity-valid benchmark evidence and required regressions are complete.

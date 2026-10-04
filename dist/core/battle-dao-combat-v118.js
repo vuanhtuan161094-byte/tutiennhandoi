@@ -1,3 +1,4 @@
+import { artifactCanUse } from './battle-dao-v2-contract.js';
 import { formationCanUse } from './battle-dao-v2-contract.js';
 import { addResourceV117, resourceValueV117, rootPayoffMultiplierV117, setMechanicV117 } from './five-element-combat-v117.js';
 import { skillDomainsV117, skillRuntimeV117, skillSlotClassV117 } from './skill-runtime-v117.js';
@@ -178,7 +179,7 @@ function spendDaoResource(entity, skill, resource, amount, minimum = 0) {
     setDaoResource(entity, resource, current - spent);
     return spent;
 }
-export function canUseBattleDaoSkillV118(entity, skill) {
+export function canUseBattleDaoSkillV118(entity, skill, now = entity.lastContinuousUpdateAt ?? 0) {
     const r = skill.runtimeV117;
     const d = skill.daoRuntimeV118;
     if (battleDaoV2Enabled(entity) && r?.daoBinding && !canUseDaoActiveV2Runtime(entity, r.daoBinding))
@@ -189,18 +190,7 @@ export function canUseBattleDaoSkillV118(entity, skill) {
         const state = entity.battleDaoStateV2;
         const sig = d?.signature;
         if (dao === 'formation') return formationCanUse(entity,skill);
-        if (dao === 'artifact') {
-            const c = state?.artifact?.core;
-            if (!c)
-                return true;
-            if (sig === 'artifactDeploy')
-                return c.artifactSources < c.artifactSourceCap;
-            if (sig === 'artifactMerge')
-                return c.artifactSources >= 2;
-            if (sig === 'artifactRecall')
-                return c.artifactSources > 1;
-            return true;
-        }
+        if (dao === 'artifact') return artifactCanUse(entity,skill,now);
         if (dao === 'fist') {
             const force = Math.max(0, Number(state?.fist?.core?.fistForce) || 0);
             if (skill.id === 'skill.dao.fist.heavy')

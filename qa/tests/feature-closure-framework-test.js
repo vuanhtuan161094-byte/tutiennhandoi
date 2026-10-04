@@ -14,7 +14,7 @@ const runnerSource=fs.readFileSync(new URL('../runners/v140-backend-gates.js',im
 const launcherSource=fs.readFileSync(new URL('../../DONG_BO_VA_TEST_FEATURE.cmd',import.meta.url),'utf8');
 const ids=listBackendFeatureClosureIds();
 
-assert.deepEqual(ids,['dao-body','dao-fist','dao-formation','dao-mind','dao-poison','dao-spell','dao-sword'],'registered feature ids must be deterministic');
+assert.deepEqual(ids,['dao-artifact','dao-body','dao-fist','dao-formation','dao-mind','dao-poison','dao-spell','dao-sword'],'registered feature ids must be deterministic');
 assert.equal(Object.keys(BACKEND_FEATURE_CLOSURE_MANIFESTS).length,ids.length,'feature registry must not hide duplicate ids');
 
 const deferredDaoPattern=/(artifact|relic|spirit-beast|confidant|alchemy|equipment|economy|reincarnation-v4-gameplay-balance|v121-balance-production|v129-global-build-balance|v129-power-budget|v168-combat-stat-runtime-authority)/i;
@@ -42,7 +42,7 @@ for(const id of ids){
     assert(fs.existsSync(benchmarkPath),`${id} benchmark command does not exist: ${manifest.benchmarkCommand}`);
   }
 
-  const leaked=manifest.gates.filter(name=>deferredDaoPattern.test(name));
+  const leaked=manifest.gates.filter(name=>deferredDaoPattern.test(name)&&!(id==='dao-artifact'&&name.startsWith('artifact-dao-')));
   assert.deepEqual(leaked,[],`${id} leaked deferred subsystem audits: ${leaked.join(', ')}`);
   for(const name of manifest.gates){
     assert(fs.existsSync(path.join(here,name)),`${id} references missing gate ${name}`);

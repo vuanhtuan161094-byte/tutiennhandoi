@@ -1,3 +1,4 @@
+import { prepareArtifact, commitArtifact, artifactLevel, artifactScale } from './battle-dao-v2-contract.js';
 import { prepareFormation, commitFormation } from './battle-dao-v2-contract.js';
 import { preparePoisonAction } from './battle-dao-v2-contract.js';
 import { skillDomainsV117, skillRuntimeV117, skillSlotClassV117, skillStandardCostPctV117 } from './skill-runtime-v117.js';
@@ -168,7 +169,7 @@ export function syncBattleDaoV2Timers(entity, now, readOnlyFormation = false) {
         fistCore.fistForce = Math.min(fistCore.fistForceCap, Math.max(0, fistCore.fistForce));
     }
     for (const dao of ['fist', 'body', 'spell', 'poison', 'artifact', 'formation', 'mind'])
-        if (!readOnlyFormation || dao !== 'formation') syncGenericStack(entity, dao, now);
+        if (!readOnlyFormation || !['formation','artifact'].includes(dao)) syncGenericStack(entity, dao, now);
 }
 export function swordIntentBonusesV2(entity, now) {
     const out = { attackPct: 0, critChancePct: 0, heartChancePct: 0, armorPenPct: 0, directDamagePct: 0, critHeartDamagePct: 0, gaugeGainPct: 0 };
@@ -864,6 +865,7 @@ export function carryBattleDaoV2StateToNextMonsterV2(state, battleEndedAt) {
     }
     if (out.spell?.core) out.spell.core = createSpellCoreStateV2();
     if (out.poison?.core) out.poison.core = createPoisonCoreStateV2();
+    if(out.artifact?.core){out.artifactHuntCarryV1=true;out.artifact.core.artifactSourceCap=3;out.artifact.core.artifactSources=Math.max(1,Math.min(3,Number.isFinite(out.artifact.core.artifactSources)?out.artifact.core.artifactSources:1));out.artifact.core.mergeUntil=Math.max(0,(out.artifact.core.mergeUntil??0)-battleEndedAt);if(!out.artifact.core.mergeUntil){out.artifact.core.mergedFrom=0;out.artifact.core.mergeQuality=0;}delete out.artifact.core.lastTransaction;}
     if (out.formation?.core) { out.formationHuntCarryV1 = true; delete out.formation.core.lastTransaction; }
     return out;
 }
@@ -882,12 +884,21 @@ function projectedFormationStack(entity, now) {
     if(now>=st.expiresAt && now+1e-9>=next) st.stacks=Math.max(0,st.stacks-Math.floor((now+1e-9-next)/st.decayEverySeconds)-1);
     return st;
 }
-function stackV2(entity, dao, now) { syncBattleDaoV2Timers(entity, now, true); return dao==='formation'?projectedFormationStack(entity,now):holderV2(entity, dao)?.stack; }
+function projectedArtifactStack(entity, now) {
+    const live=holderV2(entity,'artifact')?.stack;
+    if(!live)return undefined;
+    const st={...live},tune=genericStackTuning(entity,'artifact');
+    st.cap=tune.cap;st.durationSeconds=tune.duration;st.decayEverySeconds=tune.decayEvery;st.stacks=Math.min(st.cap,Math.max(0,st.stacks));
+    const next=st.nextDecayAt??st.expiresAt+st.decayEverySeconds;
+    if(now>=st.expiresAt && now+1e-9>=next) st.stacks=Math.max(0,st.stacks-Math.floor((now+1e-9-next)/st.decayEverySeconds)-1);
+    return st;
+}
+function stackV2(entity, dao, now) { syncBattleDaoV2Timers(entity, now, true); return dao==='formation'?projectedFormationStack(entity,now):dao==='artifact'?projectedArtifactStack(entity,now):holderV2(entity, dao)?.stack; }
 function refreshGenericStackV2(entity, dao, now) { const st = holderV2(entity, dao)?.stack; if (!st)
     return; const tune = genericStackTuning(entity, dao); st.cap = tune.cap; st.durationSeconds = tune.duration; st.decayEverySeconds = tune.decayEvery; st.expiresAt = now + st.durationSeconds; st.nextDecayAt = undefined; }
 export function addGenericStackV2(entity, dao, amount, now) {
-    if(dao==='formation')syncGenericStack(entity,dao,now);
-    const st = dao==='formation'?holderV2(entity,dao)?.stack:stackV2(entity, dao, now);
+    if(['formation','artifact'].includes(dao))syncGenericStack(entity,dao,now);
+    const st = ['formation','artifact'].includes(dao)?holderV2(entity,dao)?.stack:stackV2(entity, dao, now);
     if (!st || amount <= 0)
         return 0;
     const before = st.stacks;
@@ -947,16 +958,10 @@ export function remainingDaoPassiveBonusesV2(entity, now) {
             // Poison utility is finite DoT/consume-local, never generic stat output.
         }
         else if (dao === 'artifact') {
-            out.gaugeGainPct += stacks * scale(p1, .4, 1);
-            out.recoveryReductionPct += stacks * scale(p1, .4, .8);
-            if (stacks >= 10)
-                out.directDamagePct += scale(p1, 5, 10);
-            if (at20)
-                out.healShieldPct += scale(p1, 8, 15);
-            if (hasPassiveN(entity, dao, 6))
-                out.directDamagePct += groups * scale(passiveLevelN(entity, dao, 6), 4, 12);
-            if (at20 && hasPassiveN(entity, dao, 7))
-                out.recoveryReductionPct += scale(passiveLevelN(entity, dao, 7), 4, 12);
+            if(entity.combatBuildV117?.secondaryDaoId==='artifact'){
+                out.spiritCostReductionPct+=Math.min(3,stacks*artifactScale(artifactLevel(entity,4),.03,.10));
+                out.healShieldPct+=Math.min(5,stacks*artifactScale(artifactLevel(entity,4),.05,.15));
+            }
         }
         else if (dao === 'formation') {
             if (entity.combatBuildV117?.secondaryDaoId === 'formation') out.spiritCostReductionPct += Math.min(3, stacks * .1);
@@ -965,7 +970,7 @@ export function remainingDaoPassiveBonusesV2(entity, now) {
             // M2B: Mind passive output is owned by mind-dao-v2-runtime.js.
             // Generic damage/Gauge/Armor-Pen bonuses are deliberately retired.
         }
-        if (dao !== 'mind' && dao !== 'spell' && dao !== 'poison' && dao !== 'formation' && atCap && hasPassiveN(entity, dao, 8)) {
+        if (dao !== 'mind' && dao !== 'spell' && dao !== 'poison' && dao !== 'formation' && dao !== 'artifact' && atCap && hasPassiveN(entity, dao, 8)) {
             const l8 = passiveLevelN(entity, dao, 8);
             out.directDamagePct += scale(l8, 10, dao === 'body' ? 25 : 30);
             out.gaugeGainPct += scale(l8, 0, 20);
@@ -1030,10 +1035,7 @@ export function battleDaoV2OutgoingMultiplier(entity, target, now, sourceTag, sk
         const n = holderV2(entity, 'body')?.core?.counterForce ?? 0;
         pct += Math.floor(n / 20) * 3;
     }
-    if (main === 'artifact' && sourceTag === 'ActiveHit') {
-        const n = holderV2(entity, 'artifact')?.core?.artifactSources ?? 1;
-        pct += Math.max(0, n - 1) * 12;
-    }
+
 
     const identityTuning = battleDaoV2MainDamageTuningV129(entity, main);
     return Math.max(0, 1 + pct / 100) * identityTuning;
@@ -1058,6 +1060,8 @@ export function battleDaoV2SpiritCostMultiplier(entity, skill, now) {
     if (!battleDaoV2Enabled(entity))
         return 1;
     let pct = remainingDaoPassiveBonusesV2(entity, now).spiritCostReductionPct;
+    if(entity.combatBuildV117?.mainDaoId==='artifact' && ['skill.dao.artifact.recall','skill.dao.artifact.merge'].includes(skill.id) && projectedArtifactStack(entity,now)?.stacks>=20)
+        pct+=artifactScale(artifactLevel(entity,7),4,10);
     if (canLearnDaoPassiveV2Runtime(entity, 'spell')) {
         const st = stackV2(entity, 'spell', now);
         const stacks = st?.stacks ?? 0;
@@ -1132,14 +1136,7 @@ export function prepareRemainingDaoCoreActionV2(entity, target, skill, action, n
     else if (dao === 'poison') {
         preparePoisonAction(entity, target, skill, action, now);
     }
-    else if (dao === 'artifact') {
-        const c = holderV2(entity, 'artifact')?.core;
-        if (!c)
-            return;
-        d.artifactSourcesBefore = c.artifactSources;
-        if (skill.daoRuntimeV118?.signature === 'artifactCommand')
-            action.effectBonusPct += Math.max(0, c.artifactSources - 1) * 12;
-    }
+    else if (dao === 'artifact') prepareArtifact(entity,target,skill,action,now);
     else if (dao === 'formation') prepareFormation(entity, target, skill, action, now);
 
     action.recoveryMultiplier *= battleDaoV2RecoveryMultiplier(entity, now);
@@ -1232,21 +1229,8 @@ export function finishRemainingDaoActionV2(entity, target, skill, action, now, c
         }
     }
     if (main && dao === 'artifact') {
-        const c = holderV2(entity, 'artifact')?.core;
-        if (c) {
-            const sig = skill.daoRuntimeV118?.signature;
-            if (sig === 'artifactDeploy')
-                c.artifactSources = Math.min(c.artifactSourceCap, c.artifactSources + 1);
-            else if (sig === 'artifactRecall')
-                c.artifactSources = Math.max(1, c.artifactSources - 1);
-            else if (sig === 'artifactMerge')
-                c.artifactSources = 1;
-            if (sig === 'artifactCommand' && damaging && c.artifactSources > 1) {
-                const claim = claimDamagingFollowUpV2(action, { kind: 'intrinsic', id: 'intrinsic.v2.artifact.source_followup' });
-                if (claim)
-                    out.followUp = { kind: 'artifact', delay: .08, coefficient: (c.artifactSources - 1) * .20, breakDamagePct: 0, label: 'Khí Linh Truy Kích', claim };
-            }
-        }
+        const event=commitArtifact(entity,target,skill,action,now),tx=action.battleDaoV2?.daoData?.artifactTransaction;
+        if(event&&!tx.noticeLogged){tx.noticeLogged=true;out.notices.push({message:'Khí Linh resolve.',data:{artifactTransaction:event}});}
     }
     if (main && dao === 'formation') {
         const event=commitFormation(entity,target,skill,action,now);
@@ -1276,21 +1260,7 @@ export function finishRemainingDaoActionV2(entity, target, skill, action, now, c
         else if (passiveDao === 'poison') {
             // Feature-owned root observer handles Main and Secondary, including Sword.
         }
-        else if (passiveDao === 'artifact') {
-            const st = holderV2(entity, 'artifact')?.stack;
-            if (st) {
-                st.actionCounter++;
-                let gain = 0;
-                if (st.actionCounter >= 3) {
-                    gain += Math.floor(st.actionCounter / 3);
-                    st.actionCounter %= 3;
-                }
-                if (hasPassiveN(entity, 'artifact', 2) && chance(scale(passiveLevelN(entity, 'artifact', 2), 10, 30)))
-                    gain += 1;
-                if (gain > 0)
-                    addGenericStackV2(entity, 'artifact', gain, now);
-            }
-        }
+        else if (passiveDao === 'artifact') { /* Root observer in feature wrapper owns Khí Cảm. */ }
         else if (passiveDao === 'formation') { /* Feature root observer owns diversity, including Sword. */ }
         else if (passiveDao === 'mind') {
             const slot = skillSlotClassV117(skill);
@@ -1403,11 +1373,15 @@ export function v2ResourceProjection(entity, now) {
         out.poisonPassiveStack = s.poison.stack.stacks;
         out.poisonPassiveStackCap = s.poison.stack.cap;
     }
-    if (s.artifact?.core)
+    if (s.artifact?.core) {
         out.artifactSourcesV2 = s.artifact.core.artifactSources;
+        out.artifactMergeActiveV1 = s.artifact.core.mergeUntil > now;
+        out.artifactMergedFromV1 = s.artifact.core.mergeUntil > now ? s.artifact.core.mergedFrom : 0;
+    }
     if (s.artifact?.stack) {
-        out.artifactPassiveStack = s.artifact.stack.stacks;
-        out.artifactPassiveStackCap = s.artifact.stack.cap;
+        const st=projectedArtifactStack(entity,now);
+        out.artifactPassiveStack = st.stacks;
+        out.artifactPassiveStackCap = st.cap;
     }
     if (s.formation?.core) {
         out.formationDeployedV2 = s.formation.core.deployed;

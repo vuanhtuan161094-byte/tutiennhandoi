@@ -123,7 +123,7 @@ export function createSpellCoreStateV2() {
     };
 }
 export function createPoisonCoreStateV2() { return { poisonSeedStage: 0, poisonSeedCap: REMAINING_DAO_V2_DEFAULTS.poison.coreCap }; }
-export function createArtifactCoreStateV2() { return { artifactSources: 1, artifactSourceCap: REMAINING_DAO_V2_DEFAULTS.artifact.coreCap }; }
+export function createArtifactCoreStateV2() { return { artifactSources: 1, artifactSourceCap: 3, mergedFrom: 0, mergeUntil: 0, mergeQuality: 0, nextFollowupBonusPct: 0 }; }
 export function createFormationCoreStateV2() { return { deployed: false, nurture: 0, nurtureCap: 100, integrity: 0, integrityCap: 100 }; }
 export function createMindCoreStateV2() {
     return {
@@ -214,4 +214,69 @@ export function poisonAutoWindow(e,target,suffix,now) {
     if (suffix==='basic') return true;
     // Refresh near the final three finite ticks; overlap is bounded by real cooldown roots.
     return stage<4 || (coverage[suffix]??0)<=now+3;
+}
+
+export const ARTIFACT_COMMAND_SUFFIXES_V1=Object.freeze(['basic','guard','strike','sync','suppress','ultimate']);
+export function artifactMain(e,s){return e.combatBuildV117?.battleDaoV2Enabled===true&&e.combatBuildV117.mainDaoId==='artifact'&&s?.id?.startsWith('skill.dao.artifact.');}
+export function artifactLevel(e,n){const id=`passive.v2.artifact.p${n}`;return e.combatBuildV117?.learnedDaoPassiveIdsV118?.includes(id)?Math.max(1,Math.min(20,e.combatBuildV117.passiveLevelsV125?.[id]??1)):0;}
+export const artifactScale=formationScale;
+export function artifactTier(e,s){return e.combatBuildV117?.skillPracticeTierV125?.[s.id]??0;}
+export function artifactMerged(e,now){const c=e.battleDaoStateV2?.artifact?.core;return Boolean(c&&c.mergeUntil>now&&c.mergedFrom>=2);}
+export function artifactCanUse(e,s,now=0){
+ if(!artifactMain(e,s))return false;
+ const c=e.battleDaoStateV2?.artifact?.core,k=s.id.split('.').at(-1);if(!c)return false;
+ const n=Math.max(1,Math.min(3,c.artifactSources));
+ if(['deploy','split'].includes(k))return n<3&&!artifactMerged(e,now);
+ if(['recall','merge'].includes(k))return n>=2&&!artifactMerged(e,now);
+ return true;
+}
+export function prepareArtifact(e,t,s,a,now){
+ if(!artifactMain(e,s)||!a.battleDaoV2)return;
+ const c=e.battleDaoStateV2.artifact.core,k=s.id.split('.').at(-1),window=artifactMerged(e,now),count=Math.max(1,Math.min(3,c.artifactSources)),powerCount=k==='ultimate'&&window?c.mergedFrom:count;
+ const tx={kind:k,targetId:t.id,sourceCount:count,effectiveCount:powerCount,mergedFrom:window?c.mergedFrom:0,window,valid:artifactCanUse(e,s,now),rootActionId:a.battleDaoV2.rootActionId};
+ a.battleDaoV2.daoData.artifactTransaction=tx;
+ if(tx.valid&&ARTIFACT_COMMAND_SUFFIXES_V1.includes(k)){
+  tx.sourceBonusPct=(powerCount-1)*12;
+  tx.mergeBonusPct=window?(c.mergedFrom-1)*100*(1+c.mergeQuality):0;
+  a.effectBonusPct+=tx.sourceBonusPct+tx.mergeBonusPct;
+ }
+}
+export function commitArtifact(e,t,s,a,now){
+ const tx=a?.battleDaoV2?.daoData?.artifactTransaction;
+ if(!artifactMain(e,s)||!tx||!tx.valid||(a.battleDaoV2.procDepth??0)>0||!e.alive)return;
+ if(tx.committed)return tx.event;
+ if(!artifactCanUse(e,s,now))return;
+ if(['basic','strike','sync','suppress','ultimate'].includes(tx.kind)&&(!t.alive||tx.targetId!==t.id))return;
+ const c=e.battleDaoStateV2.artifact.core,k=tx.kind,tier=artifactTier(e,s),before=c.artifactSources;
+ tx.committed=true;
+ let recalled=0,recovered=0;
+ if(k==='deploy'||k==='split')c.artifactSources=Math.min(3,before+1);
+ if(k==='recall'){
+  c.artifactSources=before-1;recalled=1;
+  const p=e.baseStats?.primaryStatsV5??{},weights=s.fiveStatScalingV5??{},baseline=s.fiveStatBaselineCoefficientV5??1;
+  const power=Object.entries(weights).reduce((n,[key,w])=>n+(p[key]??100)*w,0)/(100*baseline);
+  const st=e.battleDaoStateV2.artifact.stack;
+  recovered=(e.baseStats?.spiritStandard??100)*.25*Math.min(1.75,Math.max(.5,power))*(1+(tier>=100?.2:0)+(tier>=1000?.1:0)+(st?.stacks??0)*artifactScale(artifactLevel(e,4),.001,.003));
+  const prior=e.spirit;e.spirit=Math.min(e.baseStats?.maxSpirit??100,e.spirit+recovered);recovered=e.spirit-prior;
+ }
+ if(k==='merge'){
+  c.mergedFrom=tx.sourceCount;c.artifactSources=1;c.mergeUntil=now+6;
+  const st=e.battleDaoStateV2.artifact.stack;
+  c.mergeQuality=(st?.stacks>=st?.cap?artifactScale(artifactLevel(e,8),.03,.08):0)+(tier>=1000?.1:0);
+ }
+ c.artifactSourceCap=3;
+ tx.event={kind:k,rootActionId:tx.rootActionId,sourcesBefore:before,sourcesAfter:c.artifactSources,recalled,cnRecovered:recovered,mergedFrom:k==='merge'?c.mergedFrom:0,mergeUntil:c.mergeUntil,effectiveCount:tx.effectiveCount,window:tx.window};
+ return tx.event;
+}
+export function artifactAutoWindow(e,t,k,now){
+ if(e.combatBuildV117?.mainDaoId!=='artifact')return false;
+ const c=e.battleDaoStateV2?.artifact?.core;if(!c)return false;
+ const window=artifactMerged(e,now),n=c.artifactSources,ids=e.skillIds??[],guard=ids.includes('skill.dao.artifact.recall');
+ if(k==='basic')return true;
+ if(k==='guard')return e.hp/(e.baseStats.maxHp||1)<(guard?.95:.35)&&!e.shields.some(x=>x.capacity>80&&x.expiresAt>now);
+ if(k==='recall')return n>=2&&e.spirit/(e.baseStats.maxSpirit||1)<.45;
+ if(['deploy','split'].includes(k))return !window&&n<3;
+ if(k==='merge')return n===3&&!window&&['strike','suppress'].some(x=>ids.includes('skill.dao.artifact.'+x)&&(e.cooldowns?.['skill.dao.artifact.'+x]??0)<=now+1);
+ if(k==='ultimate')return n===3||window;
+ return window||n>=2;
 }

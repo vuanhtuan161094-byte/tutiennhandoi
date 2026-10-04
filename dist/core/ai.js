@@ -1,3 +1,4 @@
+import { artifactAutoWindow } from './battle-dao-v2-contract.js';
 import { poisonAutoWindow } from './battle-dao-v2-contract.js';
 import { combatMaxHp, skillTrueEssenceCost } from './combat-rules.js';
 import { canUseSkillRuntimeV117, resourceValueV117, skillSpiritCostMultiplierFromRuntimeV117 } from './five-element-combat-v117.js';
@@ -38,6 +39,7 @@ function bodyBloodRushSuppressesRoutineDefense(self, skill, now) {
 function checkCondition(condition, self, target, now) {
     switch (condition.type) {
         case 'always': return true;
+        case 'artifactWindow': return artifactAutoWindow(self,target,condition.suffix,now);
         case 'poisonWindow': return poisonAutoWindow(self,target,condition.suffix,now);
         case 'spellNeedsSpirit': return self.combatBuildV117?.mainDaoId === 'spell' && self.spirit / Math.max(1, self.baseStats.maxSpirit) < .40;
         case 'spellPayoffReady': {
@@ -138,7 +140,7 @@ export function canUseSkill(self, skill, registry, now) {
         return false;
     if (!canUseSkillRuntimeV117(self, skill, now))
         return false;
-    if (!canUseBattleDaoSkillV118(self, skill))
+    if (!canUseBattleDaoSkillV118(self, skill, now))
         return false;
     for (const active of self.statuses) {
         if (active.expiresAt <= now)
@@ -152,6 +154,7 @@ export function canUseSkill(self, skill, registry, now) {
     return true;
 }
 function autoFallbackAllows(self, skill, target, now) {
+    if(self.combatBuildV117?.battleDaoV2Enabled && skill.id.startsWith('skill.dao.artifact.'))return artifactAutoWindow(self,target,skill.id.split('.').at(-1),now);
     if (self.combatBuildV117?.battleDaoV2Enabled && skill.id.startsWith('skill.dao.formation.')) return skill.id.endsWith('.basic');
     if (self.combatBuildV117?.battleDaoV2Enabled && skill.id.startsWith('skill.dao.poison.')) return poisonAutoWindow(self,target,skill.id.split('.').at(-1),now);
     // M1: these Mind actions are tactical target-mark spenders. Their explicit

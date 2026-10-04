@@ -92,19 +92,20 @@ function rulesForDao(dao, skillIds, offset = 0) {
             for(const [suffix,priority] of [['guard',180],['ultimate',160],['consume',150],['transform',140],['mist',130],['calamity',126],['insects',120],['heart',116],['bone',112],['basic',10]])
                 add(suffix,priority,{type:'poisonWindow',suffix});
             break;
-        case 'artifact':
-            add('ultimate', 134, gauge, { type: 'selfDaoV2ResourceAtLeast', resource: 'artifactSourcesV2', value: 2 });
-            add('recall', 126, { type: 'selfSpiritBelow', pct: 28 }, { type: 'selfDaoV2ResourceAtLeast', resource: 'artifactSourcesV2', value: 1 });
-            add('guard', 120, { type: 'selfHpBelow', pct: 60 });
-            // Dựng đủ nguồn trước; các lệnh lớn không được chen vào ngay từ nguồn đầu tiên.
-            add('deploy', 116, { type: 'selfDaoV2ResourceBelow', resource: 'artifactSourcesV2', value: 3 });
-            add('split', 114, { type: 'selfDaoV2ResourceBelow', resource: 'artifactSourcesV2', value: 3 });
-            add('suppress', 108, { type: 'selfDaoV2ResourceAtLeast', resource: 'artifactSourcesV2', value: 3 });
-            add('sync', 104, { type: 'selfDaoV2ResourceAtLeast', resource: 'artifactSourcesV2', value: 3 });
-            add('merge', 100, { type: 'selfDaoV2ResourceAtLeast', resource: 'artifactSourcesV2', value: 3 }, { type: 'targetHpBelow', pct: 25 });
-            add('strike', 92, { type: 'selfDaoV2ResourceAtLeast', resource: 'artifactSourcesV2', value: 1 });
-            add('basic', 10);
+        case 'artifact': {
+            const window=k=>({type:'artifactWindow',suffix:k});
+            add('guard',150,window('guard'));
+            add('recall',145,window('recall'));
+            add('deploy',140,window('deploy'));
+            add('split',138,window('split'));
+            add('merge',136,window('merge'));
+            add('ultimate',135,gauge,window('ultimate'));
+            add('suppress',130,window('suppress'));
+            add('sync',128,window('sync'));
+            add('strike',125,window('strike'));
+            add('basic',10);
             break;
+        }
         case 'formation': {
             const full=skillIds.has('skill.dao.formation.full_activate'),guard=skillIds.has('skill.dao.formation.convert');
             add('deploy', 150, {type:'selfDaoV2ResourceBelow',resource:'formationIntegrityV2',value:1});

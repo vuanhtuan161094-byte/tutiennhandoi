@@ -91,6 +91,7 @@ const GROWTH = {
 function clampTier(tier) { return Math.max(0, Math.min(1000, Math.floor(tier || 0))); }
 export function battleDaoSkillGrowthRoleV126(skill) { return skill.id.startsWith('skill.dao.spell.') ? SPELL_ROLES_V1[skill.id.slice('skill.dao.spell.'.length)] : ROLE_BY_SKILL_ID[skill.id]; }
 export function battleDaoSkillGrowthProfileV126(skill, rawTier) {
+    if (skill.id.startsWith('skill.dao.artifact.')) return artifactSkillGrowthProfileV1(skill, rawTier);
     if (skill.id.startsWith('skill.dao.formation.')) return formationSkillGrowthProfileV1(skill, rawTier);
     if (skill.id.startsWith('skill.dao.poison.')) return poisonSkillGrowthProfileV1(skill, rawTier);
     if (skill.id.startsWith('skill.dao.spell.'))
@@ -157,6 +158,16 @@ export function formationSkillGrowthProfileV1(skill, rawTier) {
  return out;
 }
 export function battleDaoSkillGrowthMilestonesV126(skill) { return battleDaoSkillGrowthProfileV126(skill, 0)?.milestones ?? []; }
+export function artifactSkillGrowthProfileV1(skill,rawTier){
+ const k=skill.id.split('.').at(-1),role=k==='basic'?'burst':ROLE_BY_SKILL_ID[skill.id];if(!role)return undefined;
+ const out={role,roleName:ROLE_NAME[role],...ZERO,milestones:[]};
+ const steps={100:D('Hiệu quả riêng +5%; eligible multi-source follow-up +10%.',{effectBonusPct:5}),250:D('Chân Nguyên chiêu -3%.',{spiritCostReductionPct:3}),500:D('Thu Chiêu -5%.',{recoveryReductionPct:5}),750:D('Hồi Chiêu -5%.',{cooldownReductionPct:5}),1000:D('Cực Ý: hiệu quả riêng +8%; shared follow-up +15%, không thêm proc.',{effectBonusPct:8})};
+ if(k==='basic'||k==='ultimate'){steps[250]=D('Hiệu quả riêng thêm4%.',{effectBonusPct:4});steps[750]=D('Thu Chiêu thêm5%.',{recoveryReductionPct:5});}
+ if(k==='deploy'||k==='split'){steps[100]=D('Thi Triển -10%.',{castTimeReductionPct:10});steps[1000]=D('Cực Ý: Thu Chiêu thêm10%; vẫn chỉ +1/cap3.',{recoveryReductionPct:10});}
+ if(k==='recall'){steps[100]=D('CN thu hồi +20%, chỉ sau exactly-1 source commit.',{});steps[1000]=D('Cực Ý: CN thu hồi thêm10%; vẫn chỉ -1.',{});}
+ if(k==='merge')steps[1000]=D('Cực Ý: merge-local Command quality +10%; không rebuild trong window.',{});
+ for(const at of [100,250,500,750,1000]){const d=steps[at];out.milestones.push({at,name:STAGE_NAME[at],summary:d.summary});if(clampTier(rawTier)>=at)for(const key of Object.keys(ZERO))out[key]+=d[key];}return out;
+}
 export function battleDaoSkillGrowthCurrentSummaryV126(skill, tier) {
     const g = battleDaoSkillGrowthProfileV126(skill, tier);
     if (!g)

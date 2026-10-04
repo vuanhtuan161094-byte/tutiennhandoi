@@ -1,4 +1,5 @@
 import { formationMain, formationLevel, formationScale, createFormationCoreStateV2 } from './battle-dao-v2-contract.js';
+import { artifactMain, artifactLevel, artifactScale, artifactTier, commitArtifact, createArtifactCoreStateV2, ARTIFACT_COMMAND_SUFFIXES_V1 } from './battle-dao-v2-contract.js';
 import { addGenericStackV2 } from './battle-dao-v2-runtime.js';
 import { effectiveStats } from './stats.js';
 import { fiveStatSkillPowerV5 } from './combat-rules.js';
@@ -146,7 +147,77 @@ class PoisonCombatEngine extends CombatEngineBaseM2B {
     }
 }
 
-class FormationCombatEngine extends PoisonCombatEngine {
+class ArtifactCombatEngine extends PoisonCombatEngine {
+    instantiate(def) {
+        const e=super.instantiate(def);
+        if(e.battleDaoStateV2?.artifact?.core && e.combatBuildV117?.mainDaoId!=='artifact')delete e.battleDaoStateV2.artifact.core;
+        if(e.battleDaoStateV2?.artifact?.core && !def.initialBattleDaoStateV2?.artifactHuntCarryV1)e.battleDaoStateV2.artifact.core=createArtifactCoreStateV2();
+        const core=e.battleDaoStateV2?.artifact?.core;
+        if(core){core.artifactSourceCap=3;core.artifactSources=Math.max(1,Math.min(3,Number.isFinite(core.artifactSources)?core.artifactSources:1));}
+        if(e.battleDaoStateV2)delete e.battleDaoStateV2.artifactHuntCarryV1;
+        return e;
+    }
+    resolveEffects(source,target,effects,tag,now,id,cd,action,...rest) {
+        const skill=this.registry.skills.get(id),tx=action?.battleDaoV2?.daoData?.artifactTransaction;
+        if(artifactMain(source,skill)&&tx){
+            if(!tx.valid||tx.payloadResolved||(action.battleDaoV2.procDepth??0)>0)return;
+            if(!commitArtifact(source,target,skill,action,now))return;
+            tx.payloadResolved=true;
+        }
+        return super.resolveEffects(source,target,effects,tag,now,id,cd,action,...rest);
+    }
+    resolveEffectShieldV141(source,target,effect,tag,now,id,cd,action,skill,...rest) {
+        if(artifactMain(source,skill)){
+            const power=fiveStatSkillPowerV5(effectiveStats(source,this.registry,now),skill.fiveStatScalingV5,skill.fiveStatBaselineCoefficientV5),st=source.battleDaoStateV2.artifact.stack;
+            const utility=1+(st?.stacks??0)*artifactScale(artifactLevel(source,4),.0015,.005);
+            effect={...effect,capacity:effect.capacity*power/100*utility};
+        }
+        return super.resolveEffectShieldV141(source,target,effect,tag,now,id,cd,action,skill,...rest);
+    }
+    finishBattleDaoV2Action(actor,target,skill,action,now) {
+        const result=super.finishBattleDaoV2Action(actor,target,skill,action,now),st=actor.battleDaoStateV2?.artifact?.stack;
+        const d=st&&action?.battleDaoV2?(action.battleDaoV2.daoData??={}):action?.battleDaoV2?.daoData,tx=d?.artifactTransaction;
+        const secondary=actor.combatBuildV117?.secondaryDaoId==='artifact',main=artifactMain(actor,skill),eligible=secondary||main&&tx?.committed;
+        if(eligible&&d&&!d.artifactObserved&&(action.battleDaoV2.procDepth??0)===0){
+            d.artifactObserved=true;
+            if(st&&artifactLevel(actor,1)){
+                st.actionCounter=(st.actionCounter??0)+1;let gain=0;
+                if(st.actionCounter>=3){gain++;st.actionCounter-=3;}
+                const p2=artifactLevel(actor,2);if(p2&&this.rng.chance(artifactScale(p2,10,30)))gain++;
+                if(gain)addGenericStackV2(actor,'artifact',gain,now);
+            }
+            const c=actor.battleDaoStateV2?.artifact?.core;
+            if(main&&c&&st?.stacks>=st?.cap&&artifactLevel(actor,8)&&(tx.kind==='merge'||ARTIFACT_COMMAND_SUFFIXES_V1.includes(tx.kind)&&tx.sourceCount>1)){
+                st.expiresAt=Math.max(st.expiresAt,now+artifactScale(artifactLevel(actor,8),1,2));st.nextDecayAt=undefined;c.nextFollowupBonusPct=artifactScale(artifactLevel(actor,8),6,15);
+            }
+        }
+        if(main&&tx?.committed&&!tx.followupProcessed&&ARTIFACT_COMMAND_SUFFIXES_V1.includes(tx.kind)&&(action.battleDaoV2.directDamagingHitCount??0)>0){
+            tx.followupProcessed=true;
+            if(tx.sourceCount>1){
+                const claim=claimDamagingFollowUpV2(action,{kind:'intrinsic',id:'intrinsic.v2.artifact.source_followup'});
+                if(claim){
+                    const c=actor.battleDaoStateV2.artifact.core,tier=artifactTier(actor,skill);
+                    const efficiency=1+(tier>=100?.1:0)+(tier>=1000?.15:0)+Math.floor((st?.stacks??0)/10)*artifactScale(artifactLevel(actor,6),.04,.12)+(c.nextFollowupBonusPct??0)/100;
+                    const power=fiveStatSkillPowerV5(effectiveStats(actor,this.registry,now),skill.fiveStatScalingV5,skill.fiveStatBaselineCoefficientV5);
+                    const follow={kind:'artifactSnapshot',sourceSkillId:skill.id,targetId:target.id,rootActionId:tx.rootActionId,sourceCount:tx.sourceCount,snapshotPower:power,coefficient:(tx.sourceCount-1)*.25*efficiency,procDepth:1,followUpBudget:0,claim};
+                    c.nextFollowupBonusPct=0;
+                    this.schedule({time:now+.08,kind:'v2FollowUp',actorId:actor.id,targetId:target.id,skillId:skill.id,v2FollowUp:follow});
+                    this.log(now,'resource','Khí Linh shared follow-up scheduled.',actor.id,target.id,skill.id,{artifactFollowupScheduled:true,artifactFollowup:follow});
+                }
+            }
+        }
+        return result;
+    }
+    handleV2FollowUp(actor,target,follow,now) {
+        if(follow?.kind!=='artifactSnapshot')return super.handleV2FollowUp(actor,target,follow,now);
+        if(follow.resolved)return;follow.resolved=true;
+        if(!actor.alive||!target.alive||target.id!==follow.targetId){this.log(now,'info','Khí Linh follow-up suppressed.',actor.id,target.id,follow.sourceSkillId,{artifactFollowupSuppressed:true,rootActionId:follow.rootActionId});return;}
+        const outcome=this.applyDamage(actor,target,{sourceTag:'ProcHit',coefficient:0,flatDamage:follow.snapshotPower*follow.coefficient,breakDamagePct:0,canCrit:true,canDodge:true,canHeart:false,unavoidable:false,trueDamage:false,procCoefficient:0,skillId:follow.sourceSkillId,runtimeEffectBonusPct:0,runtimeBreakBonusPct:0,cooldownDamageBonusPct:0},now);
+        this.log(now,'resource','Khí Linh shared follow-up resolved.',actor.id,target.id,follow.sourceSkillId,{artifactFollowupResolved:true,artifactFollowupDamage:outcome.hpDamage,rootActionId:follow.rootActionId,sourceCount:follow.sourceCount});
+    }
+}
+
+class FormationCombatEngine extends ArtifactCombatEngine {
     resolveEffects(source,target,effects,tag,now,id,cd,action,...rest) {
         const skill=this.registry.skills.get(id),tx=action?.battleDaoV2?.daoData?.formationTransaction;
         if(formationMain(source,skill) && !skill.channel && tx){
