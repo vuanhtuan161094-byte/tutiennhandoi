@@ -53,10 +53,11 @@ This file is the compact source of truth for a new chat. Current `main` and live
 - `V140 BACKEND FEATURE DAO-SPELL: 39/39 PASS`; `FEATURE FULL CLEAN + SCOPED CLOSURE: PASS`.
 - Record: `docs/runtime/SPELL_DAO_PRODUCTION_CLOSURE_20261005.md`. Regression-only.
 
-### Độc Đạo — READY FOR USER CLOSURE
+### Độc Đạo — CLOSED / LOCKED
 - Feature: `dao-poison`; contract `docs/runtime/POISON_DAO_PRODUCTION_CONTRACT_20261005.md`.
 - `closureReady:true`; all44prerequisites and identity-valid36-run bands PASS. Preparation: `docs/runtime/POISON_DAO_CLOSURE_PREPARATION_20261005.md`.
-- Await user exact-SHA Windows FULL CLEAN + scoped acceptance. Not CLOSED/LOCKED.
+- User exact-SHA Windows acceptance: `f2da1808772ab2396f310d2082b0ff91fe55807f`; `V140 BACKEND FEATURE DAO-POISON: 44/44 PASS`; `FEATURE FULL CLEAN + SCOPED CLOSURE: PASS`.
+- Record: `docs/runtime/POISON_DAO_PRODUCTION_CLOSURE_20261005.md`. Regression-only; later metadata commits do not replace the accepted gameplay SHA.
 
 - Feature manifests: `qa/runners/feature-closure-manifest.js`.
 - Final feature closure: `DONG_BO_VA_TEST_FEATURE.cmd <feature-id>`.
