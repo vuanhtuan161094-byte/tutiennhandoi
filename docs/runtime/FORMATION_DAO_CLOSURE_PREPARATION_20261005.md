@@ -1,6 +1,6 @@
 # Trận Đạo closure preparation — 2026-10-05
 
-Status: IMPLEMENTING verification; not CLOSED/LOCKED. Source initial `f2da1808772ab2396f310d2082b0ff91fe55807f`; Poison user closure metadata `80f1995`. Gameplay will freeze only after candidate clean proof.
+Status: **READY candidate / gameplay frozen — NOT CLOSED/LOCKED**. Source initial `f2da1808772ab2396f310d2082b0ff91fe55807f`; Poison user closure metadata `80f1995`.
 
 Identity **BỐ → DƯỠNG ↔ HỘ → KÍCH**. Main owns a persistent self Chủ Trận. Deploy baseline0 Dưỡng/100 Bền. Full snapshots Đại Thành100 at prepare; resource and wear commit once at resolve. Small25, Full70, Convert20; Full wear20+10Grand; Small8; Ultimate12. Nourish completion30×bounded local five-stat/mastery/Trận Văn efficiency, at most60/root. Interruption has no package. Fortify/Convert repair only Bền, cannot synthesize Dưỡng. Teardown clears both axes and recovers bounded CN from real value. Generic nurture damage/Break and Trận Văn damage/CDR/Gauge/read-refresh retired. Fifty milestones and exact weights in production reference.
 
@@ -30,3 +30,5 @@ Earlier accepted Poison and Spell whole-file source digests remain pinned to the
 Required final proof: all47 scoped gates, clean candidate FULL CLEAN with strict browser smoke, then closureReady true/frozen candidate before Artifact opens. Exact final SHA and evidence will be recorded after proof. Canonical user final commands must run Formation and Artifact on the same published combined SHA. Codex evidence alone never records either CLOSED/LOCKED. Whole-game audit and global balance remain separate/deferred.
 
 Initial committed proof `9cb635ca2c036215b75647894b8e3c13c6c2b08f`:47/47 prerequisites, FULL CLEAN PASS and browser4/4 strict/errors0. A final pre-freeze audit then strengthened pure expired Formation-stack reads: stat/projection readers project decay without mutating stored Formation timers; action/continuous-state events retain actual decay ownership. Only Formation timer suppression is forwarded through the existing Body facade; other Dao behavior delegates unchanged. All36 Formation gameplay outputs stayed identical. This repair requires fresh clean proof before candidate freeze.
+
+Final gameplay proof: `018c09f2d8842dffc94a9b2c67776733aba3fb6f`, clean FULL CLEAN PASS (`artifacts/local-ci/20261004T195613Z-018c09f2-clean-full/README.md`), browser4/4/runtime0/network0/missingImages0/overflow0,47/47 prerequisites. Readiness now true; this metadata checkpoint freezes Formation before Artifact. Later shared-file additions may alter whole-file source digest, but every archived36 Formation gameplay output must compare exactly; no Formation retuning during Artifact. Final combined gates remain required on the final SHA.
