@@ -48,6 +48,16 @@ This file is the compact source of truth for a new chat. Current `main` and live
 
 ## Dao Production Workflow V3 — ACTIVE / LOCKED
 
+### Pháp Đạo — CLOSED / LOCKED
+- User exact-SHA Windows acceptance: `d1573bdf046a734c7493a4a3f45aaedc5faf4805`.
+- `V140 BACKEND FEATURE DAO-SPELL: 39/39 PASS`; `FEATURE FULL CLEAN + SCOPED CLOSURE: PASS`.
+- Record: `docs/runtime/SPELL_DAO_PRODUCTION_CLOSURE_20261005.md`. Regression-only.
+
+### Độc Đạo — READY FOR USER CLOSURE
+- Feature: `dao-poison`; contract `docs/runtime/POISON_DAO_PRODUCTION_CONTRACT_20261005.md`.
+- `closureReady:true`; all44prerequisites and identity-valid36-run bands PASS. Preparation: `docs/runtime/POISON_DAO_CLOSURE_PREPARATION_20261005.md`.
+- Await user exact-SHA Windows FULL CLEAN + scoped acceptance. Not CLOSED/LOCKED.
+
 - Feature manifests: `qa/runners/feature-closure-manifest.js`.
 - Final feature closure: `DONG_BO_VA_TEST_FEATURE.cmd <feature-id>`.
 - New/open Dao stays `closureReady:false` until correctness, parity, identity-valid benchmark evidence and required regressions are complete.

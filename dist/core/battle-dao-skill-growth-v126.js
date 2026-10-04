@@ -91,6 +91,7 @@ const GROWTH = {
 function clampTier(tier) { return Math.max(0, Math.min(1000, Math.floor(tier || 0))); }
 export function battleDaoSkillGrowthRoleV126(skill) { return skill.id.startsWith('skill.dao.spell.') ? SPELL_ROLES_V1[skill.id.slice('skill.dao.spell.'.length)] : ROLE_BY_SKILL_ID[skill.id]; }
 export function battleDaoSkillGrowthProfileV126(skill, rawTier) {
+    if (skill.id.startsWith('skill.dao.poison.')) return poisonSkillGrowthProfileV1(skill, rawTier);
     if (skill.id.startsWith('skill.dao.spell.'))
         return spellSkillGrowthProfileV1(skill, rawTier);
     const role = battleDaoSkillGrowthRoleV126(skill);
@@ -163,3 +164,21 @@ export function battleDaoSkillGrowthCurrentSummaryV126(skill, tier) {
 }
 export const BATTLE_DAO_SKILL_GROWTH_COUNT_V126 = Object.keys(ROLE_BY_SKILL_ID).length;
 //# sourceMappingURL=battle-dao-skill-growth-v126.js.map
+
+export function poisonSkillGrowthProfileV1(skill, rawTier) {
+ const suffix=skill.id.split('.').at(-1),role=suffix==='basic'?'generator':ROLE_BY_SKILL_ID[skill.id];
+ if(!role)return undefined;
+ const out={role,roleName:ROLE_NAME[role],...ZERO,milestones:[]};
+ for(const at of [100,250,500,750,1000]){
+  let d=GROWTH[role][at];
+  if(d.daoGeneratePct||d.daoRefundPct)d=D('Hiệu quả riêng +4%; không tự tạo Công Tâm hoặc hoàn stage.',{effectBonusPct:4});
+  if(at===500 && ['basic','ultimate'].includes(suffix))d=D('Chiêu zero CN: +3% hiệu quả riêng.',{effectBonusPct:3});
+  if(at===1000 && suffix==='basic')d=D('Song Độc Chỉ: mỗi ba Basic landed roots đặt thêm một packet DoT ba tick hữu hạn.',{effectBonusPct:4});
+  if(at===1000 && ['bone','heart','mist','calamity','insects'].includes(suffix))d=D('Cực Ý: thêm một tick hữu hạn vào packet DoT; không sinh stage hay proc.',{effectBonusPct:6});
+  if(at===1000 && suffix==='insects')d=D('Vạn Trùng Cực Ý: full completion đặt thêm một packet độc tám tick hữu hạn; không stage/proc và không thưởng khi bị ngắt.',{effectBonusPct:6});
+  if(at===1000 && suffix==='mist')d=D('Độc Vụ Phong Giới: thêm hai tick hữu hạn vào field packet; không generic damage/giảm Phòng.',{effectBonusPct:6});
+  out.milestones.push({at,name:STAGE_NAME[at],summary:d.summary});
+  if(rawTier>=at)for(const k of Object.keys(ZERO))out[k]+=d[k];
+ }
+ return out;
+}

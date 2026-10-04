@@ -1,3 +1,8 @@
+import { effectiveStats } from './stats.js';
+import { fiveStatSkillPowerV5 } from './combat-rules.js';
+import { createPoisonCoreStateV2 } from './battle-dao-v2-contract.js';
+import { addPoisonSeedStageV2 } from './battle-dao-v2-runtime.js';
+import { poisonSkill, poisonStage, poisonTier, poisonDotUtility, poisonPassiveLevel, poisonScale, poisonPayoffCoefficient, commitPoisonConsume, poisonObserveRoot } from './battle-dao-v2-contract.js';
 import { CombatEngine as CombatEngineBaseM2B } from './combat-m2b-base.js';
 import { claimDamagingFollowUpV2, recordDamageOutcomeV2 } from './battle-dao-v2-runtime.js';
 import {
@@ -16,6 +21,129 @@ import {
 } from './mind-dao-v2-runtime.js';
 import { skillRuntimeV117, skillSlotClassV117 } from './skill-runtime-v117.js';
 
+class PoisonCombatEngine extends CombatEngineBaseM2B {
+    instantiate(def) {
+        const entity=super.instantiate(def);
+        // A new CombatEngine is a new encounter, not an event-queue resume API.
+        // Saved Hunt/passive state may carry; target packets/stage cannot.
+        const core=entity.battleDaoStateV2?.poison?.core;
+        if (core) entity.battleDaoStateV2.poison.core={...createPoisonCoreStateV2(),dotUntil:{},congTamEntries:0,consumeCommits:0};
+        return entity;
+    }
+    resolveEffectAddMarkV141(source,target,effect,tag,now,id,cd,action,skill,...rest) {
+        if (!poisonSkill(source,skill)) return super.resolveEffectAddMarkV141(source,target,effect,tag,now,id,cd,action,skill,...rest);
+        if (skill.channel || (action?.battleDaoV2?.directDamagingHitCount??0)<=0 && skill.runtimeV117.form!=='deploy') return;
+        this.poisonApplyStage(source,target,skill,action,effect.stacks,now);
+    }
+    poisonApplyStage(source,target,skill,action,amount,now) {
+        const data=action.battleDaoV2.daoData??={};
+        if (data.poisonStageApplied || (action.battleDaoV2.procDepth??0)>0 || !target.alive) return;
+        data.poisonStageApplied=true;data.poisonApplied=true;
+        const before=poisonStage(source,target.id),gained=addPoisonSeedStageV2(source,target.id,Math.min(3,amount),now);
+        const core=source.battleDaoStateV2.poison.core;
+        if (before===0 && core.poisonSeedStage===4) throw new Error('Poison ordinary root skipped setup');
+        if (gained>0) core.lastApplicationAt=now;
+        if (core.targetId!==data.poisonCoverageTarget) { data.poisonCoverageTarget=core.targetId; }
+        if (before<4 && core.poisonSeedStage===4) {
+            core.congTamEntries=(core.congTamEntries??0)+1;
+            const st=source.battleDaoStateV2.poison.stack,p8=poisonPassiveLevel(source,8);
+            if (st?.stacks>=st?.cap && p8) {st.expiresAt=Math.max(st.expiresAt,now+poisonScale(p8,1,2));st.nextDecayAt=undefined;}
+        }
+        this.log(now,'mark','Độc Chủng application.',source.id,target.id,skill.id,{poisonSeedGain:gained,poisonStageBefore:before,poisonSeedStage:core.poisonSeedStage,poisonCongTamEntry:before<4&&core.poisonSeedStage===4,rootActionId:action.battleDaoV2.rootActionId});
+    }
+    resolveEffectConsumeMarkDamageV141(source,target,effect,tag,now,id,cd,action,skill,...rest) {
+        if (!poisonSkill(source,skill)) return super.resolveEffectConsumeMarkDamageV141(source,target,effect,tag,now,id,cd,action,skill,...rest);
+        const tx=action?.battleDaoV2?.daoData?.poisonTransaction;
+        if (!tx || tx.payoffResolved || tx.targetId!==target.id || !target.alive || (action.battleDaoV2.procDepth??0)>0) return;
+        const core=source.battleDaoStateV2.poison.core;
+        if (tx.stageBefore>0 && (core.targetId!==target.id || core.poisonSeedStage!==tx.stageBefore)) return;
+        tx.payoffResolved=true;
+        const full=!id.endsWith('.transform');
+        const ctx=this.damageContextFromEffect(source,{type:'damage',coefficient:poisonPayoffCoefficient(effect,tx,full),breakDamagePct:Math.min(8,tx.stageBefore*2)},tag,skill,id,cd,action);
+        const p7=poisonPassiveLevel(source,7),st=source.battleDaoStateV2.poison.stack;
+        if (full && tx.congTam && st?.stacks>=20) ctx.coefficient*=1+poisonScale(p7,.04,.10);
+        const outcome=this.applyDamage(source,target,ctx,now);
+        recordDamageOutcomeV2(action,tag,outcome);
+        const commit=commitPoisonConsume(source,target,action,outcome.hit,full);
+        this.log(now,'resource','Poison payoff resolution.',source.id,target.id,id,{poisonConsume:commit??null,poisonConsumeMiss:!outcome.hit,poisonPayoffCoefficient:ctx.coefficient,rootActionId:tx.rootActionId});
+    }
+    resolveEffectDamageOverTimeV141(source,target,effect,tag,now,id,cd,action,skill,...rest) {
+        if (!poisonSkill(source,skill)) {
+            if (source.combatBuildV117?.battleDaoV2Enabled && source.combatBuildV117?.secondaryDaoId==='poison') {
+                const utility=poisonDotUtility(source);
+                effect={...effect,coefficientPerTick:effect.coefficientPerTick*utility.multiplier,ticks:Math.min(12,effect.ticks+utility.extraTicks)};
+            }
+            return super.resolveEffectDamageOverTimeV141(source,target,effect,tag,now,id,cd,action,skill,...rest);
+        }
+        if ((action?.battleDaoV2?.directDamagingHitCount??0)<=0 && skill.runtimeV117.form!=='deploy') return;
+        const data=action.battleDaoV2.daoData??={};
+        const packetKey=rest[0]==='mastery'?'completed-insects-mastery':'base';
+        data.poisonPackets??={};
+        if (data.poisonPackets[packetKey] || (action.battleDaoV2.procDepth??0)>0) return;
+        data.poisonPackets[packetKey]=true;
+        data.poisonDotApplied=true;data.poisonApplied=true;
+        const tier=poisonTier(source,skill),utility=poisonDotUtility(source);
+        const ticks=Math.min(12,effect.ticks+utility.extraTicks+(tier>=1000?(id.endsWith('.mist')?2:1):0));
+        const power=fiveStatSkillPowerV5(effectiveStats(source,this.registry,now),skill.fiveStatScalingV5,skill.fiveStatBaselineCoefficientV5);
+        const suffix=id.split('.').at(-1);
+        const core=source.battleDaoStateV2.poison.core;
+        core.dotUntil??={};core.dotUntil[suffix]=Math.max(core.dotUntil[suffix]??0,now+ticks*effect.interval);
+        const dot={poisonPacket:true,sourceSkillId:id,rootActionId:action.battleDaoV2.rootActionId,procDepth:0,followUpBudget:0,
+            coefficient:effect.coefficientPerTick*(1+Math.max(0,action.effectBonusPct??0)/100)*utility.multiplier,
+            fiveStatScalingV5:{...skill.fiveStatScalingV5},fiveStatBaselineCoefficientV5:skill.fiveStatBaselineCoefficientV5,snapshotPower:power,
+            totalTicks:ticks,remainingTicks:ticks,interval:effect.interval,appliedAt:now};
+        this.schedule({time:now+dot.interval,kind:'dotTick',actorId:source.id,targetId:target.id,skillId:id,dot});
+        this.log(now,'resource','Finite Poison packet applied.',source.id,target.id,id,{poisonDotApplied:true,poisonScheduledTicks:ticks,poisonDotUntil:now+ticks*dot.interval,poisonMistDeploy:suffix==='mist',rootActionId:dot.rootActionId});
+    }
+    handleDotTick(source,target,id,dot,now) {
+        if (!dot.poisonPacket) return super.handleDotTick(source,target,id,dot,now);
+        if (!source.alive || !target.alive) {this.log(now,'info','Poison tick suppressed.',source.id,target.id,id,{poisonSuppressedTick:true});return;}
+        const stage=poisonStage(source,target.id);
+        const outcome=this.applyDamage(source,target,{sourceTag:'DoT',coefficient:0,flatDamage:dot.snapshotPower*dot.coefficient*(1+stage*.08),breakDamagePct:0,canCrit:false,canDodge:false,canHeart:false,unavoidable:true,trueDamage:false,procCoefficient:0,skillId:id,runtimeEffectBonusPct:0,runtimeBreakBonusPct:0,cooldownDamageBonusPct:0},now);
+        if(!target.alive && source.battleDaoStateV2?.poison?.core?.targetId===target.id) {const c=source.battleDaoStateV2.poison.core;c.targetId=undefined;c.poisonSeedStage=0;c.dotUntil={};}
+        this.log(now,'resource','Poison tick resolved.',source.id,target.id,id,{poisonResolvedTick:true,poisonDotDamage:outcome.hpDamage,poisonLiveStage:stage,rootActionId:dot.rootActionId});
+        if (source.alive&&target.alive&&dot.remainingTicks>1) this.schedule({time:now+dot.interval,kind:'dotTick',actorId:source.id,targetId:target.id,skillId:id,dot:{...dot,remainingTicks:dot.remainingTicks-1}});
+    }
+    handleChannelEnd(actor,target,id,token,now) {
+        const channel=actor.channeling;
+        if (id==='skill.dao.poison.insects' && poisonSkill(actor,this.registry.skill(id)) && channel?.token===token && channel.skillId===id && channel.resolvedHits===channel.totalHits && target.alive) {
+            const skill=this.registry.skill(id),action=channel.runtimeV117;
+            if ((action?.battleDaoV2?.directDamagingHitCount??0)>0) {
+                this.poisonApplyStage(actor,target,skill,action,2,now);
+                if(poisonTier(actor,skill)>=1000)this.resolveEffectDamageOverTimeV141(actor,target,{coefficientPerTick:.12,ticks:8,interval:1},'ActiveHit',now,id,0,action,skill,'mastery');
+            }
+            this.log(now,'resource','Vạn Trùng completed.',actor.id,target.id,id,{poisonChannelCompleted:true});
+        }
+        return super.handleChannelEnd(actor,target,id,token,now);
+    }
+    finishBattleDaoV2Action(actor,target,skill,action,now) {
+        const result=super.finishBattleDaoV2Action(actor,target,skill,action,now);
+        const data=action?.battleDaoV2?.daoData;
+        if (poisonSkill(actor,skill) && skill.id.endsWith('.basic') && poisonTier(actor,skill)>=1000 && !data?.poisonBasicMasteryProcessed && (action.battleDaoV2.directDamagingHitCount??0)>0 && target.alive) {
+            data.poisonBasicMasteryProcessed=true;
+            const c=actor.battleDaoStateV2.poison.core;c.basicMasteryCount=(c.basicMasteryCount??0)+1;
+            if(c.basicMasteryCount%3===0)this.resolveEffectDamageOverTimeV141(actor,target,{coefficientPerTick:.20,ticks:3,interval:1},'ActiveHit',now,skill.id,0,action,skill);
+        }
+        if (poisonObserveRoot(actor,skill,action,now,p=>this.rng.chance(p))) this.log(now,'resource','Độc Tức root generation.',actor.id,actor.id,skill.id,{poisonStack:actor.battleDaoStateV2.poison.stack.stacks,rootActionId:action.battleDaoV2.rootActionId});
+        const core=actor.battleDaoStateV2?.poison?.core;
+        if (core && (!actor.alive || !target.alive && core.targetId===target.id)) {core.targetId=undefined;core.poisonSeedStage=0;core.dotUntil={};}
+        return result;
+    }
+    resolveEffectShieldV141(source,target,effect,tag,now,id,cd,action,skill,...rest) {
+        if (poisonSkill(source,skill)) {
+            const power=fiveStatSkillPowerV5(effectiveStats(source,this.registry,now),skill.fiveStatScalingV5,skill.fiveStatBaselineCoefficientV5);
+            effect={...effect,capacity:effect.capacity*power/100};
+        }
+        return super.resolveEffectShieldV141(source,target,effect,tag,now,id,cd,action,skill,...rest);
+    }
+    applyDamage(source,target,ctx,now) {
+        const outcome=super.applyDamage(source,target,ctx,now);
+        const c=target.battleDaoStateV2?.poison?.core;
+        if(c && !target.alive) {c.targetId=undefined;c.poisonSeedStage=0;c.dotUntil={};}
+        return outcome;
+    }
+}
+
 function isMainMindSkillV2(source, skill) {
     return Boolean(skill)
         && source?.combatBuildV117?.battleDaoV2Enabled === true
@@ -29,7 +157,7 @@ function isMainMindSkillV2(source, skill) {
  * combat-m2b-base.js is the closed M1/M2A/M2B owner. This wrapper adds only
  * authored Mind mastery behavior and one proven M1 Ultimate-control repair.
  */
-export class CombatEngine extends CombatEngineBaseM2B {
+export class CombatEngine extends PoisonCombatEngine {
     damageContextFromEffect(source, effect, defaultSourceTag, skill, skillId, cooldownDamageBonusPct, runtimeAction) {
         const ctx = super.damageContextFromEffect(source, effect, defaultSourceTag, skill, skillId, cooldownDamageBonusPct, runtimeAction);
         const masteryArmorPen = Math.max(0, Number(effect?.mindMasteryArmorPenBonusPct ?? 0));

@@ -2,6 +2,8 @@
 
 **READY FOR EXACT-SHA USER CLOSURE — NOT CLOSED/LOCKED**
 
+Historical preparation status above is superseded by [user Windows acceptance](SPELL_DAO_PRODUCTION_CLOSURE_20261005.md) on `d1573bdf046a734c7493a4a3f45aaedc5faf4805`: scoped 39/39 and FEATURE FULL CLEAN + SCOPED CLOSURE PASS. Spell is now CLOSED/LOCKED; no gameplay changed when recording acceptance.
+
 Initial HEAD: `de2d04a3f2b0453bc6d3776659841d8944a6dd84`. Candidate SHA is the commit containing this record; the final response reports its exact SHA and clean CI evidence. `dao-spell` remained `closureReady:false` until 39/39 prerequisites and identity-valid target-band evidence passed. It is now `closureReady:true`.
 
 ## Production result

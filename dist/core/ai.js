@@ -1,3 +1,4 @@
+import { poisonAutoWindow } from './battle-dao-v2-contract.js';
 import { combatMaxHp, skillTrueEssenceCost } from './combat-rules.js';
 import { canUseSkillRuntimeV117, resourceValueV117, skillSpiritCostMultiplierFromRuntimeV117 } from './five-element-combat-v117.js';
 import { canUseBattleDaoSkillV118, daoResourceValueV118, daoSpiritCostMultiplierV118 } from './battle-dao-combat-v118.js';
@@ -37,6 +38,7 @@ function bodyBloodRushSuppressesRoutineDefense(self, skill, now) {
 function checkCondition(condition, self, target, now) {
     switch (condition.type) {
         case 'always': return true;
+        case 'poisonWindow': return poisonAutoWindow(self,target,condition.suffix,now);
         case 'spellNeedsSpirit': return self.combatBuildV117?.mainDaoId === 'spell' && self.spirit / Math.max(1, self.baseStats.maxSpirit) < .40;
         case 'spellPayoffReady': {
             const core = self.battleDaoStateV2?.spell?.core;
@@ -150,6 +152,7 @@ export function canUseSkill(self, skill, registry, now) {
     return true;
 }
 function autoFallbackAllows(self, skill, target, now) {
+    if (self.combatBuildV117?.battleDaoV2Enabled && skill.id.startsWith('skill.dao.poison.')) return poisonAutoWindow(self,target,skill.id.split('.').at(-1),now);
     // M1: these Mind actions are tactical target-mark spenders. Their explicit
     // rotation rules own eligibility; generic cooldown fallback must not fire
     // them at zero Thần Ấn and bypass the resource contract.

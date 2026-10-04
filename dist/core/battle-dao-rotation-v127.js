@@ -89,16 +89,8 @@ function rulesForDao(dao, skillIds, offset = 0) {
             add('basic', 10);
             break;
         case 'poison':
-            add('ultimate', 134, gauge, { type: 'selfDaoV2ResourceAtLeast', resource: 'poisonSeedStage', value: 4 });
-            add('consume', 122, { type: 'selfDaoV2ResourceAtLeast', resource: 'poisonSeedStage', value: 4 });
-            add('transform', 112, { type: 'selfDaoV2ResourceAtLeast', resource: 'poisonSeedStage', value: 2 });
-            add('guard', 108, { type: 'selfHpBelow', pct: 58 });
-            add('calamity', 104);
-            add('insects', 98);
-            add('mist', 94);
-            add('heart', 90);
-            add('bone', 86);
-            add('basic', 10);
+            for(const [suffix,priority] of [['guard',180],['ultimate',160],['consume',150],['transform',140],['mist',130],['calamity',126],['insects',120],['heart',116],['bone',112],['basic',10]])
+                add(suffix,priority,{type:'poisonWindow',suffix});
             break;
         case 'artifact':
             add('ultimate', 134, gauge, { type: 'selfDaoV2ResourceAtLeast', resource: 'artifactSourcesV2', value: 2 });

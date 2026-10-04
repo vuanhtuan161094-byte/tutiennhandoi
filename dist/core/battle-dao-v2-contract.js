@@ -80,3 +80,80 @@ export function createMindCoreStateV2() {
     };
 }
 //# sourceMappingURL=battle-dao-v2-contract.js.map
+
+// Poison-owned target transactions. Pure reads never bind or refresh a target.
+export const POISON_PREFIX = 'skill.dao.poison.';
+export const poisonMain = e => e?.combatBuildV117?.battleDaoV2Enabled === true && e.combatBuildV117.mainDaoId === 'poison';
+export const poisonSkill = (e, s) => poisonMain(e) && s?.id?.startsWith(POISON_PREFIX);
+export const poisonStage = (e, targetId) => {
+    const c = e.battleDaoStateV2?.poison?.core;
+    return c?.targetId === targetId ? c.poisonSeedStage : 0;
+};
+export function poisonPassiveLevel(e, n) {
+    const id = `passive.v2.poison.p${n}`;
+    return e.combatBuildV117?.learnedDaoPassiveIdsV118?.includes(id) ? Math.max(1, Math.min(20, e.combatBuildV117.passiveLevelsV125?.[id] ?? 1)) : 0;
+}
+export const poisonScale = (lv, a, b) => lv ? a + (b-a)*(lv-1)/19 : 0;
+export const poisonTier = (e, s) => Math.max(0, Math.min(1000, e.combatBuildV117?.skillPracticeTierV125?.[s.id] ?? 0));
+export function preparePoisonAction(e, target, skill, action, now) {
+    const data = action.battleDaoV2.daoData ??= {};
+    const stage = poisonStage(e, target.id);
+    const effect = skill.effects.find(x => x.type === 'consumeMarkDamage');
+    data.poisonTransaction = { rootActionId:action.battleDaoV2.rootActionId, targetId:target.id, stageBefore:stage, congTam:stage===4, maxConsume:Math.min(4,effect?.maxConsume??0), committed:false, preparedAt:now };
+}
+export function poisonPayoffCoefficient(effect, tx, full) {
+    const consumed = Math.min(tx?.stageBefore??0, tx?.maxConsume??0);
+    return (effect.baseCoefficient + consumed*effect.coefficientPerStack) * (full && tx?.congTam ? 1.5 : 1);
+}
+export function commitPoisonConsume(e, target, action, hit, full) {
+    const tx = action?.battleDaoV2?.daoData?.poisonTransaction;
+    const c = e.battleDaoStateV2?.poison?.core;
+    if (!hit || !tx || tx.committed || (action.battleDaoV2.procDepth??0)>0 || !poisonMain(e)
+        || tx.rootActionId!==action.battleDaoV2.rootActionId || tx.targetId!==target.id || c?.targetId!==target.id || c.poisonSeedStage!==tx.stageBefore) return undefined;
+    const consumed = Math.min(tx.stageBefore,tx.maxConsume);
+    if (!consumed) return undefined;
+    tx.committed=true;
+    c.poisonSeedStage=Math.max(0,tx.stageBefore-consumed);
+    if (full && tx.congTam) c.poisonSeedStage=Math.max(1,c.poisonSeedStage);
+    c.consumeCommits=(c.consumeCommits??0)+1;
+    return { consumed,stageBefore:tx.stageBefore,congTam:tx.congTam,full,stageAfter:c.poisonSeedStage,rootActionId:tx.rootActionId };
+}
+export function poisonDotUtility(e) {
+    const st=e.battleDaoStateV2?.poison?.stack;
+    if (!poisonPassiveLevel(e,1) || !st?.stacks) return { extraTicks:0,multiplier:1 };
+    const p4=poisonPassiveLevel(e,4),p6=poisonPassiveLevel(e,6);
+    return {extraTicks:p4 && st.stacks>=10 ? 1 : 0, multiplier:1+Math.floor(st.stacks/10)*poisonScale(p6,.04,.12)};
+}
+export function poisonObserveRoot(e, skill, action, now, chance) {
+    const v2=action?.battleDaoV2;
+    if (!v2 || e.combatBuildV117?.battleDaoV2Enabled!==true || v2.poisonObserved || (v2.procDepth??0)>0 || !poisonPassiveLevel(e,1)) return false;
+    const eligible=poisonMain(e) ? skill.id.startsWith(POISON_PREFIX) && (v2.directDamagingHitCount>0 || v2.daoData?.poisonApplied) : v2.directDamagingHitCount>0;
+    if (!eligible || (!poisonMain(e) && e.combatBuildV117?.secondaryDaoId!=='poison')) return false;
+    v2.poisonObserved=true;
+    const st=e.battleDaoStateV2?.poison?.stack;
+    if (!st) return false;
+    st.actionCounter=(st.actionCounter??0)+1;
+    let gain=st.actionCounter>=3?1:0;
+    st.actionCounter%=3;
+    if (chance(poisonScale(poisonPassiveLevel(e,2),8,25))) gain++;
+    if (gain) { st.stacks=Math.min(st.cap,st.stacks+gain);st.expiresAt=now+st.durationSeconds;st.nextDecayAt=undefined; }
+    return gain>0;
+}
+export function poisonAutoWindow(e,target,suffix,now) {
+    if (!poisonMain(e)) return false;
+    const stage=poisonStage(e,target.id),core=e.battleDaoStateV2.poison.core;
+    const coverage=core.targetId===target.id ? core.dotUntil??{} : {};
+    const hp=e.hp/Math.max(1,e.baseStats.maxHp);
+    if (suffix==='guard') return hp<.58 && !(e.shields??[]).some(s=>s.expiresAt>now && s.capacity>0);
+    if (suffix==='consume') return stage===4;
+    if (suffix==='transform') return stage>=2 && (coverage.mist??0)>now && now-(core.lastApplicationAt??now)>=1.5 && !e.skillIds.includes(POISON_PREFIX+'consume');
+    if (suffix==='ultimate') {
+        if (e.ultimateGaugeV117<100) { delete e.pendingSetFlagsV117.poisonUltimateHoldUntil;return false; }
+        const until=e.pendingSetFlagsV117.poisonUltimateHoldUntil??=now+4;
+        return stage===4 || now>=until;
+    }
+    if (suffix==='insects') return (!target.channeling && !(target.casting && target.casting.resolvesAt-target.casting.startedAt>=.75)) && (stage<4 || (coverage.insects??0)<=now+.5);
+    if (suffix==='basic') return true;
+    // Refresh near the final three finite ticks; overlap is bounded by real cooldown roots.
+    return stage<4 || (coverage[suffix]??0)<=now+3;
+}

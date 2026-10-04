@@ -79,6 +79,14 @@ const DAO_DEFERRED=[
 ];
 
 export const BACKEND_FEATURE_CLOSURE_MANIFESTS=Object.freeze({
+  'dao-poison':makeManifest({
+    id:'dao-poison', label:'Poison Dao / Độc Đạo', kind:'dao', closureReady:true,
+    benchmarkCommand:'tools\\web\\RUN_POISON_P4_BENCHMARK.cmd',
+    benchmarkContractGate:'poison-dao-benchmark-contract-test.js',
+    lockedRegressionFeatures:['dao-sword','dao-fist','dao-body','dao-mind','dao-spell'],
+    deferredFamilies:DAO_DEFERRED,
+    gates:[...DAO_SHARED_CLOSURE_GATES,...SWORD_LOCK_REGRESSION_GATES,...FIST_LOCK_REGRESSION_GATES,...BODY_CLOSURE_GATES,...MIND_OPEN_GATES,...SPELL_OPEN_GATES,'poison-dao-production-contract-test.js','poison-dao-transaction-test.js','poison-dao-consumer-parity-test.js','poison-dao-passive-legacy-test.js','poison-dao-benchmark-contract-test.js'],
+  }),
   'dao-sword':makeManifest({
     id:'dao-sword',
     label:'Sword Dao / Kiếm Đạo',

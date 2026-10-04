@@ -1,6 +1,6 @@
 # PHÁP ĐẠO PRODUCTION CONTRACT — 2026-10-04
 
-Status: **READY FOR EXACT-SHA USER CLOSURE — NOT CLOSED/LOCKED; closureReady:true**
+Status: **CLOSED / LOCKED; closureReady:true**. User exact-SHA acceptance `d1573bdf046a734c7493a4a3f45aaedc5faf4805`: [closure record](SPELL_DAO_PRODUCTION_CLOSURE_20261005.md). Historical preparation below is preserved.
 Feature id: `dao-spell`
 Source baseline: `de2d04a3f2b0453bc6d3776659841d8944a6dd84`
 Workflow: `docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md`

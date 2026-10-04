@@ -1,3 +1,4 @@
+import { preparePoisonAction } from './battle-dao-v2-contract.js';
 import { skillDomainsV117, skillRuntimeV117, skillSlotClassV117, skillStandardCostPctV117 } from './skill-runtime-v117.js';
 import { createArtifactCoreStateV2, createBodyCoreStateV2, createFistCoreStateV2, createFormationCoreStateV2, createMindCoreStateV2, createPoisonCoreStateV2, createSpellCoreStateV2 } from './battle-dao-v2-contract.js';
 export const BATTLE_DAO_V2_RUNTIME_SCHEMA = 'battle-dao.runtime.v2';
@@ -861,10 +862,7 @@ export function carryBattleDaoV2StateToNextMonsterV2(state, battleEndedAt) {
         }
     }
     if (out.spell?.core) out.spell.core = createSpellCoreStateV2();
-    if (out.poison?.core) {
-        out.poison.core.targetId = undefined;
-        out.poison.core.poisonSeedStage = 0;
-    }
+    if (out.poison?.core) out.poison.core = createPoisonCoreStateV2();
     return out;
 }
 // === V79: remaining seven Bản Đạo V2 runtime ===
@@ -934,12 +932,7 @@ export function remainingDaoPassiveBonusesV2(entity, now) {
             // Never leak legacy generic damage or recovery output through the shared aggregator.
         }
         else if (dao === 'poison') {
-            if (stacks >= 10)
-                out.directDamagePct += scale(p1, 5, 10);
-            if (at20)
-                out.armorPenPct += scale(p1, 8, 15);
-            if (hasPassiveN(entity, dao, 6))
-                out.directDamagePct += groups * scale(passiveLevelN(entity, dao, 6), 4, 12);
+            // Poison utility is finite DoT/consume-local, never generic stat output.
         }
         else if (dao === 'artifact') {
             out.gaugeGainPct += stacks * scale(p1, .4, 1);
@@ -970,7 +963,7 @@ export function remainingDaoPassiveBonusesV2(entity, now) {
             // M2B: Mind passive output is owned by mind-dao-v2-runtime.js.
             // Generic damage/Gauge/Armor-Pen bonuses are deliberately retired.
         }
-        if (dao !== 'mind' && dao !== 'spell' && atCap && hasPassiveN(entity, dao, 8)) {
+        if (dao !== 'mind' && dao !== 'spell' && dao !== 'poison' && atCap && hasPassiveN(entity, dao, 8)) {
             const l8 = passiveLevelN(entity, dao, 8);
             out.directDamagePct += scale(l8, 10, dao === 'body' ? 25 : 30);
             out.gaugeGainPct += scale(l8, 0, 20);
@@ -1034,25 +1027,6 @@ export function battleDaoV2OutgoingMultiplier(entity, target, now, sourceTag, sk
     if (main === 'body') {
         const n = holderV2(entity, 'body')?.core?.counterForce ?? 0;
         pct += Math.floor(n / 20) * 3;
-    }
-    if (main === 'poison') {
-        const core = holderV2(entity, 'poison')?.core;
-        if (core) {
-            if (core.targetId !== target.id) {
-                core.targetId = target.id;
-                core.poisonSeedStage = 0;
-            }
-            pct += core.poisonSeedStage * 3;
-            if (sourceTag === 'DoT')
-                pct += core.poisonSeedStage * 8;
-        }
-        const st = stackV2(entity, 'poison', now);
-        if (st?.stacks) {
-            const p1 = passiveLevelN(entity, 'poison', 1);
-            pct += st.stacks * scale(p1, .35, .75);
-            if (st.stacks >= 20 && hasPassiveN(entity, 'poison', 7) && target.hp / Math.max(1, target.baseStats.maxHp) < .5)
-                pct += scale(passiveLevelN(entity, 'poison', 7), 10, 35);
-        }
     }
     if (main === 'artifact' && sourceTag === 'ActiveHit') {
         const n = holderV2(entity, 'artifact')?.core?.artifactSources ?? 1;
@@ -1162,18 +1136,7 @@ export function prepareRemainingDaoCoreActionV2(entity, target, skill, action, n
         }
     }
     else if (dao === 'poison') {
-        const c = holderV2(entity, 'poison')?.core;
-        if (!c)
-            return;
-        if (c.targetId !== target.id) {
-            c.targetId = target.id;
-            c.poisonSeedStage = 0;
-        }
-        d.poisonStageBefore = c.poisonSeedStage;
-        if (skill.daoRuntimeV118?.signature === 'poisonConsume' && c.poisonSeedStage >= 4) {
-            action.effectBonusPct += 50;
-            d.poisonHeartConsume = true;
-        }
+        preparePoisonAction(entity, target, skill, action, now);
     }
     else if (dao === 'artifact') {
         const c = holderV2(entity, 'artifact')?.core;
@@ -1353,19 +1316,7 @@ export function finishRemainingDaoActionV2(entity, target, skill, action, now, c
         else if (passiveDao === 'spell')
             rootStackGainV2(entity, 'spell', action, now, chance, (action.battleDaoV2?.daoData?.spellCnPaid ?? 0) > 0 && (entity.combatBuildV117?.mainDaoId !== 'spell' || dao === 'spell'));
         else if (passiveDao === 'poison') {
-            const st = holderV2(entity, 'poison')?.stack;
-            if (st && damaging) {
-                st.actionCounter++;
-                let gain = 0;
-                if (st.actionCounter >= 3) {
-                    gain += Math.floor(st.actionCounter / 3);
-                    st.actionCounter %= 3;
-                }
-                if (hasPassiveN(entity, 'poison', 2) && chance(scale(passiveLevelN(entity, 'poison', 2), 8, 25)))
-                    gain += 1;
-                if (gain > 0)
-                    addGenericStackV2(entity, 'poison', gain, now);
-            }
+            // Feature-owned root observer handles Main and Secondary, including Sword.
         }
         else if (passiveDao === 'artifact') {
             const st = holderV2(entity, 'artifact')?.stack;
@@ -1444,6 +1395,7 @@ export function addPoisonSeedStageV2(entity, targetId, amount, now) {
     if (c.targetId !== targetId) {
         c.targetId = targetId;
         c.poisonSeedStage = 0;
+        c.dotUntil = {};
     }
     const before = c.poisonSeedStage;
     c.poisonSeedStage = Math.min(c.poisonSeedCap, c.poisonSeedStage + Math.max(0, Math.floor(amount)));

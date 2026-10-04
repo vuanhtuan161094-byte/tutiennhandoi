@@ -1,6 +1,6 @@
 # PHÁP ĐẠO PRODUCTION REFERENCE — 2026-10-04
 
-Status: READY preparation; not CLOSED/LOCKED. Runtime/source is authoritative.
+Status: CLOSED / LOCKED after [user exact-SHA acceptance](SPELL_DAO_PRODUCTION_CLOSURE_20261005.md). Runtime/source is authoritative.
 
 ## Ten skills
 
