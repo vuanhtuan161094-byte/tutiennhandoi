@@ -281,7 +281,7 @@ Exact deterministic evidence on source HEAD `8814c6c064478540496cfd92d7611156f62
 - all **36/36** runs identity-valid; `invalidRuns = []`;
 - **Bạo Ấn:** DPS **1033.595**, normalized **100%**;
 - **Niệm Ảnh:** DPS **940.190**, **90.96%**, echo contribution **15.23%** — both target bands pass;
-- **Nhiễu Thức:** DPS **782.540**, **75.71%**, interference metric **19.565**, and remains the highest real interference/control profile.
+- **Nhiễu Thức:** DPS **782.540**, **75.71%**, echo contribution **12.23%**, interference metric **19.565**, and remains the highest real interference/control profile.
 
 Decision:
 - retain `Nhiễu Thần Chỉ` direct damage coefficient **2.80**;
