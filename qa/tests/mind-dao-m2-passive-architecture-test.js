@@ -63,7 +63,7 @@ assert.match(passiveText,/Niệm Ảnh/); assert.match(passiveText,/Resolve/); a
 
 const statsSource=fs.readFileSync(new URL('../../dist/core/stats.js',import.meta.url),'utf8');
 const combatSource=[fs.readFileSync(new URL('../../dist/core/combat.js',import.meta.url),'utf8'),fs.readFileSync(new URL('../../dist/core/combat-m2b-base.js',import.meta.url),'utf8')].join('\n');
-const genericSource=fs.readFileSync(new URL('../../dist/core/battle-dao-v2-runtime.js',import.meta.url),'utf8');
+const genericSource=fs.readFileSync(new URL('../../dist/core/battle-dao-v2-runtime-base.js',import.meta.url),'utf8');
 assert(statsSource.includes('mindPassiveBonusesV2'));
 assert(statsSource.includes('mindV2ActionAccuracyPct'));
 assert(statsSource.includes('mindV2ActionControlPowerPct'));
