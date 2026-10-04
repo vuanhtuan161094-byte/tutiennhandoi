@@ -76,7 +76,14 @@ assert.match(contract,/89\.66%/,'contract must retain measured M5-2 Echo relativ
 assert.match(contract,/12\.13%/,'contract must retain measured M5-2 Echo contribution');
 assert.match(contract,/66\.78%/,'contract must retain measured M5-2 Interference relative DPS');
 assert.match(contract,/6971\.022/,'contract must retain measured M5-2 Burst-sourced Echo damage');
-assert.match(contract,/0\.70 → 1\.30/,'contract must declare the single M5-3 Burst snapshot multiplier refinement');
+assert.match(contract,/1033\.595/,'contract must retain measured M5-3 Burst reference DPS');
+assert.match(contract,/940\.190/,'contract must retain measured M5-3 Echo DPS');
+assert.match(contract,/90\.96%/,'contract must retain measured M5-3 Echo relative DPS');
+assert.match(contract,/15\.23%/,'contract must retain measured M5-3 Echo contribution');
+assert.match(contract,/65\.36%/,'contract must retain measured M5-3 Interference relative DPS');
+assert.match(contract,/12946\.185/,'contract must retain measured M5-3 Burst-sourced Echo damage');
+assert.match(contract,/NIỆM ẢNH FROZEN/,'M5-3 must freeze the passing Echo tuning package before Nhiễu tuning');
+assert.match(contract,/0\.75 → 2\.80/,'contract must declare the single M5-4 Nhiễu direct-damage lever');
 assert.match(contract,/17ec773bb057e7e6145bea10de91e532bff0efdf/);
 assert.doesNotMatch(contract,/M4 — OPEN/,'M4 must not regress to open after identity-valid canonical baseline');
 
@@ -84,6 +91,7 @@ assert.match(registrySource,/MIND_M5_OBSERVE_CHANNEL_DAMAGE_COEFFICIENT\s*=\s*1\
 assert.match(mindRuntimeSource,/MIND_M5_BURST_SNAPSHOT_RETENTION\s*=\s*1\.30/,'M5-3 must refine only the existing Burst sanitized snapshot multiplier to 1.30');
 assert.match(mindRuntimeSource,/MIND_V2_BASE_ECHO_COEFFICIENT\s*=\s*\.35/,'M5 must not alter the canonical 35% base echo coefficient');
 assert.match(mindRuntimeSource,/Math\.min\(\.70,/,'M5 must retain the canonical 70% echo safety ceiling');
+assert.equal(battleDaoSkillsV118.find(skill=>skill.id==='skill.dao.mind.interfere')?.effects?.find(effect=>effect.type==='damage')?.coefficient,2.80,'M5-4 tunes only the Nhiễu Thần Chỉ direct damage coefficient to 2.80');
 
 assert.match(m2bAudit,/M2B CLOSED/);
 assert.match(m2bAudit,/24c608f1764c9e5a34c65e5c66602e3e30d3a499/);
@@ -98,6 +106,7 @@ assert.doesNotMatch(benchmarkLauncher,/MIND_M5_BENCHMARK_BLOCKED/,'M4 harness in
 assert.match(benchmarkLauncher,/sourceHead=/,'M5 log must stamp the exact source HEAD');
 assert.match(benchmarkLauncher,/observePatch=/,'M5 log must stamp the retained Observe tuning');
 assert.match(benchmarkLauncher,/burstSnapshotPatch=/,'M5 log must stamp the active Burst snapshot tuning');
+assert.match(benchmarkLauncher,/interferePatch=/,'M5 log must stamp the active Nhiễu tuning');
 assert.match(benchmarkHarness,/MIND_M4_INVALID_IDENTITY_RUN/,'identity-invalid zero-mechanic runs must be rejected');
 assert.match(benchmarkHarness,/Diagnostic only: does not modify gameplay or auto-tune coefficients\./);
 assert.match(benchmarkHarness,/echoDamageBySkillMean/,'M5 diagnostics must expose source-local echo damage without changing gameplay');
