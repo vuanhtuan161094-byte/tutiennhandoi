@@ -1,6 +1,6 @@
 # THẦN NIỆM DAO PRODUCTION CONTRACT — 2026-09-29
 
-Status: **M4 CLOSED / M5 CLOSED / M6 READY — ALL THREE MIND ARCHETYPES WITHIN TARGET; EXACT-SHA FEATURE CLOSURE PENDING**
+Status: **CLOSED / LOCKED — M0–M6 COMPLETE; exact verified gameplay/closure SHA d69b33c80b874fb28471855324afbdf95712b730**
 
 Repository: `vuanhtuan161094-byte/tutiennhandoi`  
 Branch: `main` only  
@@ -310,6 +310,6 @@ M5 is therefore **CLOSED**. The feature may now set `closureReady:true` and ente
 - **M3 — CLOSED** — production-path parity.
 - **M4 — CLOSED** — canonical deterministic identity baseline accepted: 36/36 valid.
 - **M5 — CLOSED** — M5-1/M5-2/M5-3/M5-4 measured and retained; all three archetype target bands pass on deterministic evidence.
-- **M6 — READY / PENDING EXACT-SHA PROOF** — run clean FULL CLEAN + registered `dao-mind` feature-scoped closure on the exact current candidate.
+- **M6 — CLOSED** — exact clean local FULL CLEAN + registered `dao-mind` scoped closure PASS on `d69b33c80b874fb28471855324afbdf95712b730`.
 
-`dao-mind` may now be `closureReady:true` because correctness, parity, identity-valid benchmark evidence and M5 target bands are complete. Final CLOSED / LOCKED status still requires exact clean local `DONG_BO_VA_TEST_FEATURE.cmd dao-mind` evidence.
+`dao-mind` remains `closureReady:true` for regression/closure checks. Mind Dao Production V1 is now **CLOSED / LOCKED** on exact verified gameplay/closure SHA `d69b33c80b874fb28471855324afbdf95712b730`. Closure record: `docs/runtime/MIND_DAO_PRODUCTION_CLOSURE_20261004.md`. Later documentation/metadata commits do not replace that verified gameplay SHA.
