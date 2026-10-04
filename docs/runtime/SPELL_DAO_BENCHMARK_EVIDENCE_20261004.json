@@ -1,6 +1,6 @@
 {
   "schema": "spell-dao-p4-benchmark.v1",
-  "sourceDigest": "20dc5a9a4e509eaa87b2ffb91925c10e3574981d1f1b5173cfe578485d3bf9ed",
+  "sourceDigest": "8ace09737c2e3e53f036004e6c2c62682e38fd3c943c2ab47b8d88f14e6e2fcc",
   "engine": "combat.v3",
   "durationSeconds": 180,
   "seeds": [

@@ -24,7 +24,7 @@ Luân leads actual cycle and readiness cadence. Bạo spends real Diễn Pháp o
 
 The neutral target has normal incoming pressure/Break. Targeted tests separately prove interrupted, partial and insufficient-CN channels, including target death. This benchmark measures neutral sustained balance, not a claim about every PvP/Boss matchup.
 
-Feature source digest, normalized LF SHA-256: `20dc5a9a4e509eaa87b2ffb91925c10e3574981d1f1b5173cfe578485d3bf9ed`. The benchmark gate reruns all 36 encounters, compares the entire result/source digest to the committed evidence, and replays the first seed deterministically. Interval instrumentation is observer-only: it calls the original engine method once and restores the prototype in `finally`.
+Feature source digest, normalized LF SHA-256: `8ace09737c2e3e53f036004e6c2c62682e38fd3c943c2ab47b8d88f14e6e2fcc`. The benchmark gate reruns all 36 encounters, compares the entire result/source digest to the committed evidence, and replays the first seed deterministically. Interval instrumentation is observer-only: it calls the original engine method once and restores the prototype in `finally`.
 
 ## One-lever tuning record
 

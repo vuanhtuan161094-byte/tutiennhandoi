@@ -58,4 +58,3 @@ assert.doesNotMatch(content,/generic damage|Skill damage|\+\d+% CDR|Nộ gain/i)
  assert.equal(battleDaoV2SpiritCostMultiplier(e,registry.skills.get('skill.dao.spell.burst'),1),.9,'p7 owns its own threshold effect without requiring p4');
 }
 console.log('SPELL DAO P2B PASSIVE ARCHITECTURE PASS');
-

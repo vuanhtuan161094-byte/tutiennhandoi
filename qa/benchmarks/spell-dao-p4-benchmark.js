@@ -205,4 +205,3 @@ if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.ur
  console.log(JSON.stringify({passed:result.passed,identityValid:result.identityValid,cadenceValid:result.cadenceValid,aggregates:result.aggregates},null,2));
  if(!result.passed)process.exitCode=1;
 }
-
