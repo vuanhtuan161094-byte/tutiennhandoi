@@ -86,7 +86,7 @@ assert.equal(finishMindRootV2(source, target, markSkill, action('f1', [cleanDama
 assert.equal(finishMindRootV2(source, target, markSkill, action('f2', [cleanDamage]), 12).flowBonusMarkGain, 0);
 assert.equal(finishMindRootV2(source, target, markSkill, action('f3', [cleanDamage]), 13).flowBonusMarkGain, 1);
 
-const runtimeSource = fs.readFileSync(new URL('../../dist/core/battle-dao-v2-runtime.js', import.meta.url), 'utf8');
+const runtimeSource = fs.readFileSync(new URL('../../dist/core/battle-dao-v2-runtime-base.js', import.meta.url), 'utf8');
 const combatSource = [
   fs.readFileSync(new URL('../../dist/core/combat.js', import.meta.url), 'utf8'),
   fs.readFileSync(new URL('../../dist/core/combat-m2b-base.js', import.meta.url), 'utf8'),
