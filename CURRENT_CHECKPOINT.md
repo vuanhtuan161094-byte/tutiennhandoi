@@ -59,6 +59,12 @@ This file is the compact source of truth for a new chat. Current `main` and live
 - User exact-SHA Windows acceptance: `f2da1808772ab2396f310d2082b0ff91fe55807f`; `V140 BACKEND FEATURE DAO-POISON: 44/44 PASS`; `FEATURE FULL CLEAN + SCOPED CLOSURE: PASS`.
 - Record: `docs/runtime/POISON_DAO_PRODUCTION_CLOSURE_20261005.md`. Regression-only; later metadata commits do not replace the accepted gameplay SHA.
 
+### Trận Đạo — candidate verification in progress
+- Feature `dao-formation`; identity BỐ → DƯỠNG ↔ HỘ → KÍCH.
+- Contract/reference/benchmark/preparation: `docs/runtime/FORMATION_DAO_*_20261005.*`.
+- Correctness/parity and36-run identity/bands pass; waiting exact clean candidate proof before readiness/freeze and opening Artifact.
+- Not CLOSED/LOCKED. Global balance remains deferred.
+
 - Feature manifests: `qa/runners/feature-closure-manifest.js`.
 - Final feature closure: `DONG_BO_VA_TEST_FEATURE.cmd <feature-id>`.
 - New/open Dao stays `closureReady:false` until correctness, parity, identity-valid benchmark evidence and required regressions are complete.

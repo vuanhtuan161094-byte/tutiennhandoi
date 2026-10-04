@@ -1,4 +1,62 @@
 export const BATTLE_DAO_V2_SCHEMA = 'battle-dao.v2';
+// Formation production transactions are action-local; reads never commit or refresh.
+export function formationMain(e, skill) { return e.combatBuildV117?.battleDaoV2Enabled === true && e.combatBuildV117.mainDaoId === 'formation' && skill?.id?.startsWith('skill.dao.formation.'); }
+export function formationLevel(e,n) { const id=`passive.v2.formation.p${n}`; return e.combatBuildV117?.learnedDaoPassiveIdsV118?.includes(id) ? Math.max(1,Math.min(20,e.combatBuildV117.passiveLevelsV125?.[id]??1)) : 0; }
+export function formationScale(l,a,b) { return l ? a+(b-a)*(l-1)/19 : 0; }
+export function formationTier(e,s) { return e.combatBuildV117?.skillPracticeTierV125?.[s.id]??0; }
+export function formationCanUse(e,s) {
+ const c=e.battleDaoStateV2?.formation?.core,k=s.id.split('.').at(-1);
+ if(!formationMain(e,s)||!c)return false;
+ if(k==='basic')return true;
+ if(k==='deploy')return !c.deployed;
+ if(!c.deployed)return false;
+ const need={small_activate:25,full_activate:70,convert:20}[k]??0;
+ return c.nurture+1e-9>=need;
+}
+export function prepareFormation(e,target,s,a,now) {
+ if(!formationMain(e,s)||!a.battleDaoV2)return;
+ const c=e.battleDaoStateV2.formation.core,k=s.id.split('.').at(-1),st=e.battleDaoStateV2.formation.stack;
+ const tx={kind:k,targetId:target.id,nurture:c.nurture,integrity:c.integrity,deployed:c.deployed,valid:formationCanUse(e,s),grand:k==='full_activate'&&c.nurture===100,rootActionId:a.battleDaoV2.rootActionId};
+ a.battleDaoV2.daoData.formationTransaction=tx;
+ if(!tx.valid)return;
+ if(tx.grand)a.effectBonusPct+=60;
+ if(['small_activate','full_activate'].includes(k)&&st?.stacks>=10)a.effectBonusPct+=Math.floor(st.stacks/10)*formationScale(formationLevel(e,6),2,6);
+ if(k==='ultimate')a.effectBonusPct+=c.nurture*.6;
+}
+export function commitFormation(e,target,s,a,now) {
+ const tx=a?.battleDaoV2?.daoData?.formationTransaction;
+ if(!formationMain(e,s)||!tx||tx.committed||!tx.valid||(a.battleDaoV2.procDepth??0)>0||!e.alive)return;
+ const k=tx.kind,c=e.battleDaoStateV2.formation.core;
+ if(s.channel&&!a.battleDaoV2.daoData.formationChannelCompleted)return;
+ if(['small_activate','full_activate','ultimate','basic'].includes(k)&&((!target.alive && !(a.battleDaoV2.directDamagingHitCount>0))||target.id!==tx.targetId))return;
+ if(!formationCanUse(e,s))return;
+ tx.committed=true;
+ const before={nurture:c.nurture,integrity:c.integrity,deployed:c.deployed},st=e.battleDaoStateV2.formation.stack,tier=formationTier(e,s);
+ const primary=e.baseStats?.primaryStatsV5??{};
+ const weights=s.fiveStatScalingV5??{},baseline=s.fiveStatBaselineCoefficientV5??1;
+ const localPower=Object.entries(weights).reduce((sum,[key,w])=>sum+(primary[key]??100)*w,0)/(100*baseline);
+ const efficiency=Math.min(1.75,Math.max(.5,localPower))+(st?.stacks??0)*formationScale(formationLevel(e,1),.001,.003);
+ let gain=0,wear=0,spend=0,repair=0,recovered=0;
+ if(k==='deploy'){c.deployed=true;c.nurture=0;c.integrity=100;}
+ if(c.deployed){
+  if(k==='basic')gain=8;
+  if(k==='nourish')gain=30;
+  if(k==='seal')gain=20;
+  if(gain){gain=Math.min(60,gain*efficiency*(1+(tier>=100?.05:0)+(tier>=250?.10:0)+(tier>=1000?.10:0)));c.nurture=Math.min(100,c.nurture+gain);}
+  if(k==='fortify')repair=20*Math.min(1.75,Math.max(.5,localPower))*(1+(st?.stacks??0)*formationScale(formationLevel(e,4),.002,.005)+(tier>=100?.2:0)+(tier>=1000?.2:0));
+  if(k==='convert'){spend=20;repair=20*Math.min(1.75,Math.max(.5,localPower))*(1+(st?.stacks??0)*formationScale(formationLevel(e,4),.002,.005)+(tier>=100?.2:0)+(tier>=1000?.2:0));}
+  if(k==='small_activate'){spend=25;wear=8;}
+  if(k==='full_activate'){spend=70;wear=20+(tx.grand?10:0);}
+  if(k==='ultimate')wear=12;
+  if(wear&&st?.stacks>=20)wear*=1-formationScale(formationLevel(e,7),.05,.15);
+  if(tx.grand&&st?.stacks>=st?.cap)wear*=1-formationScale(formationLevel(e,8),.05,.10);
+  c.nurture=Math.max(0,c.nurture-spend);c.integrity=Math.min(100,Math.max(0,c.integrity+repair-wear));
+  if(k==='break'){recovered=Math.min(35,(tx.nurture+tx.integrity)*.12)*(tier>=100?1.2:1)*(tier>=1000?1.1:1);const cap=e.baseStats?.maxSpirit??100,standard=e.baseStats?.spiritStandard??100;e.spirit=Math.min(cap,e.spirit+standard*recovered/100);c.deployed=false;c.nurture=0;c.integrity=0;}
+  if(c.integrity<=0){c.deployed=false;c.nurture=0;}
+ }
+ const event={kind:k,rootActionId:tx.rootActionId,grand:tx.grand,nurtureGenerated:gain,nurtureSpent:spend,nurtureWaste:Math.max(0,before.nurture+gain-100),integrityGenerated:repair,integritySpent:wear,recovered,before,after:{nurture:c.nurture,integrity:c.integrity,deployed:c.deployed}};
+ c.lastTransaction=event;return event;
+}
 export function canGenerateDamagingFollowUpV2(b) { return b.followUpsUsed < b.followUpBudget; }
 export function consumeDamagingFollowUpV2(b) {
     if (!canGenerateDamagingFollowUpV2(b))

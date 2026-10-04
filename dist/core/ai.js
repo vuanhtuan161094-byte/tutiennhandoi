@@ -152,6 +152,7 @@ export function canUseSkill(self, skill, registry, now) {
     return true;
 }
 function autoFallbackAllows(self, skill, target, now) {
+    if (self.combatBuildV117?.battleDaoV2Enabled && skill.id.startsWith('skill.dao.formation.')) return skill.id.endsWith('.basic');
     if (self.combatBuildV117?.battleDaoV2Enabled && skill.id.startsWith('skill.dao.poison.')) return poisonAutoWindow(self,target,skill.id.split('.').at(-1),now);
     // M1: these Mind actions are tactical target-mark spenders. Their explicit
     // rotation rules own eligibility; generic cooldown fallback must not fire

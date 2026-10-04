@@ -1,3 +1,4 @@
+import { prepareFormation, commitFormation } from './battle-dao-v2-contract.js';
 import { preparePoisonAction } from './battle-dao-v2-contract.js';
 import { skillDomainsV117, skillRuntimeV117, skillSlotClassV117, skillStandardCostPctV117 } from './skill-runtime-v117.js';
 import { createArtifactCoreStateV2, createBodyCoreStateV2, createFistCoreStateV2, createFormationCoreStateV2, createMindCoreStateV2, createPoisonCoreStateV2, createSpellCoreStateV2 } from './battle-dao-v2-contract.js';
@@ -863,6 +864,7 @@ export function carryBattleDaoV2StateToNextMonsterV2(state, battleEndedAt) {
     }
     if (out.spell?.core) out.spell.core = createSpellCoreStateV2();
     if (out.poison?.core) out.poison.core = createPoisonCoreStateV2();
+    if (out.formation?.core) { out.formationHuntCarryV1 = true; delete out.formation.core.lastTransaction; }
     return out;
 }
 // === V79: remaining seven Bản Đạo V2 runtime ===
@@ -874,7 +876,7 @@ function passiveLevelN(entity, dao, n) { return hasPassiveN(entity, dao, n) ? lv
 function stackV2(entity, dao, now) { syncBattleDaoV2Timers(entity, now); return holderV2(entity, dao)?.stack; }
 function refreshGenericStackV2(entity, dao, now) { const st = holderV2(entity, dao)?.stack; if (!st)
     return; const tune = genericStackTuning(entity, dao); st.cap = tune.cap; st.durationSeconds = tune.duration; st.decayEverySeconds = tune.decayEvery; st.expiresAt = now + st.durationSeconds; st.nextDecayAt = undefined; }
-function addGenericStackV2(entity, dao, amount, now) {
+export function addGenericStackV2(entity, dao, amount, now) {
     const st = stackV2(entity, dao, now);
     if (!st || amount <= 0)
         return 0;
@@ -947,23 +949,13 @@ export function remainingDaoPassiveBonusesV2(entity, now) {
                 out.recoveryReductionPct += scale(passiveLevelN(entity, dao, 7), 4, 12);
         }
         else if (dao === 'formation') {
-            out.breakPct += stacks * scale(p1, .4, 1);
-            if (stacks >= 10)
-                out.directDamagePct += scale(p1, 5, 10);
-            if (at20)
-                out.recoveryReductionPct += scale(p1, 8, 15);
-            if (hasPassiveN(entity, dao, 6))
-                out.directDamagePct += groups * scale(passiveLevelN(entity, dao, 6), 4, 12);
-            if (at20 && hasPassiveN(entity, dao, 7)) {
-                out.breakPct += scale(passiveLevelN(entity, dao, 7), 8, 25);
-                out.damageReductionPct += scale(passiveLevelN(entity, dao, 7), 4, 12);
-            }
+            if (entity.combatBuildV117?.secondaryDaoId === 'formation') out.spiritCostReductionPct += Math.min(3, stacks * .1);
         }
         else if (dao === 'mind') {
             // M2B: Mind passive output is owned by mind-dao-v2-runtime.js.
             // Generic damage/Gauge/Armor-Pen bonuses are deliberately retired.
         }
-        if (dao !== 'mind' && dao !== 'spell' && dao !== 'poison' && atCap && hasPassiveN(entity, dao, 8)) {
+        if (dao !== 'mind' && dao !== 'spell' && dao !== 'poison' && dao !== 'formation' && atCap && hasPassiveN(entity, dao, 8)) {
             const l8 = passiveLevelN(entity, dao, 8);
             out.directDamagePct += scale(l8, 10, dao === 'body' ? 25 : 30);
             out.gaugeGainPct += scale(l8, 0, 20);
@@ -1032,11 +1024,7 @@ export function battleDaoV2OutgoingMultiplier(entity, target, now, sourceTag, sk
         const n = holderV2(entity, 'artifact')?.core?.artifactSources ?? 1;
         pct += Math.max(0, n - 1) * 12;
     }
-    if (main === 'formation') {
-        const c = holderV2(entity, 'formation')?.core;
-        if (c?.deployed)
-            pct += Math.floor((c.nurture ?? 0) / 20) * 5;
-    }
+
     const identityTuning = battleDaoV2MainDamageTuningV129(entity, main);
     return Math.max(0, 1 + pct / 100) * identityTuning;
 }
@@ -1045,11 +1033,7 @@ export function battleDaoV2BreakMultiplier(entity, now, skillId) {
         return 1;
     let pct = remainingDaoPassiveBonusesV2(entity, now).breakPct;
     const main = entity.combatBuildV117?.mainDaoId;
-    if (main === 'formation') {
-        const c = holderV2(entity, 'formation')?.core;
-        if (c?.deployed)
-            pct += Math.floor((c.nurture ?? 0) / 20) * 5;
-    }
+
     return 1 + Math.max(0, pct) / 100;
 }
 export function battleDaoV2IncomingDamageMultiplier(entity, now) {
@@ -1146,19 +1130,8 @@ export function prepareRemainingDaoCoreActionV2(entity, target, skill, action, n
         if (skill.daoRuntimeV118?.signature === 'artifactCommand')
             action.effectBonusPct += Math.max(0, c.artifactSources - 1) * 12;
     }
-    else if (dao === 'formation') {
-        const c = holderV2(entity, 'formation')?.core;
-        if (!c)
-            return;
-        d.formationNurtureBefore = c.nurture;
-        d.formationIntegrityBefore = c.integrity;
-        if (c.deployed && skill.daoRuntimeV118?.signature === 'formationActivate' && c.nurture >= 100) {
-            action.effectBonusPct += 50;
-            action.breakBonusPct += 50;
-            c.integrity = Math.max(0, c.integrity - 25);
-            d.formationGrand = true;
-        }
-    }
+    else if (dao === 'formation') prepareFormation(entity, target, skill, action, now);
+
     action.recoveryMultiplier *= battleDaoV2RecoveryMultiplier(entity, now);
 }
 function rootStackGainV2(entity, dao, action, now, chance, eligible) {
@@ -1266,33 +1239,8 @@ export function finishRemainingDaoActionV2(entity, target, skill, action, now, c
         }
     }
     if (main && dao === 'formation') {
-        const c = holderV2(entity, 'formation')?.core;
-        if (c) {
-            const sig = skill.daoRuntimeV118?.signature;
-            if (sig === 'formationDeploy') {
-                c.deployed = true;
-                c.nurture = 0;
-                c.integrity = 100;
-            }
-            else if (sig === 'formationNourish' && c.deployed)
-                c.nurture = Math.min(100, c.nurture + 30);
-            else if (sig === 'formationFortify' && c.deployed)
-                c.integrity = Math.min(100, c.integrity + 30);
-            else if (sig === 'formationActivate' && c.deployed) {
-                const spend = Math.min(c.nurture, skillSlotClassV117(skill) === 'ultimate' ? 80 : 35);
-                c.nurture = Math.max(0, c.nurture - spend);
-                if (c.integrity <= 0) {
-                    c.deployed = false;
-                    c.nurture = 0;
-                }
-            }
-            else if (sig === 'formationBreak') {
-                c.deployed = false;
-                c.nurture = 0;
-                c.integrity = 0;
-            }
-            out.notices.push({ message: `${entity.name} Chủ Trận: Dưỡng ${Math.round(c.nurture)}/100 · Bền ${Math.round(c.integrity)}/100.`, data: { formationNurture: c.nurture, formationIntegrity: c.integrity, formationDeployed: c.deployed } });
-        }
+        const event=commitFormation(entity,target,skill,action,now);
+        if(event)out.notices.push({message:'Chủ Trận resolve.',data:{formationTransaction:event}});
     }
     if (main && dao === 'mind') {
         // M1 authority: CombatEngine wrapper owns Thần Ấn / Niệm Ảnh / Phân Lưu.
@@ -1333,19 +1281,7 @@ export function finishRemainingDaoActionV2(entity, target, skill, action, now, c
                     addGenericStackV2(entity, 'artifact', gain, now);
             }
         }
-        else if (passiveDao === 'formation') {
-            const st = holderV2(entity, 'formation')?.stack;
-            if (st) {
-                const different = st.lastSkillId !== skill.id;
-                st.lastSkillId = skill.id;
-                if (different) {
-                    let gain = 1;
-                    if (hasPassiveN(entity, 'formation', 2) && chance(scale(passiveLevelN(entity, 'formation', 2), 10, 30)))
-                        gain++;
-                    addGenericStackV2(entity, 'formation', gain, now);
-                }
-            }
-        }
+        else if (passiveDao === 'formation') { /* Feature root observer owns diversity, including Sword. */ }
         else if (passiveDao === 'mind') {
             const slot = skillSlotClassV117(skill);
             const eligible = slot === 'active' || slot === 'ultimate';
@@ -1467,6 +1403,7 @@ export function v2ResourceProjection(entity, now) {
         out.formationDeployedV2 = s.formation.core.deployed;
         out.formationNurtureV2 = s.formation.core.nurture;
         out.formationIntegrityV2 = s.formation.core.integrity;
+        out.formationGrandReadyV1 = s.formation.core.deployed && s.formation.core.nurture === 100;
     }
     if (s.formation?.stack) {
         out.formationPassiveStack = s.formation.stack.stacks;

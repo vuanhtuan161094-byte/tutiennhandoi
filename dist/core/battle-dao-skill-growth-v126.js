@@ -91,6 +91,7 @@ const GROWTH = {
 function clampTier(tier) { return Math.max(0, Math.min(1000, Math.floor(tier || 0))); }
 export function battleDaoSkillGrowthRoleV126(skill) { return skill.id.startsWith('skill.dao.spell.') ? SPELL_ROLES_V1[skill.id.slice('skill.dao.spell.'.length)] : ROLE_BY_SKILL_ID[skill.id]; }
 export function battleDaoSkillGrowthProfileV126(skill, rawTier) {
+    if (skill.id.startsWith('skill.dao.formation.')) return formationSkillGrowthProfileV1(skill, rawTier);
     if (skill.id.startsWith('skill.dao.poison.')) return poisonSkillGrowthProfileV1(skill, rawTier);
     if (skill.id.startsWith('skill.dao.spell.'))
         return spellSkillGrowthProfileV1(skill, rawTier);
@@ -135,6 +136,25 @@ export function spellSkillGrowthProfileV1(skill, rawTier) {
         if (tier >= at) for (const key of Object.keys(ZERO)) out[key] += d[key];
     }
     return out;
+}
+export function formationSkillGrowthProfileV1(skill, rawTier) {
+ const k=skill.id.split('.').at(-1),role=k==='basic'?'generator':ROLE_BY_SKILL_ID[skill.id];
+ if(!role)return undefined;
+ const out={role,roleName:ROLE_NAME[role],...ZERO,milestones:[]};
+ const generator=['basic','nourish','seal'].includes(k),repair=['fortify','convert'].includes(k);
+ const steps={
+  100:D(repair?'Hiệu suất hồi Bền +20%.':generator?'Dưỡng package +5%.':k==='break'?'CN thu hồi +20%.':'Hiệu quả riêng +5%.',repair||generator||k==='break'?{}:{effectBonusPct:5}),
+  250:D(generator?'Dưỡng package +10%, cap60 mỗi root.':'Chân Nguyên chiêu -3%.',generator?{}:{spiritCostReductionPct:3}),
+  500:D('Thu Chiêu chiêu -5%.',{recoveryReductionPct:5}),
+  750:D('Hồi Chiêu chiêu -5%.',{cooldownReductionPct:5}),
+  1000:D(generator?'Cực Ý: Dưỡng package thêm10%, không floor.':repair?'Cực Ý: hiệu suất hồi Bền thêm20%.':'Cực Ý: hiệu quả riêng thêm10%, không bypass setup.',generator||repair?{}:{effectBonusPct:10})
+ };
+ if(k==='deploy'){steps[100]=D('Thi Triển -10%.',{castTimeReductionPct:10});steps[1000]=D('Cực Ý: Thi Triển thêm -15%; vẫn0 Dưỡng/100 Bền.',{castTimeReductionPct:15});}
+ if(['basic','ultimate','break'].includes(k))steps[750]=D('Thu Chiêu thêm -5%.',{recoveryReductionPct:5});
+ if(k==='ultimate')steps[250]=D('Uy lực riêng thêm5%, vẫn đọc Dưỡng thật.',{effectBonusPct:5});
+ if(k==='break'){steps[250]=D('Thi Triển -10%.',{castTimeReductionPct:10});steps[1000]=D('CN thu hồi thêm10% từ giá trị thật.',{});}
+ for(const at of [100,250,500,750,1000]){const d=steps[at];out.milestones.push({at,name:STAGE_NAME[at],summary:d.summary});if(clampTier(rawTier)>=at)for(const key of Object.keys(ZERO))out[key]+=d[key];}
+ return out;
 }
 export function battleDaoSkillGrowthMilestonesV126(skill) { return battleDaoSkillGrowthProfileV126(skill, 0)?.milestones ?? []; }
 export function battleDaoSkillGrowthCurrentSummaryV126(skill, tier) {

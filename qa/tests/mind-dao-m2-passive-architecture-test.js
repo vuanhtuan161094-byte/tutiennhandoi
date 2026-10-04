@@ -70,7 +70,7 @@ assert(statsSource.includes('mindV2ActionControlPowerPct'));
 assert(combatSource.includes('mindDirectArmorPenBonusV2'));
 assert(combatSource.includes('echoBreakPct'));
 assert(/else if \(dao === 'mind'\)\s*\{[\s\S]*?Mind passive output is owned by mind-dao-v2-runtime\.js/.test(genericSource));
-assert(/if \(dao !== 'mind' && dao !== 'spell' && dao !== 'poison' && atCap && hasPassiveN\(entity, dao, 8\)\)/.test(genericSource),'Mind remains excluded from generic P8; separately opened Spell and Poison own their peak events too');
+assert(/if \(dao !== 'mind' && dao !== 'spell' && dao !== 'poison' && dao !== 'formation' && atCap && hasPassiveN\(entity, dao, 8\)\)/.test(genericSource),'Mind remains excluded from generic P8; separately opened Dao own their peak events too');
 assert(/if \(dao !== 'fist' && dao !== 'mind'\)/.test(genericSource));
 
 console.log('MIND DAO M2B PASSIVE ARCHITECTURE: PASS');

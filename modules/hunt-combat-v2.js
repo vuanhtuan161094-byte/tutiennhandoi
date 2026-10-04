@@ -750,6 +750,10 @@ function updateIntelMeter(root,id,value,maxOverride){
   const max=Math.max(1,Number(maxOverride||meter.dataset.max||100));const v=clamp(Number(value)||0,0,max);const pctValue=clamp(v/max*100,0,100);
   const fill=meter.querySelector('em'),label=meter.querySelector('b');if(fill)fill.style.width=`${pctValue}%`;if(label)label.textContent=`${Number.isInteger(v)?v:v.toFixed(1)}/${max}`;
   const full=v>=max;meter.classList.toggle('full',full);meter.classList.remove('pulse');void meter.offsetWidth;meter.classList.add('pulse');
+  if(id==='formationNurtureV2'){
+    const name=meter.querySelector('span');if(name)name.textContent=full?'Đại Thành':'Dưỡng Độ';
+    meter.title=full?'Đại Thành: Toàn Kích chuẩn bị payoff lớn; tài nguyên chỉ tiêu khi resolve.':'Tiểu Kích tiêu 25; Toàn Kích tiêu 70 Dưỡng khi resolve.';
+  }
   if(id==='ultimateGauge'){
     const ult=q(root,'.huntv2-skill.ultimate.filled');if(ult){ult.classList.toggle('gauge-ready',full);const badge=ult.querySelector('.huntv2-ult-ready');if(badge)badge.setAttribute('aria-hidden',full?'false':'true');}
   }

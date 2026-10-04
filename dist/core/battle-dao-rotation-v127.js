@@ -105,18 +105,20 @@ function rulesForDao(dao, skillIds, offset = 0) {
             add('strike', 92, { type: 'selfDaoV2ResourceAtLeast', resource: 'artifactSourcesV2', value: 1 });
             add('basic', 10);
             break;
-        case 'formation':
-            add('deploy', 136, { type: 'selfDaoV2ResourceBelow', resource: 'formationIntegrityV2', value: 1 });
-            add('ultimate', 132, gauge, { type: 'selfDaoV2ResourceAtLeast', resource: 'formationIntegrityV2', value: 35 });
-            add('fortify', 124, { type: 'selfDaoV2ResourceBelow', resource: 'formationIntegrityV2', value: 55 });
-            add('break', 120, { type: 'selfSpiritBelow', pct: 24 });
-            add('full_activate', 114, { type: 'selfDaoV2ResourceAtLeast', resource: 'formationNurtureV2', value: 70 }, { type: 'selfDaoV2ResourceAtLeast', resource: 'formationIntegrityV2', value: 70 });
-            add('small_activate', 102, { type: 'selfDaoV2ResourceAtLeast', resource: 'formationNurtureV2', value: 35 }, { type: 'selfDaoV2ResourceAtLeast', resource: 'formationIntegrityV2', value: 55 });
-            add('convert', 98, { type: 'selfDaoV2ResourceBelow', resource: 'formationIntegrityV2', value: 72 }, { type: 'selfDaoV2ResourceAtLeast', resource: 'formationNurtureV2', value: 20 });
-            add('nourish', 94, { type: 'selfDaoV2ResourceBelow', resource: 'formationNurtureV2', value: 70 });
-            add('seal', 90, { type: 'selfDaoV2ResourceBelow', resource: 'formationNurtureV2', value: 70 });
-            add('basic', 10);
+        case 'formation': {
+            const full=skillIds.has('skill.dao.formation.full_activate'),guard=skillIds.has('skill.dao.formation.convert');
+            add('deploy', 150, {type:'selfDaoV2ResourceBelow',resource:'formationIntegrityV2',value:1});
+            add('fortify',140,{type:'selfDaoV2ResourceBelow',resource:'formationIntegrityV2',value:guard?88:full?60:75});
+            add('convert',139,{type:'selfDaoV2ResourceBelow',resource:'formationIntegrityV2',value:90},{type:'selfDaoV2ResourceAtLeast',resource:'formationNurtureV2',value:20});
+            add('ultimate',132,gauge,{type:'selfDaoV2ResourceAtLeast',resource:'formationNurtureV2',value:70});
+            add('full_activate',125,{type:'selfDaoV2ResourceAtLeast',resource:'formationNurtureV2',value:100});
+            add('small_activate',124,{type:'selfDaoV2ResourceAtLeast',resource:'formationNurtureV2',value:25});
+            add('nourish',115,{type:'selfDaoV2ResourceBelow',resource:'formationNurtureV2',value:full?65:55});
+            add('seal',114,{type:'selfDaoV2ResourceBelow',resource:'formationNurtureV2',value:full?85:55});
+            add('break',145,{type:'selfSpiritBelow',pct:15});
+            add('basic',10);
             break;
+        }
         case 'mind':
             // M1: tactical spenders are gated by the target-local Thần Ấn they actually consume.
             add('interfere', 156, { type: 'targetIsCasting' }, { type: 'targetMarkAtLeast', mark: 'Thần Ấn', stacks: 1 });

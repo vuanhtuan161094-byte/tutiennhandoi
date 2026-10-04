@@ -1,3 +1,5 @@
+import { formationMain, formationLevel, formationScale, createFormationCoreStateV2 } from './battle-dao-v2-contract.js';
+import { addGenericStackV2 } from './battle-dao-v2-runtime.js';
 import { effectiveStats } from './stats.js';
 import { fiveStatSkillPowerV5 } from './combat-rules.js';
 import { createPoisonCoreStateV2 } from './battle-dao-v2-contract.js';
@@ -144,6 +146,54 @@ class PoisonCombatEngine extends CombatEngineBaseM2B {
     }
 }
 
+class FormationCombatEngine extends PoisonCombatEngine {
+    resolveEffects(source,target,effects,tag,now,id,cd,action,...rest) {
+        const skill=this.registry.skills.get(id),tx=action?.battleDaoV2?.daoData?.formationTransaction;
+        if(formationMain(source,skill) && !skill.channel && tx){
+            if(!tx.valid || tx.payloadResolved || (['basic','small_activate','full_activate','ultimate'].includes(tx.kind) && (!target.alive || target.id!==tx.targetId)))return;
+            tx.payloadResolved=true;
+        }
+        return super.resolveEffects(source,target,effects,tag,now,id,cd,action,...rest);
+    }
+    resolveEffectShieldV141(source,target,effect,tag,now,id,cd,action,skill,...rest) {
+        if(formationMain(source,skill)){
+            const power=fiveStatSkillPowerV5(effectiveStats(source,this.registry,now),skill.fiveStatScalingV5,skill.fiveStatBaselineCoefficientV5);
+            effect={...effect,capacity:effect.capacity*power/100};
+        }
+        return super.resolveEffectShieldV141(source,target,effect,tag,now,id,cd,action,skill,...rest);
+    }
+    instantiate(def) {
+        const e=super.instantiate(def);
+        if(e.battleDaoStateV2?.formation?.core && !def.initialBattleDaoStateV2?.formationHuntCarryV1) e.battleDaoStateV2.formation.core=createFormationCoreStateV2();
+        if(e.battleDaoStateV2)delete e.battleDaoStateV2.formationHuntCarryV1;
+        return e;
+    }
+    handleChannelEnd(actor,target,id,token,now) {
+        const ch=actor.channeling;
+        if(id==='skill.dao.formation.nourish' && ch?.token===token && ch.resolvedHits===ch.totalHits && ch.totalHits>0 && ch.runtimeV117?.battleDaoV2) ch.runtimeV117.battleDaoV2.daoData.formationChannelCompleted=true;
+        return super.handleChannelEnd(actor,target,id,token,now);
+    }
+    finishBattleDaoV2Action(actor,target,skill,action,now) {
+        const result=super.finishBattleDaoV2Action(actor,target,skill,action,now);
+        const st=actor.battleDaoStateV2?.formation?.stack;
+        const d=st && action?.battleDaoV2 ? (action.battleDaoV2.daoData??={}) : action?.battleDaoV2?.daoData;
+        const secondary=actor.combatBuildV117?.secondaryDaoId==='formation';
+        const eligible=secondary || formationMain(actor,skill) && d?.formationTransaction?.committed;
+        if(st && formationLevel(actor,1) && d && !d.formationObserved && eligible && (action.battleDaoV2.procDepth??0)===0){
+            d.formationObserved=true;
+            if(st.lastSkillId!==skill.id){
+                st.lastSkillId=skill.id;
+                let gain=1;
+                const p2=formationLevel(actor,2);
+                if(p2 && this.rng.chance(formationScale(p2,10,30)))gain++;
+                addGenericStackV2(actor,'formation',gain,now);
+                if(!secondary && st.stacks>=st.cap && d.formationTransaction?.grand && formationLevel(actor,8)){st.expiresAt=Math.max(st.expiresAt,now+formationScale(formationLevel(actor,8),1,2));st.nextDecayAt=undefined;}
+            }
+        }
+        return result;
+    }
+}
+
 function isMainMindSkillV2(source, skill) {
     return Boolean(skill)
         && source?.combatBuildV117?.battleDaoV2Enabled === true
@@ -157,7 +207,7 @@ function isMainMindSkillV2(source, skill) {
  * combat-m2b-base.js is the closed M1/M2A/M2B owner. This wrapper adds only
  * authored Mind mastery behavior and one proven M1 Ultimate-control repair.
  */
-export class CombatEngine extends PoisonCombatEngine {
+export class CombatEngine extends FormationCombatEngine {
     damageContextFromEffect(source, effect, defaultSourceTag, skill, skillId, cooldownDamageBonusPct, runtimeAction) {
         const ctx = super.damageContextFromEffect(source, effect, defaultSourceTag, skill, skillId, cooldownDamageBonusPct, runtimeAction);
         const masteryArmorPen = Math.max(0, Number(effect?.mindMasteryArmorPenBonusPct ?? 0));

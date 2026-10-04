@@ -1,3 +1,4 @@
+import { formationCanUse } from './battle-dao-v2-contract.js';
 import { addResourceV117, resourceValueV117, rootPayoffMultiplierV117, setMechanicV117 } from './five-element-combat-v117.js';
 import { skillDomainsV117, skillRuntimeV117, skillSlotClassV117 } from './skill-runtime-v117.js';
 import { daoPassivesV118, daoVariantsV118 } from '../content/battle-dao-skill-pack-v118.js';
@@ -187,20 +188,7 @@ export function canUseBattleDaoSkillV118(entity, skill) {
         const dao = r.daoBinding;
         const state = entity.battleDaoStateV2;
         const sig = d?.signature;
-        if (dao === 'formation') {
-            const c = state?.formation?.core;
-            if (!c)
-                return true;
-            if (sig === 'formationDeploy')
-                return !c.deployed;
-            if (!c.deployed)
-                return false;
-            if (sig === 'formationActivate') {
-                const need = skill.id === 'skill.dao.formation.full_activate' ? 60 : 20;
-                return c.nurture + 1e-9 >= need;
-            }
-            return true;
-        }
+        if (dao === 'formation') return formationCanUse(entity,skill);
         if (dao === 'artifact') {
             const c = state?.artifact?.core;
             if (!c)
