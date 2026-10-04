@@ -25,6 +25,8 @@ set "OBSERVE_PATCH=UNKNOWN"
 for /f "delims=" %%C in ('findstr /C:"MIND_M5_OBSERVE_CHANNEL_DAMAGE_COEFFICIENT" dist\content\registry.js 2^>nul') do set "OBSERVE_PATCH=%%C"
 set "BURST_SNAPSHOT_PATCH=UNKNOWN"
 for /f "delims=" %%C in ('findstr /C:"MIND_M5_BURST_SNAPSHOT_RETENTION" dist\core\mind-dao-v2-runtime.js 2^>nul') do if "!BURST_SNAPSHOT_PATCH!"=="UNKNOWN" set "BURST_SNAPSHOT_PATCH=%%C"
+set "INTERFERE_PATCH=UNKNOWN"
+for /f "delims=" %%C in ('findstr /C:"skill.dao.mind.interfere" dist\content\battle-dao-skill-pack-v118.js 2^>nul') do if "!INTERFERE_PATCH!"=="UNKNOWN" set "INTERFERE_PATCH=%%C"
 
 echo ============================================================
 echo MIND DAO M5 - DETERMINISTIC TUNING BENCHMARK
@@ -33,6 +35,7 @@ echo Repo : %CD%
 echo Head : !HEAD_SHA!
 echo Observe patch: !OBSERVE_PATCH!
 echo Burst snapshot patch: !BURST_SNAPSHOT_PATCH!
+echo Nhiễu patch: !INTERFERE_PATCH!
 echo Node : !NODE_EXE!
 echo Log  : %LOG%
 echo.
@@ -40,6 +43,7 @@ echo.
 > "%LOG%" echo sourceHead=!HEAD_SHA!
 >> "%LOG%" echo observePatch=!OBSERVE_PATCH!
 >> "%LOG%" echo burstSnapshotPatch=!BURST_SNAPSHOT_PATCH!
+>> "%LOG%" echo interferePatch=!INTERFERE_PATCH!
 >> "%LOG%" echo.
 "!NODE_EXE!" qa\benchmarks\mind-dao-m4-benchmark.js %* >> "%LOG%" 2>&1
 set "RC=!ERRORLEVEL!"
