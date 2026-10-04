@@ -203,7 +203,7 @@ assert(combat.includes("kind === 'mindSnapshot'"));
 assert(combatM2B.includes('finishMindRootV2(actor, target, skill, action, now)'),'closed M1/M2B core stays in the base seam');
 assert(decision.includes('prepareMindMasteryActionV2(actor, target, skill, prepared.action, now)'));
 const manifest=backendFeatureClosureManifest('dao-mind');
-assert.equal(manifest.closureReady,false,'M2C does not authorize whole-feature closure/tuning');
+assert.equal(manifest.id,'dao-mind','M2C historical proof must remain registered on the Mind feature after later closure phases');
 assert(manifest.gates.includes('mind-dao-m2-mastery-architecture-test.js'));
 
 console.log('MIND DAO M2C MASTERY ARCHITECTURE: PASS');
