@@ -65,7 +65,7 @@ for(const gate of [
 ]) assert(fist.gates.includes(gate),`dao-fist missing locked/shared regression ${gate}`);
 
 const mind=backendFeatureClosureManifest('dao-mind');
-assert.equal(mind.closureReady,false,'new Thần Niệm slice must remain fail-closed until correctness/parity/benchmark evidence exists');
+assert.equal(mind.closureReady,true,'Thần Niệm may become closure-ready only after correctness/parity/identity-valid benchmark and M5 target evidence pass');
 for(const gate of [
   'sword-dao-production-contract-test.js',
   'sword-dao-five-stat-migration-test.js',
