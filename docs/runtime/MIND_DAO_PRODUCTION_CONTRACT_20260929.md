@@ -1,6 +1,6 @@
 # THẦN NIỆM DAO PRODUCTION CONTRACT — 2026-09-29
 
-Status: **M4 CLOSED / M5 ACTIVE — M5-1/M5-2/M5-3 MEASURED AND RETAINED; NIỆM ẢNH FROZEN; M5-4 NHIỄU CANDIDATE AWAITING BENCHMARK; M6 BLOCKED**
+Status: **M4 CLOSED / M5 CLOSED / M6 READY — ALL THREE MIND ARCHETYPES WITHIN TARGET; EXACT-SHA FEATURE CLOSURE PENDING**
 
 Repository: `vuanhtuan161094-byte/tutiennhandoi`  
 Branch: `main` only  
@@ -272,27 +272,33 @@ Decision:
 
 M5-3 did **not** change baseline echo coefficient/cadence/delay, the 70% echo replay-coefficient ceiling, recursion/follow-up safety, Thần Ấn transactions, direct Burst damage, Nhiễu/control rules or the benchmark matrix.
 
-### M5-4 — ACTIVE CANDIDATE / AWAITING BENCHMARK
+### M5-4 — MEASURED / RETAINED · M5 CLOSED
 
-One new Nhiễu-only feature-local lever is opened after Niệm Ảnh is frozen:
+Lever retained:
 - `Nhiễu Thần Chỉ` direct damage coefficient: **0.75 → 2.80**.
 
-Evidence-based rationale from the accepted M5-3 matrix:
-- current Nhiễu DPS is **675.563** versus the 75% floor of **775.196** against the current Bạo Ấn reference;
-- the build therefore needs about **17,934** additional damage over 180 seconds;
-- `Nhiễu Thần Chỉ` contributes about **7,085 damage/run** at coefficient 0.75 in the accepted matrix;
-- coefficient **2.80** is a single local numeric lever expected to place Nhiễu around **75–76%** relative DPS, with deterministic rerun required for acceptance.
+Exact deterministic evidence on source HEAD `8814c6c064478540496cfd92d7611156f62479fb`:
+- all **36/36** runs identity-valid; `invalidRuns = []`;
+- **Bạo Ấn:** DPS **1033.595**, normalized **100%**;
+- **Niệm Ảnh:** DPS **940.190**, **90.96%**, echo contribution **15.23%** — both target bands pass;
+- **Nhiễu Thức:** DPS **782.540**, **75.71%**, interference metric **19.565**, and remains the highest real interference/control profile.
 
-M5-4 explicitly does **not** change:
+Decision:
+- retain `Nhiễu Thần Chỉ` direct damage coefficient **2.80**;
+- M5 numerical targets are complete: Bạo Ấn reference 100%, Niệm Ảnh 88–98% with 15–30% real echo contribution, Nhiễu Thức 75–90% while leading real interference;
+- freeze the full M5 tuning package: Observe channel damage **1.10**, Burst sanitized snapshot multiplier **1.30**, Nhiễu Thần Chỉ direct damage **2.80**;
+- no additional Mind coefficient tuning is authorized before closure unless exact-SHA closure reveals a proven regression.
+
+M5-4 did **not** change:
 - Nhiễu Thần Ấn spend count or commit timing;
 - interference potency, cast delay, recovery penalty, stagger duration or boss/control rules;
-- Niệm Ảnh tuning now frozen above;
-- five-stat family;
-- Auto priorities/loadout;
+- Niệm Ảnh coefficient/cadence/delay/70% replay ceiling;
+- five-stat families;
+- Auto priorities/loadouts;
 - canonical benchmark matrix;
-- any Sword, Quyền, Body, equipment or deferred/global balance.
+- Sword, Quyền, Body, equipment or deferred/global balance.
 
-The same 12×180×3 deterministic benchmark must confirm Nhiễu at **75–90%** relative DPS while it remains the highest real interference/control profile. M6 stays blocked until that evidence passes.
+M5 is therefore **CLOSED**. The feature may now set `closureReady:true` and enter M6 exact-SHA feature-scoped closure. This benchmark is acceptance evidence for balance; it is not itself the final closure proof.
 
 ## 11. Phase state
 
@@ -303,7 +309,7 @@ The same 12×180×3 deterministic benchmark must confirm Nhiễu at **75–90%**
 - **M2C — CLOSED** — mastery architecture / ownership; M5 numeric tuning may not reopen architecture.
 - **M3 — CLOSED** — production-path parity.
 - **M4 — CLOSED** — canonical deterministic identity baseline accepted: 36/36 valid.
-- **M5 — ACTIVE** — M5-1/M5-2/M5-3 measured and retained; Niệm Ảnh frozen; M5-4 Nhiễu candidate awaiting deterministic benchmark evidence.
-- **M6 — BLOCKED** — exact clean feature-scoped closure.
+- **M5 — CLOSED** — M5-1/M5-2/M5-3/M5-4 measured and retained; all three archetype target bands pass on deterministic evidence.
+- **M6 — READY / PENDING EXACT-SHA PROOF** — run clean FULL CLEAN + registered `dao-mind` feature-scoped closure on the exact current candidate.
 
-`dao-mind` remains `closureReady:false` until M5 target bands pass with deterministic evidence and M6 exact clean scoped closure is completed.
+`dao-mind` may now be `closureReady:true` because correctness, parity, identity-valid benchmark evidence and M5 target bands are complete. Final CLOSED / LOCKED status still requires exact clean local `DONG_BO_VA_TEST_FEATURE.cmd dao-mind` evidence.
