@@ -40,7 +40,7 @@ assert.equal(mindDaoV2.tree.length,8,'V2 realm tree must remain eight rows');
 assert(mindSkills.every(skill=>skill.fiveStatScalingV5!==undefined),'M2A closure requires explicit five-stat families on all ten Mind skills');
 
 const manifest=backendFeatureClosureManifest('dao-mind');
-assert.equal(manifest.closureReady,true,'dao-mind may become closure-ready only after deterministic M5 targets pass; exact-SHA M6 proof still decides CLOSED/LOCKED status');
+assert.equal(manifest.closureReady,true,'dao-mind must remain closure-ready after exact-SHA M6 closure so scoped regressions stay runnable');
 assert.equal(manifest.benchmarkContractGate,'mind-dao-m4-harness-contract-test.js','M4/M5 must retain the deterministic identity-valid harness contract gate');
 for(const gate of [
   'mind-dao-production-contract-test.js','mind-dao-skill-form-contract-test.js','mind-dao-m1-seal-transaction-test.js',
@@ -50,7 +50,7 @@ for(const gate of [
 assert(manifest.lockedRegressionFeatures.includes('dao-sword'));
 assert(manifest.lockedRegressionFeatures.includes('dao-fist'));
 
-assert.match(contract,/M4 CLOSED \/ M5 CLOSED \/ M6 READY/);
+assert.match(contract,/CLOSED \/ LOCKED/);
 assert.match(contract,/Thần Ấn/);
 assert.match(contract,/Niệm Lực/);
 assert.match(contract,/Niệm Ảnh/);
@@ -61,7 +61,9 @@ assert.match(contract,/M2C — CLOSED/);
 assert.match(contract,/M3 — CLOSED/);
 assert.match(contract,/M4 — CLOSED/);
 assert.match(contract,/M5 — CLOSED/);
-assert.match(contract,/M6 — READY \/ PENDING EXACT-SHA PROOF/);
+assert.match(contract,/M6 — CLOSED/);
+assert.match(contract,/d69b33c80b874fb28471855324afbdf95712b730/,'contract must retain the exact verified Mind closure SHA');
+assert.match(contract,/MIND_DAO_PRODUCTION_CLOSURE_20261004\.md/,'contract must point to the dated Mind closure record');
 assert.match(contract,/1004\.046/);
 assert.match(contract,/740\.728/);
 assert.match(contract,/556\.468/);
