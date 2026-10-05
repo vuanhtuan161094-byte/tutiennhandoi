@@ -119,6 +119,7 @@ static func _skills(raw) -> Array:
 			"name": str(row.get("name", "")),
 			"slot_class": str(row.get("slotClass", "active")),
 			"form": str(row.get("form", "instant")),
+			"icon_path": str(row.get("iconPath", "")),
 			"cooldown_total": maxf(0.0, float(row.get("cooldownTotal", 0.0))),
 			"cooldown_remaining": maxf(0.0, float(row.get("cooldownRemaining", 0.0))),
 			"spirit_cost": maxf(0.0, float(row.get("spiritCost", 0.0))),

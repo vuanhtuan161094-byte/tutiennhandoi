@@ -1,132 +1,102 @@
 extends VBoxContainer
 class_name CombatSkillRail
 
-const TEXT := Color("f7f2e8")
-const MUTED := Color("93a4b0")
-const GOLD := Color("e3bf70")
-const CYAN := Color("70d9ff")
-
+const STYLE := preload("res://scripts/combat/combat_style.gd")
+const SLOT := preload("res://scripts/combat/combat_skill_slot.gd")
 var _active_row: HBoxContainer
 var _utility_row: HBoxContainer
 var _cards: Dictionary = {}
-
+var _active_slots: Array[CombatSkillSlot] = []
+var _basic: CombatSkillSlot
+var _ultimate: CombatSkillSlot
+var _auto: Label
 
 func _ready() -> void:
-	add_theme_constant_override("separation", 5)
+	add_theme_constant_override("separation", 6)
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_active_row = HBoxContainer.new()
-	_active_row.add_theme_constant_override("separation", 4)
+	_active_row.name = "CombatActiveRow"
+	_active_row.add_theme_constant_override("separation", 6)
 	add_child(_active_row)
-
+	for i in range(5):
+		var slot := SLOT.new()
+		slot.name = "CombatActive%d" % (i + 1)
+		slot.slot_index = i + 1
+		slot.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_active_slots.append(slot)
+		_active_row.add_child(slot)
 	_utility_row = HBoxContainer.new()
-	_utility_row.add_theme_constant_override("separation", 6)
+	_utility_row.name = "CombatUtilityRow"
+	_utility_row.add_theme_constant_override("separation", 8)
 	add_child(_utility_row)
-
+	_basic = SLOT.new()
+	_basic.name = "CombatBasic"
+	_basic.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_utility_row.add_child(_basic)
+	var basic_caption := STYLE.label("BASIC", 8, STYLE.MUTED)
+	basic_caption.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_utility_row.add_child(basic_caption)
+	_auto = STYLE.label("AUTO ON", 10, STYLE.CYAN)
+	_auto.name = "CombatAutoStatus"
+	_auto.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_auto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_auto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_utility_row.add_child(_auto)
+	var ult_caption := STYLE.label("ULT", 8, STYLE.GOLD)
+	ult_caption.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_utility_row.add_child(ult_caption)
+	_ultimate = SLOT.new()
+	_ultimate.name = "CombatUltimate"
+	_ultimate.ultimate = true
+	_utility_row.add_child(_ultimate)
 
 func bind(skills: Array, auto_enabled: bool = true) -> void:
-	_clear_row(_active_row)
-	_clear_row(_utility_row)
 	_cards.clear()
-
-	var basics: Array = []
 	var actives: Array = []
-	var ultimates: Array = []
+	var basic: Dictionary = {}
+	var ultimate: Dictionary = {}
 	for raw in skills:
 		if typeof(raw) != TYPE_DICTIONARY:
 			continue
-		var skill: Dictionary = raw
-		match str(skill.get("slot_class", "active")):
-			"basic":
-				basics.append(skill)
-			"ultimate":
-				ultimates.append(skill)
-			_:
-				actives.append(skill)
+		match str(raw.get("slot_class", "active")):
+			"basic": basic = raw
+			"ultimate": ultimate = raw
+			_: actives.append(raw)
+	for i in range(5):
+		_bind_slot(_active_slots[i], actives[i] if i < actives.size() else {})
+	_bind_slot(_basic, basic)
+	_bind_slot(_ultimate, ultimate)
+	_auto.text = "AUTO ON" if auto_enabled else "AUTO OFF"
 
-	for skill in actives.slice(0, 5):
-		var card := _skill_card(skill, false)
-		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		_active_row.add_child(card)
-
-	for skill in basics.slice(0, 1):
-		var card := _skill_card(skill, false)
-		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		_utility_row.add_child(card)
-
-	var auto_panel := PanelContainer.new()
-	auto_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	auto_panel.custom_minimum_size = Vector2(0, 42)
-	auto_panel.add_theme_stylebox_override("panel", _card_style(CYAN, false))
-	var auto_label := Label.new()
-	auto_label.text = "AUTO\n%s" % ("ĐANG BẬT" if auto_enabled else "TẮT")
-	auto_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	auto_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	auto_label.add_theme_color_override("font_color", CYAN if auto_enabled else MUTED)
-	auto_label.add_theme_font_size_override("font_size", 9)
-	auto_panel.add_child(auto_label)
-	_utility_row.add_child(auto_panel)
-
-	for skill in ultimates.slice(0, 1):
-		var card := _skill_card(skill, true)
-		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		_utility_row.add_child(card)
-
+func _bind_slot(slot: CombatSkillSlot, data: Dictionary) -> void:
+	slot.bind(data)
+	slot.set_selected(bool(data.get("auto_selected", false)))
+	var id := str(data.get("id", ""))
+	if not id.is_empty():
+		_cards[id] = slot
 
 func set_selected_skill(skill_id: String) -> void:
-	for id in _cards.keys():
-		var card := _cards[id] as PanelContainer
-		card.add_theme_stylebox_override("panel", _card_style(GOLD if str(id) == skill_id else CYAN, str(id) == skill_id))
+	for id in _cards:
+		(_cards[id] as CombatSkillSlot).set_selected(str(id) == skill_id)
 
+func clear_selection() -> void:
+	set_selected_skill("")
 
-func _skill_card(skill: Dictionary, ultimate: bool) -> PanelContainer:
-	var id := str(skill.get("id", ""))
-	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(0, 54 if ultimate else 48)
-	card.add_theme_stylebox_override("panel", _card_style(GOLD if ultimate else CYAN, false))
+func set_ultimate(data: Dictionary) -> void:
+	_ultimate.set_gauge(data)
 
-	var col := VBoxContainer.new()
-	col.alignment = BoxContainer.ALIGNMENT_CENTER
-	col.add_theme_constant_override("separation", 1)
-	card.add_child(col)
-
-	var name := Label.new()
-	name.text = str(skill.get("name", "Kỹ năng"))
-	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	name.add_theme_font_size_override("font_size", 8 if not ultimate else 9)
-	name.add_theme_color_override("font_color", GOLD if ultimate else TEXT)
-	col.add_child(name)
-
-	var meta := Label.new()
-	var cooldown := float(skill.get("cooldown_remaining", 0.0))
-	var blocked := str(skill.get("blocked_reason", ""))
-	if not blocked.is_empty():
-		meta.text = blocked
-	elif cooldown > 0.0:
-		meta.text = "%.1fs" % cooldown
-	elif bool(skill.get("ready", false)):
-		meta.text = "SẴN SÀNG"
-	else:
-		meta.text = "CHỜ"
-	meta.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	meta.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	meta.add_theme_font_size_override("font_size", 7)
-	meta.add_theme_color_override("font_color", MUTED)
-	col.add_child(meta)
-
-	if not id.is_empty():
-		_cards[id] = card
-	return card
-
-
-func _clear_row(row: HBoxContainer) -> void:
-	for child in row.get_children():
-		child.queue_free()
-
-
-func _card_style(accent: Color, selected: bool) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.012, 0.030, 0.045, 0.94)
-	style.border_color = accent if selected else Color(accent.r, accent.g, accent.b, 0.28)
-	style.set_border_width_all(2 if selected else 1)
-	style.set_corner_radius_all(10)
-	return style
+func apply_event(event: Dictionary) -> void:
+	if str(event.get("actor", "")) != "player":
+		return
+	var id := str(event.get("skill_id", ""))
+	if not _cards.has(id):
+		return
+	var slot := _cards[id] as CombatSkillSlot
+	var data := slot.skill.duplicate(true)
+	var payload: Dictionary = event.get("payload", {})
+	# Never start a cooldown from authored total or invent availability.
+	for key in ["cooldownRemaining", "cooldownTotal", "blockedReason", "ready", "castState", "channelState"]:
+		if payload.has(key):
+			var vm_key: String = str({"cooldownRemaining":"cooldown_remaining", "cooldownTotal":"cooldown_total", "blockedReason":"blocked_reason", "castState":"cast_state", "channelState":"channel_state"}.get(key, key))
+			data[vm_key] = payload[key]
+	slot.bind(data)
