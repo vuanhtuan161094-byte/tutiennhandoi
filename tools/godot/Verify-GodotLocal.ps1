@@ -258,11 +258,27 @@ Write-Host "[6/8] Running bounded Godot smoke ..."
 & $Godot --headless --path $GodotProject --quit-after 300
 Assert-Exit "Godot bounded smoke"
 
-Write-Host "[7/8] Running Stagehand structural scenario ..."
+Write-Host "[7/8] Running Stagehand structural scenarios ..."
 $structuralOut = Join-Path $ArtifactsRoot "stagehand-runtime"
 New-Item -ItemType Directory -Force -Path $structuralOut | Out-Null
-& $StagehandExe run (Join-Path $GodotProject "tests\stagehand\home_runtime_smoke.json") --out-dir $structuralOut --godot-bin $Godot
-Assert-Exit "Stagehand runtime smoke"
+$homeStructuralOut = Join-Path $structuralOut "home"
+New-Item -ItemType Directory -Force -Path $homeStructuralOut | Out-Null
+& $StagehandExe run (Join-Path $GodotProject "tests\stagehand\home_runtime_smoke.json") --out-dir $homeStructuralOut --godot-bin $Godot
+Assert-Exit "Stagehand Home runtime smoke"
+
+$oldQa = $env:TUTIEN_GODOT_QA
+$oldDiagnostic = $env:TUTIEN_GODOT_BRIDGE_DIAGNOSTIC
+try {
+    $env:TUTIEN_GODOT_QA = "1"
+    $env:TUTIEN_GODOT_BRIDGE_DIAGNOSTIC = "1"
+    $combatStructuralOut = Join-Path $structuralOut "combat"
+    New-Item -ItemType Directory -Force -Path $combatStructuralOut | Out-Null
+    & $StagehandExe run (Join-Path $GodotProject "tests\stagehand\combat_runtime_smoke.json") --out-dir $combatStructuralOut --godot-bin $Godot
+    Assert-Exit "Stagehand Combat runtime smoke"
+} finally {
+    $env:TUTIEN_GODOT_QA = $oldQa
+    $env:TUTIEN_GODOT_BRIDGE_DIAGNOSTIC = $oldDiagnostic
+}
 
 if (-not $SkipVisual) {
     if (Test-Path $ApprovedBaseline) {

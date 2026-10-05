@@ -174,6 +174,7 @@ func _build() -> void:
 	enemy_head.add_child(_enemy_meta)
 
 	_enemy_hp = ProgressBar.new()
+	_enemy_hp.name = "CombatEnemyHP"
 	_enemy_hp.max_value = 100
 	_enemy_hp.value = 100
 	_enemy_hp.show_percentage = false
@@ -183,6 +184,7 @@ func _build() -> void:
 	enemy_col.add_child(_enemy_hp_text)
 
 	_enemy_break = ProgressBar.new()
+	_enemy_break.name = "CombatEnemyBreak"
 	_enemy_break.max_value = 100
 	_enemy_break.value = 100
 	_enemy_break.show_percentage = false
@@ -214,6 +216,7 @@ func _build() -> void:
 	field.add_child(_player_actor)
 
 	_tactical = Label.new()
+	_tactical.name = "CombatTacticalLane"
 	_tactical.anchor_left = 0.08
 	_tactical.anchor_right = 0.92
 	_tactical.anchor_top = 0.44
@@ -226,6 +229,7 @@ func _build() -> void:
 	field.add_child(_tactical)
 
 	_result = Label.new()
+	_result.name = "CombatResult"
 	_result.anchor_left = 0.18
 	_result.anchor_right = 0.82
 	_result.anchor_top = 0.38
@@ -250,6 +254,7 @@ func _build() -> void:
 	player_col.add_child(_player_name)
 
 	_player_hp = ProgressBar.new()
+	_player_hp.name = "CombatPlayerHP"
 	_player_hp.max_value = 100
 	_player_hp.value = 100
 	_player_hp.show_percentage = false
@@ -262,6 +267,7 @@ func _build() -> void:
 	resource_row.add_theme_constant_override("separation", 6)
 	player_col.add_child(resource_row)
 	_spirit = ProgressBar.new()
+	_spirit.name = "CombatSpirit"
 	_spirit.max_value = 100
 	_spirit.value = 100
 	_spirit.show_percentage = false
@@ -270,6 +276,7 @@ func _build() -> void:
 	_spirit_text = _small_label("CN")
 	resource_row.add_child(_spirit_text)
 	_ultimate = ProgressBar.new()
+	_ultimate.name = "CombatUltimate"
 	_ultimate.max_value = 100
 	_ultimate.value = 0
 	_ultimate.show_percentage = false

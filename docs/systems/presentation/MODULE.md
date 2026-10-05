@@ -8,8 +8,8 @@ Present authoritative game state clearly without becoming a gameplay authority.
 
 ## Platforms / surfaces
 
-- Existing web/DOM/Pixi presentation remains a live reference/regression surface.
-- Godot 4.7.2 is the production presentation/client target currently tracked by the project.
+- Existing web/DOM/Pixi Combat presentation is a legacy/debug/regression reference surface, not layout/design authority.
+- Godot 4.7.2 is the production presentation/client target. New Combat presentation is rebuilt Godot-first from canonical backend DTO/events.
 - Primary mobile reference viewport: 390×844; responsive behavior must not hard-code one canvas.
 
 ## Submodules

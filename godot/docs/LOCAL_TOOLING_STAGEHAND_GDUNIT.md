@@ -44,7 +44,7 @@ The gate performs, in order:
 4. GdUnit4 tests.
 5. Canonical bridge action/save smoke.
 6. Bounded Godot runtime smoke.
-7. Stagehand structural Home scenario against the real game/backend.
+7. Stagehand structural Home + Godot-first Combat scenarios against the real game/backend.
 8. Visual gate:
    - no approved baseline -> deterministic 390x844 capture;
    - approved baseline present -> deterministic screenshot diff.
@@ -104,6 +104,7 @@ GdUnit4:
 
 Stagehand:
 - res://tests/stagehand/home_runtime_smoke.json
+- res://tests/stagehand/combat_runtime_smoke.json
 - res://tests/stagehand/home_visual_capture.json
 - res://tests/stagehand/home_visual_regression.json
 

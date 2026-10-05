@@ -1,6 +1,6 @@
 # MODULE — COMBAT UI/UX V1
 
-Status: **ACTIVE — C0A DESIGN COMPLETE / C0B IMPLEMENTATION NEXT**
+Status: **ACTIVE — GODOT-FIRST STATIC CANDIDATE / EXECUTABLE GATE PENDING**
 
 Updated: 2026-10-05
 
@@ -68,7 +68,8 @@ Execution plan:
 | Phase | Scope | State |
 |---|---|---|
 | C0A | Source audit + architecture/data-contract design | **DESIGN COMPLETE** |
-| C0B | Combat bridge/view-model implementation + tests | **NEXT — requires executable gate** |
+| C0B / GCombat-0 | Combat bridge/view-model implementation + tests | **STATIC CANDIDATE — GATE PENDING** |
+| GCombat-1 | Godot-first playable Combat skeleton | **STATIC CANDIDATE — GATE PENDING** |
 | C1 | Combat screen shell / battlefield geometry | PLANNED |
 | C2 | Vital HUD | PLANNED |
 | C3 | Skill rail | PLANNED |
@@ -87,9 +88,19 @@ No Combat UI slice is LOCKED without:
 - screenshot at relevant mobile viewport(s);
 - explicit user visual approval.
 
+## Production presentation decision
+
+Godot is the production Combat presentation owner.
+
+The old web DOM/CSS/Pixi Combat surface is retained for compatibility, debugging and regression reference only. Do not port its geometry or styling into Godot.
+
+Current production path:
+
+`CombatKernel / Session → Godot Combat DTO/events → BackendBridge → CombatViewModel → CombatScreen / DaoWidget / SkillRail / VFX`
+
 ## Current next action
 
-Implement **C0B** when the executable Godot/bridge gate is available. C1–C4 logical layout is already specified and must not be implemented by guessing around the missing combat DTO.
+Run `KIEM_TRA_GAME.cmd` on the current exact candidate when the Windows Godot environment is available. Fix import/parser/unit/bridge/Stagehand failures before adding visual polish.
 
 C0 audit: docs/ui/COMBAT_UI_C0_ARCHITECTURE_AUDIT_20261005.md.
 

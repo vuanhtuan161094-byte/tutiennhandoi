@@ -1,8 +1,25 @@
 # COMBAT UI C0 — ARCHITECTURE / DATA-CONTRACT AUDIT
 
-Status: **C0A DESIGN COMPLETE — C0B IMPLEMENTATION NOT YET STARTED**
+Status: **C0A DESIGN COMPLETE — C0B/GCOMBAT-0 STATIC IMPLEMENTATION PRESENT; EXECUTABLE GATE PENDING**
 Audit HEAD: ffe863d800937dc969f7c91424f20b0c0d8a2a19
 Date: 2026-10-05
+
+## Implementation update — Godot-first pivot
+
+The user explicitly chose a Godot-first Combat rebuild. Web Combat presentation remains a legacy/debug/regression consumer only.
+
+Static implementation now exists on main for:
+- canonical Godot Combat DTO + /combat route;
+- canonical Boss fight playback events;
+- CombatViewModel;
+- cursor-deduplicated timestamp event player;
+- Godot Combat screen skeleton;
+- read-only 1 Basic + 5 Active + 1 Ultimate information rail;
+- generic Dao widget with locked production labels/boundaries;
+- Home → Combat route;
+- bridge/GdUnit/Stagehand candidate tests.
+
+This is **not a runtime PASS**. It remains a static candidate until `KIEM_TRA_GAME.cmd` executes successfully.
 
 ## 1. Decision
 
@@ -52,12 +69,9 @@ No GDScript formula may reconstruct damage, cooldown, Dao resources, Boss outcom
 
 ### Godot presentation
 
-- godot/backend/bridge_server.mjs currently exposes only /home, /character and actions.
-- godot/scripts/core/backend_bridge.gd only knows Home and Character DTOs.
-- There is **no canonical Godot Combat DTO, CombatViewModel, combat poll/event route or combat scene authority yet**.
-- godot/scripts/combat/combat_feedback.gd already provides presentation-only shake/flash/punch/damage-number helpers and correctly refuses to own gameplay timing.
-
-This missing Combat DTO is the main C0 implementation gap.
+- The audit originally found no Godot Combat lane. That gap is now implemented as a static candidate through `godot/backend/combat_presentation.mjs`, `/combat`, `BackendBridge`, `CombatViewModel`, `CombatEventPlayer`, and `CombatScreen`.
+- `godot/scripts/combat/combat_feedback.gd` remains the presentation-only impact helper and still refuses to own gameplay timing.
+- Runtime correctness remains unproven until the Godot gate runs.
 
 ## 3. Current presentation-model gap
 
