@@ -112,12 +112,24 @@
       }
     },
     {
-      "name": "Combat Dao widget exists",
-      "action": "wait_for_node",
+      "action": "wait_for_property",
+      "name": "Unselected canonical Dao DTO has bound",
       "with": {
+        "operator": "equals",
+        "expected_value": "BẢN ĐẠO",
+        "selector": "name:CombatDaoTitle",
+        "timeout_ms": 5000,
+        "property": "text"
+      }
+    },
+    {
+      "action": "assert_property",
+      "name": "Unselected Dao does not fabricate visible meters",
+      "with": {
+        "operator": "equals",
         "selector": "name:CombatDaoWidget",
-        "state": "visible",
-        "timeout_ms": 5000
+        "property": "visible",
+        "expected": false
       }
     },
     {
