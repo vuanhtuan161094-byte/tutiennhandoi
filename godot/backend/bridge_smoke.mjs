@@ -187,6 +187,27 @@ try{
   assert(Number(action.result?.hoursUsed)>0,'Canonical retreat result must report hoursUsed > 0');
   assert(Number(action.result?.gained)>0,'Canonical retreat result must report gained > 0');
 
+  const prefightCombat=await request('/combat');
+  validateCombat(prefightCombat);
+  assert(prefightCombat.snapshot?.challenge?.canStart===true,'Luyện Khí floor 1 must expose canonical Boss challenge');
+  assert(Number(prefightCombat.snapshot?.player?.hp?.max)>1,'Combat snapshot must use canonical max HP');
+  assert(Number(prefightCombat.snapshot?.player?.spirit?.max)>1,'Combat snapshot must use canonical Chân Nguyên standard');
+
+  const fought=await request('/action',{method:'POST',body:{action:'fightEndlessFloor'}});
+  assert(fought.result?.ok===true,`Canonical Combat action failed: ${JSON.stringify(fought.result)}`);
+  validateCombat(fought.combat);
+  assert(fought.combat.snapshot?.mode==='playback','Combat action must publish playback snapshot');
+  assert(String(fought.result?.rewardContext||'')==='progression-only','Boss combat must remain progression-only');
+  assert(fought.result?.directBossLoot===false,'Boss combat must not mint direct loot');
+  assert(Number(fought.result?.eventCount)>0,'Canonical Combat action must expose presentation events');
+  assert(Array.isArray(fought.combat.events)&&fought.combat.events.length===Number(fought.result.eventCount),'Combat event count mismatch');
+  assert(fought.combat.events.some(event=>event.type==='battle.start'),'Combat playback missing battle.start');
+  assert(fought.combat.events.some(event=>event.type==='battle.end'),'Combat playback missing battle.end');
+
+  const afterCursor=await request('/combat?after='+String(fought.combat.eventCursor));
+  validateCombat(afterCursor);
+  assert(afterCursor.events.length===0,'Combat cursor replay must be idempotent');
+
   await sleep(2300);
   await request('/diagnostic/shutdown',{method:'POST',body:{}});
   await Promise.race([

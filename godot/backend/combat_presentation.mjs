@@ -1,4 +1,5 @@
 import { v2ResourceProjection } from '../../dist/core/battle-dao-v2-runtime-base.js';
+import { combatMaxHp, combatSpiritStandard } from '../../dist/core/combat-rules.js';
 
 export const GODOT_COMBAT_SCHEMA='godot-combat-bridge.v1';
 export const COMBAT_PRESENTATION_SCHEMA='combat-presentation.v2';
@@ -145,8 +146,8 @@ export function buildCombatSnapshot({session,api,registry}){
   const player=session.personalCombatEntity();
   const character=api.getCharacter();
   const mainDaoId=String(specialization?.mainDaoId||player?.combatBuildV117?.mainDaoId||'');
-  const maxHp=Math.max(1,finite(player?.stats?.maxHp,1));
-  const maxSpirit=Math.max(1,finite(player?.stats?.maxSpirit,1));
+  const maxHp=Math.max(1,finite(combatMaxHp(player?.stats||{}),1));
+  const maxSpirit=Math.max(1,finite(combatSpiritStandard(player?.stats||{}),1));
   const monster=hunt?.monster||{};
   const realmReady=finite(session?.stateValue?.realm?.maxRealmOrder)>=1;
   const canStart=Boolean(realmReady&&hunt?.bossChallengeAvailable&&hunt?.canFight);
