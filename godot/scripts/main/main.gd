@@ -62,6 +62,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_run_qa_fixture("tribulation", &"home", "Độ Kiếp gate preview")
 		KEY_F8:
 			_run_qa_fixture("clear", &"home", "Clear QA fixture")
+		KEY_F9:
+			_run_qa_fixture("artifact", &"combat", "Ngự Khí canonical loadout")
 		_:
 			return
 	get_viewport().set_input_as_handled()
@@ -273,7 +275,7 @@ func _on_action_completed(action_id: String, result: Dictionary) -> void:
 				hud.set_status_message("QA fixture đã tắt")
 	elif action_id == "fightEndlessFloor":
 		if bool(result.get("ok", false)):
-			combat_screen.set_status_message("Đang tái hiện giao tranh canonical…")
+			combat_screen.set_status_message("")
 		else:
 			combat_screen.set_status_message(str(result.get("error", "Không thể khiêu chiến")))
 	elif action_id == "selectEndlessFloor":
@@ -419,7 +421,7 @@ func _on_combat_back_requested() -> void:
 
 
 func _on_combat_fight_requested() -> void:
-	combat_screen.set_status_message("Đang kết toán trận đấu bằng CombatKernel V3…")
+	combat_screen.set_status_message("Đang vào trận…")
 	backend_bridge.perform_action("fightEndlessFloor")
 
 

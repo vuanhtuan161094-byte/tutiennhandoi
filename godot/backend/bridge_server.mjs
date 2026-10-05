@@ -10,6 +10,8 @@ import { thanhHaWorld } from '../../dist/content/world.js';
 import { GameplayFacade } from '../../dist/core/gameplay.js';
 import { createGameApplicationApi } from '../../dist/core/game-api.js';
 import { SimulationSession } from '../../dist/core/session.js';
+import { battleDaoAutoRotationV127 } from '../../dist/core/battle-dao-rotation-v127.js';
+import { battleDaoV2Catalog } from '../../dist/content/battle-dao-v2-catalog.js';
 import { createInitialLifeMeta } from '../../dist/core/life.js';
 import { buildWebClientViewPatch } from '../../dist/core/client-shell.js';
 import { createWebClientSave, parseWebClientSave } from '../../dist/core/web-save.js';
@@ -176,10 +178,26 @@ class GodotCanonicalRuntime {
       note:'Milestone blockers remain canonical; QA does not bypass dungeon prerequisites.',
     };
   }
+  prepareQaArtifact(){
+    this.newGame(161094);
+    // QA progression only; use canonical transitions/learning/loadout/Auto APIs.
+    // No fabricated combat result, damage, resource, gauge or readiness is injected.
+    while(this.session.stateValue.realm.maxRealmOrder<102){
+      const realm=registry.realm(this.session.stateValue.realm.realmId);
+      this.session.applyRealmTransitionV140(realm.nextRealmId,'diagnostic');
+    }
+    this.session.commitSpecializationV125('orthodox','artifact');
+    const catalog=battleDaoV2Catalog('artifact');
+    for(const row of catalog.tree)this.session.learnSkill(row.activeSkillId);
+    const ids=[catalog.basicSkillId,...['deploy','split','strike','merge','suppress'].map(id=>'skill.dao.artifact.'+id),catalog.ultimateSkillId];
+    this.session.setCombatLoadout(ids,battleDaoAutoRotationV127('artifact',ids));
+    this.dirty=true;
+    return {fixture:'artifact',canonical:true,realmOrder:this.session.stateValue.realm.maxRealmOrder,skillIds:this.session.canonicalActiveSkillIds()};
+  }
   setQaFixture(value){
     if(!QA_MODE)throw new Error('QA fixture chỉ khả dụng trong isolated QA mode.');
     const fixture=String(value||'').trim().toLowerCase();
-    const allowed=new Set(['clear','inventory','ling2','ling3','ling4','ascend','tribulation']);
+    const allowed=new Set(['clear','inventory','ling2','ling3','ling4','ascend','tribulation','artifact']);
     if(!allowed.has(fixture))throw new Error('QA fixture không hợp lệ: '+fixture);
     this.qaFixtureSeq+=1;
     if(fixture==='clear'){
@@ -192,6 +210,7 @@ class GodotCanonicalRuntime {
     if(fixture==='inventory')return this.seedQaInventory();
     if(fixture==='ascend')return this.prepareQaAscend();
     if(fixture==='tribulation')return this.prepareQaTribulation();
+    if(fixture==='artifact')return this.prepareQaArtifact();
     return {fixture,canonical:false,presentationOnly:true,multiplier:Number(fixture.slice(-1))||1};
   }
   homeView(){
