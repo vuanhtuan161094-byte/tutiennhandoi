@@ -6,6 +6,66 @@ const COMBAT_SCREEN := preload("res://scripts/combat/combat_screen.gd")
 const EVENT_PLAYER := preload("res://scripts/combat/combat_event_player.gd")
 const BRIDGE := preload("res://scripts/core/backend_bridge.gd")
 
+func test_production_layout_at_four_portrait_viewports() -> void:
+	for viewport_size in [Vector2i(360, 800), Vector2i(390, 844), Vector2i(412, 915), Vector2i(430, 932)]:
+		var viewport := SubViewport.new()
+		viewport.size = viewport_size
+		add_child(viewport)
+		var screen := COMBAT_SCREEN.new()
+		viewport.add_child(screen)
+		screen.bind(COMBAT_VIEW_MODEL.build(_valid_combat()))
+		await get_tree().process_frame
+		await get_tree().process_frame
+		var field := screen.find_child("CombatBattlefield", true, false) as Control
+		assert_float(field.size.y / viewport_size.y).is_greater_equal(0.55)
+		assert_float(field.get_global_rect().end.y).is_less_equal(screen._player_hud.get_global_rect().position.y)
+		var row := screen._skill_rail._active_row
+		assert_int(row.get_child_count()).is_equal(5)
+		for slot in row.get_children():
+			assert_float(slot.get_global_rect().position.x).is_greater_equal(8.0)
+			assert_float(slot.get_global_rect().end.x).is_less_equal(float(viewport_size.x - 8))
+			assert_float(slot.get_global_rect().position.y).is_equal(row.get_global_rect().position.y)
+		assert_float(screen._skill_rail._ultimate.get_global_rect().end.y).is_less_equal(float(viewport_size.y - 6))
+		assert_bool(screen._skill_rail._auto.is_visible_in_tree()).is_true()
+		assert_int(screen._skill_rail._cards.size()).is_equal(7)
+		assert_bool(screen._result.visible).is_false()
+		viewport.free()
+
+func test_tactical_priority_and_only_exported_cast_progress() -> void:
+	var screen := COMBAT_SCREEN.new()
+	add_child(screen)
+	screen.bind(COMBAT_VIEW_MODEL.build(_valid_combat()))
+	screen._on_combat_event({"type":"skill.cast.start", "actor":"enemy", "skill_name":"Boss cast", "payload":{"bossTelegraph":true, "castTime":4.0}})
+	screen._on_combat_event({"type":"skill.cast.start", "actor":"player", "skill_name":"Basic", "payload":{}})
+	assert_str(screen._tactical.text).is_equal("Boss cast")
+	assert_bool(screen._lane.progress.visible).is_true()
+	screen._lane._process(4.1)
+	screen._on_combat_event({"type":"boss.counter", "payload":{}})
+	screen._on_combat_event({"type":"combat.break", "payload":{"breakState":"broken"}})
+	assert_str(screen._tactical.text).is_equal("CỬA PHẢN CÔNG")
+	assert_bool(screen._lane.progress.visible).is_false()
+	screen.free()
+
+func test_read_only_rail_uses_exported_cooldown_and_one_gauge() -> void:
+	var screen := COMBAT_SCREEN.new()
+	add_child(screen)
+	var payload := _valid_combat()
+	payload.snapshot.player.ultimate.current = 73
+	screen.bind(COMBAT_VIEW_MODEL.build(payload))
+	assert_str(screen._skill_rail._ultimate._gauge_text.text).is_equal("73/100")
+	screen._on_combat_event({"type":"combat.resource", "actor":"player", "skill_id":"active.0", "payload":{"cooldownRemaining":4.3,"cooldownTotal":10.0}})
+	var slot := screen._skill_rail._cards["active.0"] as CombatSkillSlot
+	assert_str(slot._state.text).is_equal("4.3s")
+	screen._on_combat_event({"type":"combat.resource", "actor":"enemy", "skill_id":"active.0", "payload":{"cooldownRemaining":0,"resourceId":"artifactSourcesV2","resourceValue":0}})
+	assert_str(slot._state.text).is_equal("4.3s")
+	assert_int(int(screen._dao_widget._dao.meters[0].value)).is_equal(3)
+	assert_bool(slot.is_class("Button")).is_false()
+	screen._skill_rail.set_selected_skill("active.0")
+	assert_bool(slot.selected).is_true()
+	screen._on_combat_event({"type":"combat.resource", "actor":"enemy", "payload":{"ultimateGauge":100}})
+	assert_str(screen._skill_rail._ultimate._gauge_text.text).is_equal("73/100")
+	screen.free()
+
 
 func test_bridge_cursor_tracks_each_encounter_independently() -> void:
 	var bridge := BRIDGE.new()

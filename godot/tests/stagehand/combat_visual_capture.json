@@ -1,6 +1,6 @@
 {
   "name": "tutien-combat-visual-capture",
-  "description": "Capture actual canonical Combat at 390x844 after QA preparation and real ascension. Candidate only; no mocked fight or visual approval.",
+  "description": "Actual canonical Artifact seven-slot reference: isolated QA realm progression, canonical learning/loadout/Auto, real Boss fight; no fabricated resource, readiness or result.",
   "target": {
     "mode": "launch",
     "project_path": "../..",
@@ -30,94 +30,33 @@
       }
     },
     {
-      "name": "Prepare canonical breakthrough fixture",
-      "action": "press_key",
       "with": {
-        "key": "F6"
-      }
+        "key": "F9"
+      },
+      "name": "Prepare real canonical Artifact full loadout",
+      "action": "press_key"
     },
     {
-      "name": "Canonical breakthrough CTA appears",
-      "action": "wait_for_node",
       "with": {
-        "selector": "name:PrimaryCTA",
-        "state": "visible",
-        "timeout_ms": 10000
-      }
-    },
-    {
-      "name": "Perform canonical breakthrough",
-      "action": "click",
-      "with": {
-        "selector": "name:PrimaryCTA"
-      }
-    },
-    {
-      "name": "Combat quick action unlocks at Luyen Khi",
-      "action": "wait_for_property",
-      "with": {
-        "selector": "name:CombatAction",
-        "property": "disabled",
+        "selector": "name:CombatDaoTitle",
         "operator": "equals",
-        "expected_value": false,
         "timeout_ms": 15000,
-        "poll_interval_ms": 200
-      }
+        "expected_value": "NGỰ KHÍ",
+        "property": "text"
+      },
+      "name": "Artifact DTO reaches compact widget",
+      "action": "wait_for_property"
     },
     {
-      "name": "Open Godot Combat",
-      "action": "click",
       "with": {
-        "selector": "name:CombatAction"
-      }
-    },
-    {
-      "name": "Godot Combat screen owns the route",
-      "action": "wait_for_node",
-      "with": {
-        "selector": "name:CombatScreen",
-        "state": "visible",
-        "timeout_ms": 15000
-      }
-    },
-    {
-      "name": "Canonical challenge becomes available",
-      "action": "wait_for_property",
-      "with": {
-        "selector": "name:CombatChallenge",
-        "property": "disabled",
-        "operator": "equals",
-        "expected_value": false,
+        "selector": "name:CombatActive5",
+        "operator": "contains",
         "timeout_ms": 15000,
-        "poll_interval_ms": 200
-      }
-    },
-    {
-      "name": "Combat HUD core exists",
-      "action": "wait_for_node",
-      "with": {
-        "selector": "name:CombatPlayerHP",
-        "state": "visible",
-        "timeout_ms": 5000
-      }
-    },
-    {
-      "name": "Combat Dao widget exists",
-      "action": "wait_for_node",
-      "with": {
-        "selector": "name:CombatDaoWidget",
-        "state": "visible",
-        "timeout_ms": 5000
-      }
-    },
-    {
-      "name": "Combat skill rail exists",
-      "action": "wait_for_node",
-      "with": {
-        "selector": "name:CombatSkillRail",
-        "state": "visible",
-        "timeout_ms": 5000
-      }
+        "expected_value": "Trấn",
+        "property": "tooltip_text"
+      },
+      "name": "Fifth active slot has canonical skill",
+      "action": "wait_for_property"
     },
     {
       "name": "Capture Combat prefight 390x844",
@@ -127,10 +66,190 @@
       "action": "screenshot"
     },
     {
-      "name": "Run canonical Boss combat",
-      "action": "click",
       "with": {
-        "selector": "name:CombatChallenge"
+        "value": {
+          "x": 360,
+          "y": 800
+        },
+        "selector": "/root",
+        "property": "size"
+      },
+      "action": "set_property",
+      "name": "Resize size to 360x800"
+    },
+    {
+      "with": {
+        "value": {
+          "x": 360,
+          "y": 800
+        },
+        "selector": "/root",
+        "property": "content_scale_size"
+      },
+      "action": "set_property",
+      "name": "Resize content_scale_size to 360x800"
+    },
+    {
+      "with": {
+        "duration_ms": 200
+      },
+      "action": "sleep",
+      "name": "Settle responsive containers"
+    },
+    {
+      "with": {
+        "output": "combat-prefight-360x800.png"
+      },
+      "action": "screenshot",
+      "name": "Capture prefight 360x800"
+    },
+    {
+      "with": {
+        "value": {
+          "x": 412,
+          "y": 915
+        },
+        "selector": "/root",
+        "property": "size"
+      },
+      "action": "set_property",
+      "name": "Resize size to 412x915"
+    },
+    {
+      "with": {
+        "value": {
+          "x": 412,
+          "y": 915
+        },
+        "selector": "/root",
+        "property": "content_scale_size"
+      },
+      "action": "set_property",
+      "name": "Resize content_scale_size to 412x915"
+    },
+    {
+      "with": {
+        "duration_ms": 200
+      },
+      "action": "sleep",
+      "name": "Settle responsive containers"
+    },
+    {
+      "with": {
+        "output": "combat-prefight-412x915.png"
+      },
+      "action": "screenshot",
+      "name": "Capture prefight 412x915"
+    },
+    {
+      "with": {
+        "value": {
+          "x": 430,
+          "y": 932
+        },
+        "selector": "/root",
+        "property": "size"
+      },
+      "action": "set_property",
+      "name": "Resize size to 430x932"
+    },
+    {
+      "with": {
+        "value": {
+          "x": 430,
+          "y": 932
+        },
+        "selector": "/root",
+        "property": "content_scale_size"
+      },
+      "action": "set_property",
+      "name": "Resize content_scale_size to 430x932"
+    },
+    {
+      "with": {
+        "duration_ms": 200
+      },
+      "action": "sleep",
+      "name": "Settle responsive containers"
+    },
+    {
+      "with": {
+        "output": "combat-prefight-430x932.png"
+      },
+      "action": "screenshot",
+      "name": "Capture prefight 430x932"
+    },
+    {
+      "with": {
+        "value": {
+          "x": 390,
+          "y": 844
+        },
+        "selector": "/root",
+        "property": "size"
+      },
+      "action": "set_property",
+      "name": "Restore size to 390x844"
+    },
+    {
+      "with": {
+        "value": {
+          "x": 390,
+          "y": 844
+        },
+        "selector": "/root",
+        "property": "content_scale_size"
+      },
+      "action": "set_property",
+      "name": "Restore content_scale_size to 390x844"
+    },
+    {
+      "with": {
+        "duration_ms": 200
+      },
+      "action": "sleep",
+      "name": "Settle reference layout"
+    },
+    {
+      "name": "Focus game",
+      "action": "focus_window",
+      "with": {
+        "selector": "/root"
+      }
+    },
+    {
+      "name": "Focus Back",
+      "action": "press_key",
+      "with": {
+        "key": "Tab"
+      }
+    },
+    {
+      "name": "Key release",
+      "action": "sleep",
+      "with": {
+        "duration_ms": 150
+      }
+    },
+    {
+      "name": "Focus Challenge",
+      "action": "press_key",
+      "with": {
+        "key": "Tab"
+      }
+    },
+    {
+      "name": "Key release",
+      "action": "sleep",
+      "with": {
+        "duration_ms": 150
+      }
+    },
+    {
+      "name": "Activate real Challenge",
+      "action": "press_key",
+      "with": {
+        "key": "Space"
       }
     },
     {
@@ -160,28 +279,42 @@
       "action": "screenshot"
     },
     {
-      "name": "Combat route can return Home",
-      "action": "click",
       "with": {
-        "selector": "name:CombatBack"
-      }
+        "key": "Tab"
+      },
+      "action": "press_key",
+      "name": "Focus Back after playback"
     },
     {
-      "name": "Home returns after Combat",
-      "action": "wait_for_node",
       "with": {
+        "duration_ms": 150
+      },
+      "action": "sleep",
+      "name": "Release navigation key"
+    },
+    {
+      "with": {
+        "key": "Space"
+      },
+      "action": "press_key",
+      "name": "Return Home using real Back button"
+    },
+    {
+      "with": {
+        "timeout_ms": 5000,
         "selector": "name:HomeStage",
-        "state": "visible",
-        "timeout_ms": 5000
-      }
+        "state": "visible"
+      },
+      "action": "wait_for_node",
+      "name": "Home returns after Combat"
     },
     {
-      "name": "Scene tree remains inspectable",
-      "action": "tree",
       "with": {
         "root_path": "/root",
         "max_depth": 5
-      }
+      },
+      "action": "tree",
+      "name": "Scene tree remains inspectable"
     }
   ]
 }

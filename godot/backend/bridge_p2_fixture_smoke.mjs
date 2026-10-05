@@ -131,6 +131,16 @@ try{
   const blockedSummary=Array.isArray(blocked.data?.result?.summaryLines)?blocked.data.result.summaryLines.join(' · '):'';
   assert(blockedSummary.includes('Vạn Đạo Thiên Mạc'),`Expected canonical Great Vehicle milestone blocker, got ${blockedSummary}`);
 
+  const artifact=(await request('/action',{method:'POST',body:{action:'diagnosticFixture',fixture:'artifact'}})).data;
+  assert(artifact.result?.canonical===true,'Artifact fixture must use canonical progression');
+  const prefight=(await request('/combat')).data;
+  assert(prefight.snapshot.mainDaoId==='artifact','Reference must project Artifact');
+  assert(prefight.snapshot.skills.length===7,'Reference must own 1 Basic + 5 Active + 1 Ultimate');
+  const artifactFight=(await request('/action',{method:'POST',body:{action:'fightEndlessFloor'}})).data;
+  assert(artifactFight.result?.ok===true,`Artifact reference fight failed: ${JSON.stringify(artifactFight.result)}`);
+  assert(artifactFight.result.directBossLoot===false,'Artifact reference must not create Boss loot');
+  assert(artifactFight.combat.events.some(event=>event.type==='combat.daoProjection'),'Reference must forward actual Dao projection events');
+
   const cleared=(await request('/action',{
     method:'POST',
     body:{action:'diagnosticFixture',fixture:'clear'},
