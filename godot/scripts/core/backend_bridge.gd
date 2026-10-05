@@ -2,6 +2,8 @@ extends Node
 
 signal home_updated(home: Dictionary)
 signal character_updated(character_view: Dictionary)
+signal combat_updated(combat_view: Dictionary)
+signal combat_events_received(encounter_id: String, events: Array)
 signal bridge_status_changed(online: bool, message: String)
 signal action_failed(message: String)
 signal action_completed(action_id: String, result: Dictionary)
@@ -11,11 +13,15 @@ const BASE_URL := "http://127.0.0.1:4192"
 const POLL_SECONDS := 1.0
 const EXPECTED_HOME_SCHEMA := "godot-home-bridge.v1"
 const EXPECTED_CHARACTER_SCHEMA := "godot-character-bridge.v1"
+const EXPECTED_COMBAT_SCHEMA := "godot-combat-bridge.v1"
+const EXPECTED_COMBAT_AUTHORITY := "combat-kernel.v3"
+const EXPECTED_DAO_AUTHORITY := "battle-dao.runtime.v2"
 const EXPECTED_BRIDGE_VERSION := "godot-bridge.v2"
 
 var _poll_http: HTTPRequest
 var _character_http: HTTPRequest
 var _action_http: HTTPRequest
+var _combat_http: HTTPRequest
 var _timer: Timer
 var _bridge_pid: int = -1
 var _online := false
@@ -23,6 +29,9 @@ var _status_message := ""
 var _poll_inflight := false
 var _character_inflight := false
 var _action_inflight := false
+var _combat_inflight := false
+var _combat_polling := false
+var _combat_cursor := 0
 var _pending_action_id := ""
 
 func _ready() -> void:
@@ -41,10 +50,16 @@ func _ready() -> void:
 	add_child(_action_http)
 	_action_http.request_completed.connect(_on_action_completed)
 
+	_combat_http = HTTPRequest.new()
+	_combat_http.name = "CombatHttp"
+	add_child(_combat_http)
+	_combat_http.request_completed.connect(_on_combat_completed)
+
 	_timer = Timer.new()
 	_timer.wait_time = POLL_SECONDS
 	_timer.autostart = true
 	_timer.timeout.connect(refresh_home)
+	_timer.timeout.connect(_poll_combat_if_enabled)
 	add_child(_timer)
 
 	_start_local_bridge()
@@ -104,6 +119,30 @@ func refresh_character(selected_item_id: String = "") -> void:
 		_character_inflight = false
 		_set_online(false, "Không tải được Character DTO")
 
+func set_combat_polling(enabled: bool) -> void:
+	_combat_polling = enabled
+	if enabled:
+		refresh_combat(true)
+
+
+func refresh_combat(reset_cursor: bool = false) -> void:
+	if reset_cursor:
+		_combat_cursor = 0
+	if _combat_inflight:
+		return
+	_combat_inflight = true
+	var endpoint := BASE_URL + "/combat?after=" + str(_combat_cursor)
+	var err := _combat_http.request(endpoint)
+	if err != OK:
+		_combat_inflight = false
+		_set_online(false, "Không tải được Combat DTO")
+
+
+func _poll_combat_if_enabled() -> void:
+	if _combat_polling:
+		refresh_combat(false)
+
+
 func perform_action(action_id: String, payload: Dictionary = {}) -> void:
 	if _action_inflight:
 		action_failed.emit("Đang xử lý hành động trước")
@@ -144,6 +183,27 @@ func _on_character_completed(_result: int, response_code: int, _headers: PackedS
 	_set_online(true, "Canonical backend connected")
 	character_updated.emit(data)
 
+func _on_combat_completed(_result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	_combat_inflight = false
+	var data := _decode_response(response_code, body)
+	if data.is_empty():
+		return
+	_consume_combat(data)
+
+
+func _consume_combat(data: Dictionary) -> void:
+	if not _validate_combat(data):
+		return
+	_set_online(true, "Canonical backend connected")
+	var snapshot = data.get("snapshot", {})
+	var encounter_id := str(snapshot.get("encounterId", "")) if typeof(snapshot) == TYPE_DICTIONARY else ""
+	var events = data.get("events", [])
+	_combat_cursor = maxi(_combat_cursor, int(data.get("eventCursor", _combat_cursor)))
+	combat_updated.emit(data)
+	if typeof(events) == TYPE_ARRAY and not events.is_empty():
+		combat_events_received.emit(encounter_id, events)
+
+
 func _on_action_completed(_result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	_action_inflight = false
 	var action_id := _pending_action_id
@@ -164,6 +224,9 @@ func _on_action_completed(_result: int, response_code: int, _headers: PackedStri
 
 	_set_online(true, "Canonical backend connected")
 	home_updated.emit(home)
+	var combat = data.get("combat", {})
+	if _combat_polling and typeof(combat) == TYPE_DICTIONARY and not combat.is_empty():
+		_consume_combat(combat)
 	var result = data.get("result", {})
 	action_completed.emit(action_id, result if typeof(result) == TYPE_DICTIONARY else {})
 
@@ -197,6 +260,26 @@ func _validate_home(home: Dictionary) -> bool:
 		_set_online(false, "Sai cultivation authority")
 		return false
 	return true
+
+func _validate_combat(view: Dictionary) -> bool:
+	if str(view.get("schema", "")) != EXPECTED_COMBAT_SCHEMA:
+		_set_online(false, "Sai Combat schema")
+		return false
+	if str(view.get("bridgeVersion", "")) != EXPECTED_BRIDGE_VERSION:
+		_set_online(false, "Combat bridge version không khớp")
+		return false
+	var authority = view.get("authority", {})
+	if typeof(authority) != TYPE_DICTIONARY:
+		_set_online(false, "Combat thiếu authority")
+		return false
+	if str(authority.get("combat", "")) != EXPECTED_COMBAT_AUTHORITY or str(authority.get("dao", "")) != EXPECTED_DAO_AUTHORITY:
+		_set_online(false, "Combat authority không khớp")
+		return false
+	if typeof(view.get("snapshot", null)) != TYPE_DICTIONARY or typeof(view.get("events", null)) != TYPE_ARRAY:
+		_set_online(false, "Combat DTO thiếu snapshot/events")
+		return false
+	return true
+
 
 func _validate_character(view: Dictionary) -> bool:
 	if str(view.get("schema", "")) != EXPECTED_CHARACTER_SCHEMA:
