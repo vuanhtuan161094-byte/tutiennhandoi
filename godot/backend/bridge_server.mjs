@@ -18,7 +18,6 @@ import { highestClearedDungeonFloor } from '../../dist/core/dungeon.js';
 import { tribulationMilestoneBlockersV113 } from '../../dist/core/progression-closure-v113.js';
 import { equipmentSetDefinitionV142 } from '../../dist/core/equipment-v142.js';
 import { grantEquipmentFragmentRankV142 } from '../../dist/core/equipment-fragments-v142.js';
-import { grantEquipmentSetFragmentV142 } from '../../dist/core/equipment-set-fragments-v142.js';
 import { applyBodyDaoAutoPresetV1, bodyDaoAutoUiV1, normalizeBodyDaoAutoPresetV1 } from '../../dist/core/body-dao-auto-v1.js';
 import { buildCombatSnapshot, buildGodotCombatView, createCombatPlayback } from './combat_presentation.mjs';
 
@@ -121,9 +120,6 @@ class GodotCanonicalRuntime {
     this.newGame(161094);
     const state=this.session.stateValue;
     grantEquipmentFragmentRankV142(state,0,10000,'godot-p2-qa');
-    for(const setId of ['set.v142.attire.metal','set.v142.jewelry.huyen_nguyen']){
-      grantEquipmentSetFragmentV142(state,setId,500,'godot-p2-qa',state.equipment);
-    }
     const craft=(slot)=>{
       this.api.perform({type:'craftEquipmentV142',slot,rankIndex:0});
       const items=Array.isArray(this.session.stateValue?.equipment?.items)?this.session.stateValue.equipment.items:[];
@@ -135,12 +131,6 @@ class GodotCanonicalRuntime {
     }
     const attireIds=[weaponIds[0],craft('head'),craft('robe'),craft('gloves')].filter(Boolean);
     const jewelryIds=[craft('necklace'),craft('ring'),craft('talisman')].filter(Boolean);
-    for(const itemId of attireIds.slice(0,3)){
-      this.api.perform({type:'engraveEquipmentSetV142',itemId,setId:'set.v142.attire.metal'});
-    }
-    for(const itemId of jewelryIds.slice(0,2)){
-      this.api.perform({type:'engraveEquipmentSetV142',itemId,setId:'set.v142.jewelry.huyen_nguyen'});
-    }
     if(attireIds[0])this.api.perform({type:'equip',itemId:attireIds[0]});
     if(attireIds[2])this.api.perform({type:'equip',itemId:attireIds[2]});
     if(jewelryIds[1])this.api.perform({type:'equip',itemId:jewelryIds[1]});

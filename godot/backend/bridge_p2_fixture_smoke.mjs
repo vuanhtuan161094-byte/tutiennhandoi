@@ -102,14 +102,15 @@ try{
   assert(inventoryFixture.result?.canonical===true,'Inventory fixture must report canonical=true');
   assert(Number(inventoryFixture.result?.itemCount)>=7,`Inventory fixture seed produced ${inventoryFixture.result?.itemCount??0} canonical items`);
   assert(Number(inventoryFixture.result?.rank0FragmentBalance)>=0,'Rank-0 fragment wallet missing after canonical seed');
-  assert(Number(inventoryFixture.result?.attireSetFragmentBalance)>=0,'Attire Set fragment wallet missing after canonical seed');
-  assert(Number(inventoryFixture.result?.jewelrySetFragmentBalance)>=0,'Jewelry Set fragment wallet missing after canonical seed');
+  assert(Number(inventoryFixture.result?.attireSetFragmentBalance)===0,'Retired attire Set fragments must not be minted');
+  assert(Number(inventoryFixture.result?.jewelrySetFragmentBalance)===0,'Retired jewelry Set fragments must not be minted');
   const character=(await request('/character')).data;
   const items=Array.isArray(character?.equipmentInventory)?character.equipmentInventory:[];
   assert(items.length>=7,`Expected >=7 canonical QA items, got ${items.length}`);
   assert(items.some(item=>item?.isV142===true||item?.schema==='equipment.v142'),'QA inventory must contain V142 items');
-  assert(items.some(item=>String(item?.setId||'').startsWith('set.v142.attire.')),'QA inventory must contain attire Set item');
-  assert(items.some(item=>String(item?.setId||'').startsWith('set.v142.jewelry.')),'QA inventory must contain jewelry Set item');
+  assert(items.every(item=>!item?.setId),'Fresh canonical QA inventory must not revive retired Sets');
+  const retiredEngrave=(await request('/action',{method:'POST',body:{action:'engraveEquipmentSetV142',itemId:items[0].id,setId:'set.v142.attire.metal'}})).data;
+  assert(retiredEngrave.result?.ok===false&&JSON.stringify(retiredEngrave.result).includes('retire'),'Canonical retired engraving must be rejected');
 
   const tribulationFixture=(await request('/action',{
     method:'POST',
