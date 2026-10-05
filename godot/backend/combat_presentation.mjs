@@ -58,8 +58,10 @@ export function projectDaoForGodot(session,mainDaoId,player){
     out.meters.push(meter('fistPassiveStack','Liên Kình',p.fistPassiveStack,p.fistPassiveStackCap||20));
     out.flags.push(flag('fistDomain','Quyền Vực',finite(p.fistDomainUntil)>0));
   }else if(id==='body'){
+    // Main Body production has exactly one short-cycle player-facing resource.
+    // bodyPassiveStack/Huyết Khí is compatibility data and must stay hidden.
     out.meters.push(meter('counterForce','Phản Thế',p.counterForce,100));
-    out.meters.push(meter('bodyPassiveStack','Thể Ý',p.bodyPassiveStack,p.bodyPassiveStackCap||20));
+    out.flags.push(flag('bodyPerfect','Chân Thân Viên Mãn',finite(p.counterForce)>=100));
   }else if(id==='spell'){
     out.meters.push(meter('lawWheel','Pháp Luân',p.lawWheel,3));
     out.meters.push(meter('spellPassiveStack','Pháp Ý',p.spellPassiveStack,p.spellPassiveStackCap||20));

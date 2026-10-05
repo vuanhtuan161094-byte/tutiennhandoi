@@ -374,12 +374,14 @@ func _on_home_animation_preset_requested(preset_id: StringName) -> void:
 	hud.set_home_animation_preset(preset_id)
 
 func _on_route_changed(route_id: StringName) -> void:
-	if route_id not in [&"home", &"character"]:
+	if route_id not in [&"home", &"character", &"combat"]:
 		# Never leave Home visible while a non-existent destination looks selected.
 		# Until a Godot screen exists, Home remains the truthful active surface.
 		nav.set_route(&"home")
 		character_screen.visible = false
 		character_screen.set_presentation_active(false)
+		combat_screen.set_presentation_active(false)
+		backend_bridge.set_combat_polling(false)
 		character_screen.hide_detail()
 		stage.visible = true
 		hud.visible = true

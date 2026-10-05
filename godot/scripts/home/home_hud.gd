@@ -192,7 +192,7 @@ func bind(vm: Dictionary) -> void:
 	var home_context: Dictionary = vm.get("context", {})
 	var hunt_context = home_context.get("hunt", {})
 	var hunt: Dictionary = hunt_context if typeof(hunt_context) == TYPE_DICTIONARY else {}
-	var combat_enabled := int(hunt.get("highestUnlockedFloor", 0)) > 0
+	var combat_enabled := int(identity.get("realm_order", 0)) >= 1
 	_set_action_enabled(combat_button, combat_action_visual, combat_subtitle_label, combat_enabled, "Luyện Khí mới mở")
 	if combat_enabled:
 		combat_subtitle_label.text = "Bí Cảnh · T%d" % maxi(1, int(hunt.get("selectedFloor", 1)))

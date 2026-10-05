@@ -18,6 +18,25 @@ func test_build_maps_canonical_combat_contract() -> void:
 	assert_int(int(vm["event_cursor"])).is_equal(2)
 
 
+func test_body_projection_contract_does_not_expose_legacy_huyet_khi_meter() -> void:
+	var payload := _valid_combat()
+	payload["snapshot"]["mainDaoId"] = "body"
+	payload["snapshot"]["dao"] = {
+		"id": "body",
+		"label": "Thể Đạo",
+		"anchorKind": "self",
+		"meters": [
+			{"id": "counterForce", "label": "Phản Thế", "value": 100, "max": 100, "targetOwned": false},
+		],
+		"flags": [{"id": "bodyPerfect", "label": "Chân Thân Viên Mãn", "active": true}],
+		"detail": {},
+	}
+	var vm := COMBAT_VIEW_MODEL.build(payload)
+	assert_int(int(vm["dao"]["meters"].size())).is_equal(1)
+	assert_str(str(vm["dao"]["meters"][0]["id"])).is_equal("counterForce")
+	assert_str(str(vm["dao"]["meters"][0]["label"])).is_equal("Phản Thế")
+
+
 func test_build_rejects_wrong_combat_authority() -> void:
 	var payload := _valid_combat()
 	payload["authority"]["combat"] = "combat-kernel.v2"

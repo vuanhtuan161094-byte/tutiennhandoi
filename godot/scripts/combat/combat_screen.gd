@@ -94,7 +94,9 @@ func bind(vm: Dictionary) -> void:
 	_status.text = "" if can_start else str(challenge.get("blocked_reason", ""))
 
 	var result: Dictionary = vm.get("result", {})
-	_result.visible = not result.is_empty()
+	# A playback snapshot already knows the canonical outcome, but presentation must
+	# not reveal it before the timestamped event stream reaches battle.end.
+	_result.visible = not result.is_empty() and str(vm.get("mode", "prefight")) != "playback"
 	if not result.is_empty():
 		_result.text = "TRẤN SÁT" if bool(result.get("won", false)) else "THẤT BẠI"
 
