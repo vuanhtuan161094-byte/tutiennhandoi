@@ -1,6 +1,6 @@
 # COMBAT UI/UX V1 — EXECUTION PLAN
 
-Status: **ACTIVE PLAN**  
+Status: **ACTIVE PLAN — C0A DESIGN COMPLETE**  
 Owner: Presentation  
 Gameplay authority: read-only locked Combat Backend + 8 Main Dao  
 Primary viewport: 390×844, responsive rather than fixed-canvas
@@ -16,6 +16,8 @@ Core question:
 > At any moment, can the player tell what is happening, what is about to happen, and what their Dao is preparing?
 
 ## C0 — Architecture / presentation-data contract
+
+C0A source audit + data-contract design is complete. See docs/ui/COMBAT_UI_C0_ARCHITECTURE_AUDIT_20261005.md. C0B implementation is intentionally deferred until an executable bridge/Godot gate is available.
 
 Before visual changes:
 
@@ -33,6 +35,8 @@ C0 output must include an explicit field map and ownership table.
 No gameplay change.
 
 ## C1 — Combat screen shell
+
+Logical layout is pre-specified in docs/ui/COMBAT_UI_LAYOUT_WIREFRAME_V1_20261005.md; exact runtime geometry remains subject to real screenshot review.
 
 Create stable portrait composition:
 

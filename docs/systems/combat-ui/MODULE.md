@@ -1,6 +1,6 @@
 # MODULE — COMBAT UI/UX V1
 
-Status: **ACTIVE — C0 ARCHITECTURE / DATA CONTRACT**
+Status: **ACTIVE — C0A DESIGN COMPLETE / C0B IMPLEMENTATION NEXT**
 
 Updated: 2026-10-05
 
@@ -67,7 +67,8 @@ Execution plan:
 
 | Phase | Scope | State |
 |---|---|---|
-| C0 | Architecture + presentation-data contract | **ACTIVE** |
+| C0A | Source audit + architecture/data-contract design | **DESIGN COMPLETE** |
+| C0B | Combat bridge/view-model implementation + tests | **NEXT — requires executable gate** |
 | C1 | Combat screen shell / battlefield geometry | PLANNED |
 | C2 | Vital HUD | PLANNED |
 | C3 | Skill rail | PLANNED |
@@ -88,4 +89,8 @@ No Combat UI slice is LOCKED without:
 
 ## Current next action
 
-Complete **C0** before changing visual geometry.
+Implement **C0B** when the executable Godot/bridge gate is available. C1–C4 logical layout is already specified and must not be implemented by guessing around the missing combat DTO.
+
+C0 audit: docs/ui/COMBAT_UI_C0_ARCHITECTURE_AUDIT_20261005.md.
+
+Wireframe: docs/ui/COMBAT_UI_LAYOUT_WIREFRAME_V1_20261005.md.

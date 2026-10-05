@@ -149,9 +149,10 @@ Whole-game backend/frontend closure is separate from scoped Dao closure. Deferre
 - Governance root: `GAME_MASTER_MAP.md`.
 - Module owner: `docs/systems/combat-ui/MODULE.md`.
 - Detailed execution plan: `docs/ui/COMBAT_UI_UX_V1_PLAN_20261005.md`.
-- Current phase: **C0 — architecture / presentation-data contract**.
+- Current phase: **C0A design/audit COMPLETE; C0B combat bridge/view-model implementation NEXT**.
 - Core Balance 8 Đạo: **DEFERRED** until the user explicitly opens it.
 - Auxiliary-system rework/balance: **DEFERRED**.
+- C0 audit: docs/ui/COMBAT_UI_C0_ARCHITECTURE_AUDIT_20261005.md; logical wireframe: docs/ui/COMBAT_UI_LAYOUT_WIREFRAME_V1_20261005.md.
 - Combat UI must not reopen locked combat gameplay, damage, resource, outcome, save, or Dao authority.
 - UI-visible closure still requires actual runtime evidence and explicit user visual approval.
 
