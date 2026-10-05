@@ -149,7 +149,9 @@ Whole-game backend/frontend closure is separate from scoped Dao closure. Deferre
 - Governance root: `GAME_MASTER_MAP.md`.
 - Module owner: `docs/systems/combat-ui/MODULE.md`.
 - Detailed execution plan: `docs/ui/COMBAT_UI_UX_V1_PLAN_20261005.md`.
-- Current phase: **GCombat-0/C0B IMPLEMENTED AS STATIC CANDIDATE; GCombat-1 playable skeleton IMPLEMENTED AS STATIC CANDIDATE; executable Godot gate PENDING**.
+- Current phase: **GCombat-0/C0B GODOT RUNTIME GATE: PASS; GCombat-1 playable skeleton GODOT RUNTIME GATE: PASS**.
+- Windows runtime proof (2026-10-05): `KIEM_TRA_GAME.cmd` exit 0 at exact implementation SHA `6d0a3a5d460f1e957d5a893ec69b07e5469d39c6`; Godot 4.7.2, GdUnit 63/63, bridge/P2 smoke PASS, Stagehand Home 50/50 and Combat 27/27 PASS. Record: `docs/ui/GODOT_COMBAT_RUNTIME_GATE_20261005.md`.
+- Actual canonical Combat prefight/playback captured at 390×844: **VISUAL CANDIDATE — NOT APPROVED**. No approved baseline was created/refreshed; Combat UI remains open for user visual approval and subsequent planned presentation phases.
 - Core Balance 8 Đạo: **DEFERRED** until the user explicitly opens it.
 - Auxiliary-system rework/balance: **DEFERRED**.
 - C0 audit: docs/ui/COMBAT_UI_C0_ARCHITECTURE_AUDIT_20261005.md; logical wireframe: docs/ui/COMBAT_UI_LAYOUT_WIREFRAME_V1_20261005.md.
