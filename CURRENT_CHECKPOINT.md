@@ -149,9 +149,10 @@ Whole-game backend/frontend closure is separate from scoped Dao closure. Deferre
 - Governance root: `GAME_MASTER_MAP.md`.
 - Module owner: `docs/systems/combat-ui/MODULE.md`.
 - Detailed execution plan: `docs/ui/COMBAT_UI_UX_V1_PLAN_20261005.md`.
-- Current phase: **GCombat-0/C0B GODOT RUNTIME GATE: PASS; GCombat-1 playable skeleton GODOT RUNTIME GATE: PASS**.
+- Current phase: **GCombat-0/C0B PASS; GCombat-1 PASS; GCombat-2 RUNTIME PASS — VISUAL CANDIDATE; GCombat-3 RUNTIME PASS — VISUAL CANDIDATE**. GCombat-4 has not been opened; Ngự Khí is the compact reference only.
 - Windows runtime proof (2026-10-05): `KIEM_TRA_GAME.cmd` exit 0 at exact implementation SHA `6d0a3a5d460f1e957d5a893ec69b07e5469d39c6`; Godot 4.7.2, GdUnit 63/63, bridge/P2 smoke PASS, Stagehand Home 50/50 and Combat 27/27 PASS. Record: `docs/ui/GODOT_COMBAT_RUNTIME_GATE_20261005.md`.
-- Actual canonical Combat prefight/playback captured at 390×844: **VISUAL CANDIDATE — NOT APPROVED**. No approved baseline was created/refreshed; Combat UI remains open for user visual approval and subsequent planned presentation phases.
+- Latest production HUD/rail Windows proof (2026-10-05): clean implementation SHA `7e820641ff56d15d2d18439fb091e828ea167b58`; `KIEM_TRA_GAME.cmd` exit 0, GdUnit 66/66, bridge/P2 PASS, Home 50/50, Combat 27/27, Home capture 9/9 and actual Combat capture 35/35. Record: `docs/ui/GODOT_COMBAT_PRODUCTION_HUD_RAIL_GATE_20261005.md`. Later documentation commits do not replace this tested SHA.
+- Actual canonical Combat prefight/playback captured at 390×844, with prefight captures at 360×800, 412×915 and 430×932: **VISUAL CANDIDATE — NOT APPROVED**. No approved baseline was created/refreshed. Cooldown/readiness/channel and CN timeline fields not exported by the current transport remain uninvented; see the proof record's limitations. Combat UI awaits user visual review before any closure or later presentation phase.
 - Core Balance 8 Đạo: **DEFERRED** until the user explicitly opens it.
 - Auxiliary-system rework/balance: **DEFERRED**.
 - C0 audit: docs/ui/COMBAT_UI_C0_ARCHITECTURE_AUDIT_20261005.md; logical wireframe: docs/ui/COMBAT_UI_LAYOUT_WIREFRAME_V1_20261005.md.
