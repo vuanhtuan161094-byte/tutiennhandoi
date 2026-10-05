@@ -20,6 +20,7 @@ import { equipmentSetDefinitionV142 } from '../../dist/core/equipment-v142.js';
 import { grantEquipmentFragmentRankV142 } from '../../dist/core/equipment-fragments-v142.js';
 import { grantEquipmentSetFragmentV142 } from '../../dist/core/equipment-set-fragments-v142.js';
 import { applyBodyDaoAutoPresetV1, bodyDaoAutoUiV1, normalizeBodyDaoAutoPresetV1 } from '../../dist/core/body-dao-auto-v1.js';
+import { buildCombatSnapshot, buildGodotCombatView, createCombatPlayback } from './combat_presentation.mjs';
 
 const HERE=dirname(fileURLToPath(import.meta.url));
 const BRIDGE_VERSION='godot-bridge.v2';
@@ -42,6 +43,8 @@ class GodotCanonicalRuntime {
     this.dirty=false;
     this.qaFixture='';
     this.qaFixtureSeq=0;
+    this.combatPlayback=null;
+    this.combatSerial=0;
     this.newGame();
   }
   attach(session){
@@ -70,6 +73,8 @@ class GodotCanonicalRuntime {
     this.attach(new SimulationSession(registry,thanhHaWorld,adventureEnemies,playablePlayerProfile,seed,state,0,[],undefined,life));
     this.carry=0;
     this.lastTickAt=Date.now();
+    this.combatPlayback=null;
+    this.combatSerial=0;
     this.dirty=true;
   }
   saveEnvelope(now=Date.now()){
@@ -321,6 +326,17 @@ class GodotCanonicalRuntime {
     };
     return this.applyQaHomeFixture(view);
   }
+  combatView(after=0){
+    this.flushRealtime();
+    return buildGodotCombatView({
+      session:this.session,
+      api:this.api,
+      registry,
+      playback:this.combatPlayback,
+      after,
+      bridgeVersion:BRIDGE_VERSION,
+    });
+  }
   characterView(selectedItemId=''){
     this.flushRealtime();
     const now=Date.now();
@@ -402,6 +418,34 @@ class GodotCanonicalRuntime {
       const next=applyBodyDaoAutoPresetV1(profile,presetId);
       state.character.combatAiProfile=next;
       result=bodyDaoAutoUiV1(next,true);
+    }
+    else if(id==='fightEndlessFloor'){
+      const initialSnapshot=buildCombatSnapshot({session:this.session,api:this.api,registry});
+      try{
+        const combat=this.api.fightEndlessFloor({emitCombatEvents:true,cloneState:false});
+        this.combatSerial+=1;
+        this.combatPlayback=createCombatPlayback({result:combat,initialSnapshot,serial:this.combatSerial});
+        result={
+          ok:true,
+          encounterId:this.combatPlayback.encounterId,
+          won:Boolean(combat?.won),
+          battleSeconds:Number(combat?.battleSeconds)||0,
+          eventCount:this.combatPlayback.events.length,
+          rewardContext:String(combat?.rewardContext||''),
+          directBossLoot:Boolean(combat?.directBossLoot),
+        };
+      }catch(error){
+        result={ok:false,error:error instanceof Error?error.message:String(error)};
+      }
+    }
+    else if(id==='selectEndlessFloor'){
+      const floor=Math.max(1,Math.floor(Number(payload.floor)||1));
+      try{
+        result={ok:true,hunt:this.api.selectEndlessFloor(floor)};
+        this.combatPlayback=null;
+      }catch(error){
+        result={ok:false,error:error instanceof Error?error.message:String(error)};
+      }
     }
     else if(id==='equipItem'){
       const itemId=String(payload.itemId||'').trim();
@@ -529,6 +573,10 @@ const server=createServer(async(req,res)=>{
   try{
     if(req.method==='GET'&&url.pathname==='/health')return send(res,200,{ok:true,schema:'godot-bridge-health.v1',bridgeVersion:BRIDGE_VERSION,port:PORT,authority:'canonical-dist',diagnosticMode:DIAGNOSTIC_MODE,qaMode:QA_MODE});
     if(req.method==='GET'&&url.pathname==='/home')return send(res,200,runtime.homeView());
+    if(req.method==='GET'&&url.pathname==='/combat'){
+      const after=Math.max(0,Math.floor(Number(url.searchParams.get('after'))||0));
+      return send(res,200,runtime.combatView(after));
+    }
     if(req.method==='GET'&&url.pathname==='/character'){
       const selectedItemId=String(url.searchParams.get('selectedItemId')||'').trim();
       return send(res,200,runtime.characterView(selectedItemId));
@@ -542,7 +590,7 @@ const server=createServer(async(req,res)=>{
       const body=await bodyJson(req);
       const result=runtime.action(String(body.action||''),body);
       await persist();
-      return send(res,200,{ok:true,result,home:runtime.homeView()});
+      return send(res,200,{ok:true,result,home:runtime.homeView(),combat:runtime.combatView(0)});
     }
     if(req.method==='POST'&&url.pathname==='/new'){
       const body=await bodyJson(req);

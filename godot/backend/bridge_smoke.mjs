@@ -11,6 +11,7 @@ const BASE=`http://127.0.0.1:${PORT}`;
 const EXPECTED_VERSION='godot-bridge.v2';
 const EXPECTED_HOME='godot-home-bridge.v1';
 const EXPECTED_CHARACTER='godot-character-bridge.v1';
+const EXPECTED_COMBAT='godot-combat-bridge.v1';
 const EXPECTED_AUTHORITY='character-cultivation.v140';
 
 function assert(condition,message){
@@ -93,6 +94,19 @@ function validateHome(home){
     assert(value!==undefined&&value!==null,`Missing Home field: ${path.join('.')}`);
   }
 }
+function validateCombat(view){
+  assert(view?.ok===true,'Combat DTO must be ok');
+  assert(view?.schema===EXPECTED_COMBAT,`Unexpected Combat schema: ${view?.schema}`);
+  assert(view?.bridgeVersion===EXPECTED_VERSION,`Unexpected Combat bridge version: ${view?.bridgeVersion}`);
+  assert(view?.authority?.combat==='combat-kernel.v3','Combat authority mismatch');
+  assert(view?.authority?.dao==='battle-dao.runtime.v2','Combat Dao authority mismatch');
+  assert(view?.snapshot&&typeof view.snapshot==='object','Combat DTO missing snapshot');
+  assert(Array.isArray(view?.snapshot?.skills),'Combat snapshot skills must be an array');
+  assert(view?.snapshot?.dao&&typeof view.snapshot.dao==='object','Combat snapshot missing Dao projection');
+  assert(Array.isArray(view?.events),'Combat events must be an array');
+  assert(Number(view?.eventCursor)>=0,'Combat eventCursor must be non-negative');
+}
+
 function validateCharacter(view){
   assert(view?.ok===true,'Character DTO must be ok');
   assert(view?.schema===EXPECTED_CHARACTER,`Unexpected Character schema: ${view?.schema}`);
@@ -133,6 +147,7 @@ try{
   validateHome(created.home);
   const character=await request('/character');
   validateCharacter(character);
+  validateCombat(await request('/combat'));
   assert(created.home.life.realm==='Phàm Nhân',`Expected fresh realm Phàm Nhân, got ${created.home.life.realm}`);
   assert(Number(created.home.cultivation?.retreat?.rewardPct3h)===0,'Phàm Nhân retreat reward must be 0 by canonical V140 balance');
   assert(Number(created.home.cultivation.finalTuViPerSecond)>0,'Backend must expose positive per-second cultivation rate');
@@ -187,6 +202,7 @@ try{
   const restored=await request('/home');
   validateHome(restored);
   validateCharacter(await request('/character'));
+  validateCombat(await request('/combat'));
   const restoredTuVi=Number(restored.cultivation.tuVi)||0;
   assert(restoredTuVi>=after,`Persisted Tu Vi regressed after restart: ${after} -> ${restoredTuVi}`);
 
