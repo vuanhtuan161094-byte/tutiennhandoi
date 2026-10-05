@@ -48,9 +48,11 @@ Before editing:
 1. confirm current `main` HEAD;
 2. read `/CURRENT_CHECKPOINT.md`;
 3. read `/docs/DEVELOPMENT_PROTOCOL.md`;
-4. for Dao production work, read `docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md`;
-5. for UI/UX, read the current canonical UI workflow;
-6. inspect only the exact source/test regions needed.
+4. for project-wide planning/status or when opening a new major system, read `/GAME_MASTER_MAP.md`;
+5. for module work, route through `docs/systems/INDEX.md` and read the owning `MODULE.md`;
+6. for Dao production work, read `docs/runtime/DAO_PRODUCTION_WORKFLOW_V3_20260926.md`;
+7. for UI/UX, read the current canonical UI workflow;
+8. inspect only the exact source/test regions needed.
 
 Use `search -> narrow -> read -> patch -> targeted proof`.
 

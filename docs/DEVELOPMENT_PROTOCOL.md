@@ -7,9 +7,11 @@ This repository is the project source of truth. Conversation history is not the 
 Read only:
 
 1. `/CURRENT_CHECKPOINT.md`;
-2. the active version/workflow spec when one exists;
-3. exact source/test regions needed for the task;
-4. `/AGENTS.md` for AI-assisted production work.
+2. `/GAME_MASTER_MAP.md` only for project-wide planning/status or when opening a new major module;
+3. `/docs/systems/INDEX.md` + the owning `MODULE.md` for module-scoped work;
+4. the active version/workflow spec when one exists;
+5. exact source/test regions needed for the task;
+6. `/AGENTS.md` for AI-assisted production work.
 
 For Main Dao production/rebalance slices, also read:
 

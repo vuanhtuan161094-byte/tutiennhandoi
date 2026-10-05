@@ -59,19 +59,27 @@ This file is the compact source of truth for a new chat. Current `main` and live
 - User exact-SHA Windows acceptance: `f2da1808772ab2396f310d2082b0ff91fe55807f`; `V140 BACKEND FEATURE DAO-POISON: 44/44 PASS`; `FEATURE FULL CLEAN + SCOPED CLOSURE: PASS`.
 - Record: `docs/runtime/POISON_DAO_PRODUCTION_CLOSURE_20261005.md`. Regression-only; later metadata commits do not replace the accepted gameplay SHA.
 
-### Trận Đạo — READY candidate / gameplay frozen
-- Feature `dao-formation`; identity BỐ → DƯỠNG ↔ HỘ → KÍCH.
-- Contract/reference/benchmark/preparation: `docs/runtime/FORMATION_DAO_*_20261005.*`.
-- `closureReady:true`;47/47 prerequisites and36/36 identity/bands PASS. Exact gameplay FULL CLEAN SHA `018c09f2d8842dffc94a9b2c67776733aba3fb6f`, strict browser4/4/errors0.
-- Freeze Formation gameplay for Artifact work; repeat its complete scoped/benchmark proof on final combined HEAD. Candidate metadata checkpoint is the commit containing this entry.
-- Not CLOSED/LOCKED. Global balance remains deferred.
+### Trận Đạo — CLOSED / LOCKED
+- Feature: `dao-formation`; identity **BỐ → DƯỠNG ↔ HỘ → KÍCH**.
+- Contract/reference/benchmark: `docs/runtime/FORMATION_DAO_*_20261005.*`.
+- User exact-SHA Windows acceptance: `43f10efd1406ecde843808a4d8a8e5cc092097ba`.
+- `V140 BACKEND FEATURE DAO-FORMATION: 47/47 PASS`; `FEATURE FULL CLEAN + SCOPED CLOSURE: PASS`.
+- Record: `docs/runtime/FORMATION_DAO_PRODUCTION_CLOSURE_20261005.md`.
+- Regression-only unless a proven Formation regression or explicit user instruction reopens it.
 
-### Ngự Khí Đạo — READY combined candidate
-- Feature `dao-artifact`; identity PHÂN → NGỰ → HỢP / THU. Internal Khí Linh1/cap3; real Recall/Merge, one Command scaler/shared snapshot follow-up budget; no external collection authority.
-- Contract/reference/benchmark/preparation: `docs/runtime/ARTIFACT_DAO_*_20261005.*`.
-- `closureReady:true`;50/50 correctness/parity/benchmark/locked regression prerequisites PASS. Final36 runs: Hợp415.927/100%; Tam401.821/96.608%; Hộ355.863/85.559%, all identity/bands PASS. Formation's complete36 frozen outputs remain exact.
-- Combined candidate is the commit containing this entry; require FULL CLEAN/browser and both registered scoped suites on that clean exact HEAD. Evidence directory `artifacts/local-ci/*-<SHA8>-clean-full/` identifies actual validated SHA.
-- Trận + Ngự Khí remain NOT CLOSED/LOCKED until user same-final-exact-SHA Windows acceptance for both canonical feature launchers. Whole-game closure/global balance remain separate.
+### Ngự Khí Đạo — CLOSED / LOCKED
+- Feature: `dao-artifact`; identity **PHÂN → NGỰ → HỢP / THU**.
+- Internal Khí Linh starts 1 / cap 3; one source-scaling authority; one bounded shared follow-up/root; Merge is real topology change; external Pháp Bảo/Chí Bảo collection authority remains separate.
+- Contract/reference/benchmark: `docs/runtime/ARTIFACT_DAO_*_20261005.*`.
+- User exact-SHA Windows acceptance: `43f10efd1406ecde843808a4d8a8e5cc092097ba`.
+- `V140 BACKEND FEATURE DAO-ARTIFACT: 50/50 PASS`; `FEATURE FULL CLEAN + SCOPED CLOSURE: PASS`.
+- Record: `docs/runtime/ARTIFACT_DAO_PRODUCTION_CLOSURE_20261005.md`.
+- Regression-only unless a proven Artifact Dao regression or explicit user instruction reopens it.
+
+### 8 Main Dao milestone — CLOSED / LOCKED
+- Kiếm, Quyền, Thể, Thần Niệm, Pháp, Độc, Trận, Ngự Khí are all production-closed.
+- Do not start Core Balance or auxiliary-system balance until explicitly opened.
+- Current product priority is **Combat UI/UX V1**, presentation-only over locked gameplay authority.
 
 - Feature manifests: `qa/runners/feature-closure-manifest.js`.
 - Final feature closure: `DONG_BO_VA_TEST_FEATURE.cmd <feature-id>`.
@@ -135,6 +143,17 @@ Do not retune or reopen Mind unless there is a proven regression against the loc
 ## Full-game audit debt
 
 Whole-game backend/frontend closure is separate from scoped Dao closure. Deferred/global balance debt must be classified rather than opportunistically patched. In particular, do not use full-game audit failures as permission to rebalance Tri Kỷ, Linh Thú, Artifact/Relic, Equipment, Alchemy, Economy, Reincarnation or Collection while closing an unrelated Dao.
+
+## Current active product slice — Combat UI/UX V1
+
+- Governance root: `GAME_MASTER_MAP.md`.
+- Module owner: `docs/systems/combat-ui/MODULE.md`.
+- Detailed execution plan: `docs/ui/COMBAT_UI_UX_V1_PLAN_20261005.md`.
+- Current phase: **C0 — architecture / presentation-data contract**.
+- Core Balance 8 Đạo: **DEFERRED** until the user explicitly opens it.
+- Auxiliary-system rework/balance: **DEFERRED**.
+- Combat UI must not reopen locked combat gameplay, damage, resource, outcome, save, or Dao authority.
+- UI-visible closure still requires actual runtime evidence and explicit user visual approval.
 
 ## Godot / UI
 

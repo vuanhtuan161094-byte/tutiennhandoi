@@ -1,41 +1,51 @@
-# SYSTEM INDEX — MINIMAL CONTEXT ROUTER
+# SYSTEM INDEX — MODULE ROUTER
 
-Use this file only to decide which subsystem to open. Do not preload every system.
+Use this file to identify the owning module. Do not preload every system.
 
-## Routing rule
+## Routing order
 
-For each task, read in this order:
+For a normal task:
 
 1. `/CURRENT_CHECKPOINT.md`
-2. the active version/workflow spec only when the checkpoint names one
-3. this index only if the affected subsystem is unclear
-4. exact live source/test regions for that subsystem
+2. if the task is project-wide/new major system: `/GAME_MASTER_MAP.md`
+3. this index
+4. the owning `MODULE.md`
+5. active contract/spec named by that module
+6. exact live source/test regions required
 
-Stop reading when enough authority exists to implement safely.
+Governance standard: `docs/systems/MODULE_CONTROL_STANDARD.md`.
 
-## System routes
+## Major modules
 
-| System | Search anchors | Typical authority |
+| Module | Current state | Control file | Search anchors |
+|---|---|---|---|
+| Core Runtime | CLOSED / LOCKED + LIVE | `docs/systems/core-runtime/MODULE.md` | runtime, save, bridge, session |
+| Combat | ACTIVE presentation phase | `docs/systems/combat/MODULE.md` | combat, dao, boss, break, auto |
+| Progression | LIVE / mixed | `docs/systems/progression/MODULE.md` | cultivation, retreat, spiritual-root, manual, reincarnation |
+| Character Build | LIVE / REWORK PLANNED | `docs/systems/character-build/MODULE.md` | stats, equipment, artifact, relic |
+| Economy | LIVE / per-system audit | `docs/systems/economy/MODULE.md` | currency, source, sink, alchemy, inventory |
+| World / Activities | LIVE / mixed | `docs/systems/world-activities/MODULE.md` | hunt, boss, dungeon, farm |
+| Social / Companion | DEFERRED / REWORK PLANNED | `docs/systems/social-companion/MODULE.md` | confidant, companion, pet, beast |
+| Presentation / UI | ACTIVE | `docs/systems/presentation/MODULE.md` | ui, hud, godot, presentation |
+| Combat UI/UX | ACTIVE C0 | `docs/systems/combat-ui/MODULE.md` | combat hud, skill rail, telegraph, dao widget |
+
+## Feature routes
+
+| System | Owning major module | Typical authority |
 |---|---|---|
-| Tu Luyện / Bế Quan | `cultivation`, `retreat`, `tuVi` | live cultivation core + current contract tests |
-| Săn Yêu / Resource PvE | `hunt`, `resource-pve`, `firstClear` | Hunt runtime + integration tests |
-| Linh Căn | `spiritual-root`, `linhCan`, `banNguyen` | Spiritual Root core/runtime + current tests |
-| Công Pháp | `manual`, `manual-progression`, `fragment` | manual progression/combat consumer + current tests |
-| Trang Bị / Set | `equipment`, `set`, `setBonus` | equipment/set engine + combat consumer tests |
-| Đan / Luyện Đan | `alchemy`, `pill`, `herb` | Alchemy production/runtime + current tests |
-| Pháp Bảo / Chí Bảo | `artifact`, `relic` | artifact/relic production/combat tests |
-| Linh Thú | `pet`, `beast` | pet/beast authority + source/sink tests |
-| Tri Kỷ | `confidant`, `companion` | confidant runtime + combat integration |
-| Phân Thân | `clone`, `phanThan` | clone authority + migration/regression tests |
-| Luân Hồi | `reincarnation`, `fate`, `RP` | reincarnation tree/Fate tests |
-| Động Phủ | `dongfu`, `cave` | production/transport tests |
-| Endgame | `endgame`, `continuity` | continuity + player-journey tests |
-| UI | `ui`, `hud`, `transport`, `presentation` | live UI/presentation source + frontend tests |
+| Tu Luyện / Bế Quan | Progression | live cultivation core + current tests |
+| Săn Yêu / Resource PvE | World / Activities | Hunt runtime + integration tests |
+| Linh Căn | Progression | V145 authority + current tests |
+| Công Pháp | Progression | manual progression/combat consumer |
+| Trang Bị / Set | Character Build | equipment engine + combat consumer tests |
+| Đan / Luyện Đan | Economy | alchemy runtime + tests |
+| Pháp Bảo / Chí Bảo | Character Build | artifact/relic collection authority |
+| Linh Thú | Social / Companion | pet/beast authority |
+| Tri Kỷ | Social / Companion | confidant authority |
+| Phân Thân | Progression / audit routing | clone authority + migration/regression tests |
+| Luân Hồi | Progression | reincarnation/fate authority |
+| Động Phủ | World/Economy boundary | production/transport tests |
+| Endgame | World / Activities | continuity + journey tests |
+| UI | Presentation | live UI/presentation source + visual gates |
 
-## Context limits
-
-Normal task target: 1 checkpoint + 1 active-version spec + 2–5 source regions + targeted tests.
-
-Do not open historical version reports, raw simulation output, complete CI logs, or whole large source files unless the task specifically requires them.
-
-Version numbers in legacy filenames are not authority by themselves. Determine authority from live imports/consumers and current tests.
+Version numbers in old filenames do not make a document authoritative by themselves.
