@@ -189,6 +189,14 @@ func bind(vm: Dictionary) -> void:
 	stone_label.text = _fmt_num(float(resources.get("spirit_stone", 0)))
 	cp_label.text = _fmt_num(float(resources.get("reincarnation_cp", 0)))
 
+	var home_context: Dictionary = vm.get("context", {})
+	var hunt_context = home_context.get("hunt", {})
+	var hunt: Dictionary = hunt_context if typeof(hunt_context) == TYPE_DICTIONARY else {}
+	var combat_enabled := int(hunt.get("highestUnlockedFloor", 0)) > 0
+	_set_action_enabled(combat_button, combat_action_visual, combat_subtitle_label, combat_enabled, "Luyện Khí mới mở")
+	if combat_enabled:
+		combat_subtitle_label.text = "Bí Cảnh · T%d" % maxi(1, int(hunt.get("selectedFloor", 1)))
+
 	if status_label.text.begins_with("Đang"):
 		status_label.text = ""
 
@@ -1103,6 +1111,7 @@ func _build_quick_actions() -> void:
 	combat_button = _add_action_cell(&"orb_combat", ICON_COMBAT, "Chiến Đấu", "Chưa mở", CYAN, "CombatAction")
 	combat_action_visual = combat_button.get_meta("visual_root") as Control
 	combat_subtitle_label = combat_button.get_meta("subtitle_label") as Label
+	combat_button.pressed.connect(func(): route_requested.emit(&"combat"))
 	_set_action_enabled(combat_button, combat_action_visual, combat_subtitle_label, false, "Chưa mở")
 
 func _set_action_enabled(button: Button, visual: Control, subtitle: Label, enabled: bool, disabled_text: String = "Chưa mở") -> void:

@@ -8,6 +8,8 @@ const HOME_OVERLAY_SCRIPT := preload("res://scripts/home/home_overlay.gd")
 const HOME_NAV_SCRIPT := preload("res://scripts/home/home_nav.gd")
 const CHARACTER_VIEW_MODEL := preload("res://scripts/models/character_view_model.gd")
 const CHARACTER_SCREEN_SCRIPT := preload("res://scripts/character/character_screen.gd")
+const COMBAT_VIEW_MODEL := preload("res://scripts/models/combat_view_model.gd")
+const COMBAT_SCREEN_SCRIPT := preload("res://scripts/combat/combat_screen.gd")
 
 var backend_bridge
 var stage
@@ -15,6 +17,7 @@ var hud
 var overlay
 var nav
 var character_screen
+var combat_screen
 
 var _home: Dictionary = {}
 var _character_vm: Dictionary = {}
@@ -88,6 +91,12 @@ func _build_home() -> void:
 	character_screen.visible = false
 	add_child(character_screen)
 
+	combat_screen = COMBAT_SCREEN_SCRIPT.new()
+	combat_screen.name = "CombatScreen"
+	combat_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	combat_screen.visible = false
+	add_child(combat_screen)
+
 	nav = HOME_NAV_SCRIPT.new()
 	nav.name = "HomeNav"
 	nav.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -117,6 +126,8 @@ func _connect_ui() -> void:
 	character_screen.equipment_system_action_requested.connect(_on_character_equipment_system_action_requested)
 	character_screen.profile_action_requested.connect(_on_character_profile_action_requested)
 	character_screen.potential_action_requested.connect(_on_character_potential_action_requested)
+	combat_screen.back_requested.connect(_on_combat_back_requested)
+	combat_screen.fight_requested.connect(_on_combat_fight_requested)
 	AppState.route_changed.connect(_on_route_changed)
 
 func _start_backend() -> void:
@@ -124,6 +135,7 @@ func _start_backend() -> void:
 	backend_bridge.name = "BackendBridge"
 	backend_bridge.home_updated.connect(_on_home_updated)
 	backend_bridge.character_updated.connect(_on_character_updated)
+	backend_bridge.combat_updated.connect(_on_combat_updated)
 	backend_bridge.bridge_status_changed.connect(_on_bridge_status_changed)
 	backend_bridge.action_failed.connect(_on_action_failed)
 	backend_bridge.action_completed.connect(_on_action_completed)
@@ -192,13 +204,26 @@ func _on_character_updated(character_view: Dictionary) -> void:
 		character_screen.open_detail(_pending_character_detail)
 		_pending_character_detail = &""
 
+func _on_combat_updated(combat_view: Dictionary) -> void:
+	var vm := COMBAT_VIEW_MODEL.build(combat_view)
+	if vm.get("ok", false) != true:
+		combat_screen.set_status_message(str(vm.get("error", "Combat DTO không hợp lệ")))
+		return
+	combat_screen.bind(vm)
+	combat_screen.append_events(str(vm.get("encounter_id", "")), vm.get("events", []))
+
+
 func _on_bridge_status_changed(online: bool, message: String) -> void:
 	hud.set_bridge_status(online, message)
 	character_screen.set_bridge_status(online, message)
+	if not online and combat_screen != null:
+		combat_screen.set_status_message(message)
 
 func _on_action_failed(message: String) -> void:
 	hud.set_status_message(message)
 	character_screen.set_status_message(message)
+	if combat_screen != null and combat_screen.visible:
+		combat_screen.set_status_message(message)
 	_pending_cultivation_action = ""
 	_pending_breakthrough_from_realm = ""
 
@@ -246,6 +271,16 @@ func _on_action_completed(action_id: String, result: Dictionary) -> void:
 				hud.set_status_message("QA · Độ Kiếp đúng gate order 41 · milestone vẫn canonical")
 			"clear":
 				hud.set_status_message("QA fixture đã tắt")
+	elif action_id == "fightEndlessFloor":
+		if bool(result.get("ok", false)):
+			combat_screen.set_status_message("Đang tái hiện giao tranh canonical…")
+		else:
+			combat_screen.set_status_message(str(result.get("error", "Không thể khiêu chiến")))
+	elif action_id == "selectEndlessFloor":
+		if bool(result.get("ok", false)):
+			backend_bridge.refresh_combat(true)
+		else:
+			combat_screen.set_status_message(str(result.get("error", "Không thể chọn tầng")))
 	elif action_id == "equipItem":
 		character_screen.set_status_message("Đã cập nhật trang bị")
 		backend_bridge.refresh_character()
@@ -317,7 +352,7 @@ func _on_primary_action(action_id: String) -> void:
 	backend_bridge.perform_action(action_id)
 
 func _on_route_requested(route_id: StringName) -> void:
-	if route_id not in [&"home", &"character"]:
+	if route_id not in [&"home", &"character", &"combat"]:
 		hud.set_status_message("Chức năng này chưa mở trong bản Godot hiện tại")
 		return
 	AppState.request_route(route_id)
@@ -352,20 +387,39 @@ func _on_route_changed(route_id: StringName) -> void:
 		hud.set_status_message("%s chưa có màn Godot" % _route_label(route_id))
 		return
 
-	nav.set_route(route_id)
+	var combat_active := route_id == &"combat"
 	var character_active := route_id == &"character"
-	if character_active:
+	if character_active or combat_active:
 		hud.close_home_presentation_panel()
+
+	nav.visible = not combat_active
+	if not combat_active:
+		nav.set_route(route_id)
+
 	character_screen.visible = character_active
 	character_screen.set_presentation_active(character_active)
-	stage.visible = not character_active
-	hud.visible = not character_active
-	overlay.visible = not character_active
+	combat_screen.set_presentation_active(combat_active)
+
+	var home_active := route_id == &"home"
+	stage.visible = home_active
+	hud.visible = home_active
+	overlay.visible = home_active
+
+	backend_bridge.set_combat_polling(combat_active)
 	if character_active:
 		character_screen.set_status_message("Đang tải nhân vật…")
 		backend_bridge.refresh_character()
 	else:
 		character_screen.hide_detail()
+
+func _on_combat_back_requested() -> void:
+	AppState.request_route(&"home")
+
+
+func _on_combat_fight_requested() -> void:
+	combat_screen.set_status_message("Đang kết toán trận đấu bằng CombatKernel V3…")
+	backend_bridge.perform_action("fightEndlessFloor")
+
 
 func _on_character_detail_requested(detail_id: StringName) -> void:
 	match detail_id:
@@ -416,6 +470,7 @@ func _route_label(route_id: StringName) -> String:
 		&"faction": "Tông Môn",
 		&"roots": "Linh Căn",
 		&"dungeons": "Chiến Đấu",
+		&"combat": "Chiến Đấu",
 	}
 	return str(labels.get(route_id, String(route_id)))
 
