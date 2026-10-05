@@ -102,6 +102,8 @@ Current production path:
 
 ## Current next action
 
+Latest visual shell gate: clean SHA `22eb0a785d4f77d0c3b67573ff844c841a6e06e8`, `KIEM_TRA_GAME.cmd` exit 0; 68 GdUnit, bridge/P2/bounded smoke, Home 50/50, Combat 28/28, Home capture 9/9, Combat capture 23/23 and both primary PNG pixel checks PASS. Static native atmosphere, replaceable silhouettes, compact HUD/Tactical and temporary engraved skill glyphs; gameplay unchanged. Proof: `docs/ui/GODOT_COMBAT_VISUAL_SHELL_20261005.md`. Visual candidate only; GCombat-4 NOT STARTED.
+
 Latest screenshot pipeline gate: clean SHA `75f737adee63f400e8b1df7f856b6543f11755ce`, `KIEM_TRA_GAME.cmd` exit 0; 68 GdUnit tests, bridge/P2, Home 50/50, Combat 28/28, Home capture 9/9 and Combat capture 23/23 PASS. Both exported 390×844 PNGs pass dimensions/alpha/brightness/variance checks. Root-capture barrier and rejection of transparent/black/flat frames: `docs/ui/GODOT_COMBAT_SCREENSHOT_PIPELINE_20261005.md`.
 
 Normal visual authority is 390×844 prefight/playback only. Four-size geometry remains structural; auxiliary 360×800 / 430×932 PNGs are milestone or major-layout diagnostics, with no mandatory 412×915 PNG. GCombat-2/3 remain visual candidates, GCombat-4 NOT STARTED. No screenshot was approved as a baseline.
