@@ -79,23 +79,57 @@ static func capture(tree: SceneTree, params: Dictionary) -> Dictionary:
 
 
 static func _capture_ready_image(tree: SceneTree, viewport: Viewport, max_frames: int) -> Dictionary:
+	if DisplayServer.get_name() == "headless" or not RenderingServer.is_render_loop_enabled():
+		return ERRORS.make(ERRORS.RENDERER_UNAVAILABLE, "Screenshot requires an active rendered window")
+	# Project patch: layout and GPU readback are separate barriers. A sized
+	# texture may still be entirely transparent before a rendered frame exists.
+	await tree.process_frame
+	await tree.process_frame
+	var metrics: Dictionary = {}
 	for _frame_index: int in range(max_frames):
-		# process_frame is guaranteed to fire in headless mode; frame_post_draw
-		# can hang indefinitely when the renderer is unavailable.
-		await tree.process_frame
+		# Force a bounded, synchronous render instead of an unbounded signal wait
+		# when a window is occluded. This reads the real root render target.
+		RenderingServer.force_draw(false)
 		var texture: ViewportTexture = viewport.get_texture()
 		if texture == null:
+			await tree.process_frame
 			continue
 		var img: Image = texture.get_image()
 		if img != null and not img.is_empty():
-			return {
-				"image": img,
-			}
+			metrics = image_content_metrics(img)
+			if bool(metrics.get("valid", false)):
+				return {"image": img}
+		await tree.process_frame
 
-	return ERRORS.make(ERRORS.RENDERER_UNAVAILABLE, "Failed to capture viewport image after %d frame(s): image was null or zero-size" % max_frames, {
+	return ERRORS.make(ERRORS.RENDERER_UNAVAILABLE, "Failed to capture nonblank rendered pixels after %d frame(s)" % max_frames, {
 		"frames_waited": max_frames,
+		"pixels": metrics,
 		"next_action": "Use a headed Godot process with a visible window for screenshot workflows; headless/no-GPU sessions may not render pixels.",
 	})
+
+
+## Conservative content check, not visual approval. Reject black, transparent
+## and uniform backgrounds; don't accept allocated texture dimensions as proof.
+static func image_content_metrics(img: Image) -> Dictionary:
+	if img == null or img.is_empty():
+		return {"valid": false, "reason": "empty"}
+	var colors: Dictionary = {}
+	var bright := 0
+	var samples := 0
+	var minimum := 1.0
+	var maximum := 0.0
+	for y in range(0, img.get_height(), 4):
+		for x in range(0, img.get_width(), 4):
+			var pixel := img.get_pixel(x, y)
+			var light := maxf(pixel.r, maxf(pixel.g, pixel.b)) * pixel.a
+			minimum = minf(minimum, light)
+			maximum = maxf(maximum, light)
+			if light > 0.10:
+				bright += 1
+			colors[pixel.to_rgba32()] = true
+			samples += 1
+	return {"valid": samples > 0 and float(bright) / samples >= 0.002 and maximum - minimum > 0.02 and colors.size() >= 8,
+		"samples": samples, "bright": bright, "colors": colors.size(), "range": maximum - minimum}
 
 
 static func _get_ready_frame_timeout(params: Dictionary) -> int:
