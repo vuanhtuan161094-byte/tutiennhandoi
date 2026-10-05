@@ -70,7 +70,8 @@ func _draw() -> void:
 	var side := 54.0 if ultimate else 44.0
 	var rect := Rect2(Vector2((size.x - side) / 2.0, 0), Vector2(side, side))
 	var accent := STYLE.GOLD if ultimate or selected else STYLE.CYAN
-	var style := STYLE.surface(accent, 0.40)
+	var style := STYLE.surface(accent, 0.72)
+	style.set_corner_radius_all(3)
 	style.border_color = Color(accent, 0.88 if selected else 0.30)
 	if selected or (ultimate and gauge >= gauge_max and not skill.is_empty()):
 		style.shadow_color = Color(accent, 0.17)
@@ -80,11 +81,24 @@ func _draw() -> void:
 		if _icon != null:
 			draw_texture_rect(_icon, rect.grow(-5), false)
 		else:
-			# Temporary clean sigil; replaceable icon surface, not permanent skill art.
+			# Temporary engraved line glyphs; every slot remains sprite-replaceable.
 			var center := rect.get_center()
-			draw_arc(center, side * 0.24, 0.2, TAU - 0.2, 24, Color(accent, 0.70), 1.0, true)
-			draw_line(center + Vector2(-8, 8), center + Vector2(8, -8), Color(accent, 0.65), 2.0, true)
-			draw_line(center + Vector2(0, -11), center + Vector2(0, 11), Color(accent, 0.30), 1.0, true)
+			var ink := Color(accent, 0.72)
+			var diamond := PackedVector2Array([center + Vector2(0,-13), center + Vector2(11,0), center + Vector2(0,13), center + Vector2(-11,0), center + Vector2(0,-13)])
+			draw_polyline(diamond, Color(accent, 0.25), 1.0, true)
+			draw_line(center + Vector2(0,-9), center + Vector2(0,9), ink, 1.5, true)
+			var reach := 5.0 + float(slot_index % 3)
+			draw_line(center + Vector2(-reach,-4), center + Vector2(reach,-4), ink, 1.5, true)
+			draw_line(center + Vector2(-reach,4), center + Vector2(reach,4), ink, 1.5, true)
+			if ultimate:
+				draw_line(center + Vector2(-9,-9), center + Vector2(9,9), ink, 1.0, true)
+				draw_line(center + Vector2(9,-9), center + Vector2(-9,9), ink, 1.0, true)
+			elif slot_index % 2 == 0:
+				draw_line(center + Vector2(-reach,-4), center + Vector2(-reach,4), ink, 1.0, true)
+			else:
+				draw_line(center + Vector2(reach,-4), center + Vector2(reach,4), ink, 1.0, true)
+	if selected:
+		draw_line(rect.position + Vector2(8,side - 3), rect.position + Vector2(side - 8,side - 3), STYLE.GOLD, 2.0, true)
 	var remaining := float(skill.get("cooldown_remaining", 0.0))
 	if remaining > 0.0:
 		draw_rect(rect.grow(-1), Color(0, 0, 0, 0.58))
@@ -94,4 +108,3 @@ func _draw() -> void:
 		draw_rect(rect.grow(-1), Color(0, 0, 0, 0.30))
 	if ultimate:
 		draw_arc(rect.get_center(), side * 0.44, -PI / 2, -PI / 2 + TAU * gauge / gauge_max, 32, Color(STYLE.GOLD, 0.85), 2.0, true)
-

@@ -5,6 +5,8 @@ signal back_requested
 signal fight_requested
 
 const STYLE := preload("res://scripts/combat/combat_style.gd")
+const BATTLEFIELD := preload("res://scripts/combat/combat_battlefield_shell.gd")
+const ACTOR_PLACEHOLDER := preload("res://scripts/combat/combat_actor_placeholder.gd")
 const DAO_WIDGET := preload("res://scripts/combat/combat_dao_widget.gd")
 const SKILL_RAIL := preload("res://scripts/combat/combat_skill_rail.gd")
 const EVENT_PLAYER := preload("res://scripts/combat/combat_event_player.gd")
@@ -126,27 +128,27 @@ func _build() -> void:
 	_enemy_hp = _boss_hud.hp
 	_enemy_hp_text = _boss_hud.hp_text
 	_enemy_break = _boss_hud.break_bar
-	var field := Control.new()
+	var field := BATTLEFIELD.new()
 	field.name = "CombatBattlefield"
 	field.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	field.custom_minimum_size = Vector2(0, 260)
 	field.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(field)
-	var enemy := _actor("YÊU THÚ", STYLE.RED)
+	var enemy := _actor(true)
 	enemy.name = "CombatEnemyActor"
 	enemy.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	enemy.anchor_left = 0.50
+	enemy.anchor_left = 0.43
 	enemy.anchor_right = 0.97
-	enemy.anchor_top = 0.02
-	enemy.anchor_bottom = 0.38
+	enemy.anchor_top = 0.04
+	enemy.anchor_bottom = 0.42
 	field.add_child(enemy)
-	var player := _actor("TU SĨ", STYLE.CYAN)
+	var player := _actor(false)
 	player.name = "CombatPlayerActor"
 	player.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	player.anchor_left = 0.03
-	player.anchor_right = 0.50
-	player.anchor_top = 0.62
-	player.anchor_bottom = 0.98
+	player.anchor_right = 0.47
+	player.anchor_top = 0.60
+	player.anchor_bottom = 0.96
 	field.add_child(player)
 	_lane = TACTICAL_LANE.new()
 	_lane.name = "CombatTacticalSurface"
@@ -192,10 +194,9 @@ func _build() -> void:
 	_status.visible = false
 	root.add_child(_status)
 
-func _actor(text: String, accent: Color) -> Label:
-	var node := STYLE.label(text, 16, Color(accent, 0.35))
-	node.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	node.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+func _actor(is_enemy: bool) -> Control:
+	var node := ACTOR_PLACEHOLDER.new()
+	node.enemy = is_enemy
 	return node
 
 func _on_combat_event(event: Dictionary) -> void:

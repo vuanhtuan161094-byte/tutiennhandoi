@@ -41,3 +41,9 @@ static func bar(node_name: String, color: Color, height: float) -> ProgressBar:
 	node.add_theme_stylebox_override("background", background)
 	node.add_theme_stylebox_override("fill", fill)
 	return node
+
+static func draw_hud_strip(canvas: Control, accent: Color) -> void:
+	var strip := surface(accent, 0.24)
+	strip.set_border_width_all(0)
+	canvas.draw_style_box(strip, Rect2(Vector2(-4, -3), canvas.size + Vector2(8, 6)))
+	canvas.draw_line(Vector2(0, -3), Vector2(canvas.size.x, -3), Color(GOLD, 0.22), 1.0)

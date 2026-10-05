@@ -13,7 +13,7 @@ var _duration := 0.0
 func _ready() -> void:
 	add_theme_constant_override("separation", 4)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	title = STYLE.label("CHỜ GIAO TRANH", 13, STYLE.CYAN)
+	title = STYLE.label("CHỜ GIAO TRANH", 11, STYLE.MUTED)
 	title.name = "CombatTacticalLane"
 	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -30,6 +30,9 @@ func reset() -> void:
 	_priority = 0
 	_remaining = 0.0
 	title.text = "CHỜ GIAO TRANH"
+	title.add_theme_font_size_override("font_size", 11)
+	title.add_theme_color_override("font_color", STYLE.MUTED)
+	queue_redraw()
 	detail.text = ""
 	progress.visible = false
 	set_process(false)
@@ -76,6 +79,8 @@ func present(event: Dictionary) -> void:
 	_duration = duration
 	_remaining = duration if duration > 0.0 else 1.25
 	title.text = text
+	title.add_theme_font_size_override("font_size", 13)
+	queue_redraw()
 	title.add_theme_color_override("font_color", STYLE.RED if priority == 5 else STYLE.CYAN)
 	detail.text = caption
 	progress.visible = duration > 0.0
@@ -88,6 +93,14 @@ func _process(delta: float) -> void:
 		progress.value = clampf(1.0 - _remaining / _duration, 0.0, 1.0) * 100.0
 	if _remaining <= 0.0:
 		_priority = 0
+		queue_redraw()
 		progress.visible = false
 		detail.text = ""
 		set_process(false)
+
+func _draw() -> void:
+	var accent := STYLE.RED if _priority == 5 else STYLE.GOLD
+	var height := 48.0 if progress != null and progress.visible else 30.0
+	var rect := Rect2(Vector2(0, (size.y - height) / 2.0), Vector2(size.x, height))
+	draw_style_box(STYLE.surface(accent, 0.55 if _priority > 0 else 0.20), rect)
+	draw_line(rect.position + Vector2(16, 0), rect.position + Vector2(size.x - 16, 0), Color(accent, 0.50 if _priority > 0 else 0.18), 1.0)

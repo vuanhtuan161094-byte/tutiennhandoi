@@ -12,13 +12,13 @@ func _ready() -> void:
 	add_theme_constant_override("separation", 3)
 	var head := HBoxContainer.new()
 	add_child(head)
-	identity = STYLE.label("", 11)
+	identity = STYLE.label("", 12)
 	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(identity)
 	hp_text = STYLE.label("", 9, STYLE.MUTED)
 	hp_text.custom_minimum_size = Vector2(112, 0)
 	head.add_child(hp_text)
-	hp = STYLE.bar("CombatPlayerHP", Color("7aada1"), 9)
+	hp = STYLE.bar("CombatPlayerHP", Color("67998d"), 7)
 	add_child(hp)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 7)
@@ -40,3 +40,6 @@ func bind(player: Dictionary) -> void:
 	spirit.max_value = maxf(1.0, float(cn.get("max", 1.0)))
 	spirit.value = float(cn.get("current", 0.0))
 	spirit_text.text = "%d/%d" % [int(spirit.value), int(spirit.max_value)]
+
+func _draw() -> void:
+	STYLE.draw_hud_strip(self, STYLE.CYAN)

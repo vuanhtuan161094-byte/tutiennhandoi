@@ -12,13 +12,13 @@ func _ready() -> void:
 	add_theme_constant_override("separation", 3)
 	var head := HBoxContainer.new()
 	add_child(head)
-	identity = STYLE.label("", 12, STYLE.TEXT)
+	identity = STYLE.label("", 14, STYLE.TEXT)
 	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(identity)
 	metadata = STYLE.label("", 9, STYLE.GOLD)
 	metadata.custom_minimum_size = Vector2(62, 0)
 	head.add_child(metadata)
-	hp = STYLE.bar("CombatEnemyHP", STYLE.RED, 10)
+	hp = STYLE.bar("CombatEnemyHP", Color("9e5e59"), 8)
 	add_child(hp)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 7)
@@ -40,3 +40,6 @@ func bind(enemy: Dictionary, boss: Dictionary) -> void:
 	hp.value = float(vital.get("ratio", 1.0)) * 100.0
 	hp_text.text = "%s / %s" % [str(vital.get("display_current", "—")), str(vital.get("display_max", "—"))]
 	break_bar.value = float(enemy.get("break", {}).get("ratio", 1.0)) * 100.0
+
+func _draw() -> void:
+	STYLE.draw_hud_strip(self, STYLE.RED)
