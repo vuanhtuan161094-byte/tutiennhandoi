@@ -1,6 +1,6 @@
 {
   "name": "tutien-combat-visual-capture",
-  "description": "Actual canonical Artifact seven-slot reference: isolated QA realm progression, canonical learning/loadout/Auto, real Boss fight; no fabricated resource, readiness or result.",
+  "description": "390x844 primary visual authority: canonical prefight/playback only; responsive geometry stays in structural tests. Runtime frames and exported pixels must be validated.",
   "target": {
     "mode": "launch",
     "project_path": "../..",
@@ -59,156 +59,20 @@
       "action": "wait_for_property"
     },
     {
+      "name": "Combat scene is visible before readback",
+      "with": {
+        "state": "visible",
+        "timeout_ms": 5000,
+        "selector": "name:CombatScreen"
+      },
+      "action": "wait_for_node"
+    },
+    {
       "name": "Capture Combat prefight 390x844",
       "with": {
         "output": "combat-prefight-390x844.png"
       },
       "action": "screenshot"
-    },
-    {
-      "with": {
-        "value": {
-          "x": 360,
-          "y": 800
-        },
-        "selector": "/root",
-        "property": "size"
-      },
-      "action": "set_property",
-      "name": "Resize size to 360x800"
-    },
-    {
-      "with": {
-        "value": {
-          "x": 360,
-          "y": 800
-        },
-        "selector": "/root",
-        "property": "content_scale_size"
-      },
-      "action": "set_property",
-      "name": "Resize content_scale_size to 360x800"
-    },
-    {
-      "with": {
-        "duration_ms": 200
-      },
-      "action": "sleep",
-      "name": "Settle responsive containers"
-    },
-    {
-      "with": {
-        "output": "combat-prefight-360x800.png"
-      },
-      "action": "screenshot",
-      "name": "Capture prefight 360x800"
-    },
-    {
-      "with": {
-        "value": {
-          "x": 412,
-          "y": 915
-        },
-        "selector": "/root",
-        "property": "size"
-      },
-      "action": "set_property",
-      "name": "Resize size to 412x915"
-    },
-    {
-      "with": {
-        "value": {
-          "x": 412,
-          "y": 915
-        },
-        "selector": "/root",
-        "property": "content_scale_size"
-      },
-      "action": "set_property",
-      "name": "Resize content_scale_size to 412x915"
-    },
-    {
-      "with": {
-        "duration_ms": 200
-      },
-      "action": "sleep",
-      "name": "Settle responsive containers"
-    },
-    {
-      "with": {
-        "output": "combat-prefight-412x915.png"
-      },
-      "action": "screenshot",
-      "name": "Capture prefight 412x915"
-    },
-    {
-      "with": {
-        "value": {
-          "x": 430,
-          "y": 932
-        },
-        "selector": "/root",
-        "property": "size"
-      },
-      "action": "set_property",
-      "name": "Resize size to 430x932"
-    },
-    {
-      "with": {
-        "value": {
-          "x": 430,
-          "y": 932
-        },
-        "selector": "/root",
-        "property": "content_scale_size"
-      },
-      "action": "set_property",
-      "name": "Resize content_scale_size to 430x932"
-    },
-    {
-      "with": {
-        "duration_ms": 200
-      },
-      "action": "sleep",
-      "name": "Settle responsive containers"
-    },
-    {
-      "with": {
-        "output": "combat-prefight-430x932.png"
-      },
-      "action": "screenshot",
-      "name": "Capture prefight 430x932"
-    },
-    {
-      "with": {
-        "value": {
-          "x": 390,
-          "y": 844
-        },
-        "selector": "/root",
-        "property": "size"
-      },
-      "action": "set_property",
-      "name": "Restore size to 390x844"
-    },
-    {
-      "with": {
-        "value": {
-          "x": 390,
-          "y": 844
-        },
-        "selector": "/root",
-        "property": "content_scale_size"
-      },
-      "action": "set_property",
-      "name": "Restore content_scale_size to 390x844"
-    },
-    {
-      "with": {
-        "duration_ms": 200
-      },
-      "action": "sleep",
-      "name": "Settle reference layout"
     },
     {
       "name": "Focus game",
@@ -270,6 +134,27 @@
         "duration_ms": 2000
       },
       "action": "sleep"
+    },
+    {
+      "name": "Canonical Boss HP has changed",
+      "with": {
+        "operator": "less_than",
+        "expected_value": 100,
+        "selector": "name:CombatEnemyHP",
+        "property": "value",
+        "timeout_ms": 5000
+      },
+      "action": "wait_for_property"
+    },
+    {
+      "name": "No early result overlay",
+      "with": {
+        "operator": "equals",
+        "selector": "name:CombatResult",
+        "property": "visible",
+        "expected": false
+      },
+      "action": "assert_property"
     },
     {
       "name": "Capture Combat playback 390x844",
