@@ -167,11 +167,12 @@
     {
       "with": {
         "property": "_combat_polling",
-        "expected": false,
         "selector": "name:BackendBridge",
-        "operator": "equals"
+        "operator": "equals",
+        "expected_value": false,
+        "timeout_ms": 10000
       },
-      "action": "assert_property",
+      "action": "wait_for_property",
       "name": "Combat polling stops outside route"
     },
     {
@@ -183,6 +184,17 @@
     },
     {
       "with": {
+        "property": "_combat_polling",
+        "selector": "name:BackendBridge",
+        "operator": "equals",
+        "expected_value": true,
+        "timeout_ms": 10000
+      },
+      "action": "wait_for_property",
+      "name": "Reentry restarts polling"
+    },
+    {
+      "with": {
         "property": "_combat_cursor",
         "expected_value": 0,
         "timeout_ms": 10000,
@@ -191,16 +203,6 @@
       },
       "action": "wait_for_property",
       "name": "Reentry fetches canonical snapshot and events"
-    },
-    {
-      "with": {
-        "property": "_combat_polling",
-        "expected": true,
-        "selector": "name:BackendBridge",
-        "operator": "equals"
-      },
-      "action": "assert_property",
-      "name": "Reentry restarts polling"
     },
     {
       "with": {
