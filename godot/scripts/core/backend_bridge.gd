@@ -32,6 +32,7 @@ var _action_inflight := false
 var _combat_inflight := false
 var _combat_polling := false
 var _combat_cursor := 0
+var _combat_encounter_id := ""
 var _pending_action_id := ""
 
 func _ready() -> void:
@@ -123,6 +124,9 @@ func set_combat_polling(enabled: bool) -> void:
 	_combat_polling = enabled
 	if enabled:
 		refresh_combat(true)
+	elif _combat_http != null:
+		_combat_http.cancel_request()
+		_combat_inflight = false
 
 
 func refresh_combat(reset_cursor: bool = false) -> void:
@@ -198,6 +202,9 @@ func _consume_combat(data: Dictionary) -> void:
 	var snapshot = data.get("snapshot", {})
 	var encounter_id := str(snapshot.get("encounterId", "")) if typeof(snapshot) == TYPE_DICTIONARY else ""
 	var events = data.get("events", [])
+	if encounter_id != _combat_encounter_id:
+		_combat_encounter_id = encounter_id
+		_combat_cursor = 0
 	_combat_cursor = maxi(_combat_cursor, int(data.get("eventCursor", _combat_cursor)))
 	combat_updated.emit(data)
 	if typeof(events) == TYPE_ARRAY and not events.is_empty():

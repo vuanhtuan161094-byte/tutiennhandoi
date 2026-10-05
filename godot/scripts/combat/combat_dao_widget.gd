@@ -11,6 +11,8 @@ var _flags: Label
 var _meter_box: VBoxContainer
 var _bars: Dictionary = {}
 var _value_labels: Dictionary = {}
+var _active_flags: Dictionary = {}
+var _detail: Label
 
 
 func _ready() -> void:
@@ -37,13 +39,35 @@ func bind(dao: Dictionary) -> void:
 				_add_meter(raw)
 
 	var active_flags: Array[String] = []
+	_active_flags.clear()
 	var flags = dao.get("flags", [])
 	if typeof(flags) == TYPE_ARRAY:
 		for raw in flags:
 			if typeof(raw) == TYPE_DICTIONARY and bool(raw.get("active", false)):
 				active_flags.append(str(raw.get("label", "")))
+				_active_flags[str(raw.get("id", ""))] = str(raw.get("label", ""))
 	_flags.text = " · ".join(active_flags)
 	_flags.visible = not active_flags.is_empty()
+	_bind_detail(dao.get("detail", {}))
+
+
+func apply_projection(dao: Dictionary) -> void:
+	for raw in dao.get("meters", []):
+		# Target marks have their own canonical mark events, not self Dao resources.
+		if str(raw.get("id", "")) != "mindMarkCount":
+			apply_resource(str(raw.get("id", "")), float(raw.get("value", 0.0)), float(raw.get("max", 1.0)))
+	_active_flags.clear()
+	for raw in dao.get("flags", []):
+		if bool(raw.get("active", false)):
+			_active_flags[str(raw.get("id", ""))] = str(raw.get("label", ""))
+	_flags.text = " · ".join(_active_flags.values())
+	_flags.visible = not _active_flags.is_empty()
+	_bind_detail(dao.get("detail", {}))
+
+
+func _bind_detail(detail: Dictionary) -> void:
+	_detail.text = str(detail.get("expectedForm", detail.get("expected_form", "")))
+	_detail.visible = not _detail.text.is_empty()
 
 
 func apply_resource(resource_id: String, value: float, maximum: float = -1.0) -> void:
@@ -65,8 +89,11 @@ func apply_target_mark(stacks: float, maximum: float = 5.0) -> void:
 func set_flag(flag_id: String, label: String, active: bool) -> void:
 	set_meta("flag:%s" % flag_id, active)
 	if active:
-		_flags.text = label
-		_flags.visible = true
+		_active_flags[flag_id] = label
+	else:
+		_active_flags.erase(flag_id)
+	_flags.text = " · ".join(_active_flags.values())
+	_flags.visible = not _active_flags.is_empty()
 
 
 func _build() -> void:
@@ -103,6 +130,10 @@ func _build() -> void:
 	_meter_box = VBoxContainer.new()
 	_meter_box.add_theme_constant_override("separation", 3)
 	col.add_child(_meter_box)
+	_detail = Label.new()
+	_detail.add_theme_font_size_override("font_size", 9)
+	_detail.add_theme_color_override("font_color", MUTED)
+	col.add_child(_detail)
 
 
 func _add_meter(raw: Dictionary) -> void:

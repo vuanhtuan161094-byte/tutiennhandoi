@@ -3,6 +3,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { projectDaoForGodot, createCombatPlayback } from './combat_presentation.mjs';
 
 const HERE=dirname(fileURLToPath(import.meta.url));
 const SERVER=resolve(HERE,'bridge_server.mjs');
@@ -17,6 +18,28 @@ const EXPECTED_AUTHORITY='character-cultivation.v140';
 function assert(condition,message){
   if(!condition)throw new Error(message);
 }
+
+// All eight widgets use the locked runtime's factory/projection without mutating
+// the caller. Cover initial artifact level, hidden Body legacy and target owners.
+for(const id of ['sword','fist','body','spell','poison','formation','artifact','mind']){
+  const player={combatBuildV117:{battleDaoV2Enabled:true,mainDaoId:id}};
+  const before=JSON.stringify(player);
+  const dao=projectDaoForGodot(null,id,player);
+  assert(JSON.stringify(player)===before,`${id} projection mutated authority`);
+  assert(dao.meters.every(m=>m.max>0&&m.value>=0&&m.value<=m.max),`${id} invalid meter`);
+  if(id==='artifact')assert(dao.meters[0].value===1,'Fresh Khí Linh must start at canonical level 1');
+  if(id==='body')assert(dao.meters.length===1&&dao.meters[0].id==='counterForce','Body legacy meter returned');
+  if(id==='mind'||id==='poison')assert(dao.meters[0].targetOwned,'Target-owned resource lost its owner');
+}
+const projected=createCombatPlayback({serial:1,initialSnapshot:{mainDaoId:'spell',player:{id:'p'}},result:{
+  seed:1,floor:1,combatEvents:[{type:'battleEnd',time:2}],combatResult:{events:[
+    {type:'resource.changed',time:1,actorId:'p',data:{v2DaoProjection:true,lawWheel:3,dienPhapReady:true,lawWheelExpectedForm:'Heavy'}},
+  ]},
+}});
+assert(projected.events[0].payload.dao.flags[0].active,'Canonical Diễn Pháp flag was dropped');
+assert(projected.events[0].payload.dao.detail.expectedForm==='Heavy','Canonical expected form was dropped');
+assert(projected.events[1].type==='battle.end','Dao projection disturbed timestamp ordering');
+assert(projected.encounterId!==createCombatPlayback({serial:2,initialSnapshot:{},result:{seed:1,floor:1}}).encounterId,'Encounter ID reused across transactions');
 async function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 async function request(path,{method='GET',body}={}){
   const response=await fetch(BASE+path,{

@@ -37,6 +37,7 @@ var _dao_widget: CombatDaoWidget
 var _skill_rail: CombatSkillRail
 var _event_player: CombatEventPlayer
 var _vm: Dictionary = {}
+var _battle_end_seen := false
 
 
 func _ready() -> void:
@@ -54,10 +55,17 @@ func set_presentation_active(active: bool) -> void:
 	visible = active
 	if not active and _event_player != null:
 		_event_player.reset()
+		_vm.clear()
+		_battle_end_seen = false
 
 
 func bind(vm: Dictionary) -> void:
+	var same_playback := str(vm.get("mode", "")) == "playback" and not str(vm.get("encounter_id", "")).is_empty() and str(vm.get("encounter_id", "")) == str(_vm.get("encounter_id", ""))
 	_vm = vm.duplicate(true)
+	# Polls repeat the initial snapshot; event-owned bars and completed result stay put.
+	if same_playback:
+		return
+	_battle_end_seen = false
 	var challenge: Dictionary = vm.get("challenge", {})
 	var player: Dictionary = vm.get("player", {})
 	var enemy: Dictionary = vm.get("enemy", {})
@@ -312,6 +320,7 @@ func _on_combat_event(event: Dictionary) -> void:
 	var target := str(event.get("target", ""))
 	match type:
 		"battle.start":
+			_apply_event_hp(target, payload)
 			_result.visible = false
 			_challenge_button.visible = false
 			_tactical.text = "GIAO TRANH"
@@ -339,6 +348,9 @@ func _on_combat_event(event: Dictionary) -> void:
 				var gauge := clampf(float(payload.get("ultimateGauge", 0.0)), 0.0, 100.0)
 				_ultimate.value = gauge
 				_ultimate_text.text = "ULT %.0f/100" % gauge
+		"combat.daoProjection":
+			var raw_dao: Dictionary = payload.get("dao", {})
+			_dao_widget.apply_projection(raw_dao)
 		"combat.mark":
 			if str(_vm.get("main_dao_id", "")) == "mind" and target == "enemy" and payload.has("stacks"):
 				_dao_widget.apply_target_mark(float(payload.get("stacks", 0.0)), float(payload.get("maxStacks", 5.0)))
@@ -351,6 +363,7 @@ func _on_combat_event(event: Dictionary) -> void:
 		"actor.death":
 			_apply_event_hp(target, payload)
 		"battle.end":
+			_battle_end_seen = true
 			_tactical.text = "KẾT THÚC"
 		_:
 			pass
@@ -358,7 +371,7 @@ func _on_combat_event(event: Dictionary) -> void:
 
 func _on_playback_finished(_encounter_id: String) -> void:
 	var result: Dictionary = _vm.get("result", {})
-	if result.is_empty():
+	if result.is_empty() or not _battle_end_seen:
 		return
 	_result.text = "TRẤN SÁT" if bool(result.get("won", false)) else "THẤT BẠI"
 	_result.visible = true

@@ -2,6 +2,62 @@ class_name CombatViewModelTest
 extends GdUnitTestSuite
 
 const COMBAT_VIEW_MODEL := preload("res://scripts/models/combat_view_model.gd")
+const COMBAT_SCREEN := preload("res://scripts/combat/combat_screen.gd")
+const EVENT_PLAYER := preload("res://scripts/combat/combat_event_player.gd")
+const BRIDGE := preload("res://scripts/core/backend_bridge.gd")
+
+
+func test_bridge_cursor_tracks_each_encounter_independently() -> void:
+	var bridge := BRIDGE.new()
+	var payload := _valid_combat()
+	payload["eventCursor"] = 90
+	bridge._consume_combat(payload)
+	assert_int(bridge._combat_cursor).is_equal(90)
+	payload["snapshot"]["encounterId"] = "next"
+	payload["eventCursor"] = 2
+	bridge._consume_combat(payload)
+	assert_int(bridge._combat_cursor).is_equal(2)
+	payload["eventCursor"] = 1
+	bridge._consume_combat(payload)
+	assert_int(bridge._combat_cursor).is_equal(2)
+	bridge.free()
+
+
+func test_poll_preserves_event_hp_and_requires_battle_end_for_result() -> void:
+	var screen := COMBAT_SCREEN.new()
+	add_child(screen)
+	var payload := _valid_combat()
+	payload["snapshot"]["result"] = {"won": true}
+	var vm := COMBAT_VIEW_MODEL.build(payload)
+	screen.bind(vm)
+	screen._on_combat_event({"type": "combat.damage", "target": "enemy", "payload": {"hpPct": 17}})
+	screen.bind(vm)
+	assert_float(screen._enemy_hp.value).is_equal(17.0)
+	screen._on_playback_finished("hunt.1.1")
+	assert_bool(screen._result.visible).is_false()
+	screen._on_combat_event({"type": "battle.end"})
+	screen._on_playback_finished("hunt.1.1")
+	screen.bind(vm)
+	assert_bool(screen._result.visible).is_true()
+	screen.set_presentation_active(false)
+	screen.bind(vm)
+	assert_float(screen._enemy_hp.value).is_equal(100.0)
+	screen.free()
+
+
+func test_event_replay_is_deduplicated_per_encounter() -> void:
+	var player := EVENT_PLAYER.new()
+	add_child(player)
+	var events := [{"cursor": 1, "time": 0.0, "type": "battle.start"}]
+	assert_int(player.append_events("first", events)).is_equal(1)
+	player._process(0.1)
+	assert_int(player.append_events("first", events)).is_equal(0)
+	assert_int(player.pending_count()).is_equal(0)
+	assert_int(player.append_events("second", events)).is_equal(1)
+	player.reset()
+	assert_int(player.pending_count()).is_equal(0)
+	assert_bool(player.is_playing()).is_false()
+	player.free()
 
 
 func test_build_maps_canonical_combat_contract() -> void:

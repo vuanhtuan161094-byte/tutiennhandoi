@@ -1,4 +1,4 @@
-import { v2ResourceProjection } from '../../dist/core/battle-dao-v2-runtime-base.js';
+import { createBattleDaoRuntimeStateV2, v2ResourceProjection } from '../../dist/core/battle-dao-v2-runtime-base.js';
 import { combatMaxHp, combatSpiritStandard } from '../../dist/core/combat-rules.js';
 
 export const GODOT_COMBAT_SCHEMA='godot-combat-bridge.v1';
@@ -35,7 +35,7 @@ function compact(value){
 }
 
 function initialDaoProjection(session,player){
-  const initial=player?.initialBattleDaoStateV2;
+  const initial=player?.initialBattleDaoStateV2??createBattleDaoRuntimeStateV2(player,0);
   if(!initial)return {};
   try{
     const projectionEntity={...player,battleDaoStateV2:structuredClone(initial)};
@@ -45,10 +45,10 @@ function initialDaoProjection(session,player){
   }
 }
 
-export function projectDaoForGodot(session,mainDaoId,player){
+export function projectDaoForGodot(session,mainDaoId,player,projection){
   const id=String(mainDaoId||'');
   const meta=DAO_META[id]||{label:'Bản Đạo',anchorKind:'self'};
-  const p=initialDaoProjection(session,player);
+  const p=projection??initialDaoProjection(session,player);
   const out={id,label:meta.label,anchorKind:meta.anchorKind,meters:[],flags:[],detail:{}};
 
   if(id==='sword'){
@@ -57,7 +57,7 @@ export function projectDaoForGodot(session,mainDaoId,player){
   }else if(id==='fist'){
     out.meters.push(meter('fistForce','Quyền Thế',p.fistForce,p.fistForceCap||5));
     out.meters.push(meter('fistPassiveStack','Liên Kình',p.fistPassiveStack,p.fistPassiveStackCap||20));
-    out.flags.push(flag('fistDomain','Quyền Vực',finite(p.fistDomainUntil)>0));
+    if(p.fistDomainUntil!==undefined)out.flags.push(flag('fistDomain','Quyền Vực',finite(p.fistDomainUntil)>0));
   }else if(id==='body'){
     // Main Body production has exactly one short-cycle player-facing resource.
     // bodyPassiveStack/Huyết Khí is compatibility data and must stay hidden.
@@ -86,7 +86,7 @@ export function projectDaoForGodot(session,mainDaoId,player){
   }else if(id==='mind'){
     out.meters.push(meter('mindMarkCount','Thần Ấn',0,5,true));
     out.meters.push(meter('mindPassiveStack','Niệm Lực',p.mindPassiveStack,p.mindPassiveStackCap||20));
-    out.flags.push(flag('mindFlow','Phân Lưu',finite(p.mindFlowUntil)>0));
+    if(p.mindFlowUntil!==undefined)out.flags.push(flag('mindFlow','Phân Lưu',finite(p.mindFlowUntil)>0));
   }
   return out;
 }
@@ -105,8 +105,8 @@ function projectSkill(registry,id,index){
     cooldownTotal:Math.max(0,finite(skill.cooldown,finite(runtime.cooldown))),
     cooldownRemaining:0,
     spiritCost:Math.max(0,finite(skill.spiritCost,finite(skill.spiritCostStandardPct))),
-    ready:true,
-    blockedReason:'',
+    ready:false,
+    blockedReason:'AUTO',
     castState:'idle',
     channelState:'idle',
     autoSelected:false,
@@ -234,8 +234,15 @@ export function projectCombatEvent(event,index=0){
 }
 
 export function createCombatPlayback({result,initialSnapshot,serial=1}){
-  const encounterId=`hunt.${String(result?.seed??serial)}.${String(result?.floor??0)}`;
-  const events=(Array.isArray(result?.combatEvents)?result.combatEvents:[]).map(projectCombatEvent);
+  const encounterId=`hunt.${serial}.${String(result?.seed??'')}.${String(result?.floor??0)}`;
+  const sourceEvents=Array.isArray(result?.combatEvents)?result.combatEvents:[];
+  // The Hunt stream intentionally drops nonnumeric Dao fields. Forward the
+  // canonical V3 projection as well; never calculate or mutate battle state here.
+  const daoEvents=(result?.combatResult?.events||[])
+    .filter(event=>event.type==='resource.changed'&&event.data?.v2DaoProjection===true&&event.actorId===initialSnapshot?.player?.id)
+    .map(event=>({time:event.time,type:'daoProjection',actor:'player',
+      dao:projectDaoForGodot(null,initialSnapshot.mainDaoId,null,event.data)}));
+  const events=[...sourceEvents,...daoEvents].sort((a,b)=>finite(a.time)-finite(b.time)).map(projectCombatEvent);
   const playbackResult={
     won:Boolean(result?.won),
     rewardContext:String(result?.rewardContext||''),
