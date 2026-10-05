@@ -325,6 +325,10 @@ if (-not $SkipVisual) {
         New-Item -ItemType Directory -Force -Path $combatVisualOut | Out-Null
         & $StagehandExe run (Join-Path $GodotProject "tests\stagehand\combat_visual_capture.json") --out-dir $combatVisualOut --godot-bin $Godot
         Assert-Exit "Stagehand canonical Combat visual capture"
+        & (Join-Path $PSScriptRoot "Test-VisualScreenshot.ps1") -Path @(
+            (Join-Path $combatVisualOut "screenshots\combat-prefight-390x844.png"),
+            (Join-Path $combatVisualOut "screenshots\combat-playback-390x844.png")
+        ) -ReportPath (Join-Path $combatVisualOut "pixel-validation.json")
     } finally {
         $env:TUTIEN_GODOT_QA = $oldVisualQa
         $env:TUTIEN_GODOT_BRIDGE_DIAGNOSTIC = $oldVisualDiagnostic
