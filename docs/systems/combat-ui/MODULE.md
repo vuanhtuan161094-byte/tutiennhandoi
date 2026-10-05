@@ -102,6 +102,10 @@ Current production path:
 
 ## Current next action
 
+Latest screenshot pipeline gate: clean SHA `75f737adee63f400e8b1df7f856b6543f11755ce`, `KIEM_TRA_GAME.cmd` exit 0; 68 GdUnit tests, bridge/P2, Home 50/50, Combat 28/28, Home capture 9/9 and Combat capture 23/23 PASS. Both exported 390×844 PNGs pass dimensions/alpha/brightness/variance checks. Root-capture barrier and rejection of transparent/black/flat frames: `docs/ui/GODOT_COMBAT_SCREENSHOT_PIPELINE_20261005.md`.
+
+Normal visual authority is 390×844 prefight/playback only. Four-size geometry remains structural; auxiliary 360×800 / 430×932 PNGs are milestone or major-layout diagnostics, with no mandatory 412×915 PNG. GCombat-2/3 remain visual candidates, GCombat-4 NOT STARTED. No screenshot was approved as a baseline.
+
 Windows `KIEM_TRA_GAME.cmd` exited 0 on the clean production HUD/rail implementation SHA `7e820641ff56d15d2d18439fb091e828ea167b58` on 2026-10-05. Import/parse, 66 GdUnit tests, canonical bridge/P2 smoke, 50 Home and 27 Combat Stagehand steps passed. Home capture passed 9/9; actual canonical Combat capture passed 35/35. Prefight/playback at 390×844 and prefight at 360×800, 412×915 and 430×932 were captured and inspected. Proof, source inventory and transport limitations: `docs/ui/GODOT_COMBAT_PRODUCTION_HUD_RAIL_GATE_20261005.md`. Later documentation commits do not replace this implementation proof.
 
 Next: user review of GCombat-2/3 visual candidates. GCombat-0 and GCombat-1 remain PASS. GCombat-4 has not been opened; the compact Ngự Khí reference does not complete all eight Dao widgets. These runtime results do not approve visual design or close/lock Combat UI. Canonical Combat/Dao gameplay authority and approved visual baselines were not changed.
