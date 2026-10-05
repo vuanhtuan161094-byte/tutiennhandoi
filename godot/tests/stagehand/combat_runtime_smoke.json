@@ -30,6 +30,16 @@
       }
     },
     {
+      "with": {
+        "property": "disabled",
+        "expected": true,
+        "selector": "name:CombatAction",
+        "operator": "equals"
+      },
+      "action": "assert_property",
+      "name": "Fresh Pham Nhan keeps Combat locked"
+    },
+    {
       "name": "Prepare canonical breakthrough fixture",
       "action": "press_key",
       "with": {
@@ -153,6 +163,74 @@
         "state": "visible",
         "timeout_ms": 5000
       }
+    },
+    {
+      "with": {
+        "property": "_combat_polling",
+        "expected": false,
+        "selector": "name:BackendBridge",
+        "operator": "equals"
+      },
+      "action": "assert_property",
+      "name": "Combat polling stops outside route"
+    },
+    {
+      "with": {
+        "selector": "name:CombatAction"
+      },
+      "action": "click",
+      "name": "Reenter Combat"
+    },
+    {
+      "with": {
+        "property": "_combat_cursor",
+        "expected_value": 0,
+        "timeout_ms": 10000,
+        "selector": "name:BackendBridge",
+        "operator": "greater_than"
+      },
+      "action": "wait_for_property",
+      "name": "Reentry fetches canonical snapshot and events"
+    },
+    {
+      "with": {
+        "property": "_combat_polling",
+        "expected": true,
+        "selector": "name:BackendBridge",
+        "operator": "equals"
+      },
+      "action": "assert_property",
+      "name": "Reentry restarts polling"
+    },
+    {
+      "with": {
+        "selector": "name:CombatBack"
+      },
+      "action": "click",
+      "name": "Leave Combat again"
+    },
+    {
+      "with": {
+        "selector": "name:Nav_character"
+      },
+      "action": "click",
+      "name": "Character navigation remains functional"
+    },
+    {
+      "with": {
+        "timeout_ms": 10000,
+        "selector": "name:CharacterScreen",
+        "state": "visible"
+      },
+      "action": "wait_for_node",
+      "name": "Character renders after Combat"
+    },
+    {
+      "with": {
+        "selector": "name:Nav_home"
+      },
+      "action": "click",
+      "name": "Return Home from Character"
     },
     {
       "name": "Scene tree remains inspectable",

@@ -405,7 +405,7 @@
       }
     },
     {
-      "name": "Unported Combat quick action is disabled",
+      "name": "Combat quick action remains realm-gated before Luyen Khi",
       "action": "assert_property",
       "with": {
         "selector": "name:CombatAction",

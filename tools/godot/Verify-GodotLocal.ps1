@@ -181,8 +181,18 @@ $version = [string]$resolvedGodot.Version
 Write-Host "[Godot] $version"
 Write-Host "[Godot] $Godot"
 
-Remove-Item -Recurse -Force $ArtifactsRoot -ErrorAction SilentlyContinue
+$resolvedArtifacts = [IO.Path]::GetFullPath($ArtifactsRoot)
+if (-not $resolvedArtifacts.StartsWith($RepoRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+    throw "Artifacts directory must remain inside the repository."
+}
+Remove-Item -LiteralPath $resolvedArtifacts -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $ArtifactsRoot | Out-Null
+
+# Every Godot process in this gate owns a disposable save, including QA ascension.
+# Never let verification read or overwrite the player's ordinary bridge save.
+$oldSave = $env:TUTIEN_GODOT_BRIDGE_SAVE
+try {
+$env:TUTIEN_GODOT_BRIDGE_SAVE = Join-Path $ArtifactsRoot "home-smoke-save.json"
 
 Write-Host ""
 Write-Host "[1/8] Importing project resources ..."
@@ -271,6 +281,7 @@ $oldDiagnostic = $env:TUTIEN_GODOT_BRIDGE_DIAGNOSTIC
 try {
     $env:TUTIEN_GODOT_QA = "1"
     $env:TUTIEN_GODOT_BRIDGE_DIAGNOSTIC = "1"
+    $env:TUTIEN_GODOT_BRIDGE_SAVE = Join-Path $ArtifactsRoot "combat-smoke-save.json"
     $combatStructuralOut = Join-Path $structuralOut "combat"
     New-Item -ItemType Directory -Force -Path $combatStructuralOut | Out-Null
     & $StagehandExe run (Join-Path $GodotProject "tests\stagehand\combat_runtime_smoke.json") --out-dir $combatStructuralOut --godot-bin $Godot
@@ -279,6 +290,7 @@ try {
     $env:TUTIEN_GODOT_QA = $oldQa
     $env:TUTIEN_GODOT_BRIDGE_DIAGNOSTIC = $oldDiagnostic
 }
+$env:TUTIEN_GODOT_BRIDGE_SAVE = Join-Path $ArtifactsRoot "home-visual-save.json"
 
 if (-not $SkipVisual) {
     if (Test-Path $ApprovedBaseline) {
@@ -298,6 +310,23 @@ if (-not $SkipVisual) {
     Write-Host "[8/8] Visual gate skipped by request."
 }
 
+if (-not $SkipVisual) {
+    $oldVisualQa = $env:TUTIEN_GODOT_QA
+    $oldVisualDiagnostic = $env:TUTIEN_GODOT_BRIDGE_DIAGNOSTIC
+    try {
+        $env:TUTIEN_GODOT_QA = "1"
+        $env:TUTIEN_GODOT_BRIDGE_DIAGNOSTIC = "1"
+        $env:TUTIEN_GODOT_BRIDGE_SAVE = Join-Path $ArtifactsRoot "combat-visual-save.json"
+        $combatVisualOut = Join-Path $ArtifactsRoot "stagehand-combat-visual"
+        New-Item -ItemType Directory -Force -Path $combatVisualOut | Out-Null
+        & $StagehandExe run (Join-Path $GodotProject "tests\stagehand\combat_visual_capture.json") --out-dir $combatVisualOut --godot-bin $Godot
+        Assert-Exit "Stagehand canonical Combat visual capture"
+    } finally {
+        $env:TUTIEN_GODOT_QA = $oldVisualQa
+        $env:TUTIEN_GODOT_BRIDGE_DIAGNOSTIC = $oldVisualDiagnostic
+    }
+}
+
 Write-Host ""
 Write-Host "================================================"
 Write-Host "  GODOT LOCAL VERIFICATION: PASS"
@@ -312,4 +341,7 @@ if (-not $SkipVisual) {
         Write-Host "Candidate screenshot: $ArtifactsRoot\stagehand-visual\screenshots\home-390x844.png"
         Write-Host "Baseline status: NOT APPROVED"
     }
+}
+} finally {
+    $env:TUTIEN_GODOT_BRIDGE_SAVE = $oldSave
 }

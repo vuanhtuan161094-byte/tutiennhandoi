@@ -1,0 +1,187 @@
+{
+  "name": "tutien-combat-visual-capture",
+  "description": "Capture actual canonical Combat at 390x844 after QA preparation and real ascension. Candidate only; no mocked fight or visual approval.",
+  "target": {
+    "mode": "launch",
+    "project_path": "../..",
+    "headless": false,
+    "timeout_ms": 60000
+  },
+  "steps": [
+    {
+      "name": "Home runtime starts",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:HomeHUD",
+        "state": "visible",
+        "timeout_ms": 15000
+      }
+    },
+    {
+      "name": "Canonical bridge reaches online",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:BridgeStatus",
+        "property": "text",
+        "operator": "contains",
+        "expected_value": "ONLINE",
+        "timeout_ms": 20000,
+        "poll_interval_ms": 200
+      }
+    },
+    {
+      "name": "Prepare canonical breakthrough fixture",
+      "action": "press_key",
+      "with": {
+        "key": "F6"
+      }
+    },
+    {
+      "name": "Canonical breakthrough CTA appears",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:PrimaryCTA",
+        "state": "visible",
+        "timeout_ms": 10000
+      }
+    },
+    {
+      "name": "Perform canonical breakthrough",
+      "action": "click",
+      "with": {
+        "selector": "name:PrimaryCTA"
+      }
+    },
+    {
+      "name": "Combat quick action unlocks at Luyen Khi",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:CombatAction",
+        "property": "disabled",
+        "operator": "equals",
+        "expected_value": false,
+        "timeout_ms": 15000,
+        "poll_interval_ms": 200
+      }
+    },
+    {
+      "name": "Open Godot Combat",
+      "action": "click",
+      "with": {
+        "selector": "name:CombatAction"
+      }
+    },
+    {
+      "name": "Godot Combat screen owns the route",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:CombatScreen",
+        "state": "visible",
+        "timeout_ms": 15000
+      }
+    },
+    {
+      "name": "Canonical challenge becomes available",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:CombatChallenge",
+        "property": "disabled",
+        "operator": "equals",
+        "expected_value": false,
+        "timeout_ms": 15000,
+        "poll_interval_ms": 200
+      }
+    },
+    {
+      "name": "Combat HUD core exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:CombatPlayerHP",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Combat Dao widget exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:CombatDaoWidget",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Combat skill rail exists",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:CombatSkillRail",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Capture Combat prefight 390x844",
+      "with": {
+        "output": "combat-prefight-390x844.png"
+      },
+      "action": "screenshot"
+    },
+    {
+      "name": "Run canonical Boss combat",
+      "action": "click",
+      "with": {
+        "selector": "name:CombatChallenge"
+      }
+    },
+    {
+      "name": "Canonical event playback reaches tactical lane",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:CombatTacticalLane",
+        "property": "text",
+        "operator": "not_equals",
+        "expected_value": "CHỜ GIAO TRANH",
+        "timeout_ms": 15000,
+        "poll_interval_ms": 100
+      }
+    },
+    {
+      "name": "Let canonical playback advance",
+      "with": {
+        "duration_ms": 2000
+      },
+      "action": "sleep"
+    },
+    {
+      "name": "Capture Combat playback 390x844",
+      "with": {
+        "output": "combat-playback-390x844.png"
+      },
+      "action": "screenshot"
+    },
+    {
+      "name": "Combat route can return Home",
+      "action": "click",
+      "with": {
+        "selector": "name:CombatBack"
+      }
+    },
+    {
+      "name": "Home returns after Combat",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:HomeStage",
+        "state": "visible",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "name": "Scene tree remains inspectable",
+      "action": "tree",
+      "with": {
+        "root_path": "/root",
+        "max_depth": 5
+      }
+    }
+  ]
+}
