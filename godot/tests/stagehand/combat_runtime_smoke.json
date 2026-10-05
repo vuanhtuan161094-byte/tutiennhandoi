@@ -212,6 +212,17 @@
       "name": "Leave Combat again"
     },
     {
+      "name": "Second exit finishes before navigation",
+      "action": "wait_for_property",
+      "with": {
+        "expected_value": false,
+        "timeout_ms": 10000,
+        "property": "_combat_polling",
+        "selector": "name:BackendBridge",
+        "operator": "equals"
+      }
+    },
+    {
       "with": {
         "selector": "name:Nav_character"
       },

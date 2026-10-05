@@ -187,6 +187,10 @@ if (-not $resolvedArtifacts.StartsWith($RepoRoot + [IO.Path]::DirectorySeparator
 }
 Remove-Item -LiteralPath $resolvedArtifacts -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $ArtifactsRoot | Out-Null
+$verifiedHead = (& git -C $RepoRoot rev-parse HEAD).Trim()
+Assert-Exit "Git candidate identity"
+$verifiedHead | Set-Content -Encoding ASCII (Join-Path $ArtifactsRoot "verified-head.txt")
+Write-Host "[Candidate] $verifiedHead"
 
 # Every Godot process in this gate owns a disposable save, including QA ascension.
 # Never let verification read or overwrite the player's ordinary bridge save.
