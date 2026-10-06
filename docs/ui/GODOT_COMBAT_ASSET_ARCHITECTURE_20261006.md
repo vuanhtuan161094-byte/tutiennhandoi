@@ -1,5 +1,7 @@
 # Godot Combat Asset Architecture — 2026-10-06
 
+> Historical model, superseded by [Simplified Biome Family Architecture](GODOT_COMBAT_BIOME_FAMILY_ARCHITECTURE_20261006.md). The layer/path contracts below are retained as prior evidence only.
+
 **ASSET ARCHITECTURE PASS**. Production art **NOT STARTED**. GCombat-4 full presentation behavior **NOT STARTED**. Gameplay / RNG / save schema changed: **NO**.
 
 Opening main: `6f4ac119b56d015902026647b659cc5fbc826753` (fetch/pull current, clean).
