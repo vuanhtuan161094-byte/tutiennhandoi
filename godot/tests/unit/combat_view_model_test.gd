@@ -134,6 +134,44 @@ func test_build_maps_canonical_combat_contract() -> void:
 	assert_int(int(vm["event_cursor"])).is_equal(2)
 
 
+func test_build_preserves_visual_metadata_without_recalculating_floor_or_element() -> void:
+	var payload := _valid_combat()
+	payload.snapshot.environment = {
+		"mapId": "realm-map.2.4", "majorRealmIndex": 2, "realmName": "Trúc Cơ",
+		"biomeName": "Lôi Minh Cốc", "zone": 4, "zoneName": "Địa Vực",
+		"zoneFloor": 21, "localFloor": 321, "primaryElement": "Water",
+	}
+	payload.snapshot.enemy.archetypeId = "serpent"
+	var original := payload.duplicate(true)
+	var vm := COMBAT_VIEW_MODEL.build(payload)
+	assert_bool(vm.ok).is_true()
+	assert_str(vm.enemy.archetype_id).is_equal("serpent")
+	assert_str(vm.environment.map_id).is_equal("realm-map.2.4")
+	assert_int(vm.environment.major_realm_index).is_equal(2)
+	assert_str(vm.environment.realm_name).is_equal("Trúc Cơ")
+	assert_str(vm.environment.biome_name).is_equal("Lôi Minh Cốc")
+	assert_int(vm.environment.zone).is_equal(4)
+	assert_str(vm.environment.zone_name).is_equal("Địa Vực")
+	assert_int(vm.environment.zone_floor).is_equal(21)
+	assert_int(vm.environment.local_floor).is_equal(321)
+	assert_str(vm.environment.primary_element).is_equal("Water")
+	assert_dict(payload).is_equal(original)
+
+
+func test_build_accepts_legacy_visual_metadata_absence_and_null_environment() -> void:
+	var payload := _valid_combat()
+	var vm := COMBAT_VIEW_MODEL.build(payload)
+	assert_bool(vm.ok).is_true()
+	assert_str(vm.enemy.archetype_id).is_equal("")
+	assert_str(vm.environment.biome_name).is_equal("")
+	assert_str(vm.environment.primary_element).is_equal("")
+	assert_int(vm.environment.major_realm_index).is_equal(0)
+	payload.snapshot.environment = null
+	vm = COMBAT_VIEW_MODEL.build(payload)
+	assert_bool(vm.ok).is_true()
+	assert_str(vm.environment.map_id).is_equal("")
+
+
 func test_body_projection_contract_does_not_expose_legacy_huyet_khi_meter() -> void:
 	var payload := _valid_combat()
 	payload["snapshot"]["mainDaoId"] = "body"

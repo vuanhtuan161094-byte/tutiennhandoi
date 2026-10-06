@@ -32,6 +32,7 @@ static func build(view: Dictionary) -> Dictionary:
 		"snapshot_seq": int(snapshot.get("snapshotSeq", 0)),
 		"mode": str(snapshot.get("mode", "prefight")),
 		"main_dao_id": str(snapshot.get("mainDaoId", "")),
+		"environment": _environment(snapshot.get("environment", {})),
 		"challenge": {
 			"can_start": bool(challenge.get("canStart", false)),
 			"blocked_reason": str(challenge.get("blockedReason", "")),
@@ -68,9 +69,26 @@ static func _enemy(source: Dictionary) -> Dictionary:
 		"level": maxi(1, int(source.get("level", 1))),
 		"grade": str(source.get("grade", "")),
 		"grade_id": str(source.get("gradeId", "")),
+		"archetype_id": str(source.get("archetypeId", "")),
 		"elements": source.get("elements", []).duplicate(true) if typeof(source.get("elements", [])) == TYPE_ARRAY else [],
 		"hp": _vital(source.get("hp", {})),
 		"break": _break_state(source.get("break", {})),
+	}
+
+
+static func _environment(raw) -> Dictionary:
+	var source: Dictionary = raw if typeof(raw) == TYPE_DICTIONARY else {}
+	# Unknown legacy metadata stays empty/zero; never infer map, biome or element.
+	return {
+		"map_id": str(source.get("mapId", "")),
+		"major_realm_index": int(source.get("majorRealmIndex", 0)),
+		"realm_name": str(source.get("realmName", "")),
+		"biome_name": str(source.get("biomeName", "")),
+		"zone": int(source.get("zone", 0)),
+		"zone_name": str(source.get("zoneName", "")),
+		"zone_floor": int(source.get("zoneFloor", 0)),
+		"local_floor": int(source.get("localFloor", 0)),
+		"primary_element": str(source.get("primaryElement", "")),
 	}
 
 

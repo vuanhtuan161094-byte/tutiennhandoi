@@ -149,6 +149,7 @@ export function buildCombatSnapshot({session,api,registry}){
   const maxHp=Math.max(1,finite(combatMaxHp(player?.stats||{}),1));
   const maxSpirit=Math.max(1,finite(combatSpiritStandard(player?.stats||{}),1));
   const monster=hunt?.monster||{};
+  const map=hunt?.currentMap||{};
   const realmReady=finite(session?.stateValue?.realm?.maxRealmOrder)>=1;
   const canStart=Boolean(realmReady&&hunt?.bossChallengeAvailable&&hunt?.canFight);
   const blockedReason=canStart?'':!realmReady
@@ -162,6 +163,18 @@ export function buildCombatSnapshot({session,api,registry}){
     authorityTime:0,
     mode:'prefight',
     mainDaoId,
+    // Read canonical map metadata; clients must not reconstruct floor/element cycles.
+    environment:{
+      mapId:String(map.id||''),
+      majorRealmIndex:finite(map.majorRealmIndex),
+      realmName:String(map.realmName||''),
+      biomeName:String(map.biomeName||''),
+      zone:finite(map.zone),
+      zoneName:String(map.zoneName||''),
+      zoneFloor:finite(map.zoneFloor),
+      localFloor:finite(map.localFloor),
+      primaryElement:String(map.primaryElement||''),
+    },
     challenge:{
       canStart,
       blockedReason,
@@ -182,6 +195,7 @@ export function buildCombatSnapshot({session,api,registry}){
       level:Math.max(1,Math.floor(finite(monster.level,1))),
       grade:String(monster.grade||''),
       gradeId:String(monster.gradeId||''),
+      archetypeId:String(monster.archetypeId||''),
       elements:Array.isArray(monster.elements)?monster.elements.map(String):[],
       hp:{current:null,max:null,ratio:1,displayCurrent:String(monster.hp||'—'),displayMax:String(monster.hp||'—')},
       break:{ratio:1,state:'stable'},
@@ -258,7 +272,11 @@ export function createCombatPlayback({result,initialSnapshot,serial=1}){
     encounterId,
     events,
     result:playbackResult,
-    snapshot:{...structuredClone(initialSnapshot),encounterId,snapshotSeq:serial,mode:'playback',result:playbackResult,eventCursor:events.length},
+    // A preview read need not select the same monster as the real fight. Retain
+    // the actual fight's selected archetype; legacy results stay unknown.
+    snapshot:{...structuredClone(initialSnapshot),
+      enemy:{...structuredClone(initialSnapshot?.enemy||{}),archetypeId:String(result?.monsterArchetypeId||'')},
+      encounterId,snapshotSeq:serial,mode:'playback',result:playbackResult,eventCursor:events.length},
   };
 }
 

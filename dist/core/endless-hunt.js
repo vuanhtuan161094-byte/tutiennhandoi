@@ -51,7 +51,7 @@ function monsterName(floor, grade, rng) {
     const archetype = endlessHuntArchetypes[Math.floor(rng.next() * endlessHuntArchetypes.length)];
     const root = archetype.names[Math.floor(rng.next() * archetype.names.length)];
     const prefix = grade === 'boss' ? 'Thủ Tầng · ' : grade === 'elite' ? 'Tinh Anh · ' : grade === 'enhanced' ? 'Cường Hóa · ' : '';
-    return { name: `${prefix}${root}`, tags: [...archetype.tags], hpBias: archetype.hpBias, attackBias: archetype.attackBias, defenseBias: archetype.defenseBias };
+    return { archetypeId: archetype.id, name: `${prefix}${root}`, tags: [...archetype.tags], hpBias: archetype.hpBias, attackBias: archetype.attackBias, defenseBias: archetype.defenseBias };
 }
 function rollElements(rng, pool, maxElements, grade) {
     if (pool.length === 0 || maxElements <= 0)
@@ -80,7 +80,7 @@ export function generateEndlessHuntMonster(state, seed, luck = 50, lootMultiplie
     const great = fortune && rng.next() < .1;
     const fortuneBonusPct = fortune ? (great ? 70 + rng.next() * 55 : 18 + rng.next() * 28) : 0;
     const elements = rollElements(rng, elementPool, maxMonsterElements, grade);
-    return { id: `hunt.${floor}.${seed >>> 0}.${grade}`, floor, level: depth, grade, gradeName: g.name, name: archetype.name, tags: [...archetype.tags, ...elements.map(x => `Element:${x}`), grade === 'boss' ? 'Boss' : grade === 'elite' ? 'Elite' : grade === 'enhanced' ? 'Enhanced' : 'Common'], elements, powerLog10, hpLog10: powerLog10 + Math.log10(3.1 * archetype.hpBias * endlessHuntLifeMultiplierV124(grade)), attackLog10: powerLog10 + Math.log10(.86 * archetype.attackBias), defenseLog10: powerLog10 + Math.log10(.52 * archetype.defenseBias), cultivationPct: g.cultivationPct, spiritStoneMultiplier: g.spiritStoneMultiplier, equipmentChancePct: Math.min(100, g.equipmentChancePct * lootMultiplier * (1 + fortuneBonusPct / 100)), fortuneBonusPct };
+    return { id: `hunt.${floor}.${seed >>> 0}.${grade}`, floor, level: depth, grade, gradeName: g.name, name: archetype.name, archetypeId: archetype.archetypeId, tags: [...archetype.tags, ...elements.map(x => `Element:${x}`), grade === 'boss' ? 'Boss' : grade === 'elite' ? 'Elite' : grade === 'enhanced' ? 'Enhanced' : 'Common'], elements, powerLog10, hpLog10: powerLog10 + Math.log10(3.1 * archetype.hpBias * endlessHuntLifeMultiplierV124(grade)), attackLog10: powerLog10 + Math.log10(.86 * archetype.attackBias), defenseLog10: powerLog10 + Math.log10(.52 * archetype.defenseBias), cultivationPct: g.cultivationPct, spiritStoneMultiplier: g.spiritStoneMultiplier, equipmentChancePct: Math.min(100, g.equipmentChancePct * lootMultiplier * (1 + fortuneBonusPct / 100)), fortuneBonusPct };
 }
 export function ensureEndlessHuntMonster(state, seed, luck = 50, lootMultiplier = 1, gradeWeights, powerIndex, elementPool = [], maxMonsterElements = 0, challengeBoss = false) { const wantsBoss = challengeBoss && bossReady(state); if (!state.activeMonster || state.activeMonster.floor !== state.selectedFloor || (state.activeMonster.grade === 'boss') !== wantsBoss || state.activeMonster.level !== (powerIndex ?? state.activeMonster.level))
     state.activeMonster = generateEndlessHuntMonster(state, seed, luck, lootMultiplier, gradeWeights, powerIndex, elementPool, maxMonsterElements, challengeBoss); return state.activeMonster; }

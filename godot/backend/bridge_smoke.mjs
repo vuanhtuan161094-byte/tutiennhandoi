@@ -124,6 +124,12 @@ function validateCombat(view){
   assert(view?.authority?.combat==='combat-kernel.v3','Combat authority mismatch');
   assert(view?.authority?.dao==='battle-dao.runtime.v2','Combat Dao authority mismatch');
   assert(view?.snapshot&&typeof view.snapshot==='object','Combat DTO missing snapshot');
+  const environment=view.snapshot.environment;
+  assert(environment&&typeof environment==='object','Combat DTO missing environment');
+  for(const field of ['mapId','majorRealmIndex','realmName','biomeName','zone','zoneName','zoneFloor','localFloor','primaryElement']){
+    assert(environment[field]!==undefined,`Combat environment missing ${field}`);
+  }
+  assert(['','wolf','serpent','golem','spirit','demon','dragon'].includes(view.snapshot.enemy?.archetypeId),'Unexpected monster archetype metadata');
   assert(Array.isArray(view?.snapshot?.skills),'Combat snapshot skills must be an array');
   assert(view?.snapshot?.dao&&typeof view.snapshot.dao==='object','Combat snapshot missing Dao projection');
   assert(Array.isArray(view?.events),'Combat events must be an array');
@@ -213,6 +219,15 @@ try{
   const prefightCombat=await request('/combat');
   validateCombat(prefightCombat);
   assert(prefightCombat.snapshot?.challenge?.canStart===true,'Luyện Khí floor 1 must expose canonical Boss challenge');
+  assert(prefightCombat.snapshot.environment.mapId==='realm-map.1.1','Floor 1 canonical map identity');
+  assert(prefightCombat.snapshot.environment.biomeName==='Thanh Hư Sơn Mạch','Biome must not be zone name');
+  assert(prefightCombat.snapshot.environment.zoneName==='Phàm Vực','Canonical zone spelling');
+  assert(prefightCombat.snapshot.environment.primaryElement==='Wood','Canonical floor 1 element');
+  assert(prefightCombat.snapshot.enemy.archetypeId!=='','Newly generated Boss must retain archetype');
+  console.log('CANONICAL COMBAT VISUAL METADATA: '+JSON.stringify({
+    environment:prefightCombat.snapshot.environment,
+    enemy:{name:prefightCombat.snapshot.enemy.name,archetypeId:prefightCombat.snapshot.enemy.archetypeId,elements:prefightCombat.snapshot.enemy.elements},
+  }));
   assert(Number(prefightCombat.snapshot?.player?.hp?.max)>1,'Combat snapshot must use canonical max HP');
   assert(Number(prefightCombat.snapshot?.player?.spirit?.max)>1,'Combat snapshot must use canonical Chân Nguyên standard');
 
@@ -220,6 +235,8 @@ try{
   assert(fought.result?.ok===true,`Canonical Combat action failed: ${JSON.stringify(fought.result)}`);
   validateCombat(fought.combat);
   assert(fought.combat.snapshot?.mode==='playback','Combat action must publish playback snapshot');
+  assert(fought.combat.snapshot.enemy.archetypeId!=='','Real fight must forward its selected archetype');
+  assert(JSON.stringify(fought.combat.snapshot.environment)===JSON.stringify(prefightCombat.snapshot.environment),'Playback must retain encounter environment after settlement');
   assert(String(fought.result?.rewardContext||'')==='progression-only','Boss combat must remain progression-only');
   assert(fought.result?.directBossLoot===false,'Boss combat must not mint direct loot');
   assert(Number(fought.result?.eventCount)>0,'Canonical Combat action must expose presentation events');

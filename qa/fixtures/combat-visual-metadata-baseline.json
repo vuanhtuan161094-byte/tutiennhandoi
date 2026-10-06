@@ -1,0 +1,17 @@
+{
+  "openingSha": "e867a2ba9c4e616dfb965e6e8255635e7c8197c0",
+  "evidence": {
+    "monsterCases": 480,
+    "monsterHash": "75183dfc9b79774dfcdd5c90943305799041aa691d982ff631ac23f4efcd7cb4",
+    "generatorRngHash": "143d5b8cb2776a75bbdf9f7efb460970cf35c2995b7628cca2232c61b2e1a148",
+    "generatorRngCalls": 2276,
+    "fightCases": 12,
+    "fightHash": "478696ad6a8dfbd799cf858ea14bfca0de1cd27eeb6fbc40bd1e2b2be054b2f5",
+    "fightRngHash": "e5a90e79d8c3b2ebf49793dee7427ec3e6db77020dc416fe3a86b4eb54e1fb68",
+    "fightRngCalls": 868,
+    "outcomes": [
+      "defeat",
+      "victory"
+    ]
+  }
+}
