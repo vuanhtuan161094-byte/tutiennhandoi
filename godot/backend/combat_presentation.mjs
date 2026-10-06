@@ -99,6 +99,7 @@ function projectSkill(registry,id,index){
   return {
     id:String(skill.id||id),
     name:String(skill.name||id),
+    daoId:String(runtime.daoBinding||''),
     slotClass,
     form:String(runtime.form||skill.form||'instant'),
     index,

@@ -14,6 +14,8 @@ const BOSS_HUD := preload("res://scripts/combat/combat_boss_hud.gd")
 const PLAYER_HUD := preload("res://scripts/combat/combat_player_hud.gd")
 const TACTICAL_LANE := preload("res://scripts/combat/combat_tactical_lane.gd")
 
+var _battlefield: CombatBattlefieldShell
+var _enemy_actor: CombatActorPlaceholder
 var _title: Label
 var _floor: Label
 var _status: Label
@@ -58,6 +60,8 @@ func bind(vm: Dictionary) -> void:
 	if same_playback:
 		return
 	_battle_end_seen = false
+	_battlefield.bind_environment(vm.get('environment', {}))
+	_enemy_actor.bind_archetype(str(vm.get('enemy', {}).get('archetype_id', '')))
 	_lane.reset()
 	_lane.visible = true
 	var challenge: Dictionary = vm.get("challenge", {})
@@ -129,12 +133,14 @@ func _build() -> void:
 	_enemy_hp_text = _boss_hud.hp_text
 	_enemy_break = _boss_hud.break_bar
 	var field := BATTLEFIELD.new()
+	_battlefield = field
 	field.name = "CombatBattlefield"
 	field.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	field.custom_minimum_size = Vector2(0, 260)
 	field.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(field)
 	var enemy := _actor(true)
+	_enemy_actor = enemy
 	enemy.name = "CombatEnemyActor"
 	enemy.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	enemy.anchor_left = 0.43
@@ -194,7 +200,7 @@ func _build() -> void:
 	_status.visible = false
 	root.add_child(_status)
 
-func _actor(is_enemy: bool) -> Control:
+func _actor(is_enemy: bool) -> CombatActorPlaceholder:
 	var node := ACTOR_PLACEHOLDER.new()
 	node.enemy = is_enemy
 	return node

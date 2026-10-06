@@ -142,10 +142,12 @@ func test_build_preserves_visual_metadata_without_recalculating_floor_or_element
 		"zoneFloor": 21, "localFloor": 321, "primaryElement": "Water",
 	}
 	payload.snapshot.enemy.archetypeId = "serpent"
+	payload.snapshot.skills[0].daoId = "spell"
 	var original := payload.duplicate(true)
 	var vm := COMBAT_VIEW_MODEL.build(payload)
 	assert_bool(vm.ok).is_true()
 	assert_str(vm.enemy.archetype_id).is_equal("serpent")
+	assert_str(vm.skills[0].dao_id).is_equal("spell")
 	assert_str(vm.environment.map_id).is_equal("realm-map.2.4")
 	assert_int(vm.environment.major_realm_index).is_equal(2)
 	assert_str(vm.environment.realm_name).is_equal("Trúc Cơ")

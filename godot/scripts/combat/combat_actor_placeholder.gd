@@ -1,4 +1,7 @@
 extends Control
+class_name CombatActorPlaceholder
+const ASSETS := preload("res://scripts/combat/combat_asset_resolver.gd")
+var asset_config: Dictionary = {}
 ## Native silhouette placeholder; replace this surface with a sprite later.
 var enemy := false
 
@@ -15,12 +18,23 @@ func _shape(points: Array, fill: Color, edge: Color) -> void:
 	draw_polyline(polygon, edge, 1.2, true)
 
 func _draw() -> void:
-	var rim := Color("799b83") if enemy else Color("75c7cc")
+	var visual_scale := clampf(float(asset_config.get("layout", {}).get("scale", 1.0)), 0.25, 2.0) if enemy else 1.0
+	draw_set_transform(size * Vector2(0.5, 0.9) * (1.0 - visual_scale), 0.0, Vector2.ONE * visual_scale)
+	var authored_shadow := ASSETS.texture_for_path(str(asset_config.get("shadowPath", "")))
+	if authored_shadow != null:
+		draw_texture_rect(authored_shadow, Rect2(size * Vector2(.1,.85), size * Vector2(.8,.1)), false)
+	var rim := Color(str(asset_config.get("accent", "799b83"))) if enemy else Color("75c7cc")
+	var texture := ASSETS.texture_for_path(str(asset_config.get("spritePath", ""))) if enemy else null
+	if texture != null:
+		draw_texture_rect(texture, Rect2(Vector2.ZERO, size), false)
+		return
 	var shadow := PackedVector2Array()
 	for i in range(49):
 		var angle := TAU * i / 48.0
 		shadow.append(size * Vector2(.5 + cos(angle) * .34, .91 + sin(angle) * .035))
 	draw_colored_polygon(shadow, Color(0, .02, .03, .42))
+	if enemy and _draw_archetype(rim):
+		return
 	if enemy:
 		# Abstract horned beast: a curved body, heavy neck and grounded claws.
 		_shape([Vector2(.08,.79), Vector2(.15,.74), Vector2(.21,.61), Vector2(.29,.54), Vector2(.40,.52), Vector2(.50,.55), Vector2(.56,.49), Vector2(.60,.37), Vector2(.57,.29), Vector2(.55,.13), Vector2(.64,.23), Vector2(.77,.16), Vector2(.72,.29), Vector2(.83,.31), Vector2(.88,.37), Vector2(.84,.42), Vector2(.75,.44), Vector2(.71,.54), Vector2(.72,.65), Vector2(.81,.83), Vector2(.89,.87), Vector2(.74,.89), Vector2(.66,.81), Vector2(.60,.72), Vector2(.54,.79), Vector2(.55,.86), Vector2(.63,.89), Vector2(.46,.90), Vector2(.42,.81), Vector2(.35,.73), Vector2(.30,.80), Vector2(.29,.88), Vector2(.37,.91), Vector2(.20,.91), Vector2(.18,.85), Vector2(.20,.74), Vector2(.14,.80), Vector2(.07,.83)], Color("10252a"), Color(rim,.55))
@@ -36,3 +50,34 @@ func _draw() -> void:
 		draw_line(size * Vector2(.66,.59), size * Vector2(.86,.16), Color("b2ccc7"), 1.5, true)
 		draw_line(size * Vector2(.61,.57), size * Vector2(.72,.62), Color("bd9c65"), 2.0, true)
 		draw_line(size * Vector2(.40,.52), size * Vector2(.61,.55), Color("bd9c65"), 1.5, true)
+
+func bind_archetype(archetype_id: String) -> void:
+	asset_config = ASSETS.enemy(archetype_id)
+	queue_redraw()
+
+func _draw_archetype(rim: Color) -> bool:
+	var id := str(asset_config.get("fallbackKey", "generic"))
+	var ink := Color(rim, 0.65)
+	match id:
+		"wolf", "dragon":
+			if id == "dragon":
+				_shape([Vector2(.15,.31),Vector2(.53,.54),Vector2(.30,.69)], Color("193338"), ink)
+			return false
+		"serpent":
+			var curve := Curve2D.new()
+			curve.add_point(size * Vector2(.18,.87), Vector2.ZERO, size * Vector2(.5,-.15))
+			curve.add_point(size * Vector2(.55,.65), size * Vector2(.25,.18), size * Vector2(-.25,-.18))
+			curve.add_point(size * Vector2(.60,.27), size * Vector2(-.4,.1))
+			draw_polyline(curve.get_baked_points(), ink, 15.0, true)
+			draw_polyline(curve.get_baked_points(), Color("193338"), 12.0, true)
+			_shape([Vector2(.52,.28),Vector2(.67,.20),Vector2(.81,.28),Vector2(.67,.36)], Color("193338"), ink)
+		"golem":
+			_shape([Vector2(.20,.88),Vector2(.26,.42),Vector2(.42,.39),Vector2(.41,.20),Vector2(.63,.20),Vector2(.66,.39),Vector2(.79,.43),Vector2(.84,.88),Vector2(.62,.87),Vector2(.51,.65),Vector2(.39,.88)], Color("23383c"), ink)
+		"spirit":
+			_shape([Vector2(.5,.12),Vector2(.80,.49),Vector2(.5,.84),Vector2(.20,.49)], Color("193338"), ink)
+			draw_arc(size * Vector2(.5,.49), size.x * .2, 0, TAU, 32, ink, 1.0, true)
+		"demon":
+			_shape([Vector2(.18,.87),Vector2(.38,.42),Vector2(.33,.16),Vector2(.50,.31),Vector2(.69,.16),Vector2(.62,.42),Vector2(.84,.87),Vector2(.51,.72)], Color("193338"), ink)
+		_:
+			_shape([Vector2(.50,.22),Vector2(.74,.54),Vector2(.50,.85),Vector2(.26,.54)], Color("193338"), ink)
+	return true

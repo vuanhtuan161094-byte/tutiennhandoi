@@ -3,6 +3,9 @@ class_name CombatSkillSlot
 ## Read-only icon surface. Cooldown/readiness come from the VM, never a local clock.
 
 const STYLE := preload("res://scripts/combat/combat_style.gd")
+const ASSETS := preload("res://scripts/combat/combat_asset_resolver.gd")
+const GLYPHS := preload("res://scripts/combat/combat_placeholder_glyph.gd")
+var asset_config: Dictionary = {}
 var skill: Dictionary = {}
 var selected := false
 var ultimate := false
@@ -37,10 +40,8 @@ func _ready() -> void:
 func bind(data: Dictionary) -> void:
 	skill = data.duplicate(true)
 	tooltip_text = str(skill.get("name", "Ô chưa trang bị"))
-	_icon = null
-	var icon_path := str(skill.get("icon_path", ""))
-	if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
-		_icon = load(icon_path) as Texture2D
+	asset_config = ASSETS.skill(str(skill.get('dao_id', '')), str(skill.get('id', '')), str(skill.get('slot_class', 'active')))
+	_icon = ASSETS.skill_texture(asset_config)
 	var remaining := float(skill.get("cooldown_remaining", 0.0))
 	var blocked := str(skill.get("blocked_reason", ""))
 	if remaining > 0.0:
@@ -69,7 +70,7 @@ func set_gauge(data: Dictionary) -> void:
 func _draw() -> void:
 	var side := 54.0 if ultimate else 44.0
 	var rect := Rect2(Vector2((size.x - side) / 2.0, 0), Vector2(side, side))
-	var accent := STYLE.GOLD if ultimate or selected else STYLE.CYAN
+	var accent := STYLE.GOLD if ultimate or selected else Color(str(asset_config.get("accent", "75c7cc")))
 	var style := STYLE.surface(accent, 0.72)
 	style.set_corner_radius_all(3)
 	style.border_color = Color(accent, 0.88 if selected else 0.30)
@@ -81,22 +82,7 @@ func _draw() -> void:
 		if _icon != null:
 			draw_texture_rect(_icon, rect.grow(-5), false)
 		else:
-			# Temporary engraved line glyphs; every slot remains sprite-replaceable.
-			var center := rect.get_center()
-			var ink := Color(accent, 0.72)
-			var diamond := PackedVector2Array([center + Vector2(0,-13), center + Vector2(11,0), center + Vector2(0,13), center + Vector2(-11,0), center + Vector2(0,-13)])
-			draw_polyline(diamond, Color(accent, 0.25), 1.0, true)
-			draw_line(center + Vector2(0,-9), center + Vector2(0,9), ink, 1.5, true)
-			var reach := 5.0 + float(slot_index % 3)
-			draw_line(center + Vector2(-reach,-4), center + Vector2(reach,-4), ink, 1.5, true)
-			draw_line(center + Vector2(-reach,4), center + Vector2(reach,4), ink, 1.5, true)
-			if ultimate:
-				draw_line(center + Vector2(-9,-9), center + Vector2(9,9), ink, 1.0, true)
-				draw_line(center + Vector2(9,-9), center + Vector2(-9,9), ink, 1.0, true)
-			elif slot_index % 2 == 0:
-				draw_line(center + Vector2(-reach,-4), center + Vector2(-reach,4), ink, 1.0, true)
-			else:
-				draw_line(center + Vector2(reach,-4), center + Vector2(reach,4), ink, 1.0, true)
+			GLYPHS.draw_glyph(self, rect, asset_config)
 	if selected:
 		draw_line(rect.position + Vector2(8,side - 3), rect.position + Vector2(side - 8,side - 3), STYLE.GOLD, 2.0, true)
 	var remaining := float(skill.get("cooldown_remaining", 0.0))

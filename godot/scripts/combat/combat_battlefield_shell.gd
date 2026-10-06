@@ -1,4 +1,7 @@
 extends Control
+class_name CombatBattlefieldShell
+const ASSETS := preload("res://scripts/combat/combat_asset_resolver.gd")
+var asset_config: Dictionary = {}
 ## Static, replaceable battlefield shell. No combat state or animation.
 
 var _sky: GradientTexture2D
@@ -33,6 +36,15 @@ func _ellipse(center: Vector2, radius: Vector2, color: Color, outline: bool = fa
 func _draw() -> void:
 	if _sky == null:
 		return
+	var base := ASSETS.texture_for_path(str(asset_config.get("biomeBasePath", "")))
+	if base != null:
+		draw_texture_rect(base, Rect2(Vector2.ZERO, size), false)
+		for path in asset_config.get("biome", {}).get("backgroundLayers", []):
+			var texture := ASSETS.texture_for_path(str(path))
+			if texture != null:
+				draw_texture_rect(texture, Rect2(Vector2.ZERO, size), false)
+		_draw_asset_layers()
+		return
 	draw_texture_rect(_sky, Rect2(Vector2.ZERO, size), false)
 	# Distant stone ridges and an abandoned gate, deliberately abstract.
 	_polygon([Vector2(0, .30), Vector2(.12, .19), Vector2(.23, .25), Vector2(.37, .09), Vector2(.49, .23), Vector2(.64, .13), Vector2(.81, .24), Vector2(1, .15), Vector2(1, .55), Vector2(0, .55)], Color("17323c"))
@@ -46,7 +58,7 @@ func _draw() -> void:
 	_polygon([Vector2(0, .62), Vector2(.52, .53), Vector2(1, .61), Vector2(1, 1), Vector2(0, 1)], Color("0c2029"))
 	var center := size * Vector2(.52, .76)
 	for radius in [.29, .35, .43]:
-		_ellipse(center, size * Vector2(radius, radius * .22), Color(.42, .55, .51, .13), true)
+		_ellipse(center, size * Vector2(radius, radius * .22), Color(.42, .55, .51, .13 + float(asset_config.get("zone", {}).get("intensity", 0.0)) * .08), true)
 	for i in range(12):
 		var angle := TAU * i / 12.0
 		var inner := center + size * Vector2(cos(angle) * .29, sin(angle) * .064)
@@ -56,3 +68,23 @@ func _draw() -> void:
 	for i in range(16):
 		var inset := float(i) * 2.0
 		draw_rect(Rect2(Vector2(inset, inset), size - Vector2.ONE * inset * 2), Color(0.01, .025, .04, .035), false, 2.0)
+
+	_draw_asset_layers()
+
+func bind_environment(metadata: Dictionary) -> void:
+	asset_config = ASSETS.environment(metadata)
+	if _sky != null:
+		var base_tint := Color(str(asset_config.biome.get("tint", "193e43")))
+		var tint := Color(str(asset_config.element.get("tint", "193e43")))
+		_sky.gradient.colors = PackedColorArray([Color("102b35"), base_tint.lerp(tint, 0.13), Color("0b202b"), Color("07131d")])
+	queue_redraw()
+
+func _draw_asset_layers() -> void:
+	for path in [asset_config.get("zoneLayerPath", ""), asset_config.get("elementLayerPath", "")]:
+		var texture := ASSETS.texture_for_path(str(path))
+		if texture != null:
+			draw_texture_rect(texture, Rect2(Vector2.ZERO, size), false)
+	for path in asset_config.get("biome", {}).get("foregroundLayers", []):
+		var texture := ASSETS.texture_for_path(str(path))
+		if texture != null:
+			draw_texture_rect(texture, Rect2(Vector2.ZERO, size), false)

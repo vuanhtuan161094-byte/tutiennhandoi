@@ -1,0 +1,1353 @@
+{
+  "schema": "combat-asset-manifest.v1",
+  "biomes": {
+    "1": {
+      "id": "biome.major.1",
+      "majorRealmIndex": 1,
+      "realmName": "Luyện Khí",
+      "biomeName": "Thanh Hư Sơn Mạch",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-1/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "2": {
+      "id": "biome.major.2",
+      "majorRealmIndex": 2,
+      "realmName": "Trúc Cơ",
+      "biomeName": "Lôi Minh Cốc",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-2/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "3": {
+      "id": "biome.major.3",
+      "majorRealmIndex": 3,
+      "realmName": "Tử Phủ",
+      "biomeName": "Tử Kính Hồ",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-3/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "4": {
+      "id": "biome.major.4",
+      "majorRealmIndex": 4,
+      "realmName": "Kim Đan",
+      "biomeName": "Đan Hỏa Sơn",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-4/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "5": {
+      "id": "biome.major.5",
+      "majorRealmIndex": 5,
+      "realmName": "Nguyên Anh",
+      "biomeName": "Vân Hồn Hải",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-5/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "6": {
+      "id": "biome.major.6",
+      "majorRealmIndex": 6,
+      "realmName": "Hóa Thần",
+      "biomeName": "Ngộ Đạo Thiên Nhai",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-6/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "7": {
+      "id": "biome.major.7",
+      "majorRealmIndex": 7,
+      "realmName": "Luyện Hư",
+      "biomeName": "Hư Không Liệt Cốc",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-7/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "8": {
+      "id": "biome.major.8",
+      "majorRealmIndex": 8,
+      "realmName": "Hợp Thể",
+      "biomeName": "Vạn Tượng Hợp Vực",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-8/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "9": {
+      "id": "biome.major.9",
+      "majorRealmIndex": 9,
+      "realmName": "Đại Thừa",
+      "biomeName": "Đại Thừa Thiên Nguyên",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-9/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "10": {
+      "id": "biome.major.10",
+      "majorRealmIndex": 10,
+      "realmName": "Độ Kiếp",
+      "biomeName": "Thiên Kiếp Hoang Nguyên",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-10/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "11": {
+      "id": "biome.major.11",
+      "majorRealmIndex": 11,
+      "realmName": "Nhân Tiên",
+      "biomeName": "Tiên Linh Cổ Vực",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-11/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "12": {
+      "id": "biome.major.12",
+      "majorRealmIndex": 12,
+      "realmName": "Địa Tiên",
+      "biomeName": "Địa Mạch Tiên Uyên",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-12/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "13": {
+      "id": "biome.major.13",
+      "majorRealmIndex": 13,
+      "realmName": "Thiên Tiên",
+      "biomeName": "Thiên Khung Tiên Hải",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-13/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "14": {
+      "id": "biome.major.14",
+      "majorRealmIndex": 14,
+      "realmName": "Chân Tiên",
+      "biomeName": "Chân Tiên Cổ Lộ",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-14/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "15": {
+      "id": "biome.major.15",
+      "majorRealmIndex": 15,
+      "realmName": "Huyền Tiên",
+      "biomeName": "Huyền Pháp Thiên Khư",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-15/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "16": {
+      "id": "biome.major.16",
+      "majorRealmIndex": 16,
+      "realmName": "Kim Tiên",
+      "biomeName": "Kim Tiên Thần Sơn",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-16/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "17": {
+      "id": "biome.major.17",
+      "majorRealmIndex": 17,
+      "realmName": "Thái Ất Tiên",
+      "biomeName": "Thái Ất Kỷ Hà",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-17/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "18": {
+      "id": "biome.major.18",
+      "majorRealmIndex": 18,
+      "realmName": "Đại La Kim Tiên",
+      "biomeName": "Đại La Vạn Giới",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-18/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "19": {
+      "id": "biome.major.19",
+      "majorRealmIndex": 19,
+      "realmName": "Tiên Vương",
+      "biomeName": "Tiên Vương Cổ Đình",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-19/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "20": {
+      "id": "biome.major.20",
+      "majorRealmIndex": 20,
+      "realmName": "Tiên Đế",
+      "biomeName": "Tiên Đế Thần Vực",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-20/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "21": {
+      "id": "biome.major.21",
+      "majorRealmIndex": 21,
+      "realmName": "Cực Hạn",
+      "biomeName": "Cực Hạn Biên Giới",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-21/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "22": {
+      "id": "biome.major.22",
+      "majorRealmIndex": 22,
+      "realmName": "Cực Đạo Chân Cảnh",
+      "biomeName": "Cực Đạo Hỗn Độn Hải",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-22/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "23": {
+      "id": "biome.major.23",
+      "majorRealmIndex": 23,
+      "realmName": "Hỗn Độn Cảnh",
+      "biomeName": "Hỗn Độn Tổ Vực",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-23/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "24": {
+      "id": "biome.major.24",
+      "majorRealmIndex": 24,
+      "realmName": "Hồng Mông Cảnh",
+      "biomeName": "Hồng Mông Nguyên Hải",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-24/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "25": {
+      "id": "biome.major.25",
+      "majorRealmIndex": 25,
+      "realmName": "Khai Thiên Cảnh",
+      "biomeName": "Khai Thiên Nguyên Giới",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-25/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "26": {
+      "id": "biome.major.26",
+      "majorRealmIndex": 26,
+      "realmName": "Thế Giới Chủ",
+      "biomeName": "Vạn Giới Chủ Vực",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-26/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "27": {
+      "id": "biome.major.27",
+      "majorRealmIndex": 27,
+      "realmName": "Vĩnh Sinh Cảnh",
+      "biomeName": "Vĩnh Sinh Thần Hà",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-27/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    },
+    "28": {
+      "id": "biome.major.28",
+      "majorRealmIndex": 28,
+      "realmName": "Sáng Thế Chủ",
+      "biomeName": "Sáng Thế Hư Không",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-28/base.webp",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43"
+    }
+  },
+  "zones": {
+    "1": {
+      "id": "zone.1",
+      "zone": 1,
+      "zoneName": "Phàm Vực",
+      "layerPath": "res://art/approved/combat/battlefields/zones/zone-1.webp",
+      "intensity": 0,
+      "fallbackKey": "ground-ring"
+    },
+    "2": {
+      "id": "zone.2",
+      "zone": 2,
+      "zoneName": "Linh Vực",
+      "layerPath": "res://art/approved/combat/battlefields/zones/zone-2.webp",
+      "intensity": 0.14285714285714285,
+      "fallbackKey": "ground-ring"
+    },
+    "3": {
+      "id": "zone.3",
+      "zone": 3,
+      "zoneName": "Huyền Vực",
+      "layerPath": "res://art/approved/combat/battlefields/zones/zone-3.webp",
+      "intensity": 0.2857142857142857,
+      "fallbackKey": "ground-ring"
+    },
+    "4": {
+      "id": "zone.4",
+      "zone": 4,
+      "zoneName": "Địa Vực",
+      "layerPath": "res://art/approved/combat/battlefields/zones/zone-4.webp",
+      "intensity": 0.42857142857142855,
+      "fallbackKey": "ground-ring"
+    },
+    "5": {
+      "id": "zone.5",
+      "zone": 5,
+      "zoneName": "Thiên Vực",
+      "layerPath": "res://art/approved/combat/battlefields/zones/zone-5.webp",
+      "intensity": 0.5714285714285714,
+      "fallbackKey": "ground-ring"
+    },
+    "6": {
+      "id": "zone.6",
+      "zone": 6,
+      "zoneName": "Tiên Vực",
+      "layerPath": "res://art/approved/combat/battlefields/zones/zone-6.webp",
+      "intensity": 0.7142857142857143,
+      "fallbackKey": "ground-ring"
+    },
+    "7": {
+      "id": "zone.7",
+      "zone": 7,
+      "zoneName": "Cực Vực",
+      "layerPath": "res://art/approved/combat/battlefields/zones/zone-7.webp",
+      "intensity": 0.8571428571428571,
+      "fallbackKey": "ground-ring"
+    },
+    "8": {
+      "id": "zone.8",
+      "zone": 8,
+      "zoneName": "Phá Vực",
+      "layerPath": "res://art/approved/combat/battlefields/zones/zone-8.webp",
+      "intensity": 1,
+      "fallbackKey": "ground-ring"
+    }
+  },
+  "elements": {
+    "Wood": {
+      "id": "Wood",
+      "layerPath": "res://art/approved/combat/battlefields/elements/wood.webp",
+      "tint": "799b83",
+      "vfxHint": "none",
+      "fallbackKey": "static-tint"
+    },
+    "Fire": {
+      "id": "Fire",
+      "layerPath": "res://art/approved/combat/battlefields/elements/fire.webp",
+      "tint": "ae7464",
+      "vfxHint": "none",
+      "fallbackKey": "static-tint"
+    },
+    "Earth": {
+      "id": "Earth",
+      "layerPath": "res://art/approved/combat/battlefields/elements/earth.webp",
+      "tint": "af9975",
+      "vfxHint": "none",
+      "fallbackKey": "static-tint"
+    },
+    "Metal": {
+      "id": "Metal",
+      "layerPath": "res://art/approved/combat/battlefields/elements/metal.webp",
+      "tint": "bdc3bd",
+      "vfxHint": "none",
+      "fallbackKey": "static-tint"
+    },
+    "Water": {
+      "id": "Water",
+      "layerPath": "res://art/approved/combat/battlefields/elements/water.webp",
+      "tint": "75a9c1",
+      "vfxHint": "none",
+      "fallbackKey": "static-tint"
+    }
+  },
+  "enemies": {
+    "wolf": {
+      "id": "wolf",
+      "spritePath": "res://art/approved/combat/enemies/wolf/actor.webp",
+      "shadowPath": "",
+      "fallbackKey": "wolf",
+      "layout": {
+        "scale": 1
+      },
+      "anchors": {
+        "impact": [
+          0.5,
+          0.5
+        ],
+        "ground": [
+          0.5,
+          0.9
+        ]
+      },
+      "accent": "799b83",
+      "glyphIndex": 0
+    },
+    "serpent": {
+      "id": "serpent",
+      "spritePath": "res://art/approved/combat/enemies/serpent/actor.webp",
+      "shadowPath": "",
+      "fallbackKey": "serpent",
+      "layout": {
+        "scale": 1
+      },
+      "anchors": {
+        "impact": [
+          0.5,
+          0.5
+        ],
+        "ground": [
+          0.5,
+          0.9
+        ]
+      },
+      "accent": "799b83",
+      "glyphIndex": 1
+    },
+    "golem": {
+      "id": "golem",
+      "spritePath": "res://art/approved/combat/enemies/golem/actor.webp",
+      "shadowPath": "",
+      "fallbackKey": "golem",
+      "layout": {
+        "scale": 1
+      },
+      "anchors": {
+        "impact": [
+          0.5,
+          0.5
+        ],
+        "ground": [
+          0.5,
+          0.9
+        ]
+      },
+      "accent": "799b83",
+      "glyphIndex": 2
+    },
+    "spirit": {
+      "id": "spirit",
+      "spritePath": "res://art/approved/combat/enemies/spirit/actor.webp",
+      "shadowPath": "",
+      "fallbackKey": "spirit",
+      "layout": {
+        "scale": 1
+      },
+      "anchors": {
+        "impact": [
+          0.5,
+          0.5
+        ],
+        "ground": [
+          0.5,
+          0.9
+        ]
+      },
+      "accent": "799b83",
+      "glyphIndex": 3
+    },
+    "demon": {
+      "id": "demon",
+      "spritePath": "res://art/approved/combat/enemies/demon/actor.webp",
+      "shadowPath": "",
+      "fallbackKey": "demon",
+      "layout": {
+        "scale": 1
+      },
+      "anchors": {
+        "impact": [
+          0.5,
+          0.5
+        ],
+        "ground": [
+          0.5,
+          0.9
+        ]
+      },
+      "accent": "799b83",
+      "glyphIndex": 4
+    },
+    "dragon": {
+      "id": "dragon",
+      "spritePath": "res://art/approved/combat/enemies/dragon/actor.webp",
+      "shadowPath": "",
+      "fallbackKey": "dragon",
+      "layout": {
+        "scale": 1
+      },
+      "anchors": {
+        "impact": [
+          0.5,
+          0.5
+        ],
+        "ground": [
+          0.5,
+          0.9
+        ]
+      },
+      "accent": "799b83",
+      "glyphIndex": 5
+    },
+    "generic": {
+      "id": "generic",
+      "spritePath": "res://art/approved/combat/enemies/generic/actor.webp",
+      "shadowPath": "",
+      "fallbackKey": "generic",
+      "layout": {
+        "scale": 1
+      },
+      "anchors": {
+        "impact": [
+          0.5,
+          0.5
+        ],
+        "ground": [
+          0.5,
+          0.9
+        ]
+      },
+      "accent": "799b83",
+      "glyphIndex": 6
+    }
+  },
+  "families": {
+    "sword": {
+      "daoId": "sword",
+      "accent": "75c7cc",
+      "fallbackKey": "dao.sword",
+      "glyphIndex": 0,
+      "iconPath": "res://art/approved/combat/skills/sword/fallback.webp"
+    },
+    "fist": {
+      "daoId": "fist",
+      "accent": "d3a46b",
+      "fallbackKey": "dao.fist",
+      "glyphIndex": 1,
+      "iconPath": "res://art/approved/combat/skills/fist/fallback.webp"
+    },
+    "body": {
+      "daoId": "body",
+      "accent": "b7b58c",
+      "fallbackKey": "dao.body",
+      "glyphIndex": 2,
+      "iconPath": "res://art/approved/combat/skills/body/fallback.webp"
+    },
+    "spell": {
+      "daoId": "spell",
+      "accent": "92abd8",
+      "fallbackKey": "dao.spell",
+      "glyphIndex": 3,
+      "iconPath": "res://art/approved/combat/skills/spell/fallback.webp"
+    },
+    "poison": {
+      "daoId": "poison",
+      "accent": "8bb87c",
+      "fallbackKey": "dao.poison",
+      "glyphIndex": 4,
+      "iconPath": "res://art/approved/combat/skills/poison/fallback.webp"
+    },
+    "formation": {
+      "daoId": "formation",
+      "accent": "c5a36c",
+      "fallbackKey": "dao.formation",
+      "glyphIndex": 5,
+      "iconPath": "res://art/approved/combat/skills/formation/fallback.webp"
+    },
+    "artifact": {
+      "daoId": "artifact",
+      "accent": "88c9bb",
+      "fallbackKey": "dao.artifact",
+      "glyphIndex": 6,
+      "iconPath": "res://art/approved/combat/skills/artifact/fallback.webp"
+    },
+    "mind": {
+      "daoId": "mind",
+      "accent": "b49cca",
+      "fallbackKey": "dao.mind",
+      "glyphIndex": 7,
+      "iconPath": "res://art/approved/combat/skills/mind/fallback.webp"
+    }
+  },
+  "skills": {
+    "skill.dao.sword.basic": {
+      "daoId": "sword",
+      "skillId": "skill.dao.sword.basic",
+      "category": "basic",
+      "iconPath": "res://art/approved/combat/skills/sword/skill.dao.sword.basic.webp",
+      "fallbackKey": "dao.sword",
+      "accent": "75c7cc",
+      "glyphIndex": 0
+    },
+    "skill.dao.sword.flow_slash": {
+      "daoId": "sword",
+      "skillId": "skill.dao.sword.flow_slash",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/sword/skill.dao.sword.flow_slash.webp",
+      "fallbackKey": "dao.sword",
+      "accent": "75c7cc",
+      "glyphIndex": 0
+    },
+    "skill.dao.sword.nurture": {
+      "daoId": "sword",
+      "skillId": "skill.dao.sword.nurture",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/sword/skill.dao.sword.nurture.webp",
+      "fallbackKey": "dao.sword",
+      "accent": "75c7cc",
+      "glyphIndex": 0
+    },
+    "skill.dao.sword.break_mark": {
+      "daoId": "sword",
+      "skillId": "skill.dao.sword.break_mark",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/sword/skill.dao.sword.break_mark.webp",
+      "fallbackKey": "dao.sword",
+      "accent": "75c7cc",
+      "glyphIndex": 0
+    },
+    "skill.dao.sword.chain": {
+      "daoId": "sword",
+      "skillId": "skill.dao.sword.chain",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/sword/skill.dao.sword.chain.webp",
+      "fallbackKey": "dao.sword",
+      "accent": "75c7cc",
+      "glyphIndex": 0
+    },
+    "skill.dao.sword.counter": {
+      "daoId": "sword",
+      "skillId": "skill.dao.sword.counter",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/sword/skill.dao.sword.counter.webp",
+      "fallbackKey": "dao.sword",
+      "accent": "75c7cc",
+      "glyphIndex": 0
+    },
+    "skill.dao.sword.sever": {
+      "daoId": "sword",
+      "skillId": "skill.dao.sword.sever",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/sword/skill.dao.sword.sever.webp",
+      "fallbackKey": "dao.sword",
+      "accent": "75c7cc",
+      "glyphIndex": 0
+    },
+    "skill.dao.sword.finisher": {
+      "daoId": "sword",
+      "skillId": "skill.dao.sword.finisher",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/sword/skill.dao.sword.finisher.webp",
+      "fallbackKey": "dao.sword",
+      "accent": "75c7cc",
+      "glyphIndex": 0
+    },
+    "skill.dao.sword.myriad": {
+      "daoId": "sword",
+      "skillId": "skill.dao.sword.myriad",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/sword/skill.dao.sword.myriad.webp",
+      "fallbackKey": "dao.sword",
+      "accent": "75c7cc",
+      "glyphIndex": 0
+    },
+    "skill.dao.sword.ultimate": {
+      "daoId": "sword",
+      "skillId": "skill.dao.sword.ultimate",
+      "category": "ultimate",
+      "iconPath": "res://art/approved/combat/skills/sword/skill.dao.sword.ultimate.webp",
+      "fallbackKey": "dao.sword",
+      "accent": "75c7cc",
+      "glyphIndex": 0
+    },
+    "skill.dao.fist.basic": {
+      "daoId": "fist",
+      "skillId": "skill.dao.fist.basic",
+      "category": "basic",
+      "iconPath": "res://art/approved/combat/skills/fist/skill.dao.fist.basic.webp",
+      "fallbackKey": "dao.fist",
+      "accent": "d3a46b",
+      "glyphIndex": 1
+    },
+    "skill.dao.fist.triple": {
+      "daoId": "fist",
+      "skillId": "skill.dao.fist.triple",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/fist/skill.dao.fist.triple.webp",
+      "fallbackKey": "dao.fist",
+      "accent": "d3a46b",
+      "glyphIndex": 1
+    },
+    "skill.dao.fist.shock": {
+      "daoId": "fist",
+      "skillId": "skill.dao.fist.shock",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/fist/skill.dao.fist.shock.webp",
+      "fallbackKey": "dao.fist",
+      "accent": "d3a46b",
+      "glyphIndex": 1
+    },
+    "skill.dao.fist.nurture": {
+      "daoId": "fist",
+      "skillId": "skill.dao.fist.nurture",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/fist/skill.dao.fist.nurture.webp",
+      "fallbackKey": "dao.fist",
+      "accent": "d3a46b",
+      "glyphIndex": 1
+    },
+    "skill.dao.fist.heavy": {
+      "daoId": "fist",
+      "skillId": "skill.dao.fist.heavy",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/fist/skill.dao.fist.heavy.webp",
+      "fallbackKey": "dao.fist",
+      "accent": "d3a46b",
+      "glyphIndex": 1
+    },
+    "skill.dao.fist.counter": {
+      "daoId": "fist",
+      "skillId": "skill.dao.fist.counter",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/fist/skill.dao.fist.counter.webp",
+      "fallbackKey": "dao.fist",
+      "accent": "d3a46b",
+      "glyphIndex": 1
+    },
+    "skill.dao.fist.chain_heavy": {
+      "daoId": "fist",
+      "skillId": "skill.dao.fist.chain_heavy",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/fist/skill.dao.fist.chain_heavy.webp",
+      "fallbackKey": "dao.fist",
+      "accent": "d3a46b",
+      "glyphIndex": 1
+    },
+    "skill.dao.fist.pressure": {
+      "daoId": "fist",
+      "skillId": "skill.dao.fist.pressure",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/fist/skill.dao.fist.pressure.webp",
+      "fallbackKey": "dao.fist",
+      "accent": "d3a46b",
+      "glyphIndex": 1
+    },
+    "skill.dao.fist.finisher": {
+      "daoId": "fist",
+      "skillId": "skill.dao.fist.finisher",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/fist/skill.dao.fist.finisher.webp",
+      "fallbackKey": "dao.fist",
+      "accent": "d3a46b",
+      "glyphIndex": 1
+    },
+    "skill.dao.fist.ultimate": {
+      "daoId": "fist",
+      "skillId": "skill.dao.fist.ultimate",
+      "category": "ultimate",
+      "iconPath": "res://art/approved/combat/skills/fist/skill.dao.fist.ultimate.webp",
+      "fallbackKey": "dao.fist",
+      "accent": "d3a46b",
+      "glyphIndex": 1
+    },
+    "skill.dao.body.basic": {
+      "daoId": "body",
+      "skillId": "skill.dao.body.basic",
+      "category": "basic",
+      "iconPath": "res://art/approved/combat/skills/body/skill.dao.body.basic.webp",
+      "fallbackKey": "dao.body",
+      "accent": "b7b58c",
+      "glyphIndex": 2
+    },
+    "skill.dao.body.guard": {
+      "daoId": "body",
+      "skillId": "skill.dao.body.guard",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/body/skill.dao.body.guard.webp",
+      "fallbackKey": "dao.body",
+      "accent": "b7b58c",
+      "glyphIndex": 2
+    },
+    "skill.dao.body.transform": {
+      "daoId": "body",
+      "skillId": "skill.dao.body.transform",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/body/skill.dao.body.transform.webp",
+      "fallbackKey": "dao.body",
+      "accent": "b7b58c",
+      "glyphIndex": 2
+    },
+    "skill.dao.body.immovable": {
+      "daoId": "body",
+      "skillId": "skill.dao.body.immovable",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/body/skill.dao.body.immovable.webp",
+      "fallbackKey": "dao.body",
+      "accent": "b7b58c",
+      "glyphIndex": 2
+    },
+    "skill.dao.body.counter": {
+      "daoId": "body",
+      "skillId": "skill.dao.body.counter",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/body/skill.dao.body.counter.webp",
+      "fallbackKey": "dao.body",
+      "accent": "b7b58c",
+      "glyphIndex": 2
+    },
+    "skill.dao.body.elephant": {
+      "daoId": "body",
+      "skillId": "skill.dao.body.elephant",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/body/skill.dao.body.elephant.webp",
+      "fallbackKey": "dao.body",
+      "accent": "b7b58c",
+      "glyphIndex": 2
+    },
+    "skill.dao.body.break": {
+      "daoId": "body",
+      "skillId": "skill.dao.body.break",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/body/skill.dao.body.break.webp",
+      "fallbackKey": "dao.body",
+      "accent": "b7b58c",
+      "glyphIndex": 2
+    },
+    "skill.dao.body.recover": {
+      "daoId": "body",
+      "skillId": "skill.dao.body.recover",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/body/skill.dao.body.recover.webp",
+      "fallbackKey": "dao.body",
+      "accent": "b7b58c",
+      "glyphIndex": 2
+    },
+    "skill.dao.body.finisher": {
+      "daoId": "body",
+      "skillId": "skill.dao.body.finisher",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/body/skill.dao.body.finisher.webp",
+      "fallbackKey": "dao.body",
+      "accent": "b7b58c",
+      "glyphIndex": 2
+    },
+    "skill.dao.body.ultimate": {
+      "daoId": "body",
+      "skillId": "skill.dao.body.ultimate",
+      "category": "ultimate",
+      "iconPath": "res://art/approved/combat/skills/body/skill.dao.body.ultimate.webp",
+      "fallbackKey": "dao.body",
+      "accent": "b7b58c",
+      "glyphIndex": 2
+    },
+    "skill.dao.spell.basic": {
+      "daoId": "spell",
+      "skillId": "skill.dao.spell.basic",
+      "category": "basic",
+      "iconPath": "res://art/approved/combat/skills/spell/skill.dao.spell.basic.webp",
+      "fallbackKey": "dao.spell",
+      "accent": "92abd8",
+      "glyphIndex": 3
+    },
+    "skill.dao.spell.light": {
+      "daoId": "spell",
+      "skillId": "skill.dao.spell.light",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/spell/skill.dao.spell.light.webp",
+      "fallbackKey": "dao.spell",
+      "accent": "92abd8",
+      "glyphIndex": 3
+    },
+    "skill.dao.spell.channel": {
+      "daoId": "spell",
+      "skillId": "skill.dao.spell.channel",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/spell/skill.dao.spell.channel.webp",
+      "fallbackKey": "dao.spell",
+      "accent": "92abd8",
+      "glyphIndex": 3
+    },
+    "skill.dao.spell.restore": {
+      "daoId": "spell",
+      "skillId": "skill.dao.spell.restore",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/spell/skill.dao.spell.restore.webp",
+      "fallbackKey": "dao.spell",
+      "accent": "92abd8",
+      "glyphIndex": 3
+    },
+    "skill.dao.spell.shield": {
+      "daoId": "spell",
+      "skillId": "skill.dao.spell.shield",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/spell/skill.dao.spell.shield.webp",
+      "fallbackKey": "dao.spell",
+      "accent": "92abd8",
+      "glyphIndex": 3
+    },
+    "skill.dao.spell.seal": {
+      "daoId": "spell",
+      "skillId": "skill.dao.spell.seal",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/spell/skill.dao.spell.seal.webp",
+      "fallbackKey": "dao.spell",
+      "accent": "92abd8",
+      "glyphIndex": 3
+    },
+    "skill.dao.spell.burst": {
+      "daoId": "spell",
+      "skillId": "skill.dao.spell.burst",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/spell/skill.dao.spell.burst.webp",
+      "fallbackKey": "dao.spell",
+      "accent": "92abd8",
+      "glyphIndex": 3
+    },
+    "skill.dao.spell.break": {
+      "daoId": "spell",
+      "skillId": "skill.dao.spell.break",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/spell/skill.dao.spell.break.webp",
+      "fallbackKey": "dao.spell",
+      "accent": "92abd8",
+      "glyphIndex": 3
+    },
+    "skill.dao.spell.transform": {
+      "daoId": "spell",
+      "skillId": "skill.dao.spell.transform",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/spell/skill.dao.spell.transform.webp",
+      "fallbackKey": "dao.spell",
+      "accent": "92abd8",
+      "glyphIndex": 3
+    },
+    "skill.dao.spell.ultimate": {
+      "daoId": "spell",
+      "skillId": "skill.dao.spell.ultimate",
+      "category": "ultimate",
+      "iconPath": "res://art/approved/combat/skills/spell/skill.dao.spell.ultimate.webp",
+      "fallbackKey": "dao.spell",
+      "accent": "92abd8",
+      "glyphIndex": 3
+    },
+    "skill.dao.poison.basic": {
+      "daoId": "poison",
+      "skillId": "skill.dao.poison.basic",
+      "category": "basic",
+      "iconPath": "res://art/approved/combat/skills/poison/skill.dao.poison.basic.webp",
+      "fallbackKey": "dao.poison",
+      "accent": "8bb87c",
+      "glyphIndex": 4
+    },
+    "skill.dao.poison.bone": {
+      "daoId": "poison",
+      "skillId": "skill.dao.poison.bone",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/poison/skill.dao.poison.bone.webp",
+      "fallbackKey": "dao.poison",
+      "accent": "8bb87c",
+      "glyphIndex": 4
+    },
+    "skill.dao.poison.heart": {
+      "daoId": "poison",
+      "skillId": "skill.dao.poison.heart",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/poison/skill.dao.poison.heart.webp",
+      "fallbackKey": "dao.poison",
+      "accent": "8bb87c",
+      "glyphIndex": 4
+    },
+    "skill.dao.poison.insects": {
+      "daoId": "poison",
+      "skillId": "skill.dao.poison.insects",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/poison/skill.dao.poison.insects.webp",
+      "fallbackKey": "dao.poison",
+      "accent": "8bb87c",
+      "glyphIndex": 4
+    },
+    "skill.dao.poison.mist": {
+      "daoId": "poison",
+      "skillId": "skill.dao.poison.mist",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/poison/skill.dao.poison.mist.webp",
+      "fallbackKey": "dao.poison",
+      "accent": "8bb87c",
+      "glyphIndex": 4
+    },
+    "skill.dao.poison.transform": {
+      "daoId": "poison",
+      "skillId": "skill.dao.poison.transform",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/poison/skill.dao.poison.transform.webp",
+      "fallbackKey": "dao.poison",
+      "accent": "8bb87c",
+      "glyphIndex": 4
+    },
+    "skill.dao.poison.guard": {
+      "daoId": "poison",
+      "skillId": "skill.dao.poison.guard",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/poison/skill.dao.poison.guard.webp",
+      "fallbackKey": "dao.poison",
+      "accent": "8bb87c",
+      "glyphIndex": 4
+    },
+    "skill.dao.poison.consume": {
+      "daoId": "poison",
+      "skillId": "skill.dao.poison.consume",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/poison/skill.dao.poison.consume.webp",
+      "fallbackKey": "dao.poison",
+      "accent": "8bb87c",
+      "glyphIndex": 4
+    },
+    "skill.dao.poison.calamity": {
+      "daoId": "poison",
+      "skillId": "skill.dao.poison.calamity",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/poison/skill.dao.poison.calamity.webp",
+      "fallbackKey": "dao.poison",
+      "accent": "8bb87c",
+      "glyphIndex": 4
+    },
+    "skill.dao.poison.ultimate": {
+      "daoId": "poison",
+      "skillId": "skill.dao.poison.ultimate",
+      "category": "ultimate",
+      "iconPath": "res://art/approved/combat/skills/poison/skill.dao.poison.ultimate.webp",
+      "fallbackKey": "dao.poison",
+      "accent": "8bb87c",
+      "glyphIndex": 4
+    },
+    "skill.dao.artifact.basic": {
+      "daoId": "artifact",
+      "skillId": "skill.dao.artifact.basic",
+      "category": "basic",
+      "iconPath": "res://art/approved/combat/skills/artifact/skill.dao.artifact.basic.webp",
+      "fallbackKey": "dao.artifact",
+      "accent": "88c9bb",
+      "glyphIndex": 6
+    },
+    "skill.dao.artifact.deploy": {
+      "daoId": "artifact",
+      "skillId": "skill.dao.artifact.deploy",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/artifact/skill.dao.artifact.deploy.webp",
+      "fallbackKey": "dao.artifact",
+      "accent": "88c9bb",
+      "glyphIndex": 6
+    },
+    "skill.dao.artifact.guard": {
+      "daoId": "artifact",
+      "skillId": "skill.dao.artifact.guard",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/artifact/skill.dao.artifact.guard.webp",
+      "fallbackKey": "dao.artifact",
+      "accent": "88c9bb",
+      "glyphIndex": 6
+    },
+    "skill.dao.artifact.strike": {
+      "daoId": "artifact",
+      "skillId": "skill.dao.artifact.strike",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/artifact/skill.dao.artifact.strike.webp",
+      "fallbackKey": "dao.artifact",
+      "accent": "88c9bb",
+      "glyphIndex": 6
+    },
+    "skill.dao.artifact.sync": {
+      "daoId": "artifact",
+      "skillId": "skill.dao.artifact.sync",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/artifact/skill.dao.artifact.sync.webp",
+      "fallbackKey": "dao.artifact",
+      "accent": "88c9bb",
+      "glyphIndex": 6
+    },
+    "skill.dao.artifact.recall": {
+      "daoId": "artifact",
+      "skillId": "skill.dao.artifact.recall",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/artifact/skill.dao.artifact.recall.webp",
+      "fallbackKey": "dao.artifact",
+      "accent": "88c9bb",
+      "glyphIndex": 6
+    },
+    "skill.dao.artifact.split": {
+      "daoId": "artifact",
+      "skillId": "skill.dao.artifact.split",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/artifact/skill.dao.artifact.split.webp",
+      "fallbackKey": "dao.artifact",
+      "accent": "88c9bb",
+      "glyphIndex": 6
+    },
+    "skill.dao.artifact.merge": {
+      "daoId": "artifact",
+      "skillId": "skill.dao.artifact.merge",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/artifact/skill.dao.artifact.merge.webp",
+      "fallbackKey": "dao.artifact",
+      "accent": "88c9bb",
+      "glyphIndex": 6
+    },
+    "skill.dao.artifact.suppress": {
+      "daoId": "artifact",
+      "skillId": "skill.dao.artifact.suppress",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/artifact/skill.dao.artifact.suppress.webp",
+      "fallbackKey": "dao.artifact",
+      "accent": "88c9bb",
+      "glyphIndex": 6
+    },
+    "skill.dao.artifact.ultimate": {
+      "daoId": "artifact",
+      "skillId": "skill.dao.artifact.ultimate",
+      "category": "ultimate",
+      "iconPath": "res://art/approved/combat/skills/artifact/skill.dao.artifact.ultimate.webp",
+      "fallbackKey": "dao.artifact",
+      "accent": "88c9bb",
+      "glyphIndex": 6
+    },
+    "skill.dao.formation.basic": {
+      "daoId": "formation",
+      "skillId": "skill.dao.formation.basic",
+      "category": "basic",
+      "iconPath": "res://art/approved/combat/skills/formation/skill.dao.formation.basic.webp",
+      "fallbackKey": "dao.formation",
+      "accent": "c5a36c",
+      "glyphIndex": 5
+    },
+    "skill.dao.formation.deploy": {
+      "daoId": "formation",
+      "skillId": "skill.dao.formation.deploy",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/formation/skill.dao.formation.deploy.webp",
+      "fallbackKey": "dao.formation",
+      "accent": "c5a36c",
+      "glyphIndex": 5
+    },
+    "skill.dao.formation.nourish": {
+      "daoId": "formation",
+      "skillId": "skill.dao.formation.nourish",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/formation/skill.dao.formation.nourish.webp",
+      "fallbackKey": "dao.formation",
+      "accent": "c5a36c",
+      "glyphIndex": 5
+    },
+    "skill.dao.formation.fortify": {
+      "daoId": "formation",
+      "skillId": "skill.dao.formation.fortify",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/formation/skill.dao.formation.fortify.webp",
+      "fallbackKey": "dao.formation",
+      "accent": "c5a36c",
+      "glyphIndex": 5
+    },
+    "skill.dao.formation.small_activate": {
+      "daoId": "formation",
+      "skillId": "skill.dao.formation.small_activate",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/formation/skill.dao.formation.small_activate.webp",
+      "fallbackKey": "dao.formation",
+      "accent": "c5a36c",
+      "glyphIndex": 5
+    },
+    "skill.dao.formation.full_activate": {
+      "daoId": "formation",
+      "skillId": "skill.dao.formation.full_activate",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/formation/skill.dao.formation.full_activate.webp",
+      "fallbackKey": "dao.formation",
+      "accent": "c5a36c",
+      "glyphIndex": 5
+    },
+    "skill.dao.formation.seal": {
+      "daoId": "formation",
+      "skillId": "skill.dao.formation.seal",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/formation/skill.dao.formation.seal.webp",
+      "fallbackKey": "dao.formation",
+      "accent": "c5a36c",
+      "glyphIndex": 5
+    },
+    "skill.dao.formation.convert": {
+      "daoId": "formation",
+      "skillId": "skill.dao.formation.convert",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/formation/skill.dao.formation.convert.webp",
+      "fallbackKey": "dao.formation",
+      "accent": "c5a36c",
+      "glyphIndex": 5
+    },
+    "skill.dao.formation.break": {
+      "daoId": "formation",
+      "skillId": "skill.dao.formation.break",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/formation/skill.dao.formation.break.webp",
+      "fallbackKey": "dao.formation",
+      "accent": "c5a36c",
+      "glyphIndex": 5
+    },
+    "skill.dao.formation.ultimate": {
+      "daoId": "formation",
+      "skillId": "skill.dao.formation.ultimate",
+      "category": "ultimate",
+      "iconPath": "res://art/approved/combat/skills/formation/skill.dao.formation.ultimate.webp",
+      "fallbackKey": "dao.formation",
+      "accent": "c5a36c",
+      "glyphIndex": 5
+    },
+    "skill.dao.mind.basic": {
+      "daoId": "mind",
+      "skillId": "skill.dao.mind.basic",
+      "category": "basic",
+      "iconPath": "res://art/approved/combat/skills/mind/skill.dao.mind.basic.webp",
+      "fallbackKey": "dao.mind",
+      "accent": "b49cca",
+      "glyphIndex": 7
+    },
+    "skill.dao.mind.mark": {
+      "daoId": "mind",
+      "skillId": "skill.dao.mind.mark",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/mind/skill.dao.mind.mark.webp",
+      "fallbackKey": "dao.mind",
+      "accent": "b49cca",
+      "glyphIndex": 7
+    },
+    "skill.dao.mind.split": {
+      "daoId": "mind",
+      "skillId": "skill.dao.mind.split",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/mind/skill.dao.mind.split.webp",
+      "fallbackKey": "dao.mind",
+      "accent": "b49cca",
+      "glyphIndex": 7
+    },
+    "skill.dao.mind.interfere": {
+      "daoId": "mind",
+      "skillId": "skill.dao.mind.interfere",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/mind/skill.dao.mind.interfere.webp",
+      "fallbackKey": "dao.mind",
+      "accent": "b49cca",
+      "glyphIndex": 7
+    },
+    "skill.dao.mind.guard": {
+      "daoId": "mind",
+      "skillId": "skill.dao.mind.guard",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/mind/skill.dao.mind.guard.webp",
+      "fallbackKey": "dao.mind",
+      "accent": "b49cca",
+      "glyphIndex": 7
+    },
+    "skill.dao.mind.chase": {
+      "daoId": "mind",
+      "skillId": "skill.dao.mind.chase",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/mind/skill.dao.mind.chase.webp",
+      "fallbackKey": "dao.mind",
+      "accent": "b49cca",
+      "glyphIndex": 7
+    },
+    "skill.dao.mind.burst": {
+      "daoId": "mind",
+      "skillId": "skill.dao.mind.burst",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/mind/skill.dao.mind.burst.webp",
+      "fallbackKey": "dao.mind",
+      "accent": "b49cca",
+      "glyphIndex": 7
+    },
+    "skill.dao.mind.observe": {
+      "daoId": "mind",
+      "skillId": "skill.dao.mind.observe",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/mind/skill.dao.mind.observe.webp",
+      "fallbackKey": "dao.mind",
+      "accent": "b49cca",
+      "glyphIndex": 7
+    },
+    "skill.dao.mind.flow": {
+      "daoId": "mind",
+      "skillId": "skill.dao.mind.flow",
+      "category": "active",
+      "iconPath": "res://art/approved/combat/skills/mind/skill.dao.mind.flow.webp",
+      "fallbackKey": "dao.mind",
+      "accent": "b49cca",
+      "glyphIndex": 7
+    },
+    "skill.dao.mind.ultimate": {
+      "daoId": "mind",
+      "skillId": "skill.dao.mind.ultimate",
+      "category": "ultimate",
+      "iconPath": "res://art/approved/combat/skills/mind/skill.dao.mind.ultimate.webp",
+      "fallbackKey": "dao.mind",
+      "accent": "b49cca",
+      "glyphIndex": 7
+    }
+  },
+  "generic": {
+    "id": "generic",
+    "iconPath": "",
+    "fallbackKey": "generic",
+    "accent": "819b9f",
+    "glyphIndex": 8,
+    "category": "active"
+  }
+}

@@ -135,6 +135,7 @@ static func _skills(raw) -> Array:
 		out.append({
 			"id": str(row.get("id", "")),
 			"name": str(row.get("name", "")),
+			"dao_id": str(row.get("daoId", "")),
 			"slot_class": str(row.get("slotClass", "active")),
 			"form": str(row.get("form", "instant")),
 			"icon_path": str(row.get("iconPath", "")),
