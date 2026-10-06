@@ -6,411 +6,417 @@
       "majorRealmIndex": 1,
       "realmName": "Luyện Khí",
       "biomeName": "Thanh Hư Sơn Mạch",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-1/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "mountain_valley",
+      "biomeVariant": ""
     },
     "2": {
       "id": "biome.major.2",
       "majorRealmIndex": 2,
       "realmName": "Trúc Cơ",
       "biomeName": "Lôi Minh Cốc",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-2/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "mountain_valley",
+      "biomeVariant": ""
     },
     "3": {
       "id": "biome.major.3",
       "majorRealmIndex": 3,
       "realmName": "Tử Phủ",
       "biomeName": "Tử Kính Hồ",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-3/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "lake_river_sea",
+      "biomeVariant": ""
     },
     "4": {
       "id": "biome.major.4",
       "majorRealmIndex": 4,
       "realmName": "Kim Đan",
       "biomeName": "Đan Hỏa Sơn",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-4/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "volcanic_badlands",
+      "biomeVariant": ""
     },
     "5": {
       "id": "biome.major.5",
       "majorRealmIndex": 5,
       "realmName": "Nguyên Anh",
       "biomeName": "Vân Hồn Hải",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-5/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "lake_river_sea",
+      "biomeVariant": ""
     },
     "6": {
       "id": "biome.major.6",
       "majorRealmIndex": 6,
       "realmName": "Hóa Thần",
       "biomeName": "Ngộ Đạo Thiên Nhai",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-6/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "heavenly_cliff",
+      "biomeVariant": ""
     },
     "7": {
       "id": "biome.major.7",
       "majorRealmIndex": 7,
       "realmName": "Luyện Hư",
       "biomeName": "Hư Không Liệt Cốc",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-7/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "void_chaos",
+      "biomeVariant": ""
     },
     "8": {
       "id": "biome.major.8",
       "majorRealmIndex": 8,
       "realmName": "Hợp Thể",
       "biomeName": "Vạn Tượng Hợp Vực",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-8/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "sacred_realm",
+      "biomeVariant": ""
     },
     "9": {
       "id": "biome.major.9",
       "majorRealmIndex": 9,
       "realmName": "Đại Thừa",
       "biomeName": "Đại Thừa Thiên Nguyên",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-9/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "heavenly_cliff",
+      "biomeVariant": ""
     },
     "10": {
       "id": "biome.major.10",
       "majorRealmIndex": 10,
       "realmName": "Độ Kiếp",
       "biomeName": "Thiên Kiếp Hoang Nguyên",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-10/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "volcanic_badlands",
+      "biomeVariant": ""
     },
     "11": {
       "id": "biome.major.11",
       "majorRealmIndex": 11,
       "realmName": "Nhân Tiên",
       "biomeName": "Tiên Linh Cổ Vực",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-11/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "sacred_realm",
+      "biomeVariant": ""
     },
     "12": {
       "id": "biome.major.12",
       "majorRealmIndex": 12,
       "realmName": "Địa Tiên",
       "biomeName": "Địa Mạch Tiên Uyên",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-12/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "canyon_ruins",
+      "biomeVariant": ""
     },
     "13": {
       "id": "biome.major.13",
       "majorRealmIndex": 13,
       "realmName": "Thiên Tiên",
       "biomeName": "Thiên Khung Tiên Hải",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-13/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "lake_river_sea",
+      "biomeVariant": ""
     },
     "14": {
       "id": "biome.major.14",
       "majorRealmIndex": 14,
       "realmName": "Chân Tiên",
       "biomeName": "Chân Tiên Cổ Lộ",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-14/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "canyon_ruins",
+      "biomeVariant": ""
     },
     "15": {
       "id": "biome.major.15",
       "majorRealmIndex": 15,
       "realmName": "Huyền Tiên",
       "biomeName": "Huyền Pháp Thiên Khư",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-15/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "canyon_ruins",
+      "biomeVariant": ""
     },
     "16": {
       "id": "biome.major.16",
       "majorRealmIndex": 16,
       "realmName": "Kim Tiên",
       "biomeName": "Kim Tiên Thần Sơn",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-16/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "mountain_valley",
+      "biomeVariant": ""
     },
     "17": {
       "id": "biome.major.17",
       "majorRealmIndex": 17,
       "realmName": "Thái Ất Tiên",
       "biomeName": "Thái Ất Kỷ Hà",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-17/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "lake_river_sea",
+      "biomeVariant": ""
     },
     "18": {
       "id": "biome.major.18",
       "majorRealmIndex": 18,
       "realmName": "Đại La Kim Tiên",
       "biomeName": "Đại La Vạn Giới",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-18/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "sacred_realm",
+      "biomeVariant": ""
     },
     "19": {
       "id": "biome.major.19",
       "majorRealmIndex": 19,
       "realmName": "Tiên Vương",
       "biomeName": "Tiên Vương Cổ Đình",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-19/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "sacred_realm",
+      "biomeVariant": ""
     },
     "20": {
       "id": "biome.major.20",
       "majorRealmIndex": 20,
       "realmName": "Tiên Đế",
       "biomeName": "Tiên Đế Thần Vực",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-20/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "sacred_realm",
+      "biomeVariant": ""
     },
     "21": {
       "id": "biome.major.21",
       "majorRealmIndex": 21,
       "realmName": "Cực Hạn",
       "biomeName": "Cực Hạn Biên Giới",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-21/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "heavenly_cliff",
+      "biomeVariant": ""
     },
     "22": {
       "id": "biome.major.22",
       "majorRealmIndex": 22,
       "realmName": "Cực Đạo Chân Cảnh",
       "biomeName": "Cực Đạo Hỗn Độn Hải",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-22/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "void_chaos",
+      "biomeVariant": ""
     },
     "23": {
       "id": "biome.major.23",
       "majorRealmIndex": 23,
       "realmName": "Hỗn Độn Cảnh",
       "biomeName": "Hỗn Độn Tổ Vực",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-23/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "void_chaos",
+      "biomeVariant": ""
     },
     "24": {
       "id": "biome.major.24",
       "majorRealmIndex": 24,
       "realmName": "Hồng Mông Cảnh",
       "biomeName": "Hồng Mông Nguyên Hải",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-24/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "divine_origin",
+      "biomeVariant": ""
     },
     "25": {
       "id": "biome.major.25",
       "majorRealmIndex": 25,
       "realmName": "Khai Thiên Cảnh",
       "biomeName": "Khai Thiên Nguyên Giới",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-25/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "divine_origin",
+      "biomeVariant": ""
     },
     "26": {
       "id": "biome.major.26",
       "majorRealmIndex": 26,
       "realmName": "Thế Giới Chủ",
       "biomeName": "Vạn Giới Chủ Vực",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-26/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "divine_origin",
+      "biomeVariant": ""
     },
     "27": {
       "id": "biome.major.27",
       "majorRealmIndex": 27,
       "realmName": "Vĩnh Sinh Cảnh",
       "biomeName": "Vĩnh Sinh Thần Hà",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-27/base.webp",
-      "backgroundLayers": [],
-      "foregroundLayers": [],
-      "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "biomeFamilyId": "divine_origin",
+      "biomeVariant": ""
     },
     "28": {
       "id": "biome.major.28",
       "majorRealmIndex": 28,
       "realmName": "Sáng Thế Chủ",
       "biomeName": "Sáng Thế Hư Không",
-      "baseBackgroundPath": "res://art/approved/combat/battlefields/major-28/base.webp",
+      "biomeFamilyId": "divine_origin",
+      "biomeVariant": ""
+    }
+  },
+  "biomeFamilies": {
+    "mountain_valley": {
+      "familyId": "mountain_valley",
+      "displayName": "Sơn cốc",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/families/mountain_valley/base.webp",
+      "fallbackPath": "",
       "backgroundLayers": [],
       "foregroundLayers": [],
       "fallbackKey": "mountain-shell",
-      "tint": "193e43"
+      "tint": "193e43",
+      "compositionHint": "Open central arena; keep actor and HUD sightlines clear"
+    },
+    "volcanic_badlands": {
+      "familyId": "volcanic_badlands",
+      "displayName": "Hỏa nguyên",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/families/volcanic_badlands/base.webp",
+      "fallbackPath": "",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43",
+      "compositionHint": "Open central arena; keep actor and HUD sightlines clear"
+    },
+    "lake_river_sea": {
+      "familyId": "lake_river_sea",
+      "displayName": "Hồ sông biển",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/families/lake_river_sea/base.webp",
+      "fallbackPath": "",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43",
+      "compositionHint": "Open central arena; keep actor and HUD sightlines clear"
+    },
+    "canyon_ruins": {
+      "familyId": "canyon_ruins",
+      "displayName": "Hẻm vực cổ tích",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/families/canyon_ruins/base.webp",
+      "fallbackPath": "",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43",
+      "compositionHint": "Open central arena; keep actor and HUD sightlines clear"
+    },
+    "heavenly_cliff": {
+      "familyId": "heavenly_cliff",
+      "displayName": "Thiên nhai",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/families/heavenly_cliff/base.webp",
+      "fallbackPath": "",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43",
+      "compositionHint": "Open central arena; keep actor and HUD sightlines clear"
+    },
+    "sacred_realm": {
+      "familyId": "sacred_realm",
+      "displayName": "Thánh vực",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/families/sacred_realm/base.webp",
+      "fallbackPath": "",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43",
+      "compositionHint": "Open central arena; keep actor and HUD sightlines clear"
+    },
+    "void_chaos": {
+      "familyId": "void_chaos",
+      "displayName": "Hư không hỗn độn",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/families/void_chaos/base.webp",
+      "fallbackPath": "",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43",
+      "compositionHint": "Open central arena; keep actor and HUD sightlines clear"
+    },
+    "divine_origin": {
+      "familyId": "divine_origin",
+      "displayName": "Thần nguyên",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/families/divine_origin/base.webp",
+      "fallbackPath": "",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43",
+      "compositionHint": "Open central arena; keep actor and HUD sightlines clear"
     }
+  },
+  "genericBiome": {
+    "familyId": "generic",
+    "displayName": "Generic battlefield",
+    "baseBackgroundPath": "",
+    "fallbackPath": "",
+    "backgroundLayers": [],
+    "foregroundLayers": [],
+    "fallbackKey": "mountain-shell",
+    "tint": "193e43"
   },
   "zones": {
     "1": {
       "id": "zone.1",
       "zone": 1,
       "zoneName": "Phàm Vực",
-      "layerPath": "res://art/approved/combat/battlefields/zones/zone-1.webp",
-      "intensity": 0,
-      "fallbackKey": "ground-ring"
+      "intensityKey": "tier.1",
+      "intensityTier": 1,
+      "intensity": 0
     },
     "2": {
       "id": "zone.2",
       "zone": 2,
       "zoneName": "Linh Vực",
-      "layerPath": "res://art/approved/combat/battlefields/zones/zone-2.webp",
-      "intensity": 0.14285714285714285,
-      "fallbackKey": "ground-ring"
+      "intensityKey": "tier.2",
+      "intensityTier": 2,
+      "intensity": 0.14285714285714285
     },
     "3": {
       "id": "zone.3",
       "zone": 3,
       "zoneName": "Huyền Vực",
-      "layerPath": "res://art/approved/combat/battlefields/zones/zone-3.webp",
-      "intensity": 0.2857142857142857,
-      "fallbackKey": "ground-ring"
+      "intensityKey": "tier.3",
+      "intensityTier": 3,
+      "intensity": 0.2857142857142857
     },
     "4": {
       "id": "zone.4",
       "zone": 4,
       "zoneName": "Địa Vực",
-      "layerPath": "res://art/approved/combat/battlefields/zones/zone-4.webp",
-      "intensity": 0.42857142857142855,
-      "fallbackKey": "ground-ring"
+      "intensityKey": "tier.4",
+      "intensityTier": 4,
+      "intensity": 0.42857142857142855
     },
     "5": {
       "id": "zone.5",
       "zone": 5,
       "zoneName": "Thiên Vực",
-      "layerPath": "res://art/approved/combat/battlefields/zones/zone-5.webp",
-      "intensity": 0.5714285714285714,
-      "fallbackKey": "ground-ring"
+      "intensityKey": "tier.5",
+      "intensityTier": 5,
+      "intensity": 0.5714285714285714
     },
     "6": {
       "id": "zone.6",
       "zone": 6,
       "zoneName": "Tiên Vực",
-      "layerPath": "res://art/approved/combat/battlefields/zones/zone-6.webp",
-      "intensity": 0.7142857142857143,
-      "fallbackKey": "ground-ring"
+      "intensityKey": "tier.6",
+      "intensityTier": 6,
+      "intensity": 0.7142857142857143
     },
     "7": {
       "id": "zone.7",
       "zone": 7,
       "zoneName": "Cực Vực",
-      "layerPath": "res://art/approved/combat/battlefields/zones/zone-7.webp",
-      "intensity": 0.8571428571428571,
-      "fallbackKey": "ground-ring"
+      "intensityKey": "tier.7",
+      "intensityTier": 7,
+      "intensity": 0.8571428571428571
     },
     "8": {
       "id": "zone.8",
       "zone": 8,
       "zoneName": "Phá Vực",
-      "layerPath": "res://art/approved/combat/battlefields/zones/zone-8.webp",
-      "intensity": 1,
-      "fallbackKey": "ground-ring"
+      "intensityKey": "tier.8",
+      "intensityTier": 8,
+      "intensity": 1
     }
   },
   "elements": {
     "Wood": {
       "id": "Wood",
-      "layerPath": "res://art/approved/combat/battlefields/elements/wood.webp",
-      "tint": "799b83",
-      "vfxHint": "none",
-      "fallbackKey": "static-tint"
+      "infoKey": "element.wood",
+      "elementAccent": "799b83"
     },
     "Fire": {
       "id": "Fire",
-      "layerPath": "res://art/approved/combat/battlefields/elements/fire.webp",
-      "tint": "ae7464",
-      "vfxHint": "none",
-      "fallbackKey": "static-tint"
+      "infoKey": "element.fire",
+      "elementAccent": "ae7464"
     },
     "Earth": {
       "id": "Earth",
-      "layerPath": "res://art/approved/combat/battlefields/elements/earth.webp",
-      "tint": "af9975",
-      "vfxHint": "none",
-      "fallbackKey": "static-tint"
+      "infoKey": "element.earth",
+      "elementAccent": "af9975"
     },
     "Metal": {
       "id": "Metal",
-      "layerPath": "res://art/approved/combat/battlefields/elements/metal.webp",
-      "tint": "bdc3bd",
-      "vfxHint": "none",
-      "fallbackKey": "static-tint"
+      "infoKey": "element.metal",
+      "elementAccent": "bdc3bd"
     },
     "Water": {
       "id": "Water",
-      "layerPath": "res://art/approved/combat/battlefields/elements/water.webp",
-      "tint": "75a9c1",
-      "vfxHint": "none",
-      "fallbackKey": "static-tint"
+      "infoKey": "element.water",
+      "elementAccent": "75a9c1"
     }
   },
   "enemies": {

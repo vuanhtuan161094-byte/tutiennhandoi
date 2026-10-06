@@ -1,5 +1,7 @@
 {
   "schema": "combat-asset-overrides.v1",
-  "biomes": {}, "zones": {}, "elements": {},
-  "enemies": {}, "families": {}, "skills": {}
+  "biomeFamilies": {},
+  "enemies": {},
+  "families": {},
+  "skills": {}
 }

@@ -5,25 +5,30 @@ import { buildRegistry } from '../../dist/content/registry.js';
 import { realmMapDefinitionForFloor, availableRealmMaps } from '../../dist/content/realm-maps.js';
 import { endlessHuntArchetypes } from '../../dist/content/endless-hunt.js';
 
-export function buildCombatAssetManifest() {
+export function buildCombatAssetManifest(familySource = JSON.parse(readFileSync(new URL('../../godot/data/combat_biome_families.json', import.meta.url), 'utf8'))) {
   const accents = { sword:'75c7cc', fist:'d3a46b', body:'b7b58c', spell:'92abd8', poison:'8bb87c', formation:'c5a36c', artifact:'88c9bb', mind:'b49cca' };
   const root = 'res://art/approved/combat';
-  // The canonical map API clamps supported progression; one biome per major.
+  const maps = availableRealmMaps(Number.MAX_SAFE_INTEGER).filter(map=>map.zone===1);
+  const canonicalNames = maps.map(map=>map.biomeName).sort();
+  assert.deepEqual(Object.keys(familySource.mapping).sort(),canonicalNames,'Every canonical biome must have exactly one explicit family mapping');
+  assert.equal(Object.keys(familySource.families).length,8);
+  assert.equal(new Set(Object.values(familySource.mapping)).size,8);
   const biomes = {};
-  for (const map of availableRealmMaps(Number.MAX_SAFE_INTEGER).filter(map=>map.zone===1)) {
-    const index=map.majorRealmIndex;
-    biomes[String(index)] = { id:`biome.major.${index}`, majorRealmIndex:index, realmName:map.realmName, biomeName:map.biomeName,
-      baseBackgroundPath:`${root}/battlefields/major-${index}/base.webp`, backgroundLayers:[], foregroundLayers:[],
-      fallbackKey:'mountain-shell', tint:'193e43' };
+  for (const map of maps) {
+    const index = map.majorRealmIndex;
+    const familyId = familySource.mapping[map.biomeName];
+    assert.ok(familySource.families[familyId], 'Unknown biome family: '+familyId);
+    assert.equal(familySource.families[familyId].familyId,familyId);
+    biomes[String(index)] = {id:`biome.major.${index}`,majorRealmIndex:index,realmName:map.realmName,biomeName:map.biomeName,biomeFamilyId:familyId,biomeVariant:''};
   }
   const zones = {};
   for (let zone = 1; zone <= 8; zone++) {
     const map = realmMapDefinitionForFloor((zone - 1) * 100 + 1);
     zones[String(zone)] = { id:`zone.${zone}`, zone, zoneName:map.zoneName,
-      layerPath:`${root}/battlefields/zones/zone-${zone}.webp`, intensity:(zone - 1) / 7, fallbackKey:'ground-ring' };
+      intensityKey:`tier.${zone}`, intensityTier:zone, intensity:(zone - 1) / 7 };
   }
   const colors = { Wood:'799b83', Fire:'ae7464', Earth:'af9975', Metal:'bdc3bd', Water:'75a9c1' };
-  const elements = Object.fromEntries(Object.entries(colors).map(([id,tint])=>[id,{id,layerPath:`${root}/battlefields/elements/${id.toLowerCase()}.webp`,tint,vfxHint:'none',fallbackKey:'static-tint'}]));
+  const elements = Object.fromEntries(Object.entries(colors).map(([id,elementAccent])=>[id,{id,infoKey:`element.${id.toLowerCase()}`,elementAccent}]));
   const enemies = Object.fromEntries([...endlessHuntArchetypes.map(a=>a.id),'generic'].map((id,index)=>[id,{
     id, spritePath:`${root}/enemies/${id}/actor.webp`, shadowPath:'', fallbackKey:id,
     layout:{scale:1}, anchors:{impact:[0.5,0.5],ground:[0.5,0.9]}, accent:colors.Wood, glyphIndex:index,
@@ -46,7 +51,7 @@ export function buildCombatAssetManifest() {
     assert.equal(rows.filter(s=>s.category==='active').length,8);
     assert.equal(rows.filter(s=>s.category==='ultimate').length,1);
   }
-  return { schema:'combat-asset-manifest.v1', biomes,zones,elements,enemies,families,skills,
+  return { schema:'combat-asset-manifest.v1', biomes,biomeFamilies:familySource.families,genericBiome:familySource.generic,zones,elements,enemies,families,skills,
     generic:{ id:'generic', iconPath:'', fallbackKey:'generic', accent:'819b9f', glyphIndex:8, category:'active' } };
 }
 

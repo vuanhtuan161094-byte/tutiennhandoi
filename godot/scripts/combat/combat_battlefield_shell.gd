@@ -37,9 +37,11 @@ func _draw() -> void:
 	if _sky == null:
 		return
 	var base := ASSETS.texture_for_path(str(asset_config.get("biomeBasePath", "")))
+	if base == null:
+		base = ASSETS.texture_for_path(str(asset_config.get("family", {}).get("fallbackPath", "")))
 	if base != null:
 		draw_texture_rect(base, Rect2(Vector2.ZERO, size), false)
-		for path in asset_config.get("biome", {}).get("backgroundLayers", []):
+		for path in asset_config.get("family", {}).get("backgroundLayers", []):
 			var texture := ASSETS.texture_for_path(str(path))
 			if texture != null:
 				draw_texture_rect(texture, Rect2(Vector2.ZERO, size), false)
@@ -58,7 +60,7 @@ func _draw() -> void:
 	_polygon([Vector2(0, .62), Vector2(.52, .53), Vector2(1, .61), Vector2(1, 1), Vector2(0, 1)], Color("0c2029"))
 	var center := size * Vector2(.52, .76)
 	for radius in [.29, .35, .43]:
-		_ellipse(center, size * Vector2(radius, radius * .22), Color(.42, .55, .51, .13 + float(asset_config.get("zone", {}).get("intensity", 0.0)) * .08), true)
+		_ellipse(center, size * Vector2(radius, radius * .22), Color(.42, .55, .51, .13), true)
 	for i in range(12):
 		var angle := TAU * i / 12.0
 		var inner := center + size * Vector2(cos(angle) * .29, sin(angle) * .064)
@@ -74,17 +76,12 @@ func _draw() -> void:
 func bind_environment(metadata: Dictionary) -> void:
 	asset_config = ASSETS.environment(metadata)
 	if _sky != null:
-		var base_tint := Color(str(asset_config.biome.get("tint", "193e43")))
-		var tint := Color(str(asset_config.element.get("tint", "193e43")))
-		_sky.gradient.colors = PackedColorArray([Color("102b35"), base_tint.lerp(tint, 0.13), Color("0b202b"), Color("07131d")])
+		var base_tint := Color(str(asset_config.family.get("tint", "193e43")))
+		_sky.gradient.colors = PackedColorArray([Color("102b35"), base_tint, Color("0b202b"), Color("07131d")])
 	queue_redraw()
 
 func _draw_asset_layers() -> void:
-	for path in [asset_config.get("zoneLayerPath", ""), asset_config.get("elementLayerPath", "")]:
-		var texture := ASSETS.texture_for_path(str(path))
-		if texture != null:
-			draw_texture_rect(texture, Rect2(Vector2.ZERO, size), false)
-	for path in asset_config.get("biome", {}).get("foregroundLayers", []):
+	for path in asset_config.get("family", {}).get("foregroundLayers", []):
 		var texture := ASSETS.texture_for_path(str(path))
 		if texture != null:
 			draw_texture_rect(texture, Rect2(Vector2.ZERO, size), false)

@@ -16,12 +16,15 @@ static func _catalog() -> Dictionary:
 		_manifest = _read(MANIFEST_PATH)
 		var overrides := _read(OVERRIDES_PATH)
 		# Overrides bind approved art/presentation hints, never canonical identities.
-		for group in ["biomes", "zones", "elements", "enemies", "families", "skills"]:
+		var allowed := {"biomeFamilies":["baseBackgroundPath","fallbackPath","backgroundLayers","foregroundLayers","tint"],
+			"enemies":["spritePath","shadowPath","accent","layout","anchors"],
+			"families":["iconPath","accent"], "skills":["iconPath","accent"]}
+		for group in allowed:
 			var rows: Dictionary = overrides.get(group, {})
 			for key in rows:
 				if not _manifest.get(group, {}).has(key) or typeof(rows[key]) != TYPE_DICTIONARY:
 					continue
-				for field in ["baseBackgroundPath", "backgroundLayers", "foregroundLayers", "layerPath", "spritePath", "shadowPath", "iconPath", "accent", "tint", "layout", "anchors", "vfxHint"]:
+				for field in allowed[group]:
 					if rows[key].has(field):
 						_manifest[group][key][field] = rows[key][field]
 					if group == "families" and field == "accent":
@@ -36,19 +39,20 @@ static func catalog() -> Dictionary:
 static func environment(raw) -> Dictionary:
 	var source: Dictionary = raw if typeof(raw) == TYPE_DICTIONARY else {}
 	var data := _catalog()
-	var biome: Dictionary = data.get("biomes", {}).get(str(source.get("major_realm_index", 0)), {}).duplicate(true)
-	if biome.is_empty() and not str(source.get("biome_name", "")).is_empty():
-		# Exact authored biome identity, never a zone/name heuristic.
-		for candidate in data.get("biomes", {}).values():
-			if candidate.biomeName == str(source.biome_name):
-				biome = candidate.duplicate(true)
-				break
-	var zone: Dictionary = data.get("zones", {}).get(str(source.get("zone", 0)), {}).duplicate(true)
-	var element: Dictionary = data.get("elements", {}).get(str(source.get("primary_element", "")), {}).duplicate(true)
-	return {"biome": biome, "zone": zone, "element": element,
-		"biomeBasePath": str(biome.get("baseBackgroundPath", "")),
-		"zoneLayerPath": str(zone.get("layerPath", "")), "elementLayerPath": str(element.get("layerPath", "")),
-		"fallbackKey": str(biome.get("fallbackKey", "mountain-shell"))}
+	var biome: Dictionary = {}
+	for candidate in data.get("biomes", {}).values():
+		if candidate.biomeName == str(source.get("biome_name", "")):
+			biome = candidate.duplicate(true)
+			break
+	var family: Dictionary = data.get("biomeFamilies", {}).get(str(biome.get("biomeFamilyId", "")), data.get("genericBiome", {})).duplicate(true)
+	var zone: Dictionary = data.get("zones", {}).get(str(source.get("zone", 1)), data.get("zones", {}).get("1", {})).duplicate(true)
+	var element: Dictionary = data.get("elements", {}).get(str(source.get("primary_element", "")), {"id":"neutral","infoKey":"element.neutral","elementAccent":"819b9f"}).duplicate(true)
+	return {"biome":biome, "family":family, "zone":zone, "element":element,
+		"biomeFamilyId":str(family.get("familyId", "generic")),
+		"biomeBasePath":str(family.get("baseBackgroundPath", "")),
+		"zoneIntensityKey":str(zone.get("intensityKey", "tier.1")),
+		"primaryElement":str(element.id), "primaryElementInfoKey":str(element.infoKey),
+		"fallbackKey":str(family.get("fallbackKey", "mountain-shell"))}
 
 static func enemy(archetype_id: String) -> Dictionary:
 	var rows: Dictionary = _catalog().get("enemies", {})

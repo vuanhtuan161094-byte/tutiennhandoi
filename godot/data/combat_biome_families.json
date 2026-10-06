@@ -1,0 +1,133 @@
+{
+  "schema": "combat-biome-families.v1",
+  "families": {
+    "mountain_valley": {
+      "familyId": "mountain_valley",
+      "displayName": "Sơn cốc",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/families/mountain_valley/base.webp",
+      "fallbackPath": "",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43",
+      "compositionHint": "Open central arena; keep actor and HUD sightlines clear"
+    },
+    "volcanic_badlands": {
+      "familyId": "volcanic_badlands",
+      "displayName": "Hỏa nguyên",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/families/volcanic_badlands/base.webp",
+      "fallbackPath": "",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43",
+      "compositionHint": "Open central arena; keep actor and HUD sightlines clear"
+    },
+    "lake_river_sea": {
+      "familyId": "lake_river_sea",
+      "displayName": "Hồ sông biển",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/families/lake_river_sea/base.webp",
+      "fallbackPath": "",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43",
+      "compositionHint": "Open central arena; keep actor and HUD sightlines clear"
+    },
+    "canyon_ruins": {
+      "familyId": "canyon_ruins",
+      "displayName": "Hẻm vực cổ tích",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/families/canyon_ruins/base.webp",
+      "fallbackPath": "",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43",
+      "compositionHint": "Open central arena; keep actor and HUD sightlines clear"
+    },
+    "heavenly_cliff": {
+      "familyId": "heavenly_cliff",
+      "displayName": "Thiên nhai",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/families/heavenly_cliff/base.webp",
+      "fallbackPath": "",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43",
+      "compositionHint": "Open central arena; keep actor and HUD sightlines clear"
+    },
+    "sacred_realm": {
+      "familyId": "sacred_realm",
+      "displayName": "Thánh vực",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/families/sacred_realm/base.webp",
+      "fallbackPath": "",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43",
+      "compositionHint": "Open central arena; keep actor and HUD sightlines clear"
+    },
+    "void_chaos": {
+      "familyId": "void_chaos",
+      "displayName": "Hư không hỗn độn",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/families/void_chaos/base.webp",
+      "fallbackPath": "",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43",
+      "compositionHint": "Open central arena; keep actor and HUD sightlines clear"
+    },
+    "divine_origin": {
+      "familyId": "divine_origin",
+      "displayName": "Thần nguyên",
+      "baseBackgroundPath": "res://art/approved/combat/battlefields/families/divine_origin/base.webp",
+      "fallbackPath": "",
+      "backgroundLayers": [],
+      "foregroundLayers": [],
+      "fallbackKey": "mountain-shell",
+      "tint": "193e43",
+      "compositionHint": "Open central arena; keep actor and HUD sightlines clear"
+    }
+  },
+  "mapping": {
+    "Thanh Hư Sơn Mạch": "mountain_valley",
+    "Lôi Minh Cốc": "mountain_valley",
+    "Kim Tiên Thần Sơn": "mountain_valley",
+    "Đan Hỏa Sơn": "volcanic_badlands",
+    "Thiên Kiếp Hoang Nguyên": "volcanic_badlands",
+    "Tử Kính Hồ": "lake_river_sea",
+    "Vân Hồn Hải": "lake_river_sea",
+    "Thiên Khung Tiên Hải": "lake_river_sea",
+    "Thái Ất Kỷ Hà": "lake_river_sea",
+    "Địa Mạch Tiên Uyên": "canyon_ruins",
+    "Chân Tiên Cổ Lộ": "canyon_ruins",
+    "Huyền Pháp Thiên Khư": "canyon_ruins",
+    "Ngộ Đạo Thiên Nhai": "heavenly_cliff",
+    "Đại Thừa Thiên Nguyên": "heavenly_cliff",
+    "Cực Hạn Biên Giới": "heavenly_cliff",
+    "Vạn Tượng Hợp Vực": "sacred_realm",
+    "Tiên Linh Cổ Vực": "sacred_realm",
+    "Đại La Vạn Giới": "sacred_realm",
+    "Tiên Vương Cổ Đình": "sacred_realm",
+    "Tiên Đế Thần Vực": "sacred_realm",
+    "Hư Không Liệt Cốc": "void_chaos",
+    "Cực Đạo Hỗn Độn Hải": "void_chaos",
+    "Hỗn Độn Tổ Vực": "void_chaos",
+    "Hồng Mông Nguyên Hải": "divine_origin",
+    "Khai Thiên Nguyên Giới": "divine_origin",
+    "Vạn Giới Chủ Vực": "divine_origin",
+    "Vĩnh Sinh Thần Hà": "divine_origin",
+    "Sáng Thế Hư Không": "divine_origin"
+  },
+  "generic": {
+    "familyId": "generic",
+    "displayName": "Generic battlefield",
+    "baseBackgroundPath": "",
+    "fallbackPath": "",
+    "backgroundLayers": [],
+    "foregroundLayers": [],
+    "fallbackKey": "mountain-shell",
+    "tint": "193e43"
+  }
+}
