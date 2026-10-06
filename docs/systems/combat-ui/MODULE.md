@@ -102,6 +102,8 @@ Current production path:
 
 ## Current next action
 
+Combat Asset Architecture **PASS** (2026-10-06): composable 28-biome / 8-zone / 5-element catalog, six canonical archetypes + generic, all 80 skill icons (8 Dao × 1 Basic / 8 Active / 1 Ultimate), resolver/bindings integrated through native placeholders. Clean runtime SHA `7a73ac6518440dcd7abcc68b40e99034c8e09c09`; `KIEM_TRA_GAME.cmd` exit 0, GdUnit 75/75, bridge/P2/bounded, Home 50/50, Combat 28/28, Combat capture 23/23 and pixel validation PASS. Gameplay/RNG/save unchanged. Proof: `docs/ui/GODOT_COMBAT_ASSET_ARCHITECTURE_20261006.md`. **Production art NOT STARTED; GCombat-4 NOT STARTED**.
+
 Combat Visual Metadata Contract **IMPLEMENTED / PASS** (2026-10-06): canonical environment and actual selected monster archetype forwarded through DTO/VM, no client inference, save migration or RNG/gameplay change. Clean SHA `54b1a422691de2f337c650162fd5f0b935b0906b`; targeted 6/6, deterministic 480 generators / 12 V3 fights, GdUnit 70/70, bridge/P2/bounded and Stagehand Home 50/50 / Combat 28/28, `KIEM_TRA_GAME.cmd -SkipVisual` exit 0. No new screenshot/asset pass. Proof: `docs/ui/GODOT_COMBAT_VISUAL_METADATA_CONTRACT_20261006.md`. GCombat-4 and asset integration **NOT STARTED**.
 
 Latest visual shell gate: clean SHA `22eb0a785d4f77d0c3b67573ff844c841a6e06e8`, `KIEM_TRA_GAME.cmd` exit 0; 68 GdUnit, bridge/P2/bounded smoke, Home 50/50, Combat 28/28, Home capture 9/9, Combat capture 23/23 and both primary PNG pixel checks PASS. Static native atmosphere, replaceable silhouettes, compact HUD/Tactical and temporary engraved skill glyphs; gameplay unchanged. Proof: `docs/ui/GODOT_COMBAT_VISUAL_SHELL_20261005.md`. Visual candidate only; GCombat-4 NOT STARTED.
