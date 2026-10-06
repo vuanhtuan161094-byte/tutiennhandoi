@@ -7,6 +7,7 @@ signal fight_requested
 const STYLE := preload("res://scripts/combat/combat_style.gd")
 const BATTLEFIELD := preload("res://scripts/combat/combat_battlefield_shell.gd")
 const ACTOR_PLACEHOLDER := preload("res://scripts/combat/combat_actor_placeholder.gd")
+const PLAYER_ACTOR := preload("res://scripts/combat/combat_player_actor.gd")
 const DAO_WIDGET := preload("res://scripts/combat/combat_dao_widget.gd")
 const SKILL_RAIL := preload("res://scripts/combat/combat_skill_rail.gd")
 const EVENT_PLAYER := preload("res://scripts/combat/combat_event_player.gd")
@@ -16,6 +17,7 @@ const TACTICAL_LANE := preload("res://scripts/combat/combat_tactical_lane.gd")
 
 var _battlefield: CombatBattlefieldShell
 var _enemy_actor: CombatActorPlaceholder
+var _player_actor: CombatPlayerActor
 var _title: Label
 var _floor: Label
 var _status: Label
@@ -62,6 +64,7 @@ func bind(vm: Dictionary) -> void:
 	_battle_end_seen = false
 	_battlefield.bind_environment(vm.get('environment', {}))
 	_enemy_actor.bind_archetype(str(vm.get('enemy', {}).get('archetype_id', '')))
+	_player_actor.bind_dao(str(vm.get("main_dao_id", "")))
 	_lane.reset()
 	_lane.visible = true
 	var challenge: Dictionary = vm.get("challenge", {})
@@ -148,7 +151,8 @@ func _build() -> void:
 	enemy.anchor_top = 0.04
 	enemy.anchor_bottom = 0.42
 	field.add_child(enemy)
-	var player := _actor(false)
+	var player := PLAYER_ACTOR.new()
+	_player_actor = player
 	player.name = "CombatPlayerActor"
 	player.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	player.anchor_left = 0.03
@@ -214,13 +218,16 @@ func _on_combat_event(event: Dictionary) -> void:
 	match type:
 		"battle.start":
 			_result.visible = false
+			_player_actor.reset_to_idle()
 			_challenge_button.visible = false
 			_apply_event_hp(target, payload)
 			if payload.has("monsterName"):
 				_boss_hud.identity.text = str(payload.monsterName)
 		"skill.cast.start":
 			if str(event.get("actor", "")) == "player":
-				_skill_rail.set_selected_skill(str(event.get("skill_id", "")))
+				var skill_id := str(event.get("skill_id", ""))
+				_skill_rail.set_selected_skill(skill_id)
+				_player_actor.play_skill(skill_id)
 		"combat.damage", "combat.dot", "combat.heal", "actor.death":
 			_apply_event_hp(target, payload)
 		"combat.break":
