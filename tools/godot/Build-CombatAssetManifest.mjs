@@ -53,7 +53,7 @@ export function buildCombatAssetManifest() {
 if(process.argv[1]===fileURLToPath(import.meta.url)) {
   const target=new URL('../../godot/data/combat_asset_manifest.json',import.meta.url);
   const data=JSON.stringify(buildCombatAssetManifest(),null,2)+'\n';
-  if(process.argv.includes('--check')) assert.equal(readFileSync(target,'utf8'),data,'Canonical catalog drift: regenerate combat manifest');
+  if(process.argv.includes('--check')) assert.equal(readFileSync(target,'utf8').replace(/\r\n/g,'\n'),data,'Canonical catalog drift: regenerate combat manifest');
   else { mkdirSync(new URL('../../godot/data/',import.meta.url),{recursive:true}); writeFileSync(target,data); }
   console.log('COMBAT ASSET MANIFEST: PASS');
 }
