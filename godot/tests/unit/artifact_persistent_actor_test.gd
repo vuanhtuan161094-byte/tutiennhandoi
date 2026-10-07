@@ -126,3 +126,21 @@ func test_authoritative_merge_exit_cancels_old_ultimate_echoes() -> void:
 	assert_bool(director.group.great.visible).is_false()
 	assert_int(director.group.active_actors().size()).is_equal(1)
 	screen.free()
+func test_repeated_ultimate_reuses_pool_without_stale_launch_motion() -> void:
+	var screen := SCREEN.new()
+	add_child(screen)
+	screen.bind({"main_dao_id":"artifact","dao":_projection(3)})
+	var director := screen._artifact_director
+	director.set_process(false)
+	var pooled := director._echoes.duplicate()
+	for repeat in range(2):
+		screen._on_combat_event({"type":"skill.cast.start","actor":"player","skill_id":"skill.dao.artifact.ultimate"})
+		director._process(0.3)
+		assert_str(director._echoes[0].pose).is_equal("summon")
+		screen._on_combat_event({"type":"skill.travel","actor":"player","target":"enemy","skill_id":"skill.dao.artifact.ultimate"})
+		director._process(0.01)
+		assert_str(director._echoes[0].pose).is_equal("launch")
+		assert_bool(director._echoes[0] == pooled[0]).is_true()
+		screen._on_combat_event({"type":"combat.damage","actor":"player","target":"enemy","skill_id":"skill.dao.artifact.ultimate"})
+	assert_int(director.group.source_count).is_equal(3)
+	screen.free()

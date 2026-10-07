@@ -149,6 +149,7 @@ func _process(delta: float) -> void:
 			var echo := _echoes[i]
 			echo.visible = true
 			echo.position = group.safe_point(group.home(0)+Vector2((i%4-1.5)*34,-35-float(i/4)*36))
+			echo.move_to(echo.position,0.01,0,"summon")
 	if _clock > 0.58 and _beat == "summon":
 		_beat = "command"
 		for echo in _echoes:
