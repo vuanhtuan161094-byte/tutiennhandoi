@@ -124,3 +124,34 @@ Observed result supplied from the Windows console:
 This closes the **technical gate** for the current Ngự Khí integration candidate. It does **not** approve the final Combat visual baseline yet; the gate output still reports `Baseline status: NOT APPROVED`.
 
 Next required proof: record one real production-speed Ngự Khí battle showing body animation + outbound VFX + target impact timing for visual review.
+
+
+## Ngự Khí VFX V2 art direction — 2026-10-07
+
+The first procedural prototype was rejected visually because too many skills reduced to the same cyan streak. It remains useful only as proof of event wiring.
+
+V2 replaces that visual language with **skill-specific compositions**:
+- actual three-artifact silhouettes (astrolabe / flying blade / crescent);
+- rotating cultivation seals and rune ticks;
+- orbit / split / recall / merge choreography;
+- barrier geometry for Guard;
+- descending suppression seal for Vạn Bảo Trấn Không;
+- multi-ring seal + artifact rain + layered shockwaves for the Ultimate;
+- only a restrained trail/afterimage behind moving artifacts, never a generic beam as the primary readable effect.
+
+A curated subset of `haowg/GODOT-VFX-LIBRARY` is vendored under
+`godot/third_party/godot_vfx_library_curated/` under its MIT license. Only
+self-contained texture-free 2D particle scenes are used, so the project does
+not enable the upstream plugin or introduce gameplay ownership.
+
+External research references retained for later asset polish:
+- OpenGameArt `2D Spell Effects` — CC0, transparent PNG layers;
+- OpenGameArt `Auras` — CC0, 512×512 / 60-frame aura sources;
+- OpenGameArt `4 summoning circles` — CC0 vector magic circles;
+- Kenney Particle Pack — CC0, 80 particle textures.
+
+The current V2 deliberately uses the MIT Godot-native subset first because it
+is directly auditable in source, fits Godot 4.x, and avoids importing
+unreviewed binary art. The existing `XEM_TOAN_BO_NGUKHI.cmd` showcase now
+also triggers review-only VFX phases so the full 10-skill visual vocabulary can
+be inspected in one run.

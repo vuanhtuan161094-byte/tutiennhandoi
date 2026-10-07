@@ -125,6 +125,7 @@ func _run_review() -> void:
 			"skill_name": skill_name,
 			"payload": {},
 		})
+		call_deferred("_preview_vfx_sequence", skill_id)
 
 		var actor := _screen._player_actor
 		if actor.current_skill_id() != skill_id or actor._sprite == null:
@@ -235,3 +236,42 @@ func _skill(id: String, title: String, slot_class: String) -> Dictionary:
 		"channel_state": "idle",
 		"auto_selected": false,
 	}
+
+
+func _preview_vfx_sequence(skill_id: String) -> void:
+	# Debug/showcase only. These synthetic presentation events exist solely so
+	# every approved Ngự Khí VFX family can be reviewed in one pass.
+	await get_tree().create_timer(0.34).timeout
+	match skill_id:
+		"skill.dao.artifact.guard":
+			_screen._on_combat_event({
+				"type": "combat.shield",
+				"actor": "player",
+				"target": "player",
+				"skill_id": skill_id,
+				"payload": {},
+			})
+		"skill.dao.artifact.deploy", "skill.dao.artifact.recall", "skill.dao.artifact.split", "skill.dao.artifact.merge":
+			_screen._on_combat_event({
+				"type": "combat.resource",
+				"actor": "player",
+				"target": "player",
+				"skill_id": skill_id,
+				"payload": {"resourceId": "artifactSourcesV2", "resourceValue": 3, "resourceMax": 3},
+			})
+		_:
+			_screen._on_combat_event({
+				"type": "skill.travel",
+				"actor": "player",
+				"target": "enemy",
+				"skill_id": skill_id,
+				"payload": {},
+			})
+			await get_tree().create_timer(0.34).timeout
+			_screen._on_combat_event({
+				"type": "combat.damage",
+				"actor": "player",
+				"target": "enemy",
+				"skill_id": skill_id,
+				"payload": {"hpPct": 88, "hpCurrent": 8800, "hpMax": 9999},
+			})
