@@ -17,9 +17,17 @@ function Add-Candidate([System.Collections.Generic.List[string]]$List, [string]$
     } catch {}
 }
 
+function Add-WithConsoleSibling([System.Collections.Generic.List[string]]$List, [string]$Path) {
+    if ([string]::IsNullOrWhiteSpace($Path)) { return }
+    if ($Path -match "(?i)\.exe$" -and $Path -notmatch "(?i)_console\.exe$") {
+        Add-Candidate $List ($Path -replace "(?i)\.exe$", "_console.exe")
+    }
+    Add-Candidate $List $Path
+}
+
 function Resolve-Godot([string]$Explicit) {
     $candidates = New-Object "System.Collections.Generic.List[string]"
-    Add-Candidate $candidates $Explicit
+    Add-WithConsoleSibling $candidates $Explicit
 
     foreach ($name in @(
         "Godot_v4.7.2-stable_win64_console.exe",
@@ -30,14 +38,28 @@ function Resolve-Godot([string]$Explicit) {
     )) {
         $cmd = Get-Command $name -ErrorAction SilentlyContinue
         if ($null -ne $cmd -and $cmd.Source) {
-            Add-Candidate $candidates $cmd.Source
+            Add-WithConsoleSibling $candidates $cmd.Source
         }
     }
 
     $running = Get-Process -ErrorAction SilentlyContinue |
         Where-Object { $_.ProcessName -like "Godot*" -and $_.Path }
     foreach ($process in $running) {
-        Add-Candidate $candidates $process.Path
+        Add-WithConsoleSibling $candidates $process.Path
+    }
+
+    # Project machine commonly keeps Godot at the top of the same drive as the repo,
+    # e.g. E:\Godot_v4.7.2-stable_win64_console.exe. Search only that top level first.
+    $repoDriveRoot = [IO.Path]::GetPathRoot($RepoRoot)
+    if ($repoDriveRoot) {
+        foreach ($pattern in @(
+            "Godot_v4.7.2-stable_win64_console.exe",
+            "Godot_v4.7.2-stable_win64.exe"
+        )) {
+            foreach ($file in Get-ChildItem -Path $repoDriveRoot -Filter $pattern -File -ErrorAction SilentlyContinue) {
+                Add-WithConsoleSibling $candidates $file.FullName
+            }
+        }
     }
 
     foreach ($root in @(
@@ -51,21 +73,37 @@ function Resolve-Godot([string]$Explicit) {
             "Godot_v4.7.2-stable_win64.exe"
         )) {
             foreach ($file in Get-ChildItem -Path $root -Filter $pattern -File -Recurse -ErrorAction SilentlyContinue) {
-                Add-Candidate $candidates $file.FullName
+                Add-WithConsoleSibling $candidates $file.FullName
             }
         }
     }
 
+    $failures = New-Object "System.Collections.Generic.List[string]"
     foreach ($candidate in $candidates) {
         try {
-            $version = (& $candidate --version 2>&1 | Select-Object -First 1).ToString().Trim()
-            if ($LASTEXITCODE -eq 0 -and $version.StartsWith($ExpectedVersion)) {
+            Write-Host "[Godot] Probing $candidate"
+            $output = @(& $candidate --version 2>&1)
+            $exitCode = $LASTEXITCODE
+            $version = ""
+            if ($output.Count -gt 0 -and $null -ne $output[0]) {
+                $version = ([string]$output[0]).Trim()
+            }
+            if ($exitCode -eq 0 -and $version.StartsWith($ExpectedVersion)) {
                 return $candidate
             }
-        } catch {}
+            $failures.Add("$candidate => exit=$exitCode version='$version'")
+        } catch {
+            $failures.Add("$candidate => $($_.Exception.Message)")
+        }
     }
 
-    throw "Cannot find Godot 4.7.2. Set GODOT_BIN to the Godot executable path."
+    $detail = ""
+    if ($failures.Count -gt 0) {
+        $detail = [Environment]::NewLine + "Candidates tried:" + [Environment]::NewLine + " - " +
+            ($failures -join ([Environment]::NewLine + " - "))
+    }
+
+    throw "Cannot find working Godot 4.7.2. You can pass the exact exe path to XEM_TOAN_BO_NGUKHI.cmd." + $detail
 }
 
 $Godot = Resolve-Godot $GodotBin
