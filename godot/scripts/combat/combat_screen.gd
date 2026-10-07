@@ -14,6 +14,7 @@ const EVENT_PLAYER := preload("res://scripts/combat/combat_event_player.gd")
 const BOSS_HUD := preload("res://scripts/combat/combat_boss_hud.gd")
 const PLAYER_HUD := preload("res://scripts/combat/combat_player_hud.gd")
 const TACTICAL_LANE := preload("res://scripts/combat/combat_tactical_lane.gd")
+const ARTIFACT_DIRECTOR := preload("res://scripts/combat/artifact_combat_director.gd")
 const FEEDBACK := preload("res://scripts/combat/combat_feedback.gd")
 
 var _battlefield: CombatBattlefieldShell
@@ -36,6 +37,7 @@ var _result: Label
 var _dao_widget: CombatDaoWidget
 var _skill_rail: CombatSkillRail
 var _event_player: CombatEventPlayer
+var _artifact_director: ArtifactCombatDirector
 var _feedback: CombatFeedback
 var _vm: Dictionary = {}
 var _battle_end_seen := false
@@ -47,6 +49,10 @@ func _ready() -> void:
 	_feedback = FEEDBACK.new()
 	_feedback.name = "CombatFeedback"
 	add_child(_feedback)
+	_artifact_director = ARTIFACT_DIRECTOR.new()
+	_artifact_director.name = "ArtifactCombatDirector"
+	add_child(_artifact_director)
+	_artifact_director.setup(self, _battlefield)
 	_event_player = EVENT_PLAYER.new()
 	_event_player.name = "CombatEventPlayer"
 	_event_player.event_ready.connect(_on_combat_event)
@@ -58,6 +64,7 @@ func set_presentation_active(active: bool) -> void:
 	if not active and _event_player != null:
 		_event_player.reset()
 		_lane.reset()
+		_artifact_director.bind("", {})
 		_vm.clear()
 		_battle_end_seen = false
 
@@ -70,6 +77,7 @@ func bind(vm: Dictionary) -> void:
 	_battlefield.bind_environment(vm.get("environment", {}))
 	_enemy_actor.bind_archetype(str(vm.get("enemy", {}).get("archetype_id", "")))
 	_player_actor.bind_dao(str(vm.get("main_dao_id", "")))
+	_artifact_director.bind(str(vm.get("main_dao_id", "")), vm.get("dao", {}))
 	_lane.reset()
 	_lane.visible = true
 	var challenge: Dictionary = vm.get("challenge", {})
@@ -261,6 +269,7 @@ func _actor(is_enemy: bool) -> CombatActorPlaceholder:
 	return node
 
 func _on_combat_event(event: Dictionary) -> void:
+	_artifact_director.present(event)
 	var type := str(event.get("type", ""))
 	var payload: Dictionary = event.get("payload", {})
 	var target := str(event.get("target", ""))
@@ -318,6 +327,7 @@ func _on_combat_event(event: Dictionary) -> void:
 			if str(_vm.get("main_dao_id", "")) == "mind" and target == "enemy" and payload.has("stacks"):
 				_dao_widget.apply_target_mark(float(payload.stacks), float(payload.get("maxStacks", 5.0)))
 		"battle.end":
+			_player_actor.reset_to_idle()
 			_battle_end_seen = true
 			_skill_rail.clear_selection()
 

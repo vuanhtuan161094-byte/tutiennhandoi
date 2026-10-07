@@ -1,0 +1,92 @@
+class_name ArtifactPersistentActorTest
+extends GdUnitTestSuite
+const GROUP := preload("res://scripts/combat/artifact_actor_group.gd")
+const SCREEN := preload("res://scripts/combat/combat_screen.gd")
+func _projection(count: int, merged: bool = false) -> Dictionary:
+	return {"id":"artifact","meters":[{"id":"artifactSourcesV2","value":count,"max":3}],"flags":[{"id":"artifactMergeActive","active":merged}],"detail":{"mergedFrom":3}}
+func test_formations_reuse_nodes_and_fit_portrait() -> void:
+	var group := GROUP.new()
+	add_child(group)
+	var nodes := group.actors.duplicate()
+	for bounds in [Vector2(360,800),Vector2(390,844),Vector2(430,932)]:
+		group.set_layout(bounds*Vector2(0.25,0.63),bounds)
+		for count in [1,2,3,99,-1]:
+			group.reconcile(count,false)
+			assert_int(group.active_actors().size()).is_equal(clampi(count,0,3))
+			for i in range(group.source_count):
+				group.actors[i].advance(1)
+				var p := group.actors[i].position
+				assert_bool(p.x >= 24 and p.x <= bounds.x-24 and p.y > bounds.y*0.19 and p.y < bounds.y*0.73).is_true()
+				assert_bool(group.actors[i] == nodes[i]).is_true()
+	group.free()
+func test_basic_uses_one_existing_actor_then_returns() -> void:
+	var group := GROUP.new()
+	add_child(group)
+	group.set_layout(Vector2(100,520),Vector2(390,844))
+	group.reconcile(3,false)
+	var selected := group.selected()
+	group.command("basic","travel",Vector2(280,250))
+	assert_str(selected.pose).is_equal("launch")
+	assert_str(group.actors[1].pose).is_equal("idle")
+	selected.advance(0.2)
+	assert_bool(selected.position.distance_to(group.home(0)) > 10).is_true()
+	group.command("basic","impact",Vector2(280,250))
+	selected.advance(1)
+	assert_vector(selected.position).is_equal(group.home(0))
+	assert_int(group.source_count).is_equal(3)
+	group.free()
+func test_merge_survives_animation_time_until_authoritative_exit() -> void:
+	var group := GROUP.new()
+	add_child(group)
+	group.set_layout(Vector2(100,520),Vector2(390,844))
+	group.reconcile(3,false)
+	group.reconcile(1,true)
+	group._process(1)
+	group.great.advance(100)
+	group._process(100)
+	assert_bool(group.great.visible).is_true()
+	assert_bool(group.selected() == group.great).is_true()
+	group.command("strike","travel",Vector2(280,250))
+	assert_str(group.great.pose).is_equal("launch")
+	group.reconcile(1,false)
+	assert_bool(group.great.visible).is_false()
+	assert_int(group.active_actors().size()).is_equal(1)
+	group.free()
+func test_screen_resource_merge_and_commands_do_not_mutate_vm() -> void:
+	var screen := SCREEN.new()
+	add_child(screen)
+	var vm := {"main_dao_id":"artifact","dao":_projection(2)}
+	var original := vm.duplicate(true)
+	screen.bind(vm)
+	var group := screen._artifact_director.group
+	for suffix in ["split","recall","ultimate"]:
+		screen._on_combat_event({"type":"skill.cast.start","actor":"player","skill_id":"skill.dao.artifact."+suffix})
+		assert_int(group.source_count).is_equal(2)
+	assert_dict(vm).is_equal(original)
+	screen._on_combat_event({"type":"combat.resource","actor":"player","payload":{"resourceId":"artifactSourcesV2","resourceValue":3}})
+	assert_int(group.source_count).is_equal(3)
+	screen._on_combat_event({"type":"combat.daoProjection","actor":"player","payload":{"dao":_projection(1,true)}})
+	group._process(1)
+	assert_bool(group.great.visible).is_true()
+	screen._on_combat_event({"type":"combat.daoProjection","actor":"player","payload":{"dao":_projection(1,false)}})
+	assert_bool(group.great.visible).is_false()
+	screen.bind({})
+	assert_bool(group.visible).is_false()
+	assert_int(group.source_count).is_equal(0)
+	screen.free()
+func test_enemy_unknown_and_interrupt_fail_safe() -> void:
+	var screen := SCREEN.new()
+	add_child(screen)
+	screen.bind({"main_dao_id":"artifact","dao":_projection(1)})
+	var group := screen._artifact_director.group
+	screen._on_combat_event({"type":"skill.cast.start","actor":"enemy","skill_id":"skill.dao.artifact.strike"})
+	assert_str(group.selected().pose).is_equal("idle")
+	screen._on_combat_event({"type":"skill.cast.start","actor":"player","skill_id":"missing"})
+	assert_str(group.selected().pose).is_equal("idle")
+	screen._on_combat_event({"type":"skill.travel","actor":"player","target":"enemy","skill_id":"skill.dao.artifact.basic"})
+	assert_str(group.selected().pose).is_equal("launch")
+	screen._on_combat_event({"type":"combat.interrupt","target":"player"})
+	assert_str(group.selected().pose).is_equal("idle")
+	screen._on_combat_event({"type":"battle.end"})
+	assert_int(group.source_count).is_equal(1)
+	screen.free()

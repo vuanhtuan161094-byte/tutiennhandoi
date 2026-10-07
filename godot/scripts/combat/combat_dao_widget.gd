@@ -93,7 +93,7 @@ func _render() -> void:
 			var orbs := ""
 			for i in range(3):
 				orbs += "◆" if i < int(value) else "◇"
-			primary.append("KHÍ LINH  %s  %d/%d" % [orbs, int(value), int(maximum)])
+			primary.append("%s %d/%d" % [orbs, int(value), int(maximum)])
 		else:
 			secondary.append("%s %d/%d" % [str(raw.get("label", id)), int(value), int(maximum)])
 	_summary.text = " · ".join(primary)

@@ -31,18 +31,8 @@ func _ready() -> void:
 	_screen.bind(_review_vm())
 	await get_tree().process_frame
 
-	if not _screen._player_actor.using_candidate_animation():
-		_banner.text = "THIẾU ASSET NGỰ KHÍ CANDIDATE"
-		_screen.set_status_message("Hãy cài gói NGUKHI_COMBAT_V1_CANDIDATE_FIXED trước.")
-		_start_button.disabled = true
-		return
-
-	var v3_ready := ArtifactCombatVfx.v3_asset_pack_ready()
-	_banner.text = "NGỰ KHÍ V3 · ASSET OK · REVIEW 1×" if v3_ready else "NGỰ KHÍ V3 · FALLBACK V2 · REVIEW 1×"
-	_screen.set_status_message(
-		"V3 asset pack đã nạp · SPACE để review" if v3_ready
-		else "Thiếu V3 asset pack; đang dùng fallback V2 · SPACE để review"
-	)
+	_banner.text = "NGỰ KHÍ · PERSISTENT ACTORS · CANDIDATE"
+	_screen.set_status_message("SPACE để review · synthetic presentation harness")
 	_start_button.grab_focus()
 
 
@@ -61,8 +51,8 @@ func _build() -> void:
 	_banner.add_theme_color_override("font_color", Color("e7c985"))
 	_banner.anchor_left = 0.08
 	_banner.anchor_right = 0.92
-	_banner.anchor_top = 0.115
-	_banner.anchor_bottom = 0.155
+	_banner.anchor_top = 0.175
+	_banner.anchor_bottom = 0.205
 	add_child(_banner)
 
 	_start_button = Button.new()
@@ -87,7 +77,19 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
 	if not key.pressed or key.echo:
 		return
-	if key.keycode == KEY_ESCAPE:
+	if _running:
+		return
+	if key.keycode in [KEY_1,KEY_2,KEY_3]:
+		_review_projection(int(key.keycode-KEY_1)+1,false)
+		_banner.text = "DEBUG FIXTURE · %d KHÍ LINH" % (int(key.keycode-KEY_1)+1)
+		_start_button.visible = false
+	elif key.keycode == KEY_M:
+		_review_projection(1,true)
+		_banner.text = "DEBUG FIXTURE · ĐẠI KHÍ LINH"
+	elif key.keycode in [KEY_G,KEY_U,KEY_B]:
+		var suffix := "guard" if key.keycode == KEY_G else ("ultimate" if key.keycode == KEY_U else "basic")
+		_review_command(suffix)
+	elif key.keycode == KEY_ESCAPE:
 		get_tree().quit()
 	elif key.keycode == KEY_SPACE or key.keycode == KEY_ENTER:
 		_request_start()
@@ -111,7 +113,10 @@ func _run_review() -> void:
 
 	_banner.text = "IDLE COMBAT"
 	_screen.set_status_message("00/10 · IDLE COMBAT · REVIEW 1×")
-	await get_tree().create_timer(3.0).timeout
+	for count in [1,2,3]:
+		_review_projection(count,false)
+		_banner.text = "IDLE · %d KHÍ LINH" % count
+		await get_tree().create_timer(1.5).timeout
 
 	for index in range(SEQUENCE.size()):
 		var row: Dictionary = SEQUENCE[index]
@@ -132,9 +137,9 @@ func _run_review() -> void:
 		call_deferred("_preview_vfx_sequence", skill_id)
 
 		var actor := _screen._player_actor
-		if actor.current_skill_id() != skill_id or actor._sprite == null:
-			_banner.text = "%02d/10 · THIẾU ASSET · %s" % [ordinal, skill_name]
-			await get_tree().create_timer(2.0).timeout
+		if not actor.using_candidate_animation():
+			_banner.text = "%02d/10 · NATIVE FALLBACK · %s" % [ordinal, skill_name]
+			await get_tree().create_timer(2.4).timeout
 			actor.reset_to_idle()
 			continue
 
@@ -145,6 +150,8 @@ func _run_review() -> void:
 		await actor._sprite.animation_finished
 		await get_tree().create_timer(0.75).timeout
 
+	_review_projection(1,false)
+	await get_tree().create_timer(1.0).timeout
 	_screen._player_actor.reset_to_idle()
 	_screen._skill_rail.clear_selection()
 	_banner.text = "HOÀN TẤT · IDLE + 10 SKILL"
@@ -244,7 +251,7 @@ func _skill(id: String, title: String, slot_class: String) -> Dictionary:
 
 func _preview_vfx_sequence(skill_id: String) -> void:
 	# Debug/showcase only. These synthetic presentation events exist solely so
-	# every approved Ngự Khí VFX family can be reviewed in one pass.
+	# each candidate Ngự Khí choreography can be reviewed in one pass.
 	await get_tree().create_timer(0.34).timeout
 	match skill_id:
 		"skill.dao.artifact.guard":
@@ -261,8 +268,11 @@ func _preview_vfx_sequence(skill_id: String) -> void:
 				"actor": "player",
 				"target": "player",
 				"skill_id": skill_id,
-				"payload": {"resourceId": "artifactSourcesV2", "resourceValue": 3, "resourceMax": 3},
+				"payload": {"resourceId": "artifactSourcesV2", "resourceValue": 2 if skill_id.ends_with("recall") else (1 if skill_id.ends_with("merge") else 3), "resourceMax": 3},
 			})
+			if skill_id.ends_with("merge"):
+				_review_projection(1,true)
+				_banner.text = "ĐẠI KHÍ LINH · AUTHORITATIVE FIXTURE"
 		_:
 			_screen._on_combat_event({
 				"type": "skill.travel",
@@ -279,3 +289,17 @@ func _preview_vfx_sequence(skill_id: String) -> void:
 				"skill_id": skill_id,
 				"payload": {"hpPct": 88, "hpCurrent": 8800, "hpMax": 9999},
 			})
+
+func _review_projection(count: int, merged: bool) -> void:
+	# Explicit debug fixtures, never a simulation or runtime state writer.
+	_screen._on_combat_event({"type":"combat.daoProjection","actor":"player","payload":{"dao":{
+		"id":"artifact","label":"Ngự Khí","meters":[{"id":"artifactSourcesV2","value":count,"max":3}],
+		"flags":[{"id":"artifactMergeActive","label":"Đại Khí Linh","active":merged}],"detail":{"mergedFrom":3 if merged else 0}}}})
+
+func _review_command(suffix: String) -> void:
+	var id := "skill.dao.artifact."+suffix
+	_screen._on_combat_event({"type":"skill.cast.start","actor":"player","target":"enemy","skill_id":id,"payload":{}})
+	_banner.text = "DEBUG FIXTURE · "+suffix.to_upper()
+	_start_button.visible = false
+	await get_tree().create_timer(0.65 if suffix == "ultimate" else 0.2).timeout
+	_screen._on_combat_event({"type":"combat.shield" if suffix == "guard" else "skill.travel","actor":"player","target":"player" if suffix == "guard" else "enemy","skill_id":id,"payload":{}})

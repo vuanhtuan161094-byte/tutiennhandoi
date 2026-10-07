@@ -1,0 +1,175 @@
+{
+  "name": "tutien-artifact-persistent-visual",
+  "description": "Explicit synthetic presentation fixtures; runtime visual evidence, never gameplay proof.",
+  "target": {
+    "mode": "launch",
+    "project_path": "../..",
+    "headless": false,
+    "timeout_ms": 60000
+  },
+  "steps": [
+    {
+      "name": "Open debug-only persistent actor showcase",
+      "action": "change_scene",
+      "with": {
+        "scene_path": "res://scenes/debug/ngukhi_showcase.tscn"
+      }
+    },
+    {
+      "name": "Harness starts",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:NguKhiReviewStart",
+        "state": "visible",
+        "timeout_ms": 15000
+      }
+    },
+    {
+      "name": "Select fixture idle-1",
+      "action": "press_key",
+      "with": {
+        "key": "1"
+      }
+    },
+    {
+      "name": "Settle idle-1",
+      "action": "sleep",
+      "with": {
+        "duration_ms": 650
+      }
+    },
+    {
+      "name": "Capture idle-1",
+      "action": "screenshot",
+      "with": {
+        "output": "artifact-idle-1-390x844.png"
+      }
+    },
+    {
+      "name": "Select fixture idle-2",
+      "action": "press_key",
+      "with": {
+        "key": "2"
+      }
+    },
+    {
+      "name": "Settle idle-2",
+      "action": "sleep",
+      "with": {
+        "duration_ms": 650
+      }
+    },
+    {
+      "name": "Capture idle-2",
+      "action": "screenshot",
+      "with": {
+        "output": "artifact-idle-2-390x844.png"
+      }
+    },
+    {
+      "name": "Select fixture idle-3",
+      "action": "press_key",
+      "with": {
+        "key": "3"
+      }
+    },
+    {
+      "name": "Settle idle-3",
+      "action": "sleep",
+      "with": {
+        "duration_ms": 650
+      }
+    },
+    {
+      "name": "Capture idle-3",
+      "action": "screenshot",
+      "with": {
+        "output": "artifact-idle-3-390x844.png"
+      }
+    },
+    {
+      "name": "Select fixture guard",
+      "action": "press_key",
+      "with": {
+        "key": "G"
+      }
+    },
+    {
+      "name": "Settle guard",
+      "action": "sleep",
+      "with": {
+        "duration_ms": 650
+      }
+    },
+    {
+      "name": "Capture guard",
+      "action": "screenshot",
+      "with": {
+        "output": "artifact-guard-390x844.png"
+      }
+    },
+    {
+      "name": "Select fixture merge",
+      "action": "press_key",
+      "with": {
+        "key": "M"
+      }
+    },
+    {
+      "name": "Settle merge",
+      "action": "sleep",
+      "with": {
+        "duration_ms": 650
+      }
+    },
+    {
+      "name": "Capture merge",
+      "action": "screenshot",
+      "with": {
+        "output": "artifact-merge-390x844.png"
+      }
+    },
+    {
+      "name": "Select fixture ultimate",
+      "action": "press_key",
+      "with": {
+        "key": "U"
+      }
+    },
+    {
+      "name": "Settle ultimate",
+      "action": "sleep",
+      "with": {
+        "duration_ms": 1850
+      }
+    },
+    {
+      "name": "Capture ultimate",
+      "action": "screenshot",
+      "with": {
+        "output": "artifact-ultimate-390x844.png"
+      }
+    },
+    {
+      "name": "Select fixture merge-exit",
+      "action": "press_key",
+      "with": {
+        "key": "1"
+      }
+    },
+    {
+      "name": "Settle merge-exit",
+      "action": "sleep",
+      "with": {
+        "duration_ms": 650
+      }
+    },
+    {
+      "name": "Capture merge-exit",
+      "action": "screenshot",
+      "with": {
+        "output": "artifact-merge-exit-390x844.png"
+      }
+    }
+  ]
+}
