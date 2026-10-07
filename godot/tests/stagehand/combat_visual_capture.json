@@ -75,45 +75,22 @@
       "action": "screenshot"
     },
     {
-      "name": "Focus game",
-      "action": "focus_window",
+      "name": "Canonical Challenge is enabled before visual playback",
+      "action": "wait_for_property",
       "with": {
-        "selector": "/root"
-      }
-    },
-    {
-      "name": "Focus Back",
-      "action": "press_key",
-      "with": {
-        "key": "Tab"
-      }
-    },
-    {
-      "name": "Key release",
-      "action": "sleep",
-      "with": {
-        "duration_ms": 150
-      }
-    },
-    {
-      "name": "Focus Challenge",
-      "action": "press_key",
-      "with": {
-        "key": "Tab"
-      }
-    },
-    {
-      "name": "Key release",
-      "action": "sleep",
-      "with": {
-        "duration_ms": 150
+        "selector": "name:CombatChallenge",
+        "property": "disabled",
+        "operator": "equals",
+        "expected_value": false,
+        "timeout_ms": 15000,
+        "poll_interval_ms": 100
       }
     },
     {
       "name": "Activate real Challenge",
-      "action": "press_key",
+      "action": "click",
       "with": {
-        "key": "Space"
+        "selector": "name:CombatChallenge"
       }
     },
     {
