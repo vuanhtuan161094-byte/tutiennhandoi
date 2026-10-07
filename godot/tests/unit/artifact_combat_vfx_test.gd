@@ -33,7 +33,7 @@ func test_major_artifact_skills_have_stronger_impact_profiles() -> void:
 	assert_str(VFX.impact_kind("skill.dao.artifact.ultimate")).is_equal("break")
 
 
-func test_every_artifact_skill_has_a_distinct_v2_style() -> void:
+func test_every_artifact_skill_has_a_distinct_v3_style() -> void:
 	var styles := {}
 	for skill_id in [
 		"skill.dao.artifact.basic",
@@ -52,3 +52,27 @@ func test_every_artifact_skill_has_a_distinct_v2_style() -> void:
 		assert_bool(styles.has(style)).is_false()
 		styles[style] = true
 	assert_int(styles.size()).is_equal(10)
+
+
+func test_v3_projection_scale_escalates_with_skill_tier() -> void:
+	assert_int(VFX.projected_weapon_count("skill.dao.artifact.basic")).is_equal(4)
+	assert_int(VFX.projected_weapon_count("skill.dao.artifact.deploy")).is_greater_equal(8)
+	assert_int(VFX.projected_weapon_count("skill.dao.artifact.merge")).is_greater_equal(16)
+	assert_int(VFX.projected_weapon_count("skill.dao.artifact.suppress")).is_greater_equal(18)
+	assert_int(VFX.projected_weapon_count("skill.dao.artifact.ultimate")).is_greater_equal(30)
+
+
+func test_v3_candidate_texture_contract_is_stable_without_requiring_binary_assets() -> void:
+	assert_str(VFX.candidate_texture_path("deploy")).is_equal(
+		"res://art/candidate/combat/ngukhi_v3/deploy_vortex.png"
+	)
+	assert_str(VFX.candidate_texture_path("guard")).is_equal(
+		"res://art/candidate/combat/ngukhi_v3/guard_barrier.png"
+	)
+	assert_str(VFX.candidate_texture_path("suppress")).is_equal(
+		"res://art/candidate/combat/ngukhi_v3/suppress_seal.png"
+	)
+	assert_str(VFX.candidate_texture_path("ultimate")).is_equal(
+		"res://art/candidate/combat/ngukhi_v3/ultimate_barrage.png"
+	)
+	assert_str(VFX.candidate_texture_path("unknown")).is_empty()

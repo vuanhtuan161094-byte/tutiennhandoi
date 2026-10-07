@@ -37,8 +37,12 @@ func _ready() -> void:
 		_start_button.disabled = true
 		return
 
-	_banner.text = "NGỰ KHÍ · REVIEW 1×"
-	_screen.set_status_message("SPACE hoặc bấm BẮT ĐẦU · ESC để thoát")
+	var v3_ready := ArtifactCombatVfx.v3_asset_pack_ready()
+	_banner.text = "NGỰ KHÍ V3 · ASSET OK · REVIEW 1×" if v3_ready else "NGỰ KHÍ V3 · FALLBACK V2 · REVIEW 1×"
+	_screen.set_status_message(
+		"V3 asset pack đã nạp · SPACE để review" if v3_ready
+		else "Thiếu V3 asset pack; đang dùng fallback V2 · SPACE để review"
+	)
 	_start_button.grab_focus()
 
 

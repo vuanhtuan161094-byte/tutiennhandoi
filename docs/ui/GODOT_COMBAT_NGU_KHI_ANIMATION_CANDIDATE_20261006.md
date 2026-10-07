@@ -155,3 +155,30 @@ is directly auditable in source, fits Godot 4.x, and avoids importing
 unreviewed binary art. The existing `XEM_TOAN_BO_NGUKHI.cmd` showcase now
 also triggers review-only VFX phases so the full 10-skill visual vocabulary can
 be inspected in one run.
+
+
+## Ngự Khí VFX V3 static candidate — 2026-10-07
+
+User rejected V2 as still too flat/debug-like and explicitly opened a V3 art pass.
+
+V3 visual doctrine:
+- exactly **3 core artifacts** remain the readable Ngự Khí resource identity;
+- combat skills may manifest many temporary projected weapons: sword, dao, spear, wheel and spirit needle silhouettes;
+- projected weapons are presentation-only and do not create extra backend artifact sources;
+- projection density escalates by skill tier: Basic 4, Deploy 9, Guard 6, Strike 10, Sync 12, Recall 8, Split 12, Merge 16, Suppress 18, Ultimate 32;
+- major skills may layer candidate painted textures over procedural motion, while missing candidate art safely falls back to V2 rendering;
+- gameplay timing, damage, hit/miss, cooldown, resource ownership and RNG remain canonical-JS owned.
+
+Optional V3 candidate art root:
+
+`res://art/candidate/combat/ngukhi_v3/`
+
+Expected files:
+- `deploy_vortex.png`
+- `guard_barrier.png`
+- `suppress_seal.png`
+- `ultimate_barrage.png`
+
+The binaries are intentionally not committed with the source candidate. The review harness reports whether the V3 pack is present and otherwise continues with the V2 fallback.
+
+This is a **static candidate only** until the V3 asset pack is installed, imported, `KIEM_TRA_GAME.cmd` is green, and actual 390×844 runtime video is reviewed and explicitly approved by the user.
