@@ -1,6 +1,6 @@
 # Godot Combat Ngự Khí Animation Candidate — 2026-10-06
 
-Status: **STATIC CANDIDATE — SOURCE CLIPS PROCESSED; WINDOWS GODOT GATE REQUIRED**
+Status: **USER-APPROVED NGỰ KHÍ V1 ANIMATION SET — RUNTIME INTEGRATION/POLISH STILL OPEN**
 
 Scope is presentation-only. Canonical JS combat, Dao gameplay, damage, cooldown, AI, RNG, save schema and Hunt authority are unchanged.
 
@@ -76,3 +76,16 @@ Controls:
 - Esc: close.
 
 The screen labels the current skill and ordinal. The showcase does not simulate damage, cooldowns, resources, AI, RNG or any other gameplay authority.
+
+
+## User decision — 2026-10-07
+
+The user explicitly closed the content-selection pass for the full Ngự Khí V1 animation set, including skills 08–10 without requiring another Grok generation pass.
+
+Locked product decision for the next slice:
+- keep Idle + all 10 combat skill source animations;
+- do not regenerate clips merely because outfit coverage changes between animations; that variation is intentional;
+- no further Grok work is required before Combat integration/polish;
+- next priority is a complete Ngự Khí combat vertical slice in Godot: normalize actor presentation, connect skill motion to target-facing VFX/impact feedback, then review real combat before scaling the pipeline to the other seven Dao.
+
+This is **user approval of the animation content set**, not yet a technical/runtime LOCKED claim for the full Combat slice.
