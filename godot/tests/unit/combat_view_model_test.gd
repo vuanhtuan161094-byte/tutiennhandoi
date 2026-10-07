@@ -46,6 +46,23 @@ func test_tactical_priority_and_only_exported_cast_progress() -> void:
 	assert_bool(screen._lane.progress.visible).is_false()
 	screen.free()
 
+func test_artifact_damage_event_spawns_presentation_impact_without_mutating_authority() -> void:
+	var screen := COMBAT_SCREEN.new()
+	add_child(screen)
+	screen.bind(COMBAT_VIEW_MODEL.build(_valid_combat()))
+	var before_child_count := screen._battlefield.get_child_count()
+	screen._on_combat_event({
+		"type": "combat.damage",
+		"actor": "player",
+		"target": "enemy",
+		"skill_id": "skill.dao.artifact.strike",
+		"payload": {"hpPct": 82, "hpCurrent": 820, "hpMax": 1000},
+	})
+	assert_float(screen._enemy_hp.value).is_equal(82.0)
+	assert_int(screen._battlefield.get_child_count()).is_greater(before_child_count)
+	screen.free()
+
+
 func test_read_only_rail_uses_exported_cooldown_and_one_gauge() -> void:
 	var screen := COMBAT_SCREEN.new()
 	add_child(screen)
