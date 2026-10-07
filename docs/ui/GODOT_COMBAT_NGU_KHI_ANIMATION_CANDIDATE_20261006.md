@@ -57,3 +57,22 @@ After the binary candidate atlases/SpriteFrames are installed under the candidat
 6. explicit user visual approval.
 
 Until those steps pass, this slice is not runtime PASS, not visually approved and not locked.
+
+
+## Full animation recording / review harness
+
+For visual review of the complete Ngự Khí animation set, use:
+
+`XEM_TOAN_BO_NGUKHI.cmd`
+
+The launcher imports the locally installed candidate resources and opens the dedicated 390×844 review scene. The review scene uses the real `CombatScreen` and `CombatPlayerActor`, then plays:
+
+`Idle 3s -> Basic -> 8 Active -> Ultimate`
+
+Each authored SpriteFrames sequence is forced to **1× review speed** so every generated frame can be inspected. This speed override exists only in the debug showcase; production Combat continues to use the registry `speed_scale` values.
+
+Controls:
+- Space / Enter: start or replay;
+- Esc: close.
+
+The screen labels the current skill and ordinal. The showcase does not simulate damage, cooldowns, resources, AI, RNG or any other gameplay authority.
