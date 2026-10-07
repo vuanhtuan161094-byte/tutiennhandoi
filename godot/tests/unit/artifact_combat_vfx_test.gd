@@ -20,7 +20,7 @@ func test_vfx_profiles_cover_full_artifact_kit() -> void:
 		assert_bool(VFX.supports_skill(skill_id)).is_true()
 		var profile := VFX.profile_for_skill(skill_id)
 		assert_float(float(profile.get("duration", 0.0))).is_greater(0.0)
-		assert_int(int(profile.get("copies", 0))).is_greater_equal(1)
+		assert_str(str(profile.get("style", ""))).is_not_empty()
 
 func test_vfx_unknown_skill_fails_closed() -> void:
 	assert_bool(VFX.supports_skill("skill.dao.artifact.missing")).is_false()
