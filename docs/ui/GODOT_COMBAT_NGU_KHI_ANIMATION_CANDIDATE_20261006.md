@@ -108,3 +108,19 @@ Presentation-only changes:
 No local damage, hit/miss, cooldown, resource or combat timing is invented. Missing skill IDs fail closed; the current active skill is used only as a presentation fallback when an event omits its skill id.
 
 This is a static implementation candidate until the Windows Godot gate and real 390×844 playback are rerun.
+
+
+## Windows gate — 2026-10-07
+
+User ran the current `main` through `KIEM_TRA_GAME.cmd` after commit `159f242f84b693d98939b92291068052ccd3b81a`.
+
+Observed result supplied from the Windows console:
+- Combat visual capture completed;
+- both exported Combat screenshots validated at 390×844;
+- pixel validation: PASS;
+- `GODOT LOCAL VERIFICATION: PASS`;
+- root script reported `[PASS] Godot verification completed.`
+
+This closes the **technical gate** for the current Ngự Khí integration candidate. It does **not** approve the final Combat visual baseline yet; the gate output still reports `Baseline status: NOT APPROVED`.
+
+Next required proof: record one real production-speed Ngự Khí battle showing body animation + outbound VFX + target impact timing for visual review.
