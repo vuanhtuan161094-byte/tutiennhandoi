@@ -50,6 +50,10 @@ func _reconcile() -> void:
 	for flag in _dao.get("flags",[]):
 		if str(flag.get("id","")) == "artifactMergeActive":
 			merged = bool(flag.get("active",false))
+	if count != group.source_count or merged != group.merged:
+		_clear_echoes()
+		_ultimate_pending = false
+		_settle_after = 0
 	group.reconcile(count,merged)
 
 func _clear_echoes() -> void:

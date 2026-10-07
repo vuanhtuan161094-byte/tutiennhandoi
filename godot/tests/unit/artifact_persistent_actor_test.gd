@@ -110,3 +110,19 @@ func test_ultimate_travel_continues_anticipation_and_impact_ends_cosmetic_volley
 		assert_bool(echo.visible).is_false()
 	assert_int(director.group.source_count).is_equal(3)
 	screen.free()
+func test_authoritative_merge_exit_cancels_old_ultimate_echoes() -> void:
+	var screen := SCREEN.new()
+	add_child(screen)
+	screen.bind({"main_dao_id":"artifact","dao":_projection(1,true)})
+	var director := screen._artifact_director
+	director.set_process(false)
+	screen._on_combat_event({"type":"skill.cast.start","actor":"player","skill_id":"skill.dao.artifact.ultimate"})
+	director._process(0.3)
+	assert_bool(director._echoes[0].visible).is_true()
+	screen._on_combat_event({"type":"combat.daoProjection","actor":"player","payload":{"dao":_projection(1,false)}})
+	assert_str(director._beat).is_equal("idle")
+	for echo in director._echoes:
+		assert_bool(echo.visible).is_false()
+	assert_bool(director.group.great.visible).is_false()
+	assert_int(director.group.active_actors().size()).is_equal(1)
+	screen.free()
