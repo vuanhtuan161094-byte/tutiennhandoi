@@ -182,3 +182,25 @@ Expected files:
 The binaries are intentionally not committed with the source candidate. The review harness reports whether the V3 pack is present and otherwise continues with the V2 fallback.
 
 This is a **static candidate only** until the V3 asset pack is installed, imported, `KIEM_TRA_GAME.cmd` is green, and actual 390×844 runtime video is reviewed and explicitly approved by the user.
+
+
+## V3.1 runtime-video correction — 2026-10-07
+
+Actual 64.31s 640×1388 showcase video was inspected after installing the V3 candidate pack.
+
+Observed:
+- candidate textures load successfully;
+- Guard, Merge, Suppress and Ultimate painted layers are visible;
+- the painted composites are much richer than V2 but currently read too much like a full PNG popping on top of the battle;
+- major Suppress/Ultimate art can cover the combat subject when spawned at cast-side;
+- projected secondary weapons are still too thin compared with the painted layer;
+- the V3 effect duration is short relative to the authored body animation, so the rich layer appears briefly and then vanishes.
+
+V3.1 correction:
+- Suppress/Ultimate painted composites spawn only at authoritative impact;
+- all painted composites render behind actors;
+- Guard/Deploy/Merge painted layers are reduced and made more translucent;
+- impact/self durations are modestly extended as presentation only;
+- projected sword/dao/spear/wheel/needle silhouettes are enlarged and brightened so the “3 core artifacts + many derived weapons” doctrine reads at mobile scale.
+
+This remains a visual candidate. A new Windows Godot gate and runtime video are required.

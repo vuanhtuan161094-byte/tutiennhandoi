@@ -165,11 +165,11 @@ func _phase_duration(phase: String, base_duration: float) -> float:
 		PHASE_TRAVEL:
 			return clampf(base_duration * 0.86, 0.34, 0.82)
 		PHASE_IMPACT:
-			return clampf(base_duration * 0.82, 0.40, 0.98)
+			return clampf(base_duration * 1.02, 0.52, 1.28)
 		PHASE_SELF:
-			return clampf(base_duration, 0.55, 1.05)
+			return clampf(base_duration * 1.05, 0.62, 1.18)
 		_:
-			return clampf(base_duration * 0.82, 0.38, 0.92)
+			return clampf(base_duration * 0.90, 0.44, 1.02)
 
 
 func _process(delta: float) -> void:
@@ -190,6 +190,14 @@ func _spawn_v3_asset_layer() -> void:
 	var asset_key := str(_profile.get("v3_asset", ""))
 	if asset_key.is_empty():
 		return
+	# Painted V3 layers are strong visual anchors. Large suppression/ultimate
+	# composites only belong at the authoritative impact, never over the player.
+	if _style in ["suppress", "ultimate"] and _phase != PHASE_IMPACT:
+		return
+	if _style == "guard" and _phase not in [PHASE_CAST, PHASE_SELF]:
+		return
+	if _style in ["deploy", "sync", "split", "merge"] and _phase not in [PHASE_CAST, PHASE_SELF]:
+		return
 	var path := candidate_texture_path(asset_key)
 	if path.is_empty() or not ResourceLoader.exists(path):
 		return
@@ -201,18 +209,18 @@ func _spawn_v3_asset_layer() -> void:
 	sprite.name = "V3_%s_%s" % [asset_key, _phase]
 	sprite.texture = texture
 	sprite.centered = true
-	sprite.z_index = -2 if _phase in [PHASE_CAST, PHASE_SELF] else 2
+	sprite.z_index = -3
 
 	var desired_height := float(_profile.get("v3_height", 180.0))
 	match _phase:
 		PHASE_CAST:
-			desired_height *= 0.82
+			desired_height *= 0.70
 		PHASE_SELF:
-			desired_height *= 0.92
+			desired_height *= 0.78
 		PHASE_IMPACT:
-			desired_height *= 1.05
+			desired_height *= 1.06
 		PHASE_TRAVEL:
-			desired_height *= 0.50
+			desired_height *= 0.44
 
 	var texture_height := maxf(1.0, float(texture.get_height()))
 	_v3_base_scale = desired_height / texture_height
@@ -222,12 +230,9 @@ func _spawn_v3_asset_layer() -> void:
 
 	match _style:
 		"suppress", "ultimate":
-			if _phase == PHASE_IMPACT:
-				sprite.position = Vector2(0.0, -42.0 if _style == "suppress" else -54.0)
-			elif _phase == PHASE_CAST:
-				sprite.position = Vector2(18.0, -18.0)
+			sprite.position = Vector2(0.0, -48.0 if _style == "suppress" else -62.0)
 		"guard":
-			sprite.position = Vector2(0.0, -8.0)
+			sprite.position = Vector2(0.0, -6.0)
 		_:
 			sprite.position = Vector2(0.0, -4.0)
 
@@ -239,8 +244,8 @@ func _spawn_v3_asset_layer() -> void:
 func _update_v3_asset(t: float) -> void:
 	if _v3_sprite == null or not is_instance_valid(_v3_sprite):
 		return
-	var appear := _smoothstep(0.0, 0.12, t)
-	var disappear := 1.0 - _smoothstep(0.70, 1.0, t)
+	var appear := _smoothstep(0.0, 0.16, t)
+	var disappear := 1.0 - _smoothstep(0.76, 1.0, t)
 	var alpha := appear * disappear
 	var pulse := 1.0 + sin(t * PI) * 0.08
 	var phase_scale := 1.0
@@ -261,7 +266,14 @@ func _update_v3_asset(t: float) -> void:
 	elif _style == "ultimate":
 		rotation_speed = -0.08
 	_v3_sprite.rotation = _v3_base_rotation + (t - 0.5) * rotation_speed
-	_v3_sprite.modulate = Color(1.0, 1.0, 1.0, clampf(alpha, 0.0, 0.94))
+	var max_alpha := 0.58
+	if _style == "guard":
+		max_alpha = 0.54
+	elif _style == "suppress":
+		max_alpha = 0.76
+	elif _style == "ultimate":
+		max_alpha = 0.82
+	_v3_sprite.modulate = Color(1.0, 1.0, 1.0, clampf(alpha * max_alpha, 0.0, max_alpha))
 
 
 func _spawn_phase_layers() -> void:
@@ -454,12 +466,12 @@ func _draw_projection_armory(
 func _draw_projected_weapon(kind: int, center: Vector2, rotation_value: float, size_mult: float, alpha: float) -> void:
 	if alpha <= 0.001:
 		return
-	var s := maxf(0.18, size_mult)
+	var s := maxf(0.22, size_mult * 1.22)
 	var forward := Vector2.from_angle(rotation_value)
 	var side := forward.orthogonal()
-	var main := Color(CYAN, 0.82 * alpha)
-	var core := Color(WHITE, 0.80 * alpha)
-	var accent := Color(GOLD, 0.54 * alpha)
+	var main := Color(CYAN, 0.94 * alpha)
+	var core := Color(WHITE, 0.92 * alpha)
+	var accent := Color(GOLD, 0.70 * alpha)
 	match posmod(kind, 5):
 		0:
 			draw_line(center - forward * 8.0 * s, center + forward * 18.0 * s, main, maxf(1.0, 2.3 * s), true)
@@ -508,7 +520,7 @@ func _draw_projection_salvo(t: float, count: int, alpha: float, spread: float = 
 		var delayed := clampf(travel - float(wave) * 0.10 - float(row % 2) * 0.025, 0.0, 1.0)
 		var bow := sin(delayed * PI) * (16.0 + float(index % 3) * 7.0)
 		var p := _local_target * delayed + normal * (lane * sin(delayed * PI) + bow * (1.0 if index % 2 == 0 else -1.0))
-		_draw_projected_weapon(index % 5, p, angle, 0.48 + float(index % 3) * 0.08, alpha * (0.56 - float(wave) * 0.08))
+		_draw_projected_weapon(index % 5, p, angle, 0.54 + float(index % 3) * 0.10, alpha * (0.78 - float(wave) * 0.09))
 
 
 func _draw_self(t: float) -> void:

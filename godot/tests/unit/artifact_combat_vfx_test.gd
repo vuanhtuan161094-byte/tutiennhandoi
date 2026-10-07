@@ -76,3 +76,12 @@ func test_v3_candidate_texture_contract_is_stable_without_requiring_binary_asset
 		"res://art/candidate/combat/ngukhi_v3/ultimate_barrage.png"
 	)
 	assert_str(VFX.candidate_texture_path("unknown")).is_empty()
+
+
+func test_v3_major_painted_layers_are_impact_only() -> void:
+	var suppress := VFX.profile_for_skill("skill.dao.artifact.suppress")
+	var ultimate := VFX.profile_for_skill("skill.dao.artifact.ultimate")
+	assert_str(str(suppress.get("v3_asset", ""))).is_equal("suppress")
+	assert_str(str(ultimate.get("v3_asset", ""))).is_equal("ultimate")
+	assert_str(VFX.impact_kind("skill.dao.artifact.suppress")).is_equal("break")
+	assert_str(VFX.impact_kind("skill.dao.artifact.ultimate")).is_equal("break")
