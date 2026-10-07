@@ -59,7 +59,7 @@ func test_artifact_damage_event_spawns_presentation_impact_without_mutating_auth
 		"payload": {"hpPct": 82, "hpCurrent": 820, "hpMax": 1000},
 	})
 	assert_float(screen._enemy_hp.value).is_equal(82.0)
-	assert_int(screen._battlefield.get_child_count()).is_greater(before_child_count)
+	assert_int(screen._battlefield.get_child_count()).is_greater_equal(before_child_count + 1)
 	screen.free()
 
 
