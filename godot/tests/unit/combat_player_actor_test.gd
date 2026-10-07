@@ -41,7 +41,9 @@ func test_player_actor_falls_back_safely_when_candidate_resources_are_absent() -
 
 func test_artifact_visual_scale_calibration_stays_conservative() -> void:
 	var idle := REGISTRY.idle_preset("artifact")
-	assert_float(float(idle.get("visual_scale", 0.0))).is_between(0.75, 1.20)
+	assert_float(float(idle.get("visual_scale", 0.0))).is_greater_equal(0.75)
+	assert_float(float(idle.get("visual_scale", 0.0))).is_less_equal(1.20)
 	for skill_id in REGISTRY.artifact_skill_ids():
 		var preset := REGISTRY.skill_preset("artifact", skill_id)
-		assert_float(float(preset.get("visual_scale", 0.0))).is_between(0.75, 1.20)
+		assert_float(float(preset.get("visual_scale", 0.0))).is_greater_equal(0.75)
+		assert_float(float(preset.get("visual_scale", 0.0))).is_less_equal(1.20)
