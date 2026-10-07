@@ -9,6 +9,7 @@ var _sprite: AnimatedSprite2D
 var _main_dao_id := ""
 var _current_skill_id := ""
 var _active_resource_path := ""
+var _active_preset: Dictionary = {}
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -31,6 +32,7 @@ func bind_dao(dao_id: String) -> void:
 	_main_dao_id = dao_id
 	_current_skill_id = ""
 	_active_resource_path = ""
+	_active_preset.clear()
 	if not _play_preset(REGISTRY.idle_preset(dao_id), true):
 		_show_fallback()
 
@@ -38,9 +40,10 @@ func play_skill(skill_id: String) -> bool:
 	var preset := REGISTRY.skill_preset(_main_dao_id, skill_id)
 	if preset.is_empty():
 		return false
-	if not _play_preset(preset, false):
-		return false
 	_current_skill_id = skill_id
+	if not _play_preset(preset, false):
+		_current_skill_id = ""
+		return false
 	return true
 
 func reset_to_idle() -> void:
@@ -57,7 +60,14 @@ func using_candidate_animation() -> bool:
 func active_resource_path() -> String:
 	return _active_resource_path
 
-func _play_preset(preset: Dictionary, idle: bool) -> bool:
+func attack_anchor_global() -> Vector2:
+	# Keep the launch point stable even when source-video framing changes.
+	return global_position + Vector2(size.x * 0.70, size.y * 0.40)
+
+func body_center_global() -> Vector2:
+	return global_position + Vector2(size.x * 0.50, size.y * 0.56)
+
+func _play_preset(preset: Dictionary, _idle: bool) -> bool:
 	if preset.is_empty() or _sprite == null:
 		return false
 	var resource_path := str(preset.get("resource_path", ""))
@@ -67,6 +77,7 @@ func _play_preset(preset: Dictionary, idle: bool) -> bool:
 	var frames := ResourceLoader.load(resource_path) as SpriteFrames
 	if frames == null or not frames.has_animation(animation_name):
 		return false
+	_active_preset = preset.duplicate(true)
 	_sprite.sprite_frames = frames
 	_sprite.animation = animation_name
 	_sprite.speed_scale = maxf(0.01, float(preset.get("speed_scale", 1.0)))
@@ -74,13 +85,13 @@ func _play_preset(preset: Dictionary, idle: bool) -> bool:
 	_sprite.visible = true
 	_fallback.visible = false
 	_active_resource_path = resource_path
-	_current_skill_id = "" if idle else _current_skill_id
 	_layout_sprite()
 	_sprite.play()
 	return true
 
 func _show_fallback() -> void:
 	_active_resource_path = ""
+	_active_preset.clear()
 	if _sprite != null:
 		_sprite.stop()
 		_sprite.sprite_frames = null
@@ -104,8 +115,11 @@ func _layout_sprite() -> void:
 		return
 	var usable := Vector2(maxf(1.0, size.x * 0.98), maxf(1.0, size.y * 0.98))
 	var fit_scale := minf(usable.x / texture_size.x, usable.y / texture_size.y)
+	fit_scale *= clampf(float(_active_preset.get("visual_scale", 1.0)), 0.75, 1.20)
 	fit_scale = maxf(0.01, fit_scale)
 	_sprite.scale = Vector2.ONE * fit_scale
+	# All clips share one bottom-center placement. Apparent body size is calibrated
+	# by visual_scale instead of moving the feet between skills.
 	_sprite.position = Vector2(size.x * 0.5, size.y - texture_size.y * fit_scale * 0.5)
 
 func _on_animation_finished() -> void:

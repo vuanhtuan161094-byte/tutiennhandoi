@@ -89,3 +89,22 @@ Locked product decision for the next slice:
 - next priority is a complete Ngự Khí combat vertical slice in Godot: normalize actor presentation, connect skill motion to target-facing VFX/impact feedback, then review real combat before scaling the pipeline to the other seven Dao.
 
 This is **user approval of the animation content set**, not yet a technical/runtime LOCKED claim for the full Combat slice.
+
+
+## Ngự Khí combat vertical-slice integration candidate — 2026-10-07
+
+Implementation opened after the user approved all 11 Ngự Khí V1 animations.
+
+Presentation-only changes:
+- conservative per-animation visual scale calibration so source-video framing changes do not make the fighter visibly jump in size;
+- stable player launch/body anchors;
+- exact canonical Ngự Khí skill IDs map to procedural cyan travel / self / impact VFX;
+- `skill.cast.start` starts the authored body animation;
+- authoritative `skill.travel` starts outbound visual travel when present;
+- authoritative `combat.damage` / `combat.dot` creates target impact at the actual backend event time;
+- authoritative heal/shield/artifact-source changes can create compact self-side VFX;
+- authoritative Break creates stronger target feedback.
+
+No local damage, hit/miss, cooldown, resource or combat timing is invented. Missing skill IDs fail closed; the current active skill is used only as a presentation fallback when an event omits its skill id.
+
+This is a static implementation candidate until the Windows Godot gate and real 390×844 playback are rerun.

@@ -37,3 +37,11 @@ func test_player_actor_falls_back_safely_when_candidate_resources_are_absent() -
 	assert_bool(actor.using_candidate_animation()).is_false()
 	assert_bool(actor.play_skill("skill.dao.artifact.basic")).is_false()
 	actor.free()
+
+
+func test_artifact_visual_scale_calibration_stays_conservative() -> void:
+	var idle := REGISTRY.idle_preset("artifact")
+	assert_float(float(idle.get("visual_scale", 0.0))).is_between(0.75, 1.20)
+	for skill_id in REGISTRY.artifact_skill_ids():
+		var preset := REGISTRY.skill_preset("artifact", skill_id)
+		assert_float(float(preset.get("visual_scale", 0.0))).is_between(0.75, 1.20)

@@ -14,6 +14,7 @@ const EVENT_PLAYER := preload("res://scripts/combat/combat_event_player.gd")
 const BOSS_HUD := preload("res://scripts/combat/combat_boss_hud.gd")
 const PLAYER_HUD := preload("res://scripts/combat/combat_player_hud.gd")
 const TACTICAL_LANE := preload("res://scripts/combat/combat_tactical_lane.gd")
+const FEEDBACK := preload("res://scripts/combat/combat_feedback.gd")
 
 var _battlefield: CombatBattlefieldShell
 var _enemy_actor: CombatActorPlaceholder
@@ -35,6 +36,7 @@ var _result: Label
 var _dao_widget: CombatDaoWidget
 var _skill_rail: CombatSkillRail
 var _event_player: CombatEventPlayer
+var _feedback: CombatFeedback
 var _vm: Dictionary = {}
 var _battle_end_seen := false
 
@@ -42,6 +44,9 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_build()
+	_feedback = FEEDBACK.new()
+	_feedback.name = "CombatFeedback"
+	add_child(_feedback)
 	_event_player = EVENT_PLAYER.new()
 	_event_player.name = "CombatEventPlayer"
 	_event_player.event_ready.connect(_on_combat_event)
@@ -215,6 +220,8 @@ func _on_combat_event(event: Dictionary) -> void:
 	var target := str(event.get("target", ""))
 	_lane.present(event)
 	_skill_rail.apply_event(event)
+	var actor := str(event.get("actor", ""))
+	var skill_id := str(event.get("skill_id", ""))
 	match type:
 		"battle.start":
 			_result.visible = false
@@ -224,21 +231,40 @@ func _on_combat_event(event: Dictionary) -> void:
 			if payload.has("monsterName"):
 				_boss_hud.identity.text = str(payload.monsterName)
 		"skill.cast.start":
-			if str(event.get("actor", "")) == "player":
-				var skill_id := str(event.get("skill_id", ""))
+			if actor == "player":
 				_skill_rail.set_selected_skill(skill_id)
 				_player_actor.play_skill(skill_id)
-		"combat.damage", "combat.dot", "combat.heal", "actor.death":
+				_present_artifact_effect(skill_id, ArtifactCombatVfx.PHASE_CAST)
+		"skill.travel":
+			if actor == "player" and target == "enemy":
+				_present_artifact_effect(skill_id, ArtifactCombatVfx.PHASE_TRAVEL, _enemy_actor)
+		"combat.damage", "combat.dot":
+			_apply_event_hp(target, payload)
+			if actor == "player" and target == "enemy":
+				_present_artifact_effect(skill_id, ArtifactCombatVfx.PHASE_IMPACT, _enemy_actor)
+		"combat.heal":
+			_apply_event_hp(target, payload)
+			if actor == "player":
+				_present_artifact_effect(skill_id, ArtifactCombatVfx.PHASE_SELF, _player_actor)
+		"combat.shield":
+			if actor == "player":
+				_present_artifact_effect(skill_id, ArtifactCombatVfx.PHASE_SELF, _player_actor)
+		"actor.death":
 			_apply_event_hp(target, payload)
 		"combat.break":
 			if target == "enemy" and payload.has("poisePct"):
 				_enemy_break.value = clampf(float(payload.poisePct), 0.0, 100.0)
+			if actor == "player" and target == "enemy":
+				_feedback.flash_hit(_enemy_actor, CombatFeedback.ImpactLevel.BREAK)
+				_feedback.punch(_enemy_actor, 1.075, 0.18)
 		"combat.resource":
 			var id := str(payload.get("resourceId", ""))
-			if str(event.get("actor", "")) == "player" and not id.is_empty() and payload.has("resourceValue"):
+			if actor == "player" and not id.is_empty() and payload.has("resourceValue"):
 				_dao_widget.apply_resource(id, float(payload.resourceValue), float(payload.get("resourceMax", -1.0)))
-			if str(event.get("actor", "")) == "player" and payload.has("ultimateGauge"):
+			if actor == "player" and payload.has("ultimateGauge"):
 				_skill_rail.set_ultimate({"current": payload.ultimateGauge, "max": 100.0})
+			if actor == "player" and id == "artifactSourcesV2":
+				_present_artifact_effect(skill_id, ArtifactCombatVfx.PHASE_SELF, _player_actor)
 		"combat.daoProjection":
 			if str(event.get("actor", "")) == "player":
 				_dao_widget.apply_projection(payload.get("dao", {}))
@@ -269,3 +295,28 @@ func _apply_event_hp(target: String, payload: Dictionary) -> void:
 	elif target == "player":
 		_player_hp.value = pct
 		_player_hp_text.text = text
+
+
+func _present_artifact_effect(skill_id: String, phase: String, target_node: CanvasItem = null) -> void:
+	if _feedback == null or str(_vm.get("main_dao_id", "")) != "artifact":
+		return
+	var resolved_skill_id := skill_id
+	if resolved_skill_id.is_empty():
+		resolved_skill_id = _player_actor.current_skill_id()
+	if not _feedback.artifact_supported(resolved_skill_id):
+		return
+	var from_global := _player_actor.attack_anchor_global()
+	var to_global := from_global
+	if target_node == _enemy_actor:
+		to_global = _enemy_actor.global_position + Vector2(_enemy_actor.size.x * 0.52, _enemy_actor.size.y * 0.54)
+	elif target_node == _player_actor:
+		from_global = _player_actor.body_center_global()
+		to_global = from_global
+	_feedback.artifact_effect(
+		_battlefield,
+		resolved_skill_id,
+		phase,
+		from_global,
+		to_global,
+		target_node
+	)

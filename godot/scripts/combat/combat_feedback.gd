@@ -8,6 +8,7 @@ class_name CombatFeedback
 
 const SWORD_SLASH_VFX := preload("res://scripts/combat/sword_slash_vfx.gd")
 const SWORD_NURTURE_VFX := preload("res://scripts/combat/sword_nurture_vfx.gd")
+const ARTIFACT_VFX := preload("res://scripts/combat/artifact_combat_vfx.gd")
 
 enum ImpactLevel {
 	LIGHT,
@@ -143,3 +144,44 @@ func _on_sword_slash_impact(
 
 func _juice() -> Node:
 	return get_node_or_null("/root/Juice")
+
+
+func artifact_effect(
+		parent: Node,
+		skill_id: String,
+		phase: String,
+		from_global: Vector2,
+		to_global_position: Vector2,
+		target: CanvasItem = null
+	) -> Node2D:
+	if parent == null or not ARTIFACT_VFX.supports_skill(skill_id):
+		return null
+	var effect: ArtifactCombatVfx = ARTIFACT_VFX.new()
+	parent.add_child(effect)
+	effect.play(skill_id, phase, from_global, to_global_position)
+	if phase == ArtifactCombatVfx.PHASE_IMPACT and target != null:
+		var level := _artifact_impact_level(skill_id)
+		flash_hit(target, level)
+		var pop_scale := 1.035
+		if level == ImpactLevel.HEAVY:
+			pop_scale = 1.055
+		elif level == ImpactLevel.BREAK:
+			pop_scale = 1.075
+		punch(target, pop_scale, 0.14 if level < ImpactLevel.BREAK else 0.18)
+	return effect
+
+
+func artifact_supported(skill_id: String) -> bool:
+	return ARTIFACT_VFX.supports_skill(skill_id)
+
+
+func _artifact_impact_level(skill_id: String) -> int:
+	match ARTIFACT_VFX.impact_kind(skill_id):
+		"light":
+			return ImpactLevel.LIGHT
+		"heavy":
+			return ImpactLevel.HEAVY
+		"break":
+			return ImpactLevel.BREAK
+		_:
+			return ImpactLevel.NORMAL
