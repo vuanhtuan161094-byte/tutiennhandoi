@@ -2,6 +2,8 @@
 
 Status: **USER-APPROVED NGỰ KHÍ V1 ANIMATION SET — RUNTIME INTEGRATION/POLISH STILL OPEN**
 
+Current presentation update (2026-10-07): the V1 Idle + ten skill clips and registry are retained unchanged. The V2/V3 transient/painted-overlay approach described later in this historical record is superseded by persistent artifact actors; full painted overlays no longer render in combat. Current runtime proof and limitations: [persistent artifact actors](GODOT_COMBAT_NGU_KHI_PERSISTENT_ACTORS_20261007.md). Technical gate PASS at `4f78097d0cb55a95a69040abbc8391475c0b2e90`; new presentation remains a visual candidate, not approved/closed.
+
 Scope is presentation-only. Canonical JS combat, Dao gameplay, damage, cooldown, AI, RNG, save schema and Hunt authority are unchanged.
 
 ## Runtime contract

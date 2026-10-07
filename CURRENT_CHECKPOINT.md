@@ -167,6 +167,8 @@ Whole-game backend/frontend closure is separate from scoped Dao closure. Deferre
 
 ## Godot / UI
 
+- Ngự Khí persistent artifact actors (2026-10-07): exact runtime/test SHA `4f78097d0cb55a95a69040abbc8391475c0b2e90`, `KIEM_TRA_GAME.cmd` exit 0, GdUnit 92/92, bridge/P2/bounded PASS, Home 50/50, Combat 28/28, native captures 9/9 + 20/20 and pixels PASS; debug showcase 23/23. Three source actors and Great Artifact follow real resource/Merge projection; V3 painted overlays retired. V1 Idle + ten clips/registry retained, backend/gameplay/save/balance untouched. **VISUAL CANDIDATE — NOT APPROVED; no FULL CLEAN or Combat closure claim** (pre-existing candidate art/WIP preserved). Proof: `docs/ui/GODOT_COMBAT_NGU_KHI_PERSISTENT_ACTORS_20261007.md`.
+
 - Godot target: 4.7.2 stable; primary viewport 390×844.
 - Home = seated meditation; Character = standing.
 - Godot remains presentation/client against locked JS gameplay authority unless a separate parity-proven port is opened.
