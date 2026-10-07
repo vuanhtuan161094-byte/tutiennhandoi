@@ -17,15 +17,22 @@ func test_production_layout_at_four_portrait_viewports() -> void:
 		await get_tree().process_frame
 		await get_tree().process_frame
 		var field := screen.find_child("CombatBattlefield", true, false) as Control
-		assert_float(field.size.y / viewport_size.y).is_greater_equal(0.55)
-		assert_float(field.get_global_rect().end.y).is_less_equal(screen._player_hud.get_global_rect().position.y)
+		var top_bar := screen.find_child("CombatTopBar", true, false) as Control
+		var boss_panel := screen.find_child("CombatBossPanel", true, false) as Control
+		var lower_hud := screen.find_child("CombatLowerHud", true, false) as Control
+		var skill_deck := screen.find_child("CombatSkillDeck", true, false) as Control
+		assert_float(field.size.y / viewport_size.y).is_greater_equal(0.98)
+		assert_float(top_bar.get_global_rect().position.y).is_greater_equal(0.0)
+		assert_float(boss_panel.get_global_rect().end.y).is_less(lower_hud.get_global_rect().position.y)
+		assert_float(lower_hud.get_global_rect().end.y).is_less(skill_deck.get_global_rect().position.y)
+		assert_float(skill_deck.get_global_rect().end.y).is_less_equal(float(viewport_size.y))
 		var row := screen._skill_rail._active_row
 		assert_int(row.get_child_count()).is_equal(5)
 		for slot in row.get_children():
 			assert_float(slot.get_global_rect().position.x).is_greater_equal(8.0)
 			assert_float(slot.get_global_rect().end.x).is_less_equal(float(viewport_size.x - 8))
 			assert_float(slot.get_global_rect().position.y).is_equal(row.get_global_rect().position.y)
-		assert_float(screen._skill_rail._ultimate.get_global_rect().end.y).is_less_equal(float(viewport_size.y - 6))
+		assert_float(screen._skill_rail._ultimate.get_global_rect().end.y).is_less_equal(float(viewport_size.y - 4))
 		assert_bool(screen._skill_rail._auto.is_visible_in_tree()).is_true()
 		assert_int(screen._skill_rail._cards.size()).is_equal(7)
 		assert_bool(screen._result.visible).is_false()

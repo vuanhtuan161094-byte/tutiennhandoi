@@ -15,25 +15,27 @@ func _ready() -> void:
 	add_theme_constant_override("separation", 2)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
+	row.add_theme_constant_override("separation", 7)
 	add_child(row)
-	_title = STYLE.label("", 9, STYLE.GOLD)
+	_title = STYLE.label("", 8, STYLE.GOLD)
 	_title.name = "CombatDaoTitle"
-	_title.custom_minimum_size = Vector2(54, 0)
+	_title.custom_minimum_size = Vector2(58, 0)
 	row.add_child(_title)
-	_summary = STYLE.label("", 10, STYLE.CYAN)
+	_summary = STYLE.label("", 9, STYLE.CYAN)
 	_summary.name = "CombatDaoSummary"
 	_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(_summary)
 	_flags = STYLE.label("", 8, STYLE.GOLD)
+	_flags.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	row.add_child(_flags)
 	var secondary_row := HBoxContainer.new()
 	add_child(secondary_row)
-	_secondary = STYLE.label("", 8, STYLE.MUTED)
+	_secondary = STYLE.label("", 7, STYLE.MUTED)
 	_secondary.name = "CombatDaoSecondary"
 	_secondary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	secondary_row.add_child(_secondary)
-	_detail = STYLE.label("", 8, STYLE.MUTED)
+	_detail = STYLE.label("", 7, STYLE.MUTED)
+	_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	secondary_row.add_child(_detail)
 
 func bind(dao: Dictionary) -> void:
@@ -90,8 +92,8 @@ func _render() -> void:
 		if artifact and id == "artifactSourcesV2":
 			var orbs := ""
 			for i in range(3):
-				orbs += "● " if i < int(value) else "○ "
-			primary.append("%s  %d/%d" % [orbs.strip_edges(), int(value), int(maximum)])
+				orbs += "◆" if i < int(value) else "◇"
+			primary.append("KHÍ LINH  %s  %d/%d" % [orbs, int(value), int(maximum)])
 		else:
 			secondary.append("%s %d/%d" % [str(raw.get("label", id)), int(value), int(maximum)])
 	_summary.text = " · ".join(primary)

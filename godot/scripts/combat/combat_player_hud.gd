@@ -12,23 +12,25 @@ func _ready() -> void:
 	add_theme_constant_override("separation", 3)
 	var head := HBoxContainer.new()
 	add_child(head)
-	identity = STYLE.label("", 12)
+	identity = STYLE.label("", 11, STYLE.IVORY)
 	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(identity)
-	hp_text = STYLE.label("", 9, STYLE.MUTED)
-	hp_text.custom_minimum_size = Vector2(112, 0)
+	hp_text = STYLE.label("", 8, STYLE.MUTED)
+	hp_text.custom_minimum_size = Vector2(98, 0)
+	hp_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	head.add_child(hp_text)
-	hp = STYLE.bar("CombatPlayerHP", Color("67998d"), 7)
+	hp = STYLE.bar("CombatPlayerHP", Color("74a795"), 6)
 	add_child(hp)
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 7)
+	row.add_theme_constant_override("separation", 6)
 	add_child(row)
-	row.add_child(STYLE.label("CHÂN NGUYÊN", 8, STYLE.CYAN))
+	row.add_child(STYLE.label("CHÂN NGUYÊN", 7, STYLE.CYAN))
 	spirit = STYLE.bar("CombatSpirit", STYLE.CYAN, 3)
 	spirit.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(spirit)
-	spirit_text = STYLE.label("", 8, STYLE.MUTED)
-	spirit_text.custom_minimum_size = Vector2(62, 0)
+	spirit_text = STYLE.label("", 7, STYLE.MUTED)
+	spirit_text.custom_minimum_size = Vector2(58, 0)
+	spirit_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	row.add_child(spirit_text)
 
 func bind(player: Dictionary) -> void:

@@ -67,8 +67,8 @@ func bind(vm: Dictionary) -> void:
 	if same_playback:
 		return
 	_battle_end_seen = false
-	_battlefield.bind_environment(vm.get('environment', {}))
-	_enemy_actor.bind_archetype(str(vm.get('enemy', {}).get('archetype_id', '')))
+	_battlefield.bind_environment(vm.get("environment", {}))
+	_enemy_actor.bind_archetype(str(vm.get("enemy", {}).get("archetype_id", "")))
 	_player_actor.bind_dao(str(vm.get("main_dao_id", "")))
 	_lane.reset()
 	_lane.visible = true
@@ -98,116 +98,162 @@ func set_status_message(message: String) -> void:
 	_status.text = message
 	_status.visible = not message.is_empty()
 
+func _place(node: Control, left: float, top: float, right: float, bottom: float) -> void:
+	node.anchor_left = left
+	node.anchor_top = top
+	node.anchor_right = right
+	node.anchor_bottom = bottom
+	node.offset_left = 0.0
+	node.offset_top = 0.0
+	node.offset_right = 0.0
+	node.offset_bottom = 0.0
+
+func _overlay_panel(
+		name: String,
+		accent: Color,
+		left: float,
+		top: float,
+		right: float,
+		bottom: float,
+		opacity: float = 0.64,
+		padding: int = 8,
+		interactive: bool = false
+	) -> MarginContainer:
+	var panel := PanelContainer.new()
+	panel.name = name
+	_place(panel, left, top, right, bottom)
+	panel.z_index = 200
+	panel.mouse_filter = Control.MOUSE_FILTER_PASS if interactive else Control.MOUSE_FILTER_IGNORE
+	panel.add_theme_stylebox_override("panel", STYLE.overlay_surface(accent, opacity, 8))
+	add_child(panel)
+	var margin := MarginContainer.new()
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for side in ["left", "right", "top", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, padding)
+	panel.add_child(margin)
+	return margin
+
 func _build() -> void:
 	var background := ColorRect.new()
-	background.color = Color("050c12")
+	background.color = Color("05090d")
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(background)
-	var margin := MarginContainer.new()
-	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	for side in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, 10 if side in ["left", "right"] else 6)
-	add_child(margin)
-	var root := VBoxContainer.new()
-	root.add_theme_constant_override("separation", 6)
-	margin.add_child(root)
-	var header := HBoxContainer.new()
-	root.add_child(header)
-	var back := Button.new()
-	back.name = "CombatBack"
-	back.text = "‹"
-	back.custom_minimum_size = Vector2(44, 44)
-	back.add_theme_stylebox_override("normal", STYLE.surface(STYLE.GOLD, 0.18))
-	back.pressed.connect(func(): back_requested.emit())
-	header.add_child(back)
-	var heading := VBoxContainer.new()
-	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	heading.add_theme_constant_override("separation", 0)
-	header.add_child(heading)
-	_title = STYLE.label("Bí Cảnh", 13, STYLE.GOLD)
-	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	heading.add_child(_title)
-	_floor = STYLE.label("Tầng 1", 9, STYLE.MUTED)
-	_floor.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	heading.add_child(_floor)
-	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(44, 0)
-	header.add_child(spacer)
-	_boss_hud = BOSS_HUD.new()
-	_boss_hud.name = "CombatBossHud"
-	root.add_child(_boss_hud)
-	_enemy_hp = _boss_hud.hp
-	_enemy_hp_text = _boss_hud.hp_text
-	_enemy_break = _boss_hud.break_bar
-	var field := BATTLEFIELD.new()
-	_battlefield = field
-	field.name = "CombatBattlefield"
-	field.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	field.custom_minimum_size = Vector2(0, 260)
-	field.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(field)
+
+	_battlefield = BATTLEFIELD.new()
+	_battlefield.name = "CombatBattlefield"
+	_battlefield.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_battlefield.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_battlefield.clip_contents = false
+	add_child(_battlefield)
+
 	var enemy := _actor(true)
 	_enemy_actor = enemy
 	enemy.name = "CombatEnemyActor"
-	enemy.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	enemy.anchor_left = 0.43
-	enemy.anchor_right = 0.97
-	enemy.anchor_top = 0.04
-	enemy.anchor_bottom = 0.42
-	field.add_child(enemy)
+	_place(enemy, 0.47, 0.14, 0.98, 0.47)
+	_battlefield.add_child(enemy)
+
 	var player := PLAYER_ACTOR.new()
 	_player_actor = player
 	player.name = "CombatPlayerActor"
-	player.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	player.anchor_left = 0.03
-	player.anchor_right = 0.47
-	player.anchor_top = 0.60
-	player.anchor_bottom = 0.96
-	field.add_child(player)
+	_place(player, 0.00, 0.43, 0.52, 0.77)
+	_battlefield.add_child(player)
+
 	_lane = TACTICAL_LANE.new()
 	_lane.name = "CombatTacticalSurface"
-	_lane.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_lane.anchor_left = 0.13
-	_lane.anchor_right = 0.87
-	_lane.anchor_top = 0.43
-	_lane.anchor_bottom = 0.57
+	_place(_lane, 0.14, 0.38, 0.86, 0.52)
 	_lane.alignment = BoxContainer.ALIGNMENT_CENTER
-	field.add_child(_lane)
+	_lane.z_index = 140
+	_battlefield.add_child(_lane)
 	_tactical = _lane.title
+
 	_result = STYLE.label("", 25, STYLE.GOLD)
 	_result.name = "CombatResult"
 	_result.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_result.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_result.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_result.anchor_top = 0.40
-	_result.anchor_bottom = 0.60
+	_place(_result, 0.20, 0.40, 0.80, 0.56)
+	_result.z_index = 230
 	_result.visible = false
-	field.add_child(_result)
+	add_child(_result)
+
+	var header_margin := _overlay_panel("CombatTopBar", STYLE.GOLD, 0.025, 0.012, 0.975, 0.067, 0.54, 5, true)
+	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 4)
+	header_margin.add_child(header)
+	var back := Button.new()
+	back.name = "CombatBack"
+	back.text = "‹"
+	back.custom_minimum_size = Vector2(38, 34)
+	back.add_theme_stylebox_override("normal", STYLE.surface(STYLE.GOLD, 0.14))
+	back.add_theme_stylebox_override("hover", STYLE.surface(STYLE.GOLD, 0.24))
+	back.pressed.connect(func(): back_requested.emit())
+	header.add_child(back)
+	var heading := VBoxContainer.new()
+	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	heading.add_theme_constant_override("separation", -1)
+	header.add_child(heading)
+	_title = STYLE.label("Bí Cảnh", 12, STYLE.GOLD)
+	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	heading.add_child(_title)
+	_floor = STYLE.label("Tầng 1", 8, STYLE.MUTED)
+	_floor.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	heading.add_child(_floor)
+	var header_spacer := Control.new()
+	header_spacer.custom_minimum_size = Vector2(38, 0)
+	header.add_child(header_spacer)
+
+	var boss_margin := _overlay_panel("CombatBossPanel", STYLE.RED, 0.04, 0.074, 0.96, 0.172, 0.66, 8)
+	_boss_hud = BOSS_HUD.new()
+	_boss_hud.name = "CombatBossHud"
+	_boss_hud.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	boss_margin.add_child(_boss_hud)
+	_enemy_hp = _boss_hud.hp
+	_enemy_hp_text = _boss_hud.hp_text
+	_enemy_break = _boss_hud.break_bar
+
+	var lower_margin := _overlay_panel("CombatLowerHud", STYLE.GOLD, 0.03, 0.675, 0.97, 0.790, 0.62, 7)
+	var lower_row := HBoxContainer.new()
+	lower_row.add_theme_constant_override("separation", 10)
+	lower_margin.add_child(lower_row)
 	_player_hud = PLAYER_HUD.new()
 	_player_hud.name = "CombatPlayerHud"
-	root.add_child(_player_hud)
+	_player_hud.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_player_hud.size_flags_stretch_ratio = 1.65
+	lower_row.add_child(_player_hud)
 	_player_hp = _player_hud.hp
 	_player_hp_text = _player_hud.hp_text
 	_dao_widget = DAO_WIDGET.new()
 	_dao_widget.name = "CombatDaoWidget"
-	root.add_child(_dao_widget)
+	_dao_widget.custom_minimum_size = Vector2(122, 0)
+	_dao_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_dao_widget.size_flags_stretch_ratio = 1.0
+	lower_row.add_child(_dao_widget)
 	_dao_widget.payoff_presented.connect(func(label: String): _lane.present({"type": "combat.daoPayoff", "label": label}))
+
+	var rail_margin := _overlay_panel("CombatSkillDeck", STYLE.GOLD, 0.03, 0.802, 0.97, 0.988, 0.70, 7)
 	_skill_rail = SKILL_RAIL.new()
 	_skill_rail.name = "CombatSkillRail"
-	root.add_child(_skill_rail)
+	_skill_rail.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	rail_margin.add_child(_skill_rail)
+
 	_challenge_button = Button.new()
 	_challenge_button.name = "CombatChallenge"
-	_challenge_button.custom_minimum_size = Vector2(0, 44)
-	_challenge_button.add_theme_stylebox_override("normal", STYLE.surface(STYLE.GOLD, 0.36))
-	_challenge_button.add_theme_font_size_override("font_size", 12)
+	_place(_challenge_button, 0.28, 0.545, 0.72, 0.602)
+	_challenge_button.z_index = 220
+	_challenge_button.add_theme_stylebox_override("normal", STYLE.overlay_surface(STYLE.GOLD, 0.72, 18))
+	_challenge_button.add_theme_stylebox_override("hover", STYLE.overlay_surface(STYLE.GOLD, 0.82, 18))
+	_challenge_button.add_theme_font_size_override("font_size", 11)
 	_challenge_button.pressed.connect(func(): fight_requested.emit())
-	root.add_child(_challenge_button)
+	add_child(_challenge_button)
+
 	_status = STYLE.label("", 8, STYLE.MUTED)
 	_status.name = "CombatStatus"
 	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_status.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_place(_status, 0.12, 0.608, 0.88, 0.647)
+	_status.z_index = 220
 	_status.visible = false
-	root.add_child(_status)
+	add_child(_status)
 
 func _actor(is_enemy: bool) -> CombatActorPlaceholder:
 	var node := ACTOR_PLACEHOLDER.new()
@@ -266,7 +312,7 @@ func _on_combat_event(event: Dictionary) -> void:
 			if actor == "player" and id == "artifactSourcesV2":
 				_present_artifact_effect(skill_id, ArtifactCombatVfx.PHASE_SELF, _player_actor)
 		"combat.daoProjection":
-			if str(event.get("actor", "")) == "player":
+			if actor == "player":
 				_dao_widget.apply_projection(payload.get("dao", {}))
 		"combat.mark":
 			if str(_vm.get("main_dao_id", "")) == "mind" and target == "enemy" and payload.has("stacks"):
@@ -295,7 +341,6 @@ func _apply_event_hp(target: String, payload: Dictionary) -> void:
 	elif target == "player":
 		_player_hp.value = pct
 		_player_hp_text.text = text
-
 
 func _present_artifact_effect(skill_id: String, phase: String, target_node: CanvasItem = null) -> void:
 	if _feedback == null or str(_vm.get("main_dao_id", "")) != "artifact":

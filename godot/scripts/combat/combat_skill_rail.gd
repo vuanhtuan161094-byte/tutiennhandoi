@@ -12,11 +12,11 @@ var _ultimate: CombatSkillSlot
 var _auto: Label
 
 func _ready() -> void:
-	add_theme_constant_override("separation", 6)
+	add_theme_constant_override("separation", 5)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_active_row = HBoxContainer.new()
 	_active_row.name = "CombatActiveRow"
-	_active_row.add_theme_constant_override("separation", 6)
+	_active_row.add_theme_constant_override("separation", 4)
 	add_child(_active_row)
 	for i in range(5):
 		var slot := SLOT.new()
@@ -27,24 +27,29 @@ func _ready() -> void:
 		_active_row.add_child(slot)
 	_utility_row = HBoxContainer.new()
 	_utility_row.name = "CombatUtilityRow"
-	_utility_row.add_theme_constant_override("separation", 8)
+	_utility_row.add_theme_constant_override("separation", 7)
 	add_child(_utility_row)
 	_basic = SLOT.new()
 	_basic.name = "CombatBasic"
 	_basic.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_utility_row.add_child(_basic)
-	var basic_caption := STYLE.label("BASIC", 8, STYLE.MUTED)
-	basic_caption.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	_utility_row.add_child(basic_caption)
-	_auto = STYLE.label("AUTO ON", 10, STYLE.CYAN)
+	var left_spacer := Control.new()
+	left_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_utility_row.add_child(left_spacer)
+	var auto_panel := PanelContainer.new()
+	auto_panel.name = "CombatAutoPill"
+	auto_panel.custom_minimum_size = Vector2(104, 30)
+	auto_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	auto_panel.add_theme_stylebox_override("panel", STYLE.overlay_surface(STYLE.CYAN, 0.30, 15))
+	_utility_row.add_child(auto_panel)
+	_auto = STYLE.label("AUTO ON", 9, STYLE.CYAN)
 	_auto.name = "CombatAutoStatus"
-	_auto.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_auto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_auto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_utility_row.add_child(_auto)
-	var ult_caption := STYLE.label("ULT", 8, STYLE.GOLD)
-	ult_caption.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	_utility_row.add_child(ult_caption)
+	auto_panel.add_child(_auto)
+	var right_spacer := Control.new()
+	right_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_utility_row.add_child(right_spacer)
 	_ultimate = SLOT.new()
 	_ultimate.name = "CombatUltimate"
 	_ultimate.ultimate = true
@@ -67,6 +72,7 @@ func bind(skills: Array, auto_enabled: bool = true) -> void:
 	_bind_slot(_basic, basic)
 	_bind_slot(_ultimate, ultimate)
 	_auto.text = "AUTO ON" if auto_enabled else "AUTO OFF"
+	_auto.add_theme_color_override("font_color", STYLE.CYAN if auto_enabled else STYLE.MUTED)
 
 func _bind_slot(slot: CombatSkillSlot, data: Dictionary) -> void:
 	slot.bind(data)

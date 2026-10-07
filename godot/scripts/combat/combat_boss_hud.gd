@@ -12,25 +12,26 @@ func _ready() -> void:
 	add_theme_constant_override("separation", 3)
 	var head := HBoxContainer.new()
 	add_child(head)
-	identity = STYLE.label("", 14, STYLE.TEXT)
+	identity = STYLE.label("", 13, STYLE.IVORY)
 	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(identity)
 	metadata = STYLE.label("", 9, STYLE.GOLD)
-	metadata.custom_minimum_size = Vector2(62, 0)
+	metadata.custom_minimum_size = Vector2(70, 0)
+	metadata.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	head.add_child(metadata)
-	hp = STYLE.bar("CombatEnemyHP", Color("9e5e59"), 8)
+	hp = STYLE.bar("CombatEnemyHP", STYLE.RED, 7)
 	add_child(hp)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 7)
 	add_child(row)
 	row.add_child(STYLE.label("THẤT THẾ", 8, STYLE.MUTED))
-	break_bar = STYLE.bar("CombatEnemyBreak", Color("8ba5a1"), 4)
+	break_bar = STYLE.bar("CombatEnemyBreak", Color("9bb5ac"), 4)
 	break_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(break_bar)
 	hp_text = STYLE.label("", 8, STYLE.MUTED)
 	hp_text.custom_minimum_size = Vector2(96, 0)
+	hp_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	row.add_child(hp_text)
-	# No decorative status icons: this DTO currently exports no status authority.
 
 func bind(enemy: Dictionary, boss: Dictionary) -> void:
 	identity.text = str(enemy.get("name", "Thủ Lĩnh"))
