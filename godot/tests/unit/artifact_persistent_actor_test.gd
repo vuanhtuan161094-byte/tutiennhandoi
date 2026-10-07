@@ -90,3 +90,23 @@ func test_enemy_unknown_and_interrupt_fail_safe() -> void:
 	screen._on_combat_event({"type":"battle.end"})
 	assert_int(group.source_count).is_equal(1)
 	screen.free()
+func test_ultimate_travel_continues_anticipation_and_impact_ends_cosmetic_volley() -> void:
+	var screen := SCREEN.new()
+	add_child(screen)
+	screen.bind({"main_dao_id":"artifact","dao":_projection(3)})
+	var director := screen._artifact_director
+	director.set_process(false)
+	screen._on_combat_event({"type":"skill.cast.start","actor":"player","skill_id":"skill.dao.artifact.ultimate"})
+	director._process(0.3)
+	assert_str(director._beat).is_equal("summon")
+	screen._on_combat_event({"type":"skill.travel","actor":"player","target":"enemy","skill_id":"skill.dao.artifact.ultimate"})
+	director._process(0.01)
+	assert_str(director._beat).is_equal("volley")
+	assert_str(director._echoes[0].pose).is_equal("launch")
+	assert_int(director.group.source_count).is_equal(3)
+	screen._on_combat_event({"type":"combat.damage","actor":"player","target":"enemy","skill_id":"skill.dao.artifact.ultimate"})
+	assert_str(director._beat).is_equal("idle")
+	for echo in director._echoes:
+		assert_bool(echo.visible).is_false()
+	assert_int(director.group.source_count).is_equal(3)
+	screen.free()

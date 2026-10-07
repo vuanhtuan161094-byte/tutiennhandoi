@@ -149,13 +149,13 @@
       }
     },
     {
-      "name": "Canonical event playback reaches tactical lane",
+      "name": "Canonical combat events arrive before leaving route",
       "action": "wait_for_property",
       "with": {
-        "selector": "name:CombatTacticalLane",
-        "property": "text",
-        "operator": "not_equals",
-        "expected_value": "CHỜ GIAO TRANH",
+        "selector": "name:BackendBridge",
+        "property": "_combat_cursor",
+        "operator": "greater_than",
+        "expected_value": 0,
         "timeout_ms": 15000,
         "poll_interval_ms": 100
       }

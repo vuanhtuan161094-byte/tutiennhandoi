@@ -113,7 +113,7 @@ func present(event: Dictionary) -> void:
 			echo.position = group.home(0)
 			echo.move_to(group.safe_point(group.home(0)+Vector2((i*2-1)*34,-30)),0.55,12,style)
 	if style == "ultimate" and phase in ["cast","travel"]:
-		_clock = 0
+		_clock = 0.81 if phase == "travel" else 0.0
 		_ultimate_pending = phase == "travel"
 		_beat = "still"
 		_settle_after = 2.3

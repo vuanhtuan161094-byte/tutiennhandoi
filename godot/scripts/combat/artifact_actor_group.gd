@@ -105,6 +105,7 @@ func command(style: String, phase: String, target: Vector2) -> void:
 		if not all_command and i > 0:
 			continue
 		if phase == "impact":
+			actor.position = safe_point(target)
 			actor.move_to(home(i) if not merged else safe_point(_player+Vector2(_bounds.x*0.30,-_bounds.y*0.12)),0.65,45,"return")
 		elif style == "guard":
 			actor.rotation = (target - _player).angle()+PI/2
