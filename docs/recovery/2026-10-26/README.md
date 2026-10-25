@@ -17,7 +17,8 @@ Phạm vi: bảo toàn WIP, QA fixture endgame cô lập, review visual và audi
 6. R6: [backlog full-game closure](R6_BACKLOG.md).
 7. Sau khi xem gates: [commit/gate report](COMMIT_AND_GATES.md).
 8. Kiểm tra tính toàn vẹn tài liệu qua [manifest SHA-256](MANIFEST_SHA256.csv).
-9. **Kế hoạch tiếp theo (R7, 26/10/2026):** [Playable Combat Candidate & Visual Acceptance Prep](08_R7_PLAYABLE_COMBAT_CANDIDATE_PLAN.md) — kế hoạch mới, chưa thực hiện hoặc nghiệm thu.
+9. **Chỉ thị mới nhất — R7 V2:** [Open Game Production & Cross-game Benchmark](09_R7_V2_OPEN_GAME_PRODUCTION_BENCHMARK.md) — thay thế giới hạn thực thi cũ, cho phép nghiên cứu rộng và phát triển game; **chưa phải kết quả triển khai**.
+10. [R7 V1 historical proposal](08_R7_PLAYABLE_COMBAT_CANDIDATE_PLAN.md) — lưu làm tham chiếu lịch sử, không còn là giới hạn thực thi.
 
 ## Git handoff
 
