@@ -20,7 +20,7 @@ Phạm vi: bảo toàn WIP, QA fixture endgame cô lập, review visual và audi
 
 ## Git handoff
 
-- Tài liệu recovery sẽ được commit riêng lên `main` sau khi kiểm tra remote fast-forward; handoff vẫn đang chờ push và remote read-back.
+- Tài liệu recovery đã được commit riêng lên `main` bằng fast-forward; remote ref được đọc lại sau push. SHA cuối cùng nằm trong câu trả lời bàn giao của phiên này.
 - Code candidate nằm trên `codex/tnd-recovery-r2-r5-20261026`; không merge.
 - Commit SHA đã kiểm chứng, remote HEAD sau handoff và link GitHub được ghi trong [commit/gate report](COMMIT_AND_GATES.md).
 - Không stage/publish các asset nhị phân trong WIP. Quyền phân phối chưa xác minh.
@@ -36,4 +36,4 @@ Phạm vi: bảo toàn WIP, QA fixture endgame cô lập, review visual và audi
 
 ## Giới hạn clone cách ly
 
-Mọi sửa đổi và kiểm thử Godot chạy trên clone độc lập ở C, với Node/Godot/Stagehand và save QA dùng một lần. Ổ E chỉ được đọc; các Godot/Node đang chạy trên E không bị đóng. Kết quả không xác nhận được cài đặt E, Android, quyền phân phối asset, chất lượng mọi thiết bị hay owner approval. Một lần chạy QA ban đầu vô tình chạm Node bridge ở E cổng 4192; health cho thấy `diagnosticMode=false` và `qaMode=false`, fixture bị từ chối, không có save nào đổi. Từ đó mọi QA chạy tại cổng 41930/41931.
+Mọi sửa đổi và kiểm thử Godot chạy trên clone độc lập ở C, với Node/Godot/Stagehand và save QA dùng một lần. Ổ E chỉ được đọc; các Godot/Node đang chạy trên E không bị đóng. Kết quả không xác nhận được cài đặt E, Android, quyền phân phối asset, chất lượng mọi thiết bị hay owner approval. Một lần chạy QA ban đầu vô tình chạm Node bridge ở E cổng 4192; health cho thấy `diagnosticMode=false` và `qaMode=false`, fixture bị từ chối, không có save nào đổi. Một lượt thử khác trên cổng 41930 dùng bridge state cũ và bị loại khỏi bằng chứng. Gate cuối dùng cổng cô lập mới 41945/41946.

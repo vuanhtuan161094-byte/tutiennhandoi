@@ -1,17 +1,17 @@
 # Commit, gate and remote verification
 
-Local verification is complete. Commit values and handoff state are updated after the code and documentation pushes plus remote read-back. This file must not label handoff complete until GitHub exposes the documentation commit on `main` and the code candidate on its review branch.
+Local verification is complete. The first report commit is `a657d06e371527b445b60a379d702b7cb202d930`; it was pushed and its README was read back from GitHub. This finalization update records the remote-verified result; the exact current `main` ref is also reported in the handoff response.
 
 | Item | Value |
 |---|---|
 | Audit baseline SHA | `27545bcf5e24be495bb908658e7070c710f64cef` |
 | Tested code candidate SHA | `5faabb720f21807e941f3846b1b43f013fb1cad5` |
-| Documentation commit on main | pending docs-only commit |
-| Remote main HEAD after push | pending docs push and read-back |
-| Code review branch commit | pushed as `codex/tnd-recovery-r2-r5-20261026`; final read-back pending |
-| GitHub report README | pending docs push |
+| Documentation commit on main | `a657d06e371527b445b60a379d702b7cb202d930` (initial report; finalization is a docs-only follow-up on the same branch) |
+| Remote main HEAD after finalization push | verified with GitHub ref read-back; exact current SHA is in the handoff response |
+| Code review branch commit | `5faabb720f21807e941f3846b1b43f013fb1cad5`, pushed and read back from remote ref |
+| GitHub report README | https://github.com/vuanhtuan161094-byte/tutiennhandoi/blob/main/docs/recovery/2026-10-26/README.md |
 | GitHub code candidate / PR | [code branch](https://github.com/vuanhtuan161094-byte/tutiennhandoi/tree/codex/tnd-recovery-r2-r5-20261026); no PR created and no merge |
-| Handoff state | IN PROGRESS |
+| Handoff state | R1 COMPLETE after finalization commit appears on remote `main` |
 
 ## Final gate record
 
