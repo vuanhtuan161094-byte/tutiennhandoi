@@ -14,6 +14,7 @@ import { battleDaoAutoRotationV127 } from '../../dist/core/battle-dao-rotation-v
 import { battleDaoV2Catalog } from '../../dist/content/battle-dao-v2-catalog.js';
 import { createInitialLifeMeta } from '../../dist/core/life.js';
 import { buildWebClientViewPatch } from '../../dist/core/client-shell.js';
+import { mapStartFloorForRealm } from '../../dist/content/realm-maps.js';
 import { createWebClientSave, parseWebClientSave } from '../../dist/core/web-save.js';
 import { LIVE_COMMIT_REAL_SECONDS } from '../../dist/core/realtime-balance.js';
 import { highestClearedDungeonFloor } from '../../dist/core/dungeon.js';
@@ -194,10 +195,37 @@ class GodotCanonicalRuntime {
     this.dirty=true;
     return {fixture:'artifact',canonical:true,realmOrder:this.session.stateValue.realm.maxRealmOrder,skillIds:this.session.canonicalActiveSkillIds()};
   }
+  prepareQaEndgameBoss(){
+    // Build an isolated QA player with the canonical Artifact loadout, advance by
+    // canonical realm transitions, and select the first Boss floor of its realm.
+    // This fixture is QA-only and persists only to the caller-supplied disposable save.
+    this.prepareQaArtifact();
+    while(this.session.stateValue.realm.maxRealmOrder<114){
+      const realm=registry.realm(this.session.stateValue.realm.realmId);
+      if(!realm?.nextRealmId)throw new Error('QA Endgame Boss fixture cannot reach realm order 114.');
+      this.session.applyRealmTransitionV140(realm.nextRealmId,'diagnostic');
+    }
+    const realmOrder=this.session.stateValue.realm.maxRealmOrder;
+    const floor=mapStartFloorForRealm(realmOrder);
+    const hunt=this.session.selectEndlessFloor(floor);
+    this.dirty=true;
+    if(!hunt?.bossReady)throw new Error(`QA Endgame Boss fixture expected canonical Boss readiness at floor ${floor}.`);
+    return {
+      fixture:'endgame-boss',
+      canonical:true,
+      realmOrder,
+      floor,
+      bossReady:Boolean(hunt.bossReady),
+      monsterId:String(hunt.monster?.id||''),
+      monsterName:String(hunt.monster?.name||''),
+      monsterGrade:String(hunt.monster?.gradeId||''),
+      skillIds:this.session.canonicalActiveSkillIds(),
+    };
+  }
   setQaFixture(value){
     if(!QA_MODE)throw new Error('QA fixture chỉ khả dụng trong isolated QA mode.');
     const fixture=String(value||'').trim().toLowerCase();
-    const allowed=new Set(['clear','inventory','ling2','ling3','ling4','ascend','tribulation','artifact']);
+    const allowed=new Set(['clear','inventory','ling2','ling3','ling4','ascend','tribulation','artifact','endgame-boss']);
     if(!allowed.has(fixture))throw new Error('QA fixture không hợp lệ: '+fixture);
     this.qaFixtureSeq+=1;
     if(fixture==='clear'){
@@ -211,6 +239,7 @@ class GodotCanonicalRuntime {
     if(fixture==='ascend')return this.prepareQaAscend();
     if(fixture==='tribulation')return this.prepareQaTribulation();
     if(fixture==='artifact')return this.prepareQaArtifact();
+    if(fixture==='endgame-boss')return this.prepareQaEndgameBoss();
     return {fixture,canonical:false,presentationOnly:true,multiplier:Number(fixture.slice(-1))||1};
   }
   homeView(){

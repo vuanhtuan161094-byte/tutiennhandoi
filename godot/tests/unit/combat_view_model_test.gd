@@ -21,9 +21,13 @@ func test_production_layout_at_four_portrait_viewports() -> void:
 		var boss_panel := screen.find_child("CombatBossPanel", true, false) as Control
 		var lower_hud := screen.find_child("CombatLowerHud", true, false) as Control
 		var skill_deck := screen.find_child("CombatSkillDeck", true, false) as Control
+		var lane_rect := screen._lane.get_global_rect()
+		var player_rect := screen._player_actor.get_global_rect()
 		assert_float(field.size.y / viewport_size.y).is_greater_equal(0.98)
 		assert_float(top_bar.get_global_rect().position.y).is_greater_equal(0.0)
 		assert_float(boss_panel.get_global_rect().end.y).is_less(lower_hud.get_global_rect().position.y)
+		assert_bool(lane_rect.intersects(player_rect)).is_false()
+		assert_float(lane_rect.end.y).is_less_equal(lower_hud.get_global_rect().position.y)
 		assert_float(lower_hud.get_global_rect().end.y).is_less(skill_deck.get_global_rect().position.y)
 		assert_float(skill_deck.get_global_rect().end.y).is_less_equal(float(viewport_size.y))
 		var row := screen._skill_rail._active_row

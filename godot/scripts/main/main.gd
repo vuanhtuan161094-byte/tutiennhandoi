@@ -64,6 +64,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_run_qa_fixture("clear", &"home", "Clear QA fixture")
 		KEY_F9:
 			_run_qa_fixture("artifact", &"combat", "Ngự Khí canonical loadout")
+		KEY_F10:
+			_run_qa_fixture("endgame-boss", &"combat", "Endgame canonical Boss · QA only")
 		_:
 			return
 	get_viewport().set_input_as_handled()
@@ -271,6 +273,8 @@ func _on_action_completed(action_id: String, result: Dictionary) -> void:
 				hud.set_status_message("QA · Đột Phá đã sẵn sàng · bấm nút để chạy canonical action")
 			"tribulation":
 				hud.set_status_message("QA · Độ Kiếp đúng gate order 41 · milestone vẫn canonical")
+			"artifact", "endgame-boss":
+				backend_bridge.refresh_combat(true)
 			"clear":
 				hud.set_status_message("QA fixture đã tắt")
 	elif action_id == "fightEndlessFloor":

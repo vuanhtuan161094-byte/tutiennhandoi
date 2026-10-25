@@ -24,6 +24,8 @@ var _action_http: HTTPRequest
 var _combat_http: HTTPRequest
 var _timer: Timer
 var _bridge_pid: int = -1
+var _port := PORT
+var _base_url := BASE_URL
 var _online := false
 var _status_message := ""
 var _poll_inflight := false
@@ -36,6 +38,7 @@ var _combat_encounter_id := ""
 var _pending_action_id := ""
 
 func _ready() -> void:
+	_configure_test_port()
 	_poll_http = HTTPRequest.new()
 	_poll_http.name = "PollHttp"
 	add_child(_poll_http)
@@ -67,6 +70,16 @@ func _ready() -> void:
 	await get_tree().create_timer(0.45).timeout
 	refresh_home()
 
+func _configure_test_port() -> void:
+	var raw_port := OS.get_environment("TUTIEN_GODOT_TEST_BRIDGE_PORT").strip_edges()
+	if not raw_port.is_valid_int():
+		return
+	var configured_port := int(raw_port)
+	if configured_port < 1024 or configured_port > 65535:
+		return
+	_port = configured_port
+	_base_url = "http://127.0.0.1:%d" % _port
+
 func _exit_tree() -> void:
 	if _bridge_pid > 0:
 		OS.kill(_bridge_pid)
@@ -82,7 +95,7 @@ func _start_local_bridge() -> void:
 		_set_online(false, "Không tìm thấy Node.js")
 		return
 	var bridge_path := ProjectSettings.globalize_path("res://backend/bridge_server.mjs")
-	_bridge_pid = OS.create_process(node_executable, [bridge_path, str(PORT)], false)
+	_bridge_pid = OS.create_process(node_executable, [bridge_path, str(_port)], false)
 	if _bridge_pid <= 0:
 		_set_online(false, "Không khởi động được Node bridge")
 
@@ -103,7 +116,7 @@ func refresh_home() -> void:
 	if _poll_inflight:
 		return
 	_poll_inflight = true
-	var err := _poll_http.request(BASE_URL + "/home")
+	var err := _poll_http.request(_base_url + "/home")
 	if err != OK:
 		_poll_inflight = false
 		_set_online(false, "Bridge chưa sẵn sàng")
@@ -112,7 +125,7 @@ func refresh_character(selected_item_id: String = "") -> void:
 	if _character_inflight:
 		return
 	_character_inflight = true
-	var endpoint := BASE_URL + "/character"
+	var endpoint := _base_url + "/character"
 	if not selected_item_id.is_empty():
 		endpoint += "?selectedItemId=" + selected_item_id.uri_encode()
 	var err := _character_http.request(endpoint)
@@ -135,7 +148,7 @@ func refresh_combat(reset_cursor: bool = false) -> void:
 	if _combat_inflight:
 		return
 	_combat_inflight = true
-	var endpoint := BASE_URL + "/combat?after=" + str(_combat_cursor)
+	var endpoint := _base_url + "/combat?after=" + str(_combat_cursor)
 	var err := _combat_http.request(endpoint)
 	if err != OK:
 		_combat_inflight = false
@@ -157,7 +170,7 @@ func perform_action(action_id: String, payload: Dictionary = {}) -> void:
 	body["action"] = action_id
 	var headers := PackedStringArray(["Content-Type: application/json"])
 	var err := _action_http.request(
-		BASE_URL + "/action",
+		_base_url + "/action",
 		headers,
 		HTTPClient.METHOD_POST,
 		JSON.stringify(body)
