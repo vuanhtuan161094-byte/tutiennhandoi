@@ -24,5 +24,6 @@ This directory is the documentation handoff for the recovery audit requested for
 8. [Next Codex task](08_NEXT_CODEX_TASK.md)
 9. [SHA-256 manifest](MANIFEST_SHA256.csv)
 10. [Evidence index](evidence/EVIDENCE_INDEX.md)
+11. [Long-run R2–R5 Codex execution plan (26/10/2026)](09_LONG_RUN_R2_R5_CODEX_EXECUTION_20261026.md) — owner-authorized instructions; **not** completion proof
 
 The roadmap orders work as R1-HANDOFF, R2-ASSET, R3-ENDGAME, R4-VISUAL, R5-COMBAT-UI, and R6-GAME-COMPLETION. Core Balance and auxiliary rework remain deferred; no gameplay, runtime, tests, or production assets were changed for this handoff.
