@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const HERE=dirname(fileURLToPath(import.meta.url));
 const SERVER=resolve(HERE,'bridge_server.mjs');
-const PORT=4220;
+const PORT=Math.max(1024,Math.min(65535,Number(process.env.TUTIEN_P2_QA_PORT||4220)||4220));
 const BASE=`http://127.0.0.1:${PORT}`;
 
 function assert(condition,message){
@@ -141,6 +141,27 @@ try{
   assert(artifactFight.result.directBossLoot===false,'Artifact reference must not create Boss loot');
   assert(artifactFight.combat.events.some(event=>event.type==='combat.daoProjection'),'Reference must forward actual Dao projection events');
 
+  const endgameBoss=(await request('/action',{method:'POST',body:{action:'diagnosticFixture',fixture:'endgame-boss'}})).data;
+  assert(endgameBoss.result?.canonical===true,'Endgame Boss fixture must use canonical setup');
+  assert(Number(endgameBoss.result?.realmOrder)===114,'Endgame Boss fixture must reach realm order 114');
+  assert(Number(endgameBoss.result?.floor)===21601,'Endgame Boss fixture must select the first floor in the canonical order-114 major realm');
+  assert(endgameBoss.result?.bossReady===true,'Endgame Boss fixture must select an unlocked Boss floor');
+  assert(endgameBoss.result?.monsterGrade==='boss','Endgame Boss fixture must project the canonical Boss monster');
+  const endgamePrefight=(await request('/combat')).data;
+  assert(Number(endgamePrefight.snapshot?.player?.combatBuildV117?.realmOrder??endgameBoss.result.realmOrder)===114,'Combat snapshot must preserve high-realm fixture context');
+  assert(endgamePrefight.snapshot?.enemy?.gradeId==='boss','Combat snapshot must contain a canonical Boss enemy');
+  const endgameFight=(await request('/action',{method:'POST',body:{action:'fightEndlessFloor'}})).data;
+  assert(endgameFight.result?.ok===true,'High-realm Boss battle must resolve through the canonical combat action');
+  assert(typeof endgameFight.result?.won==='boolean','High-realm Boss result must come from canonical combat outcome');
+  assert(endgameFight.combat?.snapshot?.mode==='playback','Boss action must expose the completed canonical playback snapshot');
+  assert(typeof endgameFight.combat?.snapshot?.result?.bossCleared==='boolean','Boss aftermath result must preserve canonical clear status');
+  assert(Number(endgameFight.combat?.snapshot?.result?.battleSeconds)>0,'Boss aftermath must expose a completed battle duration');
+  assert(Array.isArray(endgameFight.combat?.events)&&endgameFight.combat.events.some(event=>event.type==='battle.end'),'Complete Boss battle must include canonical battle.end event');
+  const endgameAftermath=(await request('/home')).data;
+  assert(Number(endgameAftermath?.life?.realmOrder)===114,'Aftermath must retain the isolated high-realm state');
+  assert(endgameAftermath?.diagnostic?.fixture==='endgame-boss','Aftermath must retain QA fixture marker');
+  assert(Number(endgameAftermath?.homeContext?.hunt?.selectedFloor)>0,'Aftermath must retain canonical Hunt floor state');
+
   const cleared=(await request('/action',{
     method:'POST',
     body:{action:'diagnosticFixture',fixture:'clear'},
@@ -148,7 +169,7 @@ try{
   assert(!cleared.home?.diagnostic,'Clear fixture must remove QA DTO overlay');
 
   console.log('GODOT P2 QA FIXTURE SMOKE: PASS');
-  console.log('Fixtures: inventory · Ling Quang x2/x3/x4 · ascend · tribulation preview');
+  console.log('Fixtures: inventory · Ling Quang x2/x3/x4 · ascend · tribulation preview · Endgame Boss combat/aftermath');
   console.log(`Canonical QA inventory items: ${items.length}`);
   console.log('Tribulation blocker preserved: Vạn Đạo Thiên Mạc tầng 5');
 }catch(error){

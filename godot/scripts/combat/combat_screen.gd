@@ -164,12 +164,13 @@ func _build() -> void:
 	var player := PLAYER_ACTOR.new()
 	_player_actor = player
 	player.name = "CombatPlayerActor"
-	_place(player, 0.00, 0.43, 0.52, 0.77)
+	_place(player, 0.00, 0.34, 0.52, 0.66)
 	_battlefield.add_child(player)
 
 	_lane = TACTICAL_LANE.new()
 	_lane.name = "CombatTacticalSurface"
-	_place(_lane, 0.14, 0.38, 0.86, 0.52)
+	# Keep tactical feedback clear of the player-art silhouette on narrow screens.
+	_place(_lane, 0.52, 0.585, 0.97, 0.665)
 	_lane.alignment = BoxContainer.ALIGNMENT_CENTER
 	_lane.z_index = 140
 	_battlefield.add_child(_lane)
@@ -246,7 +247,7 @@ func _build() -> void:
 
 	_challenge_button = Button.new()
 	_challenge_button.name = "CombatChallenge"
-	_place(_challenge_button, 0.28, 0.545, 0.72, 0.602)
+	_place(_challenge_button, 0.54, 0.545, 0.97, 0.602)
 	_challenge_button.z_index = 220
 	_challenge_button.add_theme_stylebox_override("normal", STYLE.overlay_surface(STYLE.GOLD, 0.72, 18))
 	_challenge_button.add_theme_stylebox_override("hover", STYLE.overlay_surface(STYLE.GOLD, 0.82, 18))

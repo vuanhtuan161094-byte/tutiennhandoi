@@ -271,7 +271,8 @@ func set_home_animation_preset(preset_id: StringName) -> void:
 		return
 	home_animation_preset_id = preset_id
 	_refresh_home_mode_buttons()
-	_refresh_home_preset_list()
+	# The selected Button emits the request; rebuild after its signal callback unwinds.
+	call_deferred("_refresh_home_preset_list")
 
 func get_home_animation_preset() -> StringName:
 	return home_animation_preset_id
