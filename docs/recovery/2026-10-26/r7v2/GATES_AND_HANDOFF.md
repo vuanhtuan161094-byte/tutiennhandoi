@@ -2,7 +2,7 @@
 
 ## Source / remote identity
 
-- Published and verified on remote `main`: Boss/UI candidate commit `7d4ed24971c08fddd67575da316a3450adcc6bf1`, parent `bbf2565fec54aa841292c194390f6a748e90e0b1`, tree `7e23fdd9bbb0741aa62cbceb5cb5f8a8047e0f6f`. The source was tested in an isolated checkout based on `4288063181586441947519305f5b3818d60469ba` plus the allowlisted changes; only the reviewed seven-path diff was published.
+- Earlier Boss/UI candidate commit `7d4ed24971c08fddd67575da316a3450adcc6bf1` remains in history. Latest published R5 code on remote `main` is `a83eb7daf9251583d6edac0328a40a576ca2e7ce`, parent `7460c1d9716868ec03cc3fd74807838e551e6909`, tree `fe8f2c38297be9ab67df3769f07df66838d471a0`. Its six changed source/test blobs were verified against the local staged blobs and fetched again from the remote commit.
 - Verified code baseline: local source commit `4288063181586441947519305f5b3818d60469ba`, tree `8bfb92459a03bdb710c7791f6599b3087c9e67f9`; this tree exactly matched remote code commit `0f3e0d12f45249afc8388196f6b2d7e5dde0414b` before the icon candidate changes.
 - Latest full verifier ran in isolated QA checkout `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026` with local candidate source changes and disposable bridge saves; no real save was used. Candidate icon test toggles its opt-in flag itself; full verifier ran with the global icon candidate flag off.
 - Engine: Godot `4.7.2-stable (official)`; candidate art flag enabled only in isolated disposable QA.
@@ -53,7 +53,7 @@ $env:TUTIEN_R7V2_NGUKHI_ICON_CANDIDATE = '1'
 
 The save path is disposable and stays under `artifacts`; do not point it at a real profile. The captured loss is the observed canonical outcome, not an injected result.
 
-## Latest source gate — Boss danger telegraph
+## Boss danger telegraph source gate
 
 **Candidate source SHA:** `69a49c6b8add53f8e363717e312656c4ae07bf59` · **tree:** `fce587e869992575a957f9608a9dab6e2fa9faaf`.
 
@@ -90,6 +90,31 @@ Local-only preservation and import logs are under `C:\Users\Admin\Documents\Code
 - Visual inspection of the loaded frame found no obvious clipping or art overlap with the stat/action controls. Existing player art remains local-only because distribution rights are not verified. No production UI, gameplay, save, or art file changed in this slice.
 - The first report from the old fixed wait captured a transient loading message and placeholder values; that was a capture timing issue. This evidence does not cover physical Android, landscape/desktop layout, every Character detail, or art-direction approval. The local image path and SHA are in [runtime evidence](RUNTIME_VISUAL_EVIDENCE_INDEX.md).
 
+## R5 eight Dao prefight HUD — source commit `a83eb7daf9251583d6edac0328a40a576ca2e7ce`
+
+**Parent:** `7460c1d9716868ec03cc3fd74807838e551e6909` · **Tree:** `fe8f2c38297be9ab67df3769f07df66838d471a0` · **Remote:** verified on `main`; all six changed source/test blobs match the local staged blob SHAs.
+
+The new slice gives every canonical Dao a colored title, primary resource label/value and visible meter. Caps up to five use discrete segments; larger caps use a full-width continuous meter with a tinted empty track. Secondary meters, flags and detail use the bound DTO. A short “THẦN NIỆM” title keeps the narrow widget readable; the full name remains in its tooltip. Auto remains a read-only status, now localized and explained by tooltip. No control or gameplay action was added.
+
+| Gate | Result | Scope / note |
+|---|---|---|
+| Allowlist / safety | PASS | Six source/test paths only; no artifact, save, WIP, production asset or report screenshot staged. Sensitive-pattern scan found no credential-like content. |
+| `git diff --check` | PASS | Staged source diff has no whitespace errors. |
+| Node bridge syntax | PASS | `node --check godot/backend/bridge_server.mjs`. |
+| Canonical bridge smoke | PASS | Existing canonical bridge smoke; no user save used. |
+| P2 fixture smoke | PASS | Existing isolated QA fixture smoke, including canonical Boss aftermath. |
+| Eight Dao fixture API check | PASS | Disposable local Node bridge; all eight requested IDs returned matching canonical `mainDaoId` / Dao projection. |
+| Project-context parse | PASS | Godot 4.7.2 exit 0. Existing root-certificate-store warning and `main.tscn` invalid UID text-path fallback were logged. |
+| GdUnit | PASS, 99/99 | Full unit suite, 22 suites. The new widget suite contributes four assertions. |
+| Actual runtime | PASS, 51/51 | Godot 4.7.2 Stagehand, 390×844, eight canonical prefight loadouts through the QA-only F11 route. |
+| Screenshot pixels | PASS, 8/8 | All eight images are 390×844 and pass the repository pixel gate. Visual inspection confirms visible discrete/continuous meters and readable Dao labels. |
+| Wider local verifier | INCOMPLETE | The earlier `Verify-GodotLocal.ps1` run failed Home Stagehand 42/43 because `CombatAction.disabled` was `false` where the scenario expected `true`. This R5 change does not touch that Home state. No complete-verifier PASS is claimed. |
+| Physical Android / owner visual | NOT RUN / PENDING | The headed desktop capture uses a mobile-sized viewport; no physical device or owner approval is represented. |
+
+The eight screenshots, Stagehand report, pixel-validation report and disposable QA save stay in local `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026\artifacts\r7v2-r5-eight-dao-widget-final-verified`; only screenshot paths/hashes are listed in `RUNTIME_VISUAL_EVIDENCE_INDEX.md`. They are not links accessible from GitHub because the frames include existing player art with unresolved public distribution rights.
+
+This verifies pre-fight HUD projection only. It does not prove separate Dao attack animation/VFX, launch/travel/impact/return, full combat-loop UX, Auto control semantics, physical mobile, or complete/fun progression. The R5 combat event work remains open.
+
 ## Handoff
 
-R7 V2 remains active. R2 preservation and technical import are complete, but source provenance, rights, visual matching and runtime integration remain blocked/pending. R3 verified a canonical realm-114/floor-21601 Boss loss through result and return to Home; a high-realm victory has not been established. R4 now includes a loaded Character capture; the broader Home/Character/Combat review and physical-device checks remain open. R5 has one verified Boss telegraph slice; the complete eight-Dao/Auto/combat-feedback work remains open. Warm Snow footage was sampled at 30:51–31:07 and AFK Journey at 15:15–15:18; the short samples do not prove attack-cycle or audio timing. Owner approval remains open for visual direction, baked-aura treatment, lawful use of WIP/11 clips, and Auto semantics if no authoritative control exists. Core Balance and auxiliary-system work remain inactive.
+R7 V2 remains active. R2 preservation and technical import are complete, but source provenance, rights, visual matching and runtime integration remain blocked/pending. R3 verified a canonical realm-114/floor-21601 Boss loss through result and return to Home; a high-realm victory has not been established. R4 now includes a loaded Character capture; the broader Home/Character/Combat review and physical-device checks remain open. R5 now has the Boss telegraph and all-eight prefight HUD projection slices; Dao event-linked combat presentation, Auto control semantics and the full combat-feedback work remain open. Warm Snow footage was sampled at 30:51–31:07 and AFK Journey at 15:15–15:18; the short samples do not prove attack-cycle or audio timing. Owner approval remains open for visual direction, baked-aura treatment, lawful use of WIP/11 clips, and Auto semantics if no authoritative control exists. Core Balance and auxiliary-system work remain inactive.

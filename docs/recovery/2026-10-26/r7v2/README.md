@@ -8,8 +8,16 @@
 
 **Tested local source:** `4288063181586441947519305f5b3818d60469ba` · **tree:** `8bfb92459a03bdb710c7791f6599b3087c9e67f9`
 
-**Remote R7 V2 code/art commits:** `4f6712726c5f20de766df6999447cbd9c9b71618`, `6c581878e839a707d1943db4868d0b85a57375db`, `0f3e0d12f45249afc8388196f6b2d7e5dde0414b`, `3df9eba5a0966b73c3b20c53c90fa2e39488410e`, `7d4ed24971c08fddd67575da316a3450adcc6bf1`; docs-only follow-ups `bbf2565fec54aa841292c194390f6a748e90e0b1` and this report refresh.
+**Remote R7 V2 code/art commits:** `4f6712726c5f20de766df6999447cbd9c9b71618`, `6c581878e839a707d1943db4868d0b85a57375db`, `0f3e0d12f45249afc8388196f6b2d7e5dde0414b`, `3df9eba5a0966b73c3b20c53c90fa2e39488410e`, `7d4ed24971c08fddd67575da316a3450adcc6bf1`, `a83eb7daf9251583d6edac0328a40a576ca2e7ce`; docs-only follow-ups `bbf2565fec54aa841292c194390f6a748e90e0b1` and this report refresh.
 **State:** active production work; art is a candidate, not owner-approved/locked.
+
+## Latest verified source slice — readable HUD for all eight Dao
+
+- Source commit `a83eb7daf9251583d6edac0328a40a576ca2e7ce` (tree `fe8f2c38297be9ab67df3769f07df66838d471a0`, parent `7460c1d9716868ec03cc3fd74807838e551e6909`) adds a compact, Dao-colored primary resource display: discrete segments for small caps and a full-width, tinted track for larger pools. Secondary meters, active flags, tooltips, and resource-change feedback use the canonical DTO. “Thần Niệm” is abbreviated in the narrow title; its tooltip retains the full Dao name.
+- A QA-only bridge fixture and F11 route now create each Dao through canonical realm/specialization/skill/loadout APIs in a disposable save. Actual Godot 4.7.2 captures cover the eight canonical pre-fight projections at 390×844; all 51 Stagehand steps passed and pixel validation passed 8/8. Images and hashes are listed in the [runtime evidence index](RUNTIME_VISUAL_EVIDENCE_INDEX.md); the screenshots stay local because existing player art rights are unresolved.
+- Before/after in this slice refers to the HUD: before, only Ngự Khí had a dedicated resource treatment; after, each Dao has a colored title, canonical primary value, and a visible segmented or continuous meter. The previous state is established from the source diff; no paired baseline screenshot was captured. This does not verify Dao attack motion, launch/impact effects, an Auto toggle, physical Android, or owner visual acceptance.
+- Gates for this source: full GdUnit 99/99; canonical and P2 bridge smoke PASS; all eight QA bridge fixture projections PASS; project-context parse PASS; Stagehand 51/51; screenshot pixel validation 8/8. The broader local verifier remains incomplete: its Home Stagehand scenario previously failed 42/43 on `CombatAction.disabled` (expected `true`, observed `false`); that state was not changed or re-labeled as passing here.
+- No combat coefficients, authority, rewards, save schema, production asset files, or real saves changed. The HUD source slice is partial R5; event-specific combat feedback for each Dao and the full game loop remain open.
 
 ## Latest verified source slice — Boss danger telegraph
 
@@ -53,11 +61,13 @@
 
 ## What this does not claim
 
-No authored skeletal character animation, audio, ultimate VFX, Android/device QA, full player progression loop, seven other Dao visual kits, or production art approval. Both Boss illustrations are static PNG candidates; the new Vô Diện image has no layered paint file. Ngự Khí icon art is an opt-in candidate, not a replacement for missing character or weapon artwork. Short gameplay segments from Warm Snow (30:51–31:07) and AFK Journey (15:15–15:18) were visually inspected; the brief samples do not establish full attack timing or audio behavior. Other reference entries remain listing/screenshot evidence only.
+No authored skeletal character animation, audio, ultimate VFX, Android/device QA, full player progression loop, seven other Dao attack/VFX kits, or production art approval. Both Boss illustrations are static PNG candidates; the new Vô Diện image has no layered paint file. Ngự Khí icon art is an opt-in candidate, not a replacement for missing character or weapon artwork. Short gameplay segments from Warm Snow (30:51–31:07) and AFK Journey (15:15–15:18) were visually inspected; the brief samples do not establish full attack timing or audio behavior. Other reference entries remain listing/screenshot evidence only.
 
 ## Evidence and current playability
 
-Full verifier on the isolated candidate worktree: PASS. GdUnit 94/94; canonical bridge smoke; isolated endgame Boss fixture smoke; bounded smoke; Stagehand Home 50/50, Combat 28/28, Home capture 9/9, Combat capture 20/20; screenshot pixel check PASS. A separate candidate-flag-on capture passed 20/20 and pixel validation. See [gates](GATES_AND_HANDOFF.md), [runtime evidence](RUNTIME_VISUAL_EVIDENCE_INDEX.md), [gameplay loop](REAL_GAMEPLAY_LOOP_QA.md).
+The earlier Vô Diện/result UI source (`7d4ed24971c08fddd67575da316a3450adcc6bf1`) passed its full local verifier: GdUnit 94/94, bridge/P2/bounded smoke, Home 50/50, Combat 28/28, Home capture 9/9, Combat capture 20/20 and screenshot pixel validation. Those results apply to that source state.
+
+The latest R5 HUD source (`a83eb7daf9251583d6edac0328a40a576ca2e7ce`) passed full GdUnit 99/99, canonical bridge smoke, P2 fixture smoke, eight canonical Dao QA DTOs, project-context parse exit 0, actual Godot 4.7.2 Stagehand 51/51 and screenshot pixel validation 8/8. The wider `Verify-GodotLocal.ps1` run is not complete for this source state: its Home Stagehand scenario failed 42/43 at the `CombatAction.disabled` expectation. R5 screenshots remain local-only because existing player art rights are unresolved. The capture proves eight prefight HUD projections only; it does not prove eight distinct attacks or completion of the player progression loop. See [gates](GATES_AND_HANDOFF.md), [runtime evidence](RUNTIME_VISUAL_EVIDENCE_INDEX.md), [gameplay loop](REAL_GAMEPLAY_LOOP_QA.md).
 
 ## Documents
 
