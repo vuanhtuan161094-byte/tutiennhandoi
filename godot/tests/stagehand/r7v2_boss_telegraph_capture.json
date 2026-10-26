@@ -1,0 +1,87 @@
+{
+  "name": "tutien-r7v2-boss-telegraph-capture",
+  "description": "Isolated 390x844 runtime proof that a canonical lethal Boss cast produces an event-timed target telegraph and that it clears at cast completion.",
+  "target": {
+    "mode": "launch",
+    "project_path": "../..",
+    "headless": false,
+    "timeout_ms": 120000
+  },
+  "steps": [
+    {
+      "name": "Home runtime starts",
+      "action": "wait_for_node",
+      "with": { "selector": "name:HomeHUD", "state": "visible", "timeout_ms": 15000 }
+    },
+    {
+      "name": "Canonical bridge reaches online",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BridgeStatus", "property": "text", "operator": "contains", "expected_value": "ONLINE", "timeout_ms": 20000, "poll_interval_ms": 200 }
+    },
+    {
+      "name": "Prepare canonical endgame Boss QA fixture",
+      "action": "press_key",
+      "with": { "key": "F10" }
+    },
+    {
+      "name": "Endgame fixture opens Combat",
+      "action": "wait_for_node",
+      "with": { "selector": "name:CombatScreen", "state": "visible", "timeout_ms": 15000 }
+    },
+    {
+      "name": "Challenge is ready",
+      "action": "wait_for_property",
+      "with": { "selector": "name:CombatChallenge", "property": "disabled", "operator": "equals", "expected_value": false, "timeout_ms": 15000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Fixture action has settled",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": false, "timeout_ms": 15000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Start canonical Boss challenge",
+      "action": "click",
+      "with": { "selector": "name:CombatChallenge" }
+    },
+    {
+      "name": "Receive canonical combat events",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_combat_cursor", "operator": "greater_than", "expected_value": 0, "timeout_ms": 15000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Canonical Boss telegraph becomes active",
+      "action": "wait_for_property",
+      "with": { "selector": "name:CombatThreatTelegraph", "property": "_active", "operator": "equals", "expected_value": true, "timeout_ms": 90000, "poll_interval_ms": 50 }
+    },
+    {
+      "name": "Capture active canonical Boss telegraph 390x844",
+      "action": "screenshot",
+      "with": { "output": "combat-boss-telegraph-active-390x844.png" }
+    },
+    {
+      "name": "Telegraph clears at authoritative cast-time completion",
+      "action": "wait_for_property",
+      "with": { "selector": "name:CombatThreatTelegraph", "property": "_active", "operator": "equals", "expected_value": false, "timeout_ms": 6000, "poll_interval_ms": 50 }
+    },
+    {
+      "name": "Capture cleared Boss telegraph 390x844",
+      "action": "screenshot",
+      "with": { "output": "combat-boss-telegraph-cleared-390x844.png" }
+    },
+    {
+      "name": "Canonical endgame fight reaches result",
+      "action": "wait_for_property",
+      "with": { "selector": "name:CombatResult", "property": "visible", "operator": "equals", "expected_value": true, "timeout_ms": 90000, "poll_interval_ms": 250 }
+    },
+    {
+      "name": "Capture canonical endgame result 390x844",
+      "action": "screenshot",
+      "with": { "output": "combat-boss-telegraph-result-390x844.png" }
+    },
+    {
+      "name": "Scene remains inspectable",
+      "action": "tree",
+      "with": { "root_path": "/root", "max_depth": 5 }
+    }
+  ]
+}

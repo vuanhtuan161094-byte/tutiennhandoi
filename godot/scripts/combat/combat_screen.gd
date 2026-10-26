@@ -294,6 +294,7 @@ func _on_combat_event(event: Dictionary) -> void:
 		"battle.start":
 			_result_panel.visible = false
 			_player_actor.reset_to_idle()
+			_player_actor.clear_incoming_telegraph()
 			_challenge_button.visible = false
 			_apply_event_hp(target, payload)
 			if payload.has("monsterName"):
@@ -305,6 +306,11 @@ func _on_combat_event(event: Dictionary) -> void:
 				_present_artifact_effect(skill_id, ArtifactCombatVfx.PHASE_CAST)
 			elif actor == "enemy":
 				_enemy_actor.present_cast_windup()
+				if bool(payload.get("bossTelegraph", false)) and target == "player":
+					_player_actor.present_incoming_telegraph(
+						str(payload.get("bossDangerLevel", "warning")),
+						float(payload.get("castTime", 0.0))
+					)
 		"skill.travel":
 			if actor == "player" and target == "enemy":
 				_present_artifact_effect(skill_id, ArtifactCombatVfx.PHASE_TRAVEL, _enemy_actor)
@@ -349,6 +355,7 @@ func _on_combat_event(event: Dictionary) -> void:
 				_dao_widget.apply_target_mark(float(payload.stacks), float(payload.get("maxStacks", 5.0)))
 		"battle.end":
 			_player_actor.reset_to_idle()
+			_player_actor.clear_incoming_telegraph()
 			_battle_end_seen = true
 			_skill_rail.clear_selection()
 

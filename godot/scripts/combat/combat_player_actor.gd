@@ -3,6 +3,7 @@ class_name CombatPlayerActor
 
 const REGISTRY := preload("res://scripts/combat/combat_player_animation_registry.gd")
 const FALLBACK := preload("res://scripts/combat/combat_actor_placeholder.gd")
+const THREAT_TELEGRAPH := preload("res://scripts/combat/combat_threat_telegraph.gd")
 
 var _fallback: CombatActorPlaceholder
 var _sprite: AnimatedSprite2D
@@ -10,6 +11,7 @@ var _main_dao_id := ""
 var _current_skill_id := ""
 var _active_resource_path := ""
 var _active_preset: Dictionary = {}
+var _threat_telegraph: CombatThreatTelegraph
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -26,7 +28,19 @@ func _ready() -> void:
 	_sprite.z_index = 1
 	_sprite.animation_finished.connect(_on_animation_finished)
 	add_child(_sprite)
+	_threat_telegraph = THREAT_TELEGRAPH.new()
+	_threat_telegraph.name = "CombatThreatTelegraph"
+	_threat_telegraph.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_threat_telegraph.z_index = 2
+	add_child(_threat_telegraph)
 	resized.connect(_layout_sprite)
+
+func present_incoming_telegraph(danger_level: String, cast_time: float) -> void:
+	_threat_telegraph.present(danger_level, cast_time)
+
+func clear_incoming_telegraph() -> void:
+	if _threat_telegraph != null:
+		_threat_telegraph.clear()
 
 func bind_dao(dao_id: String) -> void:
 	_main_dao_id = dao_id
