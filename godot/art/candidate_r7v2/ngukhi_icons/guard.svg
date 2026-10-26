@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+<defs>
+<linearGradient id="jade" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d4fff2"/><stop offset=".42" stop-color="#68d6c7"/><stop offset="1" stop-color="#218a86"/></linearGradient>
+<linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff1bc"/><stop offset=".48" stop-color="#d9ae62"/><stop offset="1" stop-color="#91602f"/></linearGradient>
+</defs><g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M64 17L99 32V57C99 81 84 99 64 111C44 99 29 81 29 57V32Z" fill="#102a31" stroke="url(#gold)" stroke-width="4"/>
+<circle cx="64" cy="60" r="23" fill="url(#jade)" stroke="url(#gold)" stroke-width="4"/>
+<circle cx="64" cy="60" r="10" fill="#103036" stroke="#e6c27a" stroke-width="3"/>
+<path d="M64 37V47M64 73V84M41 60H51M77 60H87M48 44L55 51M73 69L80 76M80 44L73 51M55 69L48 76" stroke="#f0d998" stroke-width="3"/>
+<path d="M21 63C21 36 39 18 64 12M107 63C107 36 89 18 64 12" stroke="url(#jade)" stroke-width="3" opacity=".75"/>
+</g></svg>

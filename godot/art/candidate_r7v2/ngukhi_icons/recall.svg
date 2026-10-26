@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+<defs>
+<linearGradient id="jade" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d4fff2"/><stop offset=".42" stop-color="#68d6c7"/><stop offset="1" stop-color="#218a86"/></linearGradient>
+<linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff1bc"/><stop offset=".48" stop-color="#d9ae62"/><stop offset="1" stop-color="#91602f"/></linearGradient>
+</defs><g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="64" cy="64" r="17" fill="url(#jade)" stroke="url(#gold)" stroke-width="4"/>
+<path d="M45 56C37 44 41 29 54 23C67 17 80 23 84 34M83 72C91 84 87 99 74 105C61 111 48 105 44 94" stroke="url(#gold)" stroke-width="4"/>
+<path d="M83 25L85 39L71 36M45 103L43 89L57 92" stroke="url(#jade)" stroke-width="4"/>
+<path d="M26 61C27 43 34 31 45 24M102 67C101 85 94 97 83 104" stroke="#c4f5e6" stroke-width="2" opacity=".75"/>
+<path d="M60 60L30 39M68 60L98 39M60 68L30 89M68 68L98 89" stroke="url(#jade)" stroke-width="2" opacity=".65"/>
+<circle cx="27" cy="37" r="5" fill="url(#gold)"/><circle cx="101" cy="37" r="5" fill="url(#gold)"/>
+<circle cx="27" cy="91" r="5" fill="url(#gold)"/><circle cx="101" cy="91" r="5" fill="url(#gold)"/>
+</g></svg>

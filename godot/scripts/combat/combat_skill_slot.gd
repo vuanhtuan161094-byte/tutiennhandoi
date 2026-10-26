@@ -5,6 +5,18 @@ class_name CombatSkillSlot
 const STYLE := preload("res://scripts/combat/combat_style.gd")
 const ASSETS := preload("res://scripts/combat/combat_asset_resolver.gd")
 const GLYPHS := preload("res://scripts/combat/combat_placeholder_glyph.gd")
+const R7V2_NGUKHI_ICON_CANDIDATES := {
+	"skill.dao.artifact.basic": "res://art/candidate_r7v2/ngukhi_icons/basic.svg",
+	"skill.dao.artifact.deploy": "res://art/candidate_r7v2/ngukhi_icons/deploy.svg",
+	"skill.dao.artifact.guard": "res://art/candidate_r7v2/ngukhi_icons/guard.svg",
+	"skill.dao.artifact.strike": "res://art/candidate_r7v2/ngukhi_icons/strike.svg",
+	"skill.dao.artifact.sync": "res://art/candidate_r7v2/ngukhi_icons/sync.svg",
+	"skill.dao.artifact.recall": "res://art/candidate_r7v2/ngukhi_icons/recall.svg",
+	"skill.dao.artifact.split": "res://art/candidate_r7v2/ngukhi_icons/split.svg",
+	"skill.dao.artifact.merge": "res://art/candidate_r7v2/ngukhi_icons/merge.svg",
+	"skill.dao.artifact.suppress": "res://art/candidate_r7v2/ngukhi_icons/suppress.svg",
+	"skill.dao.artifact.ultimate": "res://art/candidate_r7v2/ngukhi_icons/ultimate.svg",
+}
 var asset_config: Dictionary = {}
 var skill: Dictionary = {}
 var selected := false
@@ -42,6 +54,10 @@ func bind(data: Dictionary) -> void:
 	tooltip_text = str(skill.get("name", "Ô chưa trang bị"))
 	asset_config = ASSETS.skill(str(skill.get('dao_id', '')), str(skill.get('id', '')), str(skill.get('slot_class', 'active')))
 	_icon = ASSETS.skill_texture(asset_config)
+	if OS.get_environment("TUTIEN_R7V2_NGUKHI_ICON_CANDIDATE") == "1":
+		var candidate_path := str(R7V2_NGUKHI_ICON_CANDIDATES.get(str(skill.get("id", "")), ""))
+		if not candidate_path.is_empty() and ResourceLoader.exists(candidate_path):
+			_icon = ResourceLoader.load(candidate_path) as Texture2D
 	var remaining := float(skill.get("cooldown_remaining", 0.0))
 	var blocked := str(skill.get("blocked_reason", ""))
 	if remaining > 0.0:

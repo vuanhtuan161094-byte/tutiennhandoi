@@ -11,7 +11,8 @@
 | Combat | Canonical events/playback; Boss label/art match; Stagehand Combat runtime 28/28 and visual capture 20/20. | PASS for scenario. | Both outcomes as separate forced cases, every Dao, mobile hardware, long-run/audio. |
 | Result/aftermath | Fixture asserts battle-end/result fields and disposable aftermath still at realm 114. | PASS for fixture contract. | Player-facing reward clarity, claim/continue and next-step comprehension. |
 
-Prefight capture: `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026\artifacts\godot-tools\stagehand-combat-visual\screenshots\combat-prefight-390x844.png`, SHA-256 `6548F1C1306682448A81743CC6CD1C71B73D6DA9BBC95198510B1D8FDB6187D6`.  
-Playback capture: `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026\artifacts\godot-tools\stagehand-combat-visual\screenshots\combat-playback-390x844.png`, SHA-256 `44E14577D3980E6E78DF41BEA21976513D7ECEED81A01966D8FF0F2B2B0F3D5F`.
+Prefight capture: `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026\artifacts\godot-tools\stagehand-combat-visual\screenshots\combat-prefight-390x844.png`, SHA-256 `3186542D668ED3511716445E15BD5C62E6638D34CEDA59DA159B15330487CC49`.
+
+Playback capture: `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026\artifacts\godot-tools\stagehand-combat-visual\screenshots\combat-playback-390x844.png`, SHA-256 `B3144BCA626E31F5B3712379C66932B0D41145A1D0FE08BA62648DE1F8C2567A`.
 
 Both are genuine, pixel-validated 390×844 Godot captures. They stay local because player WIP art rights are unknown. Preview correction keeps actual result hash `7865a49ac6db07f1855541a3b0998f6f7fbef37cf0665e812a4e502fc2ed4880` unchanged.
