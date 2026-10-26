@@ -1,0 +1,97 @@
+{
+  "status": "candidate",
+  "source_art": "godot/art/candidate_r7v2/ngukhi_tumi_animation_pilot/source",
+  "method": "ImageGen reference-guided cutout art; deterministic RGBA crop/mask packaging with Pillow",
+  "canvas_px": {
+    "width": 1024,
+    "height": 1536
+  },
+  "body_socket_px": {
+    "x": 425,
+    "y": 285
+  },
+  "arm_asset_crop_origin_px": {
+    "x": 70,
+    "y": 53
+  },
+  "arm_pivot_in_full_asset_px": {
+    "x": 820,
+    "y": 100
+  },
+  "arm_pivot_in_cropped_asset_px": {
+    "x": 750,
+    "y": 47
+  },
+  "arm_sprite_scale": 0.4,
+  "arm_sprite_position_in_rig_px": {
+    "x": -130.6,
+    "y": 265.8
+  },
+  "arm_hand_tip_in_sprite_local_px": {
+    "x": -410.5,
+    "y": 635.5
+  },
+  "prop_crop_origin_px": {
+    "x": 771,
+    "y": 36
+  },
+  "layers": [
+    {
+      "name": "body_backplate",
+      "path": "godot/art/candidate_r7v2/ngukhi_tumi_animation_pilot/layers/tu-mi-body-backplate.png",
+      "sha256": "f700aa01e921bd2b0d0bfff6972989b96838fc44c847f630f628057475844367",
+      "bytes": 1629996,
+      "width": 1024,
+      "height": 1536,
+      "alpha_zero_pixels": 1167844,
+      "alpha_1_254_pixels": 405020,
+      "alpha_255_pixels": 0,
+      "alpha_bbox_threshold_16": [
+        56,
+        7,
+        908,
+        1520
+      ]
+    },
+    {
+      "name": "left_arm",
+      "path": "godot/art/candidate_r7v2/ngukhi_tumi_animation_pilot/layers/tu-mi-left-arm.png",
+      "sha256": "856c753013651d7c8c0f65e8670cc19f0baea73558b58e2f09c433ca2bf8ba4b",
+      "bytes": 881691,
+      "width": 847,
+      "height": 1423,
+      "alpha_zero_pixels": 995247,
+      "alpha_1_254_pixels": 210034,
+      "alpha_255_pixels": 0,
+      "alpha_bbox_threshold_16": [
+        8,
+        8,
+        839,
+        1415
+      ]
+    },
+    {
+      "name": "crystal_treasure",
+      "path": "godot/art/candidate_r7v2/ngukhi_tumi_animation_pilot/layers/tu-mi-crystal-treasure.png",
+      "sha256": "6ca20e12780d8c25a489014627a9143865a6eb630064b8ca1651c5777e9a59a6",
+      "bytes": 109229,
+      "width": 212,
+      "height": 274,
+      "alpha_zero_pixels": 28915,
+      "alpha_1_254_pixels": 29173,
+      "alpha_255_pixels": 0,
+      "alpha_bbox_threshold_16": [
+        6,
+        6,
+        206,
+        274
+      ]
+    }
+  ],
+  "occlusion_review": {
+    "body": "AI-generated simplified-outfit backplate with the screen-left relaxed/casting arm removed at its shoulder socket; crystals were not present in this source layer.",
+    "left_arm": "separate short-sleeve shoulder-to-fingertip RGBA layer; single pivot; no elbow/wrist/finger articulation.",
+    "treasure": "three floating crystal blades are isolated from the body and animated as an independent layer.",
+    "vfx": "kept as a Godot procedural node, never baked into body or prop textures."
+  }
+}

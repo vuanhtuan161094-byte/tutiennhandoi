@@ -1,0 +1,133 @@
+{
+  "status": "candidate",
+  "godot_version": "4.7.2.stable.official.ed1daf0bf",
+  "viewport_px": [
+    390,
+    844
+  ],
+  "frame_size_px": [
+    320,
+    480
+  ],
+  "fps": 8,
+  "frame_count": 12,
+  "duration_seconds": 1.5,
+  "unique_frame_count": 12,
+  "alpha_bboxes_threshold_16": [
+    [
+      69,
+      118,
+      254,
+      420
+    ],
+    [
+      69,
+      118,
+      253,
+      420
+    ],
+    [
+      52,
+      118,
+      253,
+      420
+    ],
+    [
+      24,
+      116,
+      254,
+      420
+    ],
+    [
+      5,
+      113,
+      254,
+      420
+    ],
+    [
+      27,
+      88,
+      255,
+      420
+    ],
+    [
+      69,
+      45,
+      256,
+      420
+    ],
+    [
+      69,
+      40,
+      256,
+      420
+    ],
+    [
+      69,
+      43,
+      255,
+      420
+    ],
+    [
+      69,
+      39,
+      253,
+      420
+    ],
+    [
+      29,
+      80,
+      253,
+      420
+    ],
+    [
+      16,
+      118,
+      254,
+      420
+    ]
+  ],
+  "frame_pair_mean_abs_rgb_delta_0_to_255": [
+    1.1395963541666667,
+    2.6553537326388885,
+    2.9808767361111115,
+    3.186623263888889,
+    3.47990234375,
+    3.6841927083333332,
+    3.46068359375,
+    2.2574457465277775,
+    3.3231076388888887,
+    3.248845486111111,
+    2.8562868923611107
+  ],
+  "static_body_foot_roi_bottom_y": [
+    419,
+    419,
+    419,
+    419,
+    419,
+    419,
+    419,
+    419,
+    419,
+    419,
+    419,
+    419
+  ],
+  "foot_baseline_stable": true,
+  "rig_layers_decoded_rgba_bytes": 11344932,
+  "sprite_atlas_decoded_rgba_bytes": 7372800,
+  "atlas_file_bytes": 151094,
+  "motion_reference_video_available": true,
+  "motion_reference_video_path": "evidence/cast-motion-reference.avi",
+  "motion_reference_video_fps": 8,
+  "motion_reference_video_frames": 24,
+  "motion_reference_video_duration_seconds": 3.0,
+  "wan22_generated_video": false,
+  "notes": [
+    "Frame PNGs were captured from the Godot rig scene at fixed 8 fps.",
+    "The motion-reference AVI is a Godot render of candidate A, not performer footage or Wan-generated output.",
+    "B remains workflow-only because Wan2.2 model weights, ComfyUI runtime, and a compatible GPU are unavailable locally.",
+    "Character pose and foot baseline are held by the same rig root; the hand arm is a separate rotated cutout."
+  ]
+}
