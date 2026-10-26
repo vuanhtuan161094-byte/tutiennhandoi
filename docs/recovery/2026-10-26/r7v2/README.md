@@ -18,7 +18,14 @@
 - Focused GdUnit passed 15/15; the event projection assertion, GDScript parse checks, bounded headless runtime smoke, and actual Godot 4.7.2 Stagehand capture passed. Stagehand completed 15/15 and screenshot pixel validation passed 3/3. See [gates](GATES_AND_HANDOFF.md) and [runtime evidence](RUNTIME_VISUAL_EVIDENCE_INDEX.md).
 - This is a narrow **R5 partial**. It changes presentation only; no combat coefficients, authority, rewards, or save schema changed. The eight-Dao combat slice and the full production gate remain open.
 - A separate `Verify-GodotLocal.ps1 -SkipVisual` run imported the project but was blocked when Godot could not write the user's roaming editor settings. This source SHA is therefore not reported as passing that full verifier.
-- The latest remote `main` head was `69a49c6b8add53f8e363717e312656c4ae07bf59` when this record was prepared.
+- The Boss telegraph source commit is `69a49c6b8add53f8e363717e312656c4ae07bf59`. The R2 asset-intake update is based on documentation checkpoint `2cc401cb18a42bfc93c46c61d390112970598c6a`.
+
+## R2 asset preservation and import — local WIP remains unapproved
+
+- Preserved the E: candidate pack byte-for-byte to `C:\Users\Admin\Documents\Codex\TND_R7V2_ASSET_RECOVERY_20261026\candidate-originals\`; all 34 files matched SHA-256 after copy. The source E: tree was not modified.
+- Current snapshot: 11 Ngự Khí action groups, 34 files, 41,905,320 B. The previous report's 41,916,400 B is 11,080 B higher and remains unreconciled.
+- Isolated Godot 4.7.2 import passed all 11 SpriteFrames resources and their atlas sizes, frame rectangles/counts, sidecar sample order, FPS, loop and RGBA8 alpha. The 10 unique referenced source-video files were not found in the inspected E: project tree; rights, character mapping and source order are unverified. The pack was not integrated into the game or uploaded.
+- See the [per-file SHA inventory](ASSET_CANDIDATE_SHA256_20261026.csv), [11-action clip index](NGUKHI_WIP_CLIP_INDEX_20261026.csv), and [asset provenance record](ASSET_RIGHTS_AND_PROVENANCE.md).
 
 ## Milestone
 

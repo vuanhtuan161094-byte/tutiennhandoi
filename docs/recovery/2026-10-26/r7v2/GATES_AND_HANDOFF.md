@@ -70,6 +70,20 @@ The save path is disposable and stays under `artifacts`; do not point it at a re
 
 The runtime log had no `SCRIPT ERROR`; it retained the CA-store warning and the existing `main.tscn` invalid-UID text-path fallback. The screenshots contain existing player art with unclear redistribution rights, so they stay local. This slice changes presentation only: no gameplay authority, coefficients, rewards, or save schema.
 
+## R2 asset preservation / import gate — 2026-10-26
+
+| Gate | Result | Scope / note |
+|---|---|---|
+| Source preservation | PASS | 34/34 source files and C: backup files match the recorded SHA-256 manifest; the E: source remains unchanged. |
+| Inventory | PASS | 11 action groups, 34 files, 41,905,320 B; the prior 41,916,400 B total differs by 11,080 B and is unreconciled. Per-file hashes are in [asset inventory](ASSET_CANDIDATE_SHA256_20261026.csv). |
+| Isolated Godot import / resource structure | PASS | Official Godot 4.7.2 imported all 11 SpriteFrames resources and verified atlas dimensions, RGBA8 alpha mode, frame counts/rects, sidecar order, FPS and loop. This is a technical import check only. |
+| Source video trace | BLOCKED | 0/10 unique referenced MP4 files found in the inspected project tree; sidecar source hashes cannot be verified against video bytes. No creator/license record was found. |
+| Metadata consistency | BLOCKED | Pack top-level manifest (`combat/ngukhi_v1/manifest.json`) lists 4 actions while 11 sidecars exist. `idle` records 7 sampled frames but 12 unique/output frames. |
+| Runtime visual / character identity | NOT RUN | No original videos were available for frame-by-frame source comparison; no in-game candidate integration was attempted. |
+| Publication / rights | BLOCKED | The WIP pack and source videos remain local. The repository receives hash/metadata CSVs only, not binaries. Hashes are not proof of distribution rights. |
+
+Local-only preservation and import logs are under `C:\Users\Admin\Documents\Codex\TND_R7V2_ASSET_RECOVERY_20261026\`; the full C: path is not an accessible GitHub evidence link. The selected logs and local file paths are described in the recovery notes; screenshots/source videos were not uploaded.
+
 ## Handoff
 
-R7 V2 remains active. Continue with R2-ASSET, then R3-ENDGAME and R4-VISUAL. R5 has one verified Boss telegraph slice; the complete eight-Dao/Auto/combat-feedback work remains open. Warm Snow footage was sampled at 30:51–31:07 and AFK Journey at 15:15–15:18; the short samples do not prove attack-cycle or audio timing. Owner approval remains open for visual direction, baked-aura treatment, lawful use of WIP/11 clips, and Auto semantics if no authoritative control exists. Core Balance and auxiliary-system work remain inactive.
+R7 V2 remains active. R2 preservation and technical import are complete, but source provenance, rights, visual matching and runtime integration remain blocked/pending. Continue with R3-ENDGAME and R4-VISUAL while keeping those asset gates open. R5 has one verified Boss telegraph slice; the complete eight-Dao/Auto/combat-feedback work remains open. Warm Snow footage was sampled at 30:51–31:07 and AFK Journey at 15:15–15:18; the short samples do not prove attack-cycle or audio timing. Owner approval remains open for visual direction, baked-aura treatment, lawful use of WIP/11 clips, and Auto semantics if no authoritative control exists. Core Balance and auxiliary-system work remain inactive.

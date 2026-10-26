@@ -37,6 +37,14 @@ All three remote changes used current-head checks and expected-SHA fast-forward 
 - Evidence: focused GdUnit 15/15; Node canonical event projection assertion passed; direct Godot parse checks passed for all five changed GDScript/test files; bounded headless smoke passed; official Godot 4.7.2 Stagehand 15/15; screenshot pixel validation 3/3. The broader `Verify-GodotLocal.ps1 -SkipVisual` run was blocked after import because Godot could not write `C:\Users\Admin\AppData\Roaming\Godot\editor_settings-4.7.tres`; it is not a PASS for this SHA.
 - Changed paths are limited to the three combat presentation scripts, the new telegraph script, the focused unit test, and the Stagehand scenario above. No backend gameplay, combat coefficients, authority, reward settlement, save schema, or production art changed.
 
+## R2 Ngự Khí WIP preservation and import — documentation/metadata milestone
+
+- Source pack: `E:\0. 1. tu tien nhan roi\godot\art\candidate\combat\ngukhi_v1\`; copied byte-for-byte to the same relative path below `C:\Users\Admin\Documents\Codex\TND_R7V2_ASSET_RECOVERY_20261026\candidate-originals\`. All 34 source and backup files currently match the recorded SHA-256 manifest. The repository CSV carries only relative path, byte count and SHA-256. No source file on E: was modified.
+- Inventory: 11 action folders, each with WebP atlas + JSON sidecar + `.tres`, plus top-level `manifest.json`; 45 logical items (11 folders + 34 files). There are 10 unique referenced MP4 names because idle/basic both cite `1000020024.mp4`.
+- Technical gate: an isolated Godot 4.7.2 disposable project imported all 11 SpriteFrames. The audit verified atlas dimensions/RGBA8 alpha, resource frame count and JSON rectangles, sampled index ordering, FPS and loop. This did not verify video-to-frame identity, actual action quality, rig compatibility, character/school identity, legal provenance, or in-game runtime.
+- Open evidence: none of the 10 unique source MP4s was located in the inspected project tree; their source SHA claims are unverified. No rights/creator record was found. The pack top-level manifest has four actions versus 11 per-action sidecars; idle has sampled/unique/output counts 7/12/12. A prior reported pack total (41,916,400 B) differs by 11,080 B from this snapshot.
+- Publication boundary: only `ASSET_CANDIDATE_SHA256_20261026.csv` and `NGUKHI_WIP_CLIP_INDEX_20261026.csv` plus the text findings are proposed for GitHub. WIP binary files, source videos, screenshots with uncleared existing player art, and save data are excluded. Rights and runtime integration remain pending; the technical import PASS does not authorize distribution.
+
 ## Changed paths across code slice
 
 - `dist/core/session.js`: read-only preview uses upcoming Boss seed.
