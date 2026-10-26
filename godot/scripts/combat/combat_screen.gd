@@ -75,7 +75,8 @@ func bind(vm: Dictionary) -> void:
 		return
 	_battle_end_seen = false
 	_battlefield.bind_environment(vm.get("environment", {}))
-	_enemy_actor.bind_archetype(str(vm.get("enemy", {}).get("archetype_id", "")))
+	var candidate_boss_art := bool(vm.get("boss", {}).get("isBoss", false)) and OS.get_environment("TUTIEN_R7V2_BOSS_ART_CANDIDATE") == "1"
+	_enemy_actor.bind_archetype(str(vm.get("enemy", {}).get("archetype_id", "")), candidate_boss_art)
 	_player_actor.bind_dao(str(vm.get("main_dao_id", "")))
 	_artifact_director.bind(str(vm.get("main_dao_id", "")), vm.get("dao", {}))
 	_lane.reset()
@@ -291,13 +292,21 @@ func _on_combat_event(event: Dictionary) -> void:
 				_skill_rail.set_selected_skill(skill_id)
 				_player_actor.play_skill(skill_id)
 				_present_artifact_effect(skill_id, ArtifactCombatVfx.PHASE_CAST)
+			elif actor == "enemy":
+				_enemy_actor.present_cast_windup()
 		"skill.travel":
 			if actor == "player" and target == "enemy":
 				_present_artifact_effect(skill_id, ArtifactCombatVfx.PHASE_TRAVEL, _enemy_actor)
 		"combat.damage", "combat.dot":
 			_apply_event_hp(target, payload)
 			if actor == "player" and target == "enemy":
+				if str(_vm.get("main_dao_id", "")) != "artifact":
+					_feedback.flash_hit(_enemy_actor, CombatFeedback.ImpactLevel.NORMAL)
+					_feedback.punch(_enemy_actor, 1.035, 0.14)
 				_present_artifact_effect(skill_id, ArtifactCombatVfx.PHASE_IMPACT, _enemy_actor)
+			elif actor == "enemy" and target == "player":
+				_feedback.flash_hit(_player_actor, CombatFeedback.ImpactLevel.NORMAL)
+				_feedback.punch(_player_actor, 1.035, 0.14)
 		"combat.heal":
 			_apply_event_hp(target, payload)
 			if actor == "player":

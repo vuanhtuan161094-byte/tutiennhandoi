@@ -47,6 +47,7 @@ func test_tactical_priority_and_only_exported_cast_progress() -> void:
 	add_child(screen)
 	screen.bind(COMBAT_VIEW_MODEL.build(_valid_combat()))
 	screen._on_combat_event({"type":"skill.cast.start", "actor":"enemy", "skill_name":"Boss cast", "payload":{"bossTelegraph":true, "castTime":4.0}})
+	assert_bool(screen._enemy_actor._action_tween != null).is_true()
 	screen._on_combat_event({"type":"skill.cast.start", "actor":"player", "skill_name":"Basic", "payload":{}})
 	assert_str(screen._tactical.text).is_equal("Boss cast")
 	assert_bool(screen._lane.progress.visible).is_true()
@@ -56,6 +57,17 @@ func test_tactical_priority_and_only_exported_cast_progress() -> void:
 	assert_str(screen._tactical.text).is_equal("CỬA PHẢN CÔNG")
 	assert_bool(screen._lane.progress.visible).is_false()
 	screen.free()
+
+func test_r7v2_boss_art_candidate_is_only_requested_for_boss_binding() -> void:
+	var actor := CombatActorPlaceholder.new()
+	actor.enemy = true
+	var candidate_path := "res://art/candidate_r7v2/wood_guardian/wood_guardian_boss.png"
+	actor.bind_archetype("serpent", false)
+	assert_bool(actor._texture == null or actor._texture.resource_path != candidate_path).is_true()
+	actor.bind_archetype("serpent", true)
+	assert_bool(actor._texture != null).is_true()
+	assert_str(actor._texture.resource_path).is_equal(candidate_path)
+	actor.free()
 
 func test_artifact_damage_event_spawns_presentation_impact_without_mutating_authority() -> void:
 	var screen := COMBAT_SCREEN.new()

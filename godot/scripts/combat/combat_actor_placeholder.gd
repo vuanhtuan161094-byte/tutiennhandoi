@@ -1,13 +1,37 @@
 extends Control
 class_name CombatActorPlaceholder
 const ASSETS := preload("res://scripts/combat/combat_asset_resolver.gd")
+const R7V2_BOSS_ART_CANDIDATE := "res://art/candidate_r7v2/wood_guardian/wood_guardian_boss.png"
 var asset_config: Dictionary = {}
 ## Native silhouette placeholder; replace this surface with a sprite later.
 var enemy := false
+var _texture: Texture2D
+var _idle_clock := 0.0
+var _action_tween: Tween
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	resized.connect(queue_redraw)
+	resized.connect(_sync_pivot)
+	_sync_pivot()
+
+func _process(delta: float) -> void:
+	if _texture == null:
+		return
+	_idle_clock += maxf(0.0, delta)
+	queue_redraw()
+
+func _sync_pivot() -> void:
+	pivot_offset = size * Vector2(0.5, 0.84)
+
+func present_cast_windup() -> void:
+	if _action_tween != null and _action_tween.is_running():
+		_action_tween.kill()
+	rotation = 0.0
+	_action_tween = create_tween()
+	var lean := 0.035 if enemy else -0.035
+	_action_tween.tween_property(self, "rotation", lean, 0.12).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_action_tween.tween_property(self, "rotation", 0.0, 0.20).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _shape(points: Array, fill: Color, edge: Color) -> void:
 	var polygon := PackedVector2Array()
@@ -18,6 +42,17 @@ func _shape(points: Array, fill: Color, edge: Color) -> void:
 	draw_polyline(polygon, edge, 1.2, true)
 
 func _draw() -> void:
+	if _texture != null:
+		_draw_grounding_shadow()
+		var source_size := _texture.get_size()
+		if source_size.x > 0.0 and source_size.y > 0.0:
+			var available := size * Vector2(0.98, 0.86)
+			var fit := minf(available.x / source_size.x, available.y / source_size.y)
+			var target_size := source_size * fit
+			var idle_bob := sin(_idle_clock * 1.7) * size.y * 0.006
+			var target_origin := Vector2((size.x - target_size.x) * 0.5, size.y - target_size.y - size.y * 0.02 + idle_bob)
+			draw_texture_rect(_texture, Rect2(target_origin, target_size), false)
+		return
 	var visual_scale := clampf(float(asset_config.get("layout", {}).get("scale", 1.0)), 0.25, 2.0) if enemy else 1.0
 	draw_set_transform(size * Vector2(0.5, 0.9) * (1.0 - visual_scale), 0.0, Vector2.ONE * visual_scale)
 	var authored_shadow := ASSETS.texture_for_path(str(asset_config.get("shadowPath", "")))
@@ -51,9 +86,24 @@ func _draw() -> void:
 		draw_line(size * Vector2(.61,.57), size * Vector2(.72,.62), Color("bd9c65"), 2.0, true)
 		draw_line(size * Vector2(.40,.52), size * Vector2(.61,.55), Color("bd9c65"), 1.5, true)
 
-func bind_archetype(archetype_id: String) -> void:
+func bind_archetype(archetype_id: String, candidate_boss: bool = false) -> void:
 	asset_config = ASSETS.enemy(archetype_id)
+	_texture = null
+	if enemy and candidate_boss:
+		_texture = ResourceLoader.load(R7V2_BOSS_ART_CANDIDATE) as Texture2D
+	elif enemy:
+		_texture = ASSETS.texture_for_path(str(asset_config.get("spritePath", "")))
+	set_process(enemy and _texture != null)
 	queue_redraw()
+
+func _draw_grounding_shadow() -> void:
+	var shadow_center := size * Vector2(0.52, 0.94)
+	for layer in range(3):
+		var ring := PackedVector2Array()
+		for point in range(32):
+			var angle := TAU * float(point) / 32.0
+			ring.append(shadow_center + Vector2(cos(angle) * size.x * (0.25 - layer * 0.025), sin(angle) * size.y * (0.035 - layer * 0.004)))
+		draw_colored_polygon(ring, Color(0.005, 0.018, 0.022, 0.11 - layer * 0.025))
 
 func _draw_archetype(rim: Color) -> bool:
 	var id := str(asset_config.get("fallbackKey", "generic"))
