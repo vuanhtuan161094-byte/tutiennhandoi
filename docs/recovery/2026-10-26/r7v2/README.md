@@ -18,7 +18,7 @@
 - Focused GdUnit passed 15/15; the event projection assertion, GDScript parse checks, bounded headless runtime smoke, and actual Godot 4.7.2 Stagehand capture passed. Stagehand completed 15/15 and screenshot pixel validation passed 3/3. See [gates](GATES_AND_HANDOFF.md) and [runtime evidence](RUNTIME_VISUAL_EVIDENCE_INDEX.md).
 - This is a narrow **R5 partial**. It changes presentation only; no combat coefficients, authority, rewards, or save schema changed. The eight-Dao combat slice and the full production gate remain open.
 - A separate `Verify-GodotLocal.ps1 -SkipVisual` run imported the project but was blocked when Godot could not write the user's roaming editor settings. This source SHA is therefore not reported as passing that full verifier.
-- The Boss telegraph source commit is `69a49c6b8add53f8e363717e312656c4ae07bf59`. The R2 asset-intake update is based on documentation checkpoint `2cc401cb18a42bfc93c46c61d390112970598c6a`.
+- The Boss telegraph source commit is `69a49c6b8add53f8e363717e312656c4ae07bf59`. The R2 asset-intake metadata handoff is commit `55ee96e07a1c95588aede668ee1e5b03f8ec3c18`, parent `2cc401cb18a42bfc93c46c61d390112970598c6a`.
 
 ## R2 asset preservation and import — local WIP remains unapproved
 
@@ -26,6 +26,12 @@
 - Current snapshot: 11 Ngự Khí action groups, 34 files, 41,905,320 B. The previous report's 41,916,400 B is 11,080 B higher and remains unreconciled.
 - Isolated Godot 4.7.2 import passed all 11 SpriteFrames resources and their atlas sizes, frame rectangles/counts, sidecar sample order, FPS, loop and RGBA8 alpha. The 10 unique referenced source-video files were not found in the inspected E: project tree; rights, character mapping and source order are unverified. The pack was not integrated into the game or uploaded.
 - See the [per-file SHA inventory](ASSET_CANDIDATE_SHA256_20261026.csv), [11-action clip index](NGUKHI_WIP_CLIP_INDEX_20261026.csv), and [asset provenance record](ASSET_RIGHTS_AND_PROVENANCE.md).
+
+## R4 Character screen runtime review — partial
+
+- The real Character route was opened in Godot 4.7.2 at 390×844 against a fresh disposable QA bridge. The Stagehand capture now waits for `CharacterStatus` to show canonical equipment guidance before taking the frame; the DTO arrived 1.37 s after navigation. The revised scenario passed 6/6.
+- The first fixed-delay capture showed the loading text with placeholder stats. The evidence-backed correction is to wait for DTO bind; no production UI/gameplay code changed. In the loaded frame, labels/slots remain in the viewport and the character art does not cover the stat/action controls. The art is existing WIP, so the image stays local pending distribution rights.
+- This is a desktop Godot runtime capture at a mobile-sized viewport, not physical Android QA. Other Home/Character/Combat states and art approval remain open. See the [runtime evidence index](RUNTIME_VISUAL_EVIDENCE_INDEX.md).
 
 ## Milestone
 

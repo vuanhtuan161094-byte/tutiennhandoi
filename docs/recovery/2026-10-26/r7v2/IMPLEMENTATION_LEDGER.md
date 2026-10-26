@@ -45,6 +45,12 @@ All three remote changes used current-head checks and expected-SHA fast-forward 
 - Open evidence: none of the 10 unique source MP4s was located in the inspected project tree; their source SHA claims are unverified. No rights/creator record was found. The pack top-level manifest has four actions versus 11 per-action sidecars; idle has sampled/unique/output counts 7/12/12. A prior reported pack total (41,916,400 B) differs by 11,080 B from this snapshot.
 - Publication boundary: only `ASSET_CANDIDATE_SHA256_20261026.csv` and `NGUKHI_WIP_CLIP_INDEX_20261026.csv` plus the text findings are proposed for GitHub. WIP binary files, source videos, screenshots with uncleared existing player art, and save data are excluded. Rights and runtime integration remain pending; the technical import PASS does not authorize distribution.
 
+## R4 Character runtime capture — test-quality follow-up
+
+- Updated `godot/tests/stagehand/character_visual_capture.json` to wait for canonical `CharacterStatus` to replace its loading state before the screenshot. The previous fixed 850 ms delay captured a transitional UI with default/zero stats; a diagnostic wait showed the real DTO binds about 1.37 s after navigation.
+- Official Godot 4.7.2 Stagehand run passed 6/6; screenshot is 390×844 and its SHA/local-only path are in `RUNTIME_VISUAL_EVIDENCE_INDEX.md`. This changed only the capture scenario; no production source, gameplay, save, or asset changed. Visual review found no obvious control overlap/clipping on this frame. Physical mobile and other screen states remain unverified.
+- R2 metadata handoff commit: `55ee96e07a1c95588aede668ee1e5b03f8ec3c18` (fast-forward on `main`, verified remote).
+
 ## Changed paths across code slice
 
 - `dist/core/session.js`: read-only preview uses upcoming Boss seed.

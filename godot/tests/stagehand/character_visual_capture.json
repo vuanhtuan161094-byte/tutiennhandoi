@@ -6,6 +6,7 @@
     {"name":"Character navigation is available","action":"wait_for_node","with":{"selector":"name:Nav_character","state":"visible","timeout_ms":15000}},
     {"name":"Open Character","action":"click","with":{"selector":"name:Nav_character"}},
     {"name":"Character screen is visible","action":"wait_for_node","with":{"selector":"name:CharacterScreen","state":"visible","timeout_ms":15000}},
+    {"name":"Canonical Character DTO has replaced loading state","action":"wait_for_property","with":{"selector":"name:CharacterStatus","property":"text","operator":"contains","expected_value":"trang bị","timeout_ms":15000,"poll_interval_ms":100}},
     {"name":"Let standing animation and data settle","action":"sleep","with":{"duration_ms":850}},
     {"name":"Capture Character 390x844","action":"screenshot","with":{"output":"character-390x844.png"}}
   ]

@@ -14,6 +14,7 @@ Classification: **genuine Godot captures, local-only**. They were not composited
 | Endgame demon prefight | `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026\artifacts\r7v2-endgame-boss-result-ui\screenshots\combat-prefight-390x844.png` | 206,799 B · 390×844 | `953AF02CD58598D76992FDDF50FA52D56D23F4055E4ABDA42CBB2595A234A797` | Genuine Godot capture; candidate Boss image visible; local-only due player-art rights. |
 | Endgame demon playback | `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026\artifacts\r7v2-endgame-boss-result-ui\screenshots\combat-playback-390x844.png` | 175,890 B · 390×844 | `F2DA1ACEBCB82E1633EAD95192E35A3D7C7FEB87948412F14E40DB23F3FAB59F` | Genuine canonical runtime frame; local-only due player-art rights. |
 | Endgame demon result | `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026\artifacts\r7v2-endgame-boss-result-ui\screenshots\combat-endgame-result-390x844.png` | 210,278 B · 390×844 | `8CB91C5B227E272C4A303FDAAE612257E28F63A1B7CE6258F8285522CB0C647D` | Genuine result frame; displays canonical **THẤT BẠI** in the new lower-right panel; local-only due player-art rights. |
+| Character loaded runtime | `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026\artifacts\r7v2-r4-character-visual\character-canonical\screenshots\character-390x844.png` | 619,886 B · 390×844 | `7A2678413B6FA749A1C44BD263DC79EB48132F74FCE0C40FA5D1827F18A5DD95` | Actual Character route after canonical DTO bind; Stagehand 6/6, local-only due existing player-art rights. |
 
 Stagehand report: `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026\artifacts\godot-tools\stagehand-combat-visual\report.json` (20 pass / 0 fail / 0 skipped). JUnit is adjacent at `...\stagehand-combat-visual\junit.xml`. Full verifier artifacts: `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026\artifacts\godot-tools`.
 
@@ -22,6 +23,8 @@ Candidate-flag-on Stagehand report: `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_
 A local path plus hash is an evidence record, not a URL or a remotely accessible file.
 
 Endgame report: `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026\artifacts\r7v2-endgame-boss-result-ui\report.json` (21 pass / 0 fail / 0 skipped). `pixel-validation.json` reports PASS for all three frames. These screenshot files are not included in the GitHub commit; their absolute paths resolve only on this machine.
+
+R4 Character capture report: `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026\artifacts\r7v2-r4-character-visual\character-canonical\report.json` (6 pass / 0 fail / 0 skipped; Godot 4.7.2). The scenario waits for the canonical Character DTO to replace the loading status before capture. The image/report are local-only and not GitHub-accessible.
 
 ## Boss danger telegraph — source SHA `69a49c6b8add53f8e363717e312656c4ae07bf59`
 
