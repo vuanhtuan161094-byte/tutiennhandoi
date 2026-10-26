@@ -195,6 +195,26 @@ class GodotCanonicalRuntime {
     this.dirty=true;
     return {fixture:'artifact',canonical:true,realmOrder:this.session.stateValue.realm.maxRealmOrder,skillIds:this.session.canonicalActiveSkillIds()};
   }
+  prepareQaDao(mainDaoId){
+    const dao=String(mainDaoId||'').trim().toLowerCase();
+    const supported=new Set(['sword','fist','body','spell','poison','formation','artifact','mind']);
+    if(!supported.has(dao))throw new Error('QA Dao fixture không hợp lệ: '+dao);
+    this.newGame(161094);
+    // QA only: canonical realm, specialization, skill learning and loadout APIs;
+    // the caller supplies a disposable bridge-save path.
+    while(this.session.stateValue.realm.maxRealmOrder<102){
+      const realm=registry.realm(this.session.stateValue.realm.realmId);
+      if(!realm?.nextRealmId)throw new Error(`QA ${dao} fixture cannot reach realm order 102.`);
+      this.session.applyRealmTransitionV140(realm.nextRealmId,'diagnostic');
+    }
+    this.session.commitSpecializationV125('orthodox',dao);
+    const catalog=battleDaoV2Catalog(dao);
+    for(const row of catalog.tree)this.session.learnSkill(row.activeSkillId);
+    const ids=[catalog.basicSkillId,...catalog.tree.slice(0,5).map(row=>row.activeSkillId),catalog.ultimateSkillId];
+    this.session.setCombatLoadout(ids,battleDaoAutoRotationV127(dao,ids));
+    this.dirty=true;
+    return {fixture:'dao-'+dao,canonical:true,realmOrder:this.session.stateValue.realm.maxRealmOrder,mainDaoId:dao,skillIds:this.session.canonicalActiveSkillIds()};
+  }
   prepareQaEndgameBoss(){
     // Build an isolated QA player with the canonical Artifact loadout, advance by
     // canonical realm transitions, and select the first Boss floor of its realm.
@@ -225,8 +245,9 @@ class GodotCanonicalRuntime {
   setQaFixture(value){
     if(!QA_MODE)throw new Error('QA fixture chỉ khả dụng trong isolated QA mode.');
     const fixture=String(value||'').trim().toLowerCase();
+    const daoMatch=/^dao-(sword|fist|body|spell|poison|formation|artifact|mind)$/.exec(fixture);
     const allowed=new Set(['clear','inventory','ling2','ling3','ling4','ascend','tribulation','artifact','endgame-boss']);
-    if(!allowed.has(fixture))throw new Error('QA fixture không hợp lệ: '+fixture);
+    if(!allowed.has(fixture)&&!daoMatch)throw new Error('QA fixture không hợp lệ: '+fixture);
     this.qaFixtureSeq+=1;
     if(fixture==='clear'){
       this.qaFixture='';
@@ -240,6 +261,7 @@ class GodotCanonicalRuntime {
     if(fixture==='tribulation')return this.prepareQaTribulation();
     if(fixture==='artifact')return this.prepareQaArtifact();
     if(fixture==='endgame-boss')return this.prepareQaEndgameBoss();
+    if(daoMatch)return this.prepareQaDao(daoMatch[1]);
     return {fixture,canonical:false,presentationOnly:true,multiplier:Number(fixture.slice(-1))||1};
   }
   homeView(){

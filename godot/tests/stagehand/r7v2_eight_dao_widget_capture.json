@@ -1,0 +1,267 @@
+{
+  "name": "tutien-r7v2-eight-dao-widget-capture",
+  "description": "Actual 390x844 Godot captures of all eight canonical Dao prefight projections. F11 cycles QA-only canonical loadouts in a disposable save.",
+  "target": {
+    "mode": "launch",
+    "project_path": "../..",
+    "headless": false,
+    "timeout_ms": 240000
+  },
+  "steps": [
+    {
+      "name": "Home runtime starts",
+      "action": "wait_for_node",
+      "with": { "selector": "name:HomeHUD", "state": "visible", "timeout_ms": 15000 }
+    },
+    {
+      "name": "Canonical bridge reaches online",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BridgeStatus", "property": "text", "operator": "contains", "expected_value": "ONLINE", "timeout_ms": 20000, "poll_interval_ms": 200 }
+    },
+    {
+      "name": "Open first Dao widget fixture",
+      "action": "press_key",
+      "with": { "key": "F11" }
+    },
+    {
+      "name": "Canonical Dao fixture action starts",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": true, "timeout_ms": 5000, "poll_interval_ms": 50 }
+    },
+    {
+      "name": "Canonical Dao fixture action completes",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": false, "timeout_ms": 30000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Combat screen is visible",
+      "action": "wait_for_node",
+      "with": { "selector": "name:CombatScreen", "state": "visible", "timeout_ms": 10000 }
+    },
+    {
+      "name": "Capture initial fixture response state",
+      "action": "screenshot",
+      "with": { "output": "dao-sword-diagnostic-390x844.png" }
+    },
+    {
+      "name": "Read combat polling state",
+      "action": "get_property",
+      "with": { "selector": "name:BackendBridge", "property": "_combat_polling" }
+    },
+    {
+      "name": "Read combat request state",
+      "action": "get_property",
+      "with": { "selector": "name:BackendBridge", "property": "_combat_inflight" }
+    },
+    {
+      "name": "Read initial Dao title",
+      "action": "get_property",
+      "with": { "selector": "name:CombatDaoTitle", "property": "text" }
+    },
+    {
+      "name": "Read combat error status",
+      "action": "get_property",
+      "with": { "selector": "name:CombatStatus", "property": "text" }
+    },
+    {
+      "name": "Read backend status",
+      "action": "get_property",
+      "with": { "selector": "name:BridgeStatus", "property": "text" }
+    },
+    {
+      "name": "Kiếm projection is active",
+      "action": "wait_for_property",
+      "with": { "selector": "name:CombatDaoTitle", "property": "text", "operator": "equals", "expected_value": "KIẾM ĐẠO", "timeout_ms": 30000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Capture canonical Kiếm widget",
+      "action": "screenshot",
+      "with": { "output": "dao-sword-390x844.png" }
+    },
+    {
+      "name": "Advance to Quyền fixture",
+      "action": "press_key",
+      "with": { "key": "F11" }
+    },
+    {
+      "name": "Quyền fixture action starts",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": true, "timeout_ms": 5000, "poll_interval_ms": 50 }
+    },
+    {
+      "name": "Quyền fixture action completes",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": false, "timeout_ms": 30000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Quyền projection is active",
+      "action": "wait_for_property",
+      "with": { "selector": "name:CombatDaoTitle", "property": "text", "operator": "equals", "expected_value": "QUYỀN ĐẠO", "timeout_ms": 30000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Capture canonical Quyền widget",
+      "action": "screenshot",
+      "with": { "output": "dao-fist-390x844.png" }
+    },
+    {
+      "name": "Advance to Thể fixture",
+      "action": "press_key",
+      "with": { "key": "F11" }
+    },
+    {
+      "name": "Thể fixture action starts",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": true, "timeout_ms": 5000, "poll_interval_ms": 50 }
+    },
+    {
+      "name": "Thể fixture action completes",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": false, "timeout_ms": 30000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Read Thể projection title after action",
+      "action": "get_property",
+      "with": { "selector": "name:CombatDaoTitle", "property": "text" }
+    },
+    {
+      "name": "Capture Thể projection after action",
+      "action": "screenshot",
+      "with": { "output": "dao-body-diagnostic-390x844.png" }
+    },
+    {
+      "name": "Thể projection is active",
+      "action": "wait_for_property",
+      "with": { "selector": "name:CombatDaoTitle", "property": "text", "operator": "equals", "expected_value": "THỂ ĐẠO", "timeout_ms": 30000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Capture canonical Thể widget",
+      "action": "screenshot",
+      "with": { "output": "dao-body-390x844.png" }
+    },
+    {
+      "name": "Advance to Pháp fixture",
+      "action": "press_key",
+      "with": { "key": "F11" }
+    },
+    {
+      "name": "Pháp fixture action starts",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": true, "timeout_ms": 5000, "poll_interval_ms": 50 }
+    },
+    {
+      "name": "Pháp fixture action completes",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": false, "timeout_ms": 30000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Pháp projection is active",
+      "action": "wait_for_property",
+      "with": { "selector": "name:CombatDaoTitle", "property": "text", "operator": "equals", "expected_value": "PHÁP ĐẠO", "timeout_ms": 30000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Capture canonical Pháp widget",
+      "action": "screenshot",
+      "with": { "output": "dao-spell-390x844.png" }
+    },
+    {
+      "name": "Advance to Độc fixture",
+      "action": "press_key",
+      "with": { "key": "F11" }
+    },
+    {
+      "name": "Độc fixture action starts",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": true, "timeout_ms": 5000, "poll_interval_ms": 50 }
+    },
+    {
+      "name": "Độc fixture action completes",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": false, "timeout_ms": 30000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Độc projection is active",
+      "action": "wait_for_property",
+      "with": { "selector": "name:CombatDaoTitle", "property": "text", "operator": "equals", "expected_value": "ĐỘC ĐẠO", "timeout_ms": 30000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Capture canonical Độc widget",
+      "action": "screenshot",
+      "with": { "output": "dao-poison-390x844.png" }
+    },
+    {
+      "name": "Advance to Trận fixture",
+      "action": "press_key",
+      "with": { "key": "F11" }
+    },
+    {
+      "name": "Trận fixture action starts",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": true, "timeout_ms": 5000, "poll_interval_ms": 50 }
+    },
+    {
+      "name": "Trận fixture action completes",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": false, "timeout_ms": 30000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Trận projection is active",
+      "action": "wait_for_property",
+      "with": { "selector": "name:CombatDaoTitle", "property": "text", "operator": "equals", "expected_value": "TRẬN ĐẠO", "timeout_ms": 30000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Capture canonical Trận widget",
+      "action": "screenshot",
+      "with": { "output": "dao-formation-390x844.png" }
+    },
+    {
+      "name": "Advance to Ngự Khí fixture",
+      "action": "press_key",
+      "with": { "key": "F11" }
+    },
+    {
+      "name": "Ngự Khí fixture action starts",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": true, "timeout_ms": 5000, "poll_interval_ms": 50 }
+    },
+    {
+      "name": "Ngự Khí fixture action completes",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": false, "timeout_ms": 30000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Ngự Khí projection is active",
+      "action": "wait_for_property",
+      "with": { "selector": "name:CombatDaoTitle", "property": "text", "operator": "equals", "expected_value": "NGỰ KHÍ", "timeout_ms": 30000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Capture canonical Ngự Khí widget",
+      "action": "screenshot",
+      "with": { "output": "dao-artifact-390x844.png" }
+    },
+    {
+      "name": "Advance to Thần Niệm fixture",
+      "action": "press_key",
+      "with": { "key": "F11" }
+    },
+    {
+      "name": "Thần Niệm fixture action starts",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": true, "timeout_ms": 5000, "poll_interval_ms": 50 }
+    },
+    {
+      "name": "Thần Niệm fixture action completes",
+      "action": "wait_for_property",
+      "with": { "selector": "name:BackendBridge", "property": "_action_inflight", "operator": "equals", "expected_value": false, "timeout_ms": 30000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Thần Niệm projection is active",
+      "action": "wait_for_property",
+      "with": { "selector": "name:CombatDaoTitle", "property": "text", "operator": "equals", "expected_value": "THẦN NIỆM", "timeout_ms": 30000, "poll_interval_ms": 100 }
+    },
+    {
+      "name": "Capture canonical Thần Niệm widget",
+      "action": "screenshot",
+      "with": { "output": "dao-mind-390x844.png" }
+    }
+  ]
+}

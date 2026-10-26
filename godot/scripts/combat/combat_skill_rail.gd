@@ -42,8 +42,9 @@ func _ready() -> void:
 	auto_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	auto_panel.add_theme_stylebox_override("panel", STYLE.overlay_surface(STYLE.CYAN, 0.30, 15))
 	_utility_row.add_child(auto_panel)
-	_auto = STYLE.label("AUTO ON", 9, STYLE.CYAN)
+	_auto = STYLE.label("TỰ ĐỘNG", 9, STYLE.CYAN)
 	_auto.name = "CombatAutoStatus"
+	_auto.tooltip_text = "Kỹ năng tự thi triển theo vòng ưu tiên của bộ kỹ năng đang trang bị."
 	_auto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_auto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	auto_panel.add_child(_auto)
@@ -71,8 +72,9 @@ func bind(skills: Array, auto_enabled: bool = true) -> void:
 		_bind_slot(_active_slots[i], actives[i] if i < actives.size() else {})
 	_bind_slot(_basic, basic)
 	_bind_slot(_ultimate, ultimate)
-	_auto.text = "AUTO ON" if auto_enabled else "AUTO OFF"
+	_auto.text = "TỰ ĐỘNG" if auto_enabled else "TỰ ĐỘNG TẮT"
 	_auto.add_theme_color_override("font_color", STYLE.CYAN if auto_enabled else STYLE.MUTED)
+	_auto.tooltip_text = "Kỹ năng tự thi triển theo vòng ưu tiên của bộ kỹ năng đang trang bị." if auto_enabled else "Tự động combat đang tắt."
 
 func _bind_slot(slot: CombatSkillSlot, data: Dictionary) -> void:
 	slot.bind(data)

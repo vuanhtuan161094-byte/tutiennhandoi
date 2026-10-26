@@ -10,6 +10,17 @@ const CHARACTER_VIEW_MODEL := preload("res://scripts/models/character_view_model
 const CHARACTER_SCREEN_SCRIPT := preload("res://scripts/character/character_screen.gd")
 const COMBAT_VIEW_MODEL := preload("res://scripts/models/combat_view_model.gd")
 const COMBAT_SCREEN_SCRIPT := preload("res://scripts/combat/combat_screen.gd")
+const QA_DAO_SEQUENCE: Array[String] = ["sword", "fist", "body", "spell", "poison", "formation", "artifact", "mind"]
+const QA_DAO_LABELS := {
+	"sword": "Kiếm Đạo",
+	"fist": "Quyền Đạo",
+	"body": "Thể Đạo",
+	"spell": "Pháp Đạo",
+	"poison": "Độc Đạo",
+	"formation": "Trận Đạo",
+	"artifact": "Ngự Khí Đạo",
+	"mind": "Thần Niệm Đạo",
+}
 
 var backend_bridge
 var stage
@@ -33,6 +44,7 @@ var _last_ling_quang_tick := -1
 var _pending_cultivation_action := ""
 var _pending_breakthrough_from_realm := ""
 var _qa_mode := OS.get_environment("TUTIEN_GODOT_QA") == "1"
+var _qa_dao_index := -1
 
 func _ready() -> void:
 	_build_home()
@@ -66,9 +78,17 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_run_qa_fixture("artifact", &"combat", "Ngự Khí canonical loadout")
 		KEY_F10:
 			_run_qa_fixture("endgame-boss", &"combat", "Endgame canonical Boss · QA only")
+		KEY_F11:
+			_cycle_qa_dao_fixture()
 		_:
 			return
 	get_viewport().set_input_as_handled()
+
+func _cycle_qa_dao_fixture() -> void:
+	_qa_dao_index = (_qa_dao_index + 1) % QA_DAO_SEQUENCE.size()
+	var dao: String = QA_DAO_SEQUENCE[_qa_dao_index]
+	var label: String = str(QA_DAO_LABELS.get(dao, dao))
+	_run_qa_fixture("dao-" + dao, &"combat", label + " canonical QA loadout")
 
 func _run_qa_fixture(fixture_id: String, route_id: StringName, label: String) -> void:
 	if backend_bridge == null:
@@ -263,20 +283,19 @@ func _on_action_completed(action_id: String, result: Dictionary) -> void:
 		_pending_breakthrough_from_realm = ""
 	elif action_id == "diagnosticFixture":
 		var fixture := str(result.get("fixture", ""))
-		match fixture:
-			"inventory":
-				character_screen.set_status_message("QA · Kho Đồ canonical đã seed")
-				backend_bridge.refresh_character()
-			"ling2", "ling3", "ling4":
-				hud.set_status_message("QA · %s" % fixture.to_upper())
-			"ascend":
-				hud.set_status_message("QA · Đột Phá đã sẵn sàng · bấm nút để chạy canonical action")
-			"tribulation":
-				hud.set_status_message("QA · Độ Kiếp đúng gate order 41 · milestone vẫn canonical")
-			"artifact", "endgame-boss":
-				backend_bridge.refresh_combat(true)
-			"clear":
-				hud.set_status_message("QA fixture đã tắt")
+		if fixture == "inventory":
+			character_screen.set_status_message("QA · Kho Đồ canonical đã seed")
+			backend_bridge.refresh_character()
+		elif fixture in ["ling2", "ling3", "ling4"]:
+			hud.set_status_message("QA · %s" % fixture.to_upper())
+		elif fixture == "ascend":
+			hud.set_status_message("QA · Đột Phá đã sẵn sàng · bấm nút để chạy canonical action")
+		elif fixture == "tribulation":
+			hud.set_status_message("QA · Độ Kiếp đúng gate order 41 · milestone vẫn canonical")
+		elif fixture in ["artifact", "endgame-boss"] or fixture.begins_with("dao-"):
+			backend_bridge.refresh_combat(true)
+		elif fixture == "clear":
+			hud.set_status_message("QA fixture đã tắt")
 	elif action_id == "fightEndlessFloor":
 		if bool(result.get("ok", false)):
 			combat_screen.set_status_message("")
