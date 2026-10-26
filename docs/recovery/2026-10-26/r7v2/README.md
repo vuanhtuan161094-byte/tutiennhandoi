@@ -4,11 +4,11 @@
 
 **Starting remote main:** `b2d3a9eba121aa2b87debcc72a36a76dc39f9579`
 
-**Remote docs checkpoint before this slice:** `353c1c2863eeed47b0b5cd198a32e1b57a85aae0` · **tree:** `37e4a4ce3678e94b843ec2736bbf27a2bc1d74cc`
+**Remote docs checkpoint before the original R7 V2 code work:** `353c1c2863eeed47b0b5cd198a32e1b57a85aae0` · **tree:** `37e4a4ce3678e94b843ec2736bbf27a2bc1d74cc`
 
 **Tested local source:** `4288063181586441947519305f5b3818d60469ba` · **tree:** `8bfb92459a03bdb710c7791f6599b3087c9e67f9`
 
-**Remote R7 V2 code/art commits:** `4f6712726c5f20de766df6999447cbd9c9b71618`, `6c581878e839a707d1943db4868d0b85a57375db`, `0f3e0d12f45249afc8388196f6b2d7e5dde0414b`, `3df9eba5a0966b73c3b20c53c90fa2e39488410e`.
+**Remote R7 V2 code/art commits:** `4f6712726c5f20de766df6999447cbd9c9b71618`, `6c581878e839a707d1943db4868d0b85a57375db`, `0f3e0d12f45249afc8388196f6b2d7e5dde0414b`, `3df9eba5a0966b73c3b20c53c90fa2e39488410e`, `7d4ed24971c08fddd67575da316a3450adcc6bf1`; docs-only follow-ups `bbf2565fec54aa841292c194390f6a748e90e0b1` and this report refresh.
 **State:** active production work; art is a candidate, not owner-approved/locked.
 
 ## Milestone
@@ -20,9 +20,18 @@
 - Added 10 original Ngự Khí skill-symbol SVG candidates in `godot/art/candidate_r7v2/ngukhi_icons/`; exact `skill.dao.artifact.*` mappings are opt-in via `TUTIEN_R7V2_NGUKHI_ICON_CANDIDATE=1`. The 390×844 candidate runtime capture passed Stagehand 20/20 and pixel validation. These are vector skill icons, not character/weapon artwork or authored animation; see the [icon manifest](../../../../godot/art/candidate_r7v2/ngukhi_icons/SHA256SUMS.csv).
 - Full local verifier on the code baseline plus the candidate mapping test: PASS, GdUnit 94/94; the full verifier ran with the icon candidate flag off, then a separate candidate-flag-on runtime capture passed 20/20. Screenshots remain local-only because they show player art with unresolved redistribution rights.
 
+## New verified slice — Vô Diện Yêu and result clarity
+
+- Generated an original 1060×1484 RGBA Vô Diện Yêu Boss illustration; SHA-256 `5D4DD1DB4BD563393EB6B51AB1AB9ADB71F4FFF53F102671E242A702957ACF13`. It is mapped only to the exact `demon` archetype behind `TUTIEN_R7V2_BOSS_ART_CANDIDATE=1`; it is a static, unapproved candidate with no layered paint source.
+- Moved the end-of-battle result into a compact lower-right panel so it stays outside the player/Boss silhouettes on portrait layouts. A four-viewport unit assertion guards the safe area; no combat, authority, balance, or save code changed.
+- The isolated canonical realm 114 / floor 21601 route completed through the result screen: Stagehand 21/21 and pixel validation PASS across three 390×844 captures. The observed result is **THẤT BẠI**; the outcome was not forced.
+- Full local verifier after the UI change: PASS — GdUnit 94/94, bridge and P2 fixture smoke, bounded smoke, Stagehand Home 50/50, Combat 28/28, Home capture 9/9, Combat capture 20/20, pixel gate PASS. Separate endgame capture has its own report and screenshots; captures remain local-only because they include existing player art with unresolved redistribution rights.
+- See the [Vô Diện image and manifest](../../../../godot/art/candidate_r7v2/vo_dien_yeu/README.md), [endgame runtime evidence](RUNTIME_VISUAL_EVIDENCE_INDEX.md), and [gate record](GATES_AND_HANDOFF.md).
+- **Published milestone:** `7d4ed24971c08fddd67575da316a3450adcc6bf1` is verified on remote `main`; tree `7e23fdd9bbb0741aa62cbceb5cb5f8a8047e0f6f`. This report refresh records that exact SHA and the evidence index.
+
 ## What this does not claim
 
-No new skeletal animation, audio, ultimate VFX, Android/device QA, full player progression loop, seven other Dao visual kits, or production art approval. The Boss source art remains a static PNG with prompt/provenance note but no layered paint file. Ngự Khí icon art is an opt-in candidate, not a replacement for missing character or weapon artwork.
+No new skeletal animation, audio, ultimate VFX, Android/device QA, full player progression loop, seven other Dao visual kits, or production art approval. Both Boss illustrations are static PNG candidates; the new Vô Diện image has no layered paint file. Ngự Khí icon art is an opt-in candidate, not a replacement for missing character or weapon artwork. Reference video pages and timestamps are indexed; the clips were not watched frame-by-frame in this milestone.
 
 ## Evidence and current playability
 

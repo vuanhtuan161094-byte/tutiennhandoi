@@ -14,6 +14,10 @@ A new original 1254×1254 RGBA U Minh Xà image is conditionally mapped only to 
 
 The Ngự Khí HUD has a separate original vector candidate set: 10 jade/ivory/gold skill symbols, exact-ID mapped behind an opt-in flag. At 390×844, the 44×44 active slots and 54×54 ultimate remain visually distinct in actual prefight/playback frames. This candidate changes only skill icon presentation; it does not add new character/weapon artwork, authored motion, or per-Dao combat effects. The icons are not approved/locked.
 
+The isolated high-realm Boss fixture exposed a missing demon illustration, so a second original Vô Diện Yêu image was created and mapped only to archetype `demon` behind the same Boss candidate flag. Its ink-navy/plum robe, ivory mask, jade spectral ribbons, and restrained gold trim read as a different silhouette from the serpent. This is a static 1060×1484 PNG; no rig, animation, or layered paint file is included, and the art remains unapproved. The canonical encounter was captured at 390×844 through the defeat result.
+
+That result capture also exposed the old centered result label crossing both actor silhouettes. The result now uses a compact framed panel in the lower-right open lane; four portrait viewport assertions verify that the panel remains on-screen and does not intersect either actor. The runtime screenshot confirms the intended placement on the 390×844 layout.
+
 ## Remaining gaps / iteration gate
 
 The image is static with existing restrained presentation motion. There is no new skeletal rig, authored frame animation, hit-react, audio or ultimate climax. Editable layered paint source is unavailable. Runtime frames include WIP player art with unknown redistribution rights and remain local. Review silhouette, alpha fringe, scale, overlap, telegraph and impact at 390×844 and 1280×720; Android device QA separately. Owner approval is required before production lock or broadening the art direction.

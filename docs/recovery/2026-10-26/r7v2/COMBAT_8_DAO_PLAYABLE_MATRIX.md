@@ -16,3 +16,5 @@ DTO mapping is not equivalent to finished visual gameplay.
 The common skill rail projects five actives, basic/ultimate, cooldown/cast/channel and readiness from canonical events. The current `AUTO ON` label is not a complete Auto control: snapshot reflects canonical AI rotation and no authoritative user toggle/action was found. Resolve semantics/API before implementing a toggle.
 
 Next gate: for each Dao, run a canonical encounter; record actual event, launch, travel, impact/return, resource and result; test visual uniqueness and HUD overlap. Do not use one cyan streak for every Dao or alter authority/balance to make screenshots pass.
+
+The isolated high-realm Boss visual route currently uses the canonical Ngự Khí loadout. It verifies one `demon` Boss candidate and the completed defeat UI; it does not add evidence for the other seven Dao or prove that their combat effects are visually distinct.

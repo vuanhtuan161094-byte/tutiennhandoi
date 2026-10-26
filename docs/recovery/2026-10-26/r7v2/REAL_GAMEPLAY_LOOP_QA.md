@@ -15,4 +15,10 @@ Prefight capture: `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261
 
 Playback capture: `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026\artifacts\godot-tools\stagehand-combat-visual\screenshots\combat-playback-390x844.png`, SHA-256 `B3144BCA626E31F5B3712379C66932B0D41145A1D0FE08BA62648DE1F8C2567A`.
 
+## High-realm visual follow-up
+
+The disposable diagnostic route was also driven from Home through canonical fixture setup, Ngự Khí preparation, Challenge, combat playback, and completed result. Stagehand passed 21/21 steps at Godot 4.7.2; three screenshots were captured and pixel-validated at 390×844. The result shown was **THẤT BẠI**. This verifies the route and one observed outcome only; it does not prove ordinary player reachability, a win path, early/mid progression, or reward/continue comprehension. The result panel was moved out of the actors’ visible silhouettes, and the full verifier passed after that change.
+
+Prefight, playback, and result screenshots are indexed with exact local paths and hashes in [RUNTIME_VISUAL_EVIDENCE_INDEX.md](RUNTIME_VISUAL_EVIDENCE_INDEX.md). They remain local because they contain existing player art whose redistribution rights are unresolved.
+
 Both are genuine, pixel-validated 390×844 Godot captures. They stay local because player WIP art rights are unknown. Preview correction keeps actual result hash `7865a49ac6db07f1855541a3b0998f6f7fbef37cf0665e812a4e502fc2ed4880` unchanged.

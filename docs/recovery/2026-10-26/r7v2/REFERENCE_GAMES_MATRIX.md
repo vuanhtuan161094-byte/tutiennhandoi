@@ -1,6 +1,6 @@
 # Reference games matrix
 
-**Research date:** 2026-10-26. Evidence classes matter: “listing/metadata” is not a claim that the footage was watched. Only the Warm Snow screenshot below was visually inspected as an actual image in this pass. For inaccessible clips, timestamps are page metadata only.
+**Research date:** 2026-10-26. Evidence classes matter: “listing/metadata” is not a claim that the footage was watched. The Warm Snow screenshot below was visually inspected in the earlier research pass. The additional video pages indexed here provide titles, durations, and chapter locators only; their clips were not frame-sampled in this pass, so no timing or hit-feedback conclusions are attributed to them.
 
 | Game | Source / date / timestamp | Supported observation | TND hypothesis (inference) | Confidence |
 |---|---|---|---|---|
@@ -16,6 +16,18 @@
 | Immortal Taoists | [mobile gameplay walkthrough listing](https://www.youtube.com/watch?v=8JldQGTtE9M), 2023-08-11 | Android/iOS playthrough listing; not watched. | Idle/progression flow is a follow-up research lead only. | Low |
 | Overmortal | [gameplay walkthrough listing](https://www.youtube.com/watch?v=SPhHfoXHnD0), 2023-08-26 | Description claims cultivation paths, auto-grind and offline progress; those claims are not independently validated here. | Tie idle return to actionable progress and an active-play payoff. | Low |
 | Hades | Candidate URL opened in earlier pass showed mismatched/mobile poster and 0:28 page; excluded. | No valid gameplay evidence from that URL. | Do not cite design conclusions until source is corrected. | Excluded |
+
+## Additional timestamped gameplay pages
+
+| Game | Video page and locator | Page-supported fact | How to use in later visual review |
+|---|---|---|---|
+| 暖雪 (Warm Snow) | [All Bosses and Ending](https://www.youtube.com/watch?v=NXf2ELXM8WA&t=1851s), published 2022-01-29; chapter locator **30:51 Final Boss**. | The description lists per-Boss chapter positions. This is a locator, not a claim that the clip was watched. | Sample the same Boss wind-up, attack, dodge, impact and recovery frames when playback access is available. |
+| AFK Journey | [The Final Dream Realm Boss This Season](https://www.youtube.com/watch?v=yNkapXcDYpg), published 2025-05-22; description locators **00:22** team, **01:05** team variant, **03:27** alternative compositions, **04:17** record. | The creator description indexes team comparisons and a score result. It supports the existence of distinct preparation/build sections, not a combat-timing conclusion. | Inspect both setup and live fight; map the relationship between preparation, boss damage and reward/result clarity. |
+| 剑侠世界：起源 | [Ba Dao skill demo](https://www.bilibili.com/video/BV14LmAYjEVS/), published 2024-10-16; page duration **01:00**. | The page identifies a real-time skill demonstration and describes two specializations with different ranges/roles; gameplay imagery was not independently reviewed. | Compare class silhouettes and specialization readability only after sampling the clip. |
+| 最强祖师 | [Cross-server Xianmeng battle](https://www.bilibili.com/video/BV1kW421N78c/), published 2024-02-20; page duration **04:49**. | User-uploaded video title and duration identify a guild battle demonstration; no combat animation claim is made from its listing. | Inspect team-scale hierarchy, target readability and the result/reward handoff if the clip can be played. |
+| 凡人修仙传：人界篇 | [17173 gameplay-video listing](https://newgame.17173.com/game-video-4076119.html), 2024-11-15. | Listing presents a gameplay item separately from CG; the embedded clip was not played. | Keep runtime capture and promotional CG labeled separately in our own visual evidence. |
+
+No reference assets, code, effects, or interface were copied. The browser video inspection attempt could not establish the current Windows browser URL with enough confidence; video playback research remains incomplete. Continue this benchmark by watching selected timestamps and recording the sampled frames and actual in-game actions before drawing conclusions about timing or impact.
 
 ## What this research can support
 
