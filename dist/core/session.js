@@ -984,7 +984,11 @@ export class SimulationSession {
         const luck = Math.max(0, this.currentLifeValue.birth.luck + birthLuckFlatFromOrigins(this.stateValue.inheritedOrigins));
         const loot = birthLootMultiplierFromOrigins(this.stateValue.inheritedOrigins);
         const map = realmMapDefinitionForFloor(hunt.selectedFloor);
-        const monster = ensureEndlessHuntMonster(hunt, mixSeed(this.rootSeed ^ 0x517cc1b7, this.actionIndexValue + 991), luck, loot, map.gradeWeights, map.localFloor, map.elementPool, map.maxMonsterElements, true);
+        // Preview the exact Boss identity the next fight will generate. The summary is
+        // read-only; using the upcoming fight's monster seed keeps prefight and playback
+        // naming aligned without changing the fight seed, state, rewards, or combat math.
+        const nextFightSeed = mixSeed(this.rootSeed ^ 0x9e3779b9, this.actionIndexValue + 1);
+        const monster = ensureEndlessHuntMonster(hunt, nextFightSeed ^ 0x6d2b79f5, luck, loot, map.gradeWeights, map.localFloor, map.elementPool, map.maxMonsterElements, true);
         const elementMatchup = secretRealmElementMatchup(personalEntity, monster.elements);
         const bossMechanic = monster.grade === 'boss' ? evaluateHuntBossMechanicV123(map.primaryElement, canonicalSkills, this.registry) : undefined;
         const mapPowerLog = Math.log10(Math.max(.05, (map.powerByGrade[monster.grade] ?? map.powerMultiplier) * elementMatchup.enemyPowerMultiplier)); // v1.30 Boss mechanic acts through HP/DPS/DEF resolver, not scalar display power

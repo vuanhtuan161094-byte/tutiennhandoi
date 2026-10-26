@@ -78,20 +78,21 @@ export function collectDeterminismEvidence() {
     generatorTrace.push(run.trace);
   }
   const fights = [];
+  const previewTrace = [];
   const fightTrace = [];
   for (const seed of seeds.slice(0, 6)) for (const strong of [false, true]) {
-    const run = traceRng(() => {
-      const session = sessionCase(seed, 1, strong);
-      const before = session.endlessHuntSummary();
-      const result = session.fightEndlessFloor();
-      return { before, result };
-    });
-    fights.push(run.value);
-    fightTrace.push(run.trace);
+    const session = sessionCase(seed, 1, strong);
+    const preview = traceRng(() => session.endlessHuntSummary());
+    const fight = traceRng(() => session.fightEndlessFloor());
+    fights.push({ before: preview.value, result: fight.value });
+    previewTrace.push(preview.trace);
+    fightTrace.push(fight.trace);
   }
   return { monsterCases: monsters.length, monsterHash: digest(monsters),
     generatorRngHash: digest(generatorTrace), generatorRngCalls: generatorTrace.flat().length,
-    fightCases: fights.length, fightHash: digest(fights), fightRngHash: digest(fightTrace),
+    fightCases: fights.length, fightHash: digest(fights), previewRngHash: digest(previewTrace),
+    previewRngCalls: previewTrace.flat().length, fightRngHash: digest(fightTrace),
+    fightResultHash: digest(fights.map(f => f.result)),
     fightRngCalls: fightTrace.flat().length,
     outcomes: [...new Set(fights.map(f => f.result.won ? 'victory' : 'defeat'))].sort() };
 }
@@ -147,6 +148,22 @@ function runTests() {
     delete legacy.monsterArchetypeId;
     assert.equal(createCombatPlayback({ result: legacy, initialSnapshot: initial }).snapshot.enemy.archetypeId, '');
   });
+  test('Boss pre-fight identity matches the exact next encounter without mutating state', () => {
+    for (const seed of seeds.slice(0, 8)) {
+      const session = sessionCase(seed, 20, true);
+      const beforeState = JSON.stringify(session.stateValue);
+      const preview = session.endlessHuntSummary();
+      assert.equal(JSON.stringify(session.stateValue), beforeState, 'summary must remain read-only');
+      const initial = snapshotFor(session);
+      const result = session.fightEndlessFloor();
+      assert.equal(preview.monster.gradeId, 'boss');
+      assert.equal(preview.monster.name, result.monsterName);
+      assert.equal(preview.monster.id, result.monsterId);
+      assert.equal(preview.monster.archetypeId, result.monsterArchetypeId);
+      assert.equal(initial.enemy.name, result.monsterName);
+      assert.equal(initial.enemy.archetypeId, result.monsterArchetypeId);
+    }
+  });
   test('old activeMonster survives read/clone without guessed ID or save mutation', () => {
     const session = sessionCase(seeds[0]);
     session.stateValue.endlessHunt.activeMonster = monsterCase(1, seeds[0], true).value;
@@ -167,10 +184,15 @@ function runTests() {
     assert.equal(env.primaryElement, '');
     assert.equal(env.majorRealmIndex, 0);
   });
-  test('prepatch baseline matches complete generator/gameplay outputs and exact RNG sequence', () => {
+  test('generator, canonical fight results, and exact RNG sequences match the recorded baseline', () => {
     const baseline = JSON.parse(readFileSync(new URL('../fixtures/combat-visual-metadata-baseline.json', import.meta.url)));
     assert.equal(baseline.openingSha, 'e867a2ba9c4e616dfb965e6e8255635e7c8197c0');
-    assert.deepEqual(collectDeterminismEvidence(), baseline.evidence);
+    const actual = collectDeterminismEvidence();
+    for (const key of ['monsterCases', 'monsterHash', 'generatorRngHash', 'generatorRngCalls',
+      'fightCases', 'fightResultHash', 'previewRngHash', 'previewRngCalls',
+      'fightRngHash', 'fightRngCalls', 'outcomes']) {
+      assert.deepEqual(actual[key], baseline.evidence[key], `baseline mismatch: ${key}`);
+    }
     assert.deepEqual(baseline.evidence.outcomes, ['defeat', 'victory']);
   });
   console.log(`COMBAT VISUAL METADATA CONTRACT: ${passed}/${passed} PASS`);

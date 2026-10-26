@@ -6,9 +6,14 @@
     "generatorRngHash": "143d5b8cb2776a75bbdf9f7efb460970cf35c2995b7628cca2232c61b2e1a148",
     "generatorRngCalls": 2276,
     "fightCases": 12,
-    "fightHash": "478696ad6a8dfbd799cf858ea14bfca0de1cd27eeb6fbc40bd1e2b2be054b2f5",
-    "fightRngHash": "e5a90e79d8c3b2ebf49793dee7427ec3e6db77020dc416fe3a86b4eb54e1fb68",
-    "fightRngCalls": 868,
+    "fightHash": "9acf11a1d9ed3220376f2c1ea6769770f0abeb90182ade9da05e575cf93e6a56",
+    "prepatchFightHash": "478696ad6a8dfbd799cf858ea14bfca0de1cd27eeb6fbc40bd1e2b2be054b2f5",
+    "prepatchCombinedFightRngHash": "e5a90e79d8c3b2ebf49793dee7427ec3e6db77020dc416fe3a86b4eb54e1fb68",
+    "previewRngHash": "88167c4652aec68ccc4fd1bcd2cab36a9dc916c8ce0615bc1b3c11177cfe61a1",
+    "previewRngCalls": 48,
+    "fightRngHash": "a0769ff0eaf3cd6bb7e84f03349aa810fe1219f5db87c62e8de764e67c917df3",
+    "fightResultHash": "7865a49ac6db07f1855541a3b0998f6f7fbef37cf0665e812a4e502fc2ed4880",
+    "fightRngCalls": 334,
     "outcomes": [
       "defeat",
       "victory"
