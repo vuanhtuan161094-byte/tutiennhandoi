@@ -8,7 +8,7 @@
 
 **Tested local source:** `4288063181586441947519305f5b3818d60469ba` · **tree:** `8bfb92459a03bdb710c7791f6599b3087c9e67f9`
 
-**Remote code commits:** `4f6712726c5f20de766df6999447cbd9c9b71618`, `6c581878e839a707d1943db4868d0b85a57375db`, `0f3e0d12f45249afc8388196f6b2d7e5dde0414b`.
+**Remote R7 V2 code/art commits:** `4f6712726c5f20de766df6999447cbd9c9b71618`, `6c581878e839a707d1943db4868d0b85a57375db`, `0f3e0d12f45249afc8388196f6b2d7e5dde0414b`, `3df9eba5a0966b73c3b20c53c90fa2e39488410e`.
 **State:** active production work; art is a candidate, not owner-approved/locked.
 
 ## Milestone

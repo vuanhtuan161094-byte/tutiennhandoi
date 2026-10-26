@@ -2,6 +2,7 @@
 
 ## Source / remote identity
 
+- Published and verified on `main`: commit `3df9eba5a0966b73c3b20c53c90fa2e39488410e`, parent `353c1c2863eeed47b0b5cd198a32e1b57a85aae0`, tree `e93f07371c3f2c8f64677d9f7614213380564cbe`.
 - Verified code baseline: local source commit `4288063181586441947519305f5b3818d60469ba`, tree `8bfb92459a03bdb710c7791f6599b3087c9e67f9`; this tree exactly matched remote code commit `0f3e0d12f45249afc8388196f6b2d7e5dde0414b` before the icon candidate changes.
 - Latest full verifier ran in isolated QA checkout `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026` with local candidate source changes and disposable bridge saves; no real save was used. Candidate icon test toggles its opt-in flag itself; full verifier ran with the global icon candidate flag off.
 - Engine: Godot `4.7.2-stable (official)`; candidate art flag enabled only in isolated disposable QA.

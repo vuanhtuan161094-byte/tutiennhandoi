@@ -7,6 +7,7 @@
 | `4f6712726c5f20de766df6999447cbd9c9b71618` | `a519d3147f7e99cbbffa1c91b5ae27fcc9375f87` | Original Boss candidate/hit feedback (initial Wood Guardian candidate). | Full gate on equivalent local tree; not owner-approved. |
 | `6c581878e839a707d1943db4868d0b85a57375db` | `a66073079390ca7486e47297ff965579d2d61b32` | Fix prefight Boss preview to match the next canonical encounter; add contract guard. | Node contract 7/7; fight hash stayed `7865a49ac6db07f1855541a3b0998f6f7fbef37cf0665e812a4e502fc2ed4880`. |
 | `0f3e0d12f45249afc8388196f6b2d7e5dde0414b` | `8bfb92459a03bdb710c7791f6599b3087c9e67f9` | Add original U Minh Xà PNG; map exact `serpent` only; mark Wood Guardian unmapped. | Full verifier on local source `4288063181586441947519305f5b3818d60469ba`; exact tree match. |
+| `3df9eba5a0966b73c3b20c53c90fa2e39488410e` | `e93f07371c3f2c8f64677d9f7614213380564cbe` | Add 10 original, opt-in Ngự Khí skill-symbol SVG candidates, exact-ID HUD resolver, focused test, and updated evidence/report. | Full verifier 94/94 plus candidate-flag-on Stagehand capture 20/20 and pixel validation; candidate remains unapproved. |
 
 ## Ngự Khí icon candidate slice
 
