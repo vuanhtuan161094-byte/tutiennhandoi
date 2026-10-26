@@ -1,7 +1,9 @@
 extends Control
 class_name CombatActorPlaceholder
 const ASSETS := preload("res://scripts/combat/combat_asset_resolver.gd")
-const R7V2_BOSS_ART_CANDIDATE := "res://art/candidate_r7v2/wood_guardian/wood_guardian_boss.png"
+const R7V2_BOSS_ART_CANDIDATES := {
+	"serpent": "res://art/candidate_r7v2/um_minh_xa/um_minh_xa_boss.png",
+}
 var asset_config: Dictionary = {}
 ## Native silhouette placeholder; replace this surface with a sprite later.
 var enemy := false
@@ -90,8 +92,10 @@ func bind_archetype(archetype_id: String, candidate_boss: bool = false) -> void:
 	asset_config = ASSETS.enemy(archetype_id)
 	_texture = null
 	if enemy and candidate_boss:
-		_texture = ResourceLoader.load(R7V2_BOSS_ART_CANDIDATE) as Texture2D
-	elif enemy:
+		var candidate_path := str(R7V2_BOSS_ART_CANDIDATES.get(archetype_id, ""))
+		if not candidate_path.is_empty():
+			_texture = ResourceLoader.load(candidate_path) as Texture2D
+	if enemy and _texture == null:
 		_texture = ASSETS.texture_for_path(str(asset_config.get("spritePath", "")))
 	set_process(enemy and _texture != null)
 	queue_redraw()

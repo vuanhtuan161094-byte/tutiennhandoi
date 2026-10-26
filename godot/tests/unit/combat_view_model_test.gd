@@ -58,15 +58,19 @@ func test_tactical_priority_and_only_exported_cast_progress() -> void:
 	assert_bool(screen._lane.progress.visible).is_false()
 	screen.free()
 
-func test_r7v2_boss_art_candidate_is_only_requested_for_boss_binding() -> void:
+func test_r7v2_boss_art_candidate_is_bound_only_to_matching_archetype() -> void:
 	var actor := CombatActorPlaceholder.new()
 	actor.enemy = true
-	var candidate_path := "res://art/candidate_r7v2/wood_guardian/wood_guardian_boss.png"
+	var serpent_candidate_path := "res://art/candidate_r7v2/um_minh_xa/um_minh_xa_boss.png"
+	var guardian_candidate_path := "res://art/candidate_r7v2/wood_guardian/wood_guardian_boss.png"
 	actor.bind_archetype("serpent", false)
-	assert_bool(actor._texture == null or actor._texture.resource_path != candidate_path).is_true()
+	assert_bool(actor._texture == null or actor._texture.resource_path != serpent_candidate_path).is_true()
 	actor.bind_archetype("serpent", true)
 	assert_bool(actor._texture != null).is_true()
-	assert_str(actor._texture.resource_path).is_equal(candidate_path)
+	assert_str(actor._texture.resource_path).is_equal(serpent_candidate_path)
+	actor.bind_archetype("golem", true)
+	assert_bool(actor._texture == null or actor._texture.resource_path != serpent_candidate_path).is_true()
+	assert_bool(actor._texture == null or actor._texture.resource_path != guardian_candidate_path).is_true()
 	actor.free()
 
 func test_artifact_damage_event_spawns_presentation_impact_without_mutating_authority() -> void:
