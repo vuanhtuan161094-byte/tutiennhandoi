@@ -23,10 +23,18 @@ func test_production_layout_at_four_portrait_viewports() -> void:
 		var skill_deck := screen.find_child("CombatSkillDeck", true, false) as Control
 		var lane_rect := screen._lane.get_global_rect()
 		var player_rect := screen._player_actor.get_global_rect()
+		var boss_rect := screen._enemy_actor.get_global_rect()
+		var result_rect := screen._result_panel.get_global_rect()
 		assert_float(field.size.y / viewport_size.y).is_greater_equal(0.98)
 		assert_float(top_bar.get_global_rect().position.y).is_greater_equal(0.0)
 		assert_float(boss_panel.get_global_rect().end.y).is_less(lower_hud.get_global_rect().position.y)
 		assert_bool(lane_rect.intersects(player_rect)).is_false()
+		assert_bool(result_rect.intersects(player_rect)).is_false()
+		assert_bool(result_rect.intersects(boss_rect)).is_false()
+		assert_float(result_rect.position.x).is_greater_equal(0.0)
+		assert_float(result_rect.position.y).is_greater_equal(0.0)
+		assert_float(result_rect.end.x).is_less_equal(float(viewport_size.x))
+		assert_float(result_rect.end.y).is_less_equal(float(viewport_size.y))
 		assert_float(lane_rect.end.y).is_less_equal(lower_hud.get_global_rect().position.y)
 		assert_float(lower_hud.get_global_rect().end.y).is_less(skill_deck.get_global_rect().position.y)
 		assert_float(skill_deck.get_global_rect().end.y).is_less_equal(float(viewport_size.y))
@@ -39,7 +47,7 @@ func test_production_layout_at_four_portrait_viewports() -> void:
 		assert_float(screen._skill_rail._ultimate.get_global_rect().end.y).is_less_equal(float(viewport_size.y - 4))
 		assert_bool(screen._skill_rail._auto.is_visible_in_tree()).is_true()
 		assert_int(screen._skill_rail._cards.size()).is_equal(7)
-		assert_bool(screen._result.visible).is_false()
+		assert_bool(screen._result_panel.visible).is_false()
 		viewport.free()
 
 func test_tactical_priority_and_only_exported_cast_progress() -> void:
@@ -62,14 +70,21 @@ func test_r7v2_boss_art_candidate_is_bound_only_to_matching_archetype() -> void:
 	var actor := CombatActorPlaceholder.new()
 	actor.enemy = true
 	var serpent_candidate_path := "res://art/candidate_r7v2/um_minh_xa/um_minh_xa_boss.png"
+	var demon_candidate_path := "res://art/candidate_r7v2/vo_dien_yeu/vo_dien_yeu_boss.png"
 	var guardian_candidate_path := "res://art/candidate_r7v2/wood_guardian/wood_guardian_boss.png"
 	actor.bind_archetype("serpent", false)
 	assert_bool(actor._texture == null or actor._texture.resource_path != serpent_candidate_path).is_true()
 	actor.bind_archetype("serpent", true)
 	assert_bool(actor._texture != null).is_true()
 	assert_str(actor._texture.resource_path).is_equal(serpent_candidate_path)
+	actor.bind_archetype("demon", false)
+	assert_bool(actor._texture == null or actor._texture.resource_path != demon_candidate_path).is_true()
+	actor.bind_archetype("demon", true)
+	assert_bool(actor._texture != null).is_true()
+	assert_str(actor._texture.resource_path).is_equal(demon_candidate_path)
 	actor.bind_archetype("golem", true)
 	assert_bool(actor._texture == null or actor._texture.resource_path != serpent_candidate_path).is_true()
+	assert_bool(actor._texture == null or actor._texture.resource_path != demon_candidate_path).is_true()
 	assert_bool(actor._texture == null or actor._texture.resource_path != guardian_candidate_path).is_true()
 	actor.free()
 
@@ -138,11 +153,11 @@ func test_poll_preserves_event_hp_and_requires_battle_end_for_result() -> void:
 	screen.bind(vm)
 	assert_float(screen._enemy_hp.value).is_equal(17.0)
 	screen._on_playback_finished("hunt.1.1")
-	assert_bool(screen._result.visible).is_false()
+	assert_bool(screen._result_panel.visible).is_false()
 	screen._on_combat_event({"type": "battle.end"})
 	screen._on_playback_finished("hunt.1.1")
 	screen.bind(vm)
-	assert_bool(screen._result.visible).is_true()
+	assert_bool(screen._result_panel.visible).is_true()
 	screen.set_presentation_active(false)
 	screen.bind(vm)
 	assert_float(screen._enemy_hp.value).is_equal(100.0)

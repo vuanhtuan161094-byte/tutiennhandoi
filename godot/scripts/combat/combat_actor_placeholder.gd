@@ -3,6 +3,7 @@ class_name CombatActorPlaceholder
 const ASSETS := preload("res://scripts/combat/combat_asset_resolver.gd")
 const R7V2_BOSS_ART_CANDIDATES := {
 	"serpent": "res://art/candidate_r7v2/um_minh_xa/um_minh_xa_boss.png",
+	"demon": "res://art/candidate_r7v2/vo_dien_yeu/vo_dien_yeu_boss.png",
 }
 var asset_config: Dictionary = {}
 ## Native silhouette placeholder; replace this surface with a sprite later.

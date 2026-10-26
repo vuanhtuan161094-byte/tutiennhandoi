@@ -33,6 +33,7 @@ var _player_hp_text: Label
 var _enemy_break: ProgressBar
 var _tactical: Label
 var _challenge_button: Button
+var _result_panel: PanelContainer
 var _result: Label
 var _dao_widget: CombatDaoWidget
 var _skill_rail: CombatSkillRail
@@ -95,7 +96,7 @@ func bind(vm: Dictionary) -> void:
 	_challenge_button.text = "KHIÊU CHIẾN" if can_start else "CHƯA THỂ KHIÊU CHIẾN"
 	set_status_message("" if can_start else str(challenge.get("blocked_reason", "")))
 	var result: Dictionary = vm.get("result", {})
-	_result.visible = not result.is_empty() and str(vm.get("mode", "prefight")) != "playback"
+	_result_panel.visible = not result.is_empty() and str(vm.get("mode", "prefight")) != "playback"
 	if not result.is_empty():
 		_result.text = "TRẤN SÁT" if bool(result.get("won", false)) else "THẤT BẠI"
 
@@ -177,14 +178,24 @@ func _build() -> void:
 	_battlefield.add_child(_lane)
 	_tactical = _lane.title
 
-	_result = STYLE.label("", 25, STYLE.GOLD)
-	_result.name = "CombatResult"
+	_result_panel = PanelContainer.new()
+	_result_panel.name = "CombatResult"
+	_place(_result_panel, 0.54, 0.49, 0.97, 0.545)
+	_result_panel.z_index = 230
+	_result_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_result_panel.add_theme_stylebox_override("panel", STYLE.overlay_surface(STYLE.GOLD, 0.84, 14))
+	var result_margin := MarginContainer.new()
+	result_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for side in ["left", "right", "top", "bottom"]:
+		result_margin.add_theme_constant_override("margin_" + side, 5)
+	_result_panel.add_child(result_margin)
+	_result = STYLE.label("", 16, STYLE.GOLD)
+	_result.name = "CombatResultLabel"
 	_result.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_result.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_place(_result, 0.20, 0.40, 0.80, 0.56)
-	_result.z_index = 230
-	_result.visible = false
-	add_child(_result)
+	result_margin.add_child(_result)
+	_result_panel.visible = false
+	add_child(_result_panel)
 
 	var header_margin := _overlay_panel("CombatTopBar", STYLE.GOLD, 0.025, 0.012, 0.975, 0.067, 0.54, 5, true)
 	var header := HBoxContainer.new()
@@ -281,7 +292,7 @@ func _on_combat_event(event: Dictionary) -> void:
 	var skill_id := str(event.get("skill_id", ""))
 	match type:
 		"battle.start":
-			_result.visible = false
+			_result_panel.visible = false
 			_player_actor.reset_to_idle()
 			_challenge_button.visible = false
 			_apply_event_hp(target, payload)
@@ -346,7 +357,7 @@ func _on_playback_finished(_encounter_id: String) -> void:
 	if result.is_empty() or not _battle_end_seen:
 		return
 	_result.text = "TRẤN SÁT" if bool(result.get("won", false)) else "THẤT BẠI"
-	_result.visible = true
+	_result_panel.visible = true
 	_lane.visible = false
 	set_status_message("Boss chỉ mở tiến độ · tài nguyên thuộc Săn Ảo" if str(result.get("rewardContext", "")) == "progression-only" else "")
 

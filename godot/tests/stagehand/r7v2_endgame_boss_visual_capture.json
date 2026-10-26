@@ -1,0 +1,202 @@
+{
+  "name": "tutien-endgame-boss-visual-capture",
+  "description": "Isolated runtime capture of canonical realm 114 floor 21601 Boss: prefight, playback and completed aftermath.",
+  "target": {
+    "mode": "launch",
+    "project_path": "../..",
+    "headless": false,
+    "timeout_ms": 120000
+  },
+  "steps": [
+    {
+      "name": "Home runtime starts",
+      "action": "wait_for_node",
+      "with": {
+        "selector": "name:HomeHUD",
+        "state": "visible",
+        "timeout_ms": 15000
+      }
+    },
+    {
+      "name": "Canonical bridge reaches online",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:BridgeStatus",
+        "property": "text",
+        "operator": "contains",
+        "expected_value": "ONLINE",
+        "timeout_ms": 20000,
+        "poll_interval_ms": 200
+      }
+    },
+    {
+      "with": {
+        "key": "F10"
+      },
+      "name": "Prepare canonical endgame Boss fixture",
+      "action": "press_key"
+    },
+    {
+      "with": {
+        "selector": "name:CombatDaoTitle",
+        "operator": "equals",
+        "timeout_ms": 15000,
+        "expected_value": "NGỰ KHÍ",
+        "property": "text"
+      },
+      "name": "Artifact DTO reaches compact widget",
+      "action": "wait_for_property"
+    },
+    {
+      "with": {
+        "selector": "name:CombatActive5",
+        "operator": "contains",
+        "timeout_ms": 15000,
+        "expected_value": "Trấn",
+        "property": "tooltip_text"
+      },
+      "name": "Fifth active slot has canonical skill",
+      "action": "wait_for_property"
+    },
+    {
+      "name": "Combat scene is visible before readback",
+      "with": {
+        "state": "visible",
+        "timeout_ms": 5000,
+        "selector": "name:CombatScreen"
+      },
+      "action": "wait_for_node"
+    },
+    {
+      "name": "Capture Combat prefight 390x844",
+      "with": {
+        "output": "combat-prefight-390x844.png"
+      },
+      "action": "screenshot"
+    },
+    {
+      "name": "Canonical Challenge is enabled before visual playback",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:CombatChallenge",
+        "property": "disabled",
+        "operator": "equals",
+        "expected_value": false,
+        "timeout_ms": 15000,
+        "poll_interval_ms": 100
+      }
+    },
+    {
+      "name": "QA fixture action completes before Challenge input",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:BackendBridge",
+        "property": "_action_inflight",
+        "operator": "equals",
+        "expected_value": false,
+        "timeout_ms": 15000,
+        "poll_interval_ms": 100
+      }
+    },
+    {
+      "name": "Activate real Challenge",
+      "action": "click",
+      "with": {
+        "selector": "name:CombatChallenge"
+      }
+    },
+    {
+      "name": "Canonical combat events arrive before playback capture",
+      "action": "wait_for_property",
+      "with": {
+        "selector": "name:BackendBridge",
+        "property": "_combat_cursor",
+        "operator": "greater_than",
+        "expected_value": 0,
+        "timeout_ms": 15000,
+        "poll_interval_ms": 100
+      }
+    },
+    {
+      "name": "Let canonical playback advance",
+      "with": {
+        "duration_ms": 2000
+      },
+      "action": "sleep"
+    },
+    {
+      "name": "No early result overlay",
+      "with": {
+        "operator": "equals",
+        "selector": "name:CombatResult",
+        "property": "visible",
+        "expected": false
+      },
+      "action": "assert_property"
+    },
+    {
+      "name": "Capture Combat playback 390x844",
+      "with": {
+        "output": "combat-playback-390x844.png"
+      },
+      "action": "screenshot"
+    },
+    {
+      "name": "Canonical endgame playback reaches completed result",
+      "action": "wait_for_property",
+      "with": {
+        "operator": "equals",
+        "timeout_ms": 90000,
+        "poll_interval_ms": 250,
+        "selector": "name:CombatResult",
+        "property": "visible",
+        "expected_value": true
+      }
+    },
+    {
+      "name": "Capture completed endgame Boss result",
+      "action": "screenshot",
+      "with": {
+        "output": "combat-endgame-result-390x844.png"
+      }
+    },
+    {
+      "with": {
+        "key": "Tab"
+      },
+      "action": "press_key",
+      "name": "Focus Back after playback"
+    },
+    {
+      "with": {
+        "duration_ms": 150
+      },
+      "action": "sleep",
+      "name": "Release navigation key"
+    },
+    {
+      "with": {
+        "key": "Space"
+      },
+      "action": "press_key",
+      "name": "Return Home using real Back button"
+    },
+    {
+      "with": {
+        "timeout_ms": 5000,
+        "selector": "name:HomeStage",
+        "state": "visible"
+      },
+      "action": "wait_for_node",
+      "name": "Home returns after Combat"
+    },
+    {
+      "with": {
+        "root_path": "/root",
+        "max_depth": 5
+      },
+      "action": "tree",
+      "name": "Scene tree remains inspectable"
+    }
+  ]
+}
