@@ -9,6 +9,7 @@
 | `0f3e0d12f45249afc8388196f6b2d7e5dde0414b` | `8bfb92459a03bdb710c7791f6599b3087c9e67f9` | Add original U Minh Xà PNG; map exact `serpent` only; mark Wood Guardian unmapped. | Full verifier on local source `4288063181586441947519305f5b3818d60469ba`; exact tree match. |
 | `3df9eba5a0966b73c3b20c53c90fa2e39488410e` | `e93f07371c3f2c8f64677d9f7614213380564cbe` | Add 10 original, opt-in Ngự Khí skill-symbol SVG candidates, exact-ID HUD resolver, focused test, and updated evidence/report. | Full verifier 94/94 plus candidate-flag-on Stagehand capture 20/20 and pixel validation; candidate remains unapproved. |
 | `7d4ed24971c08fddd67575da316a3450adcc6bf1` | `7e23fdd9bbb0741aa62cbceb5cb5f8a8047e0f6f` | Add original Vô Diện Yêu art for the exact `demon` archetype; move result display clear of actor silhouettes; retain an endgame visual capture scenario. | Full verifier 94/94; endgame Stagehand 21/21; three-frame pixel validation; no gameplay/save changes. |
+| `69a49c6b8add53f8e363717e312656c4ae07bf59` | `fce587e869992575a957f9608a9dab6e2fa9faaf` | Add event-timed player target telegraph and severity lane for canonical Boss danger casts. | Focused GdUnit 15/15; actual 390×844 Stagehand 15/15; pixel validation 3/3; full verifier blocked by roaming editor-settings write permission. |
 
 ## Ngự Khí icon candidate slice
 
@@ -27,6 +28,14 @@
 - Remote verification: commit `7d4ed24971c08fddd67575da316a3450adcc6bf1` is present on `main`; the documentation follow-up is based on that head.
 
 All three remote changes used current-head checks and expected-SHA fast-forward ref updates with `force=false`.
+
+## Boss danger telegraph — source commit `69a49c6b8add53f8e363717e312656c4ae07bf59`
+
+- `godot/scripts/combat/combat_threat_telegraph.gd` draws a severity-colored marker at the player actor and expires it using the adjusted `castTime` carried by the canonical Boss cast event.
+- `godot/scripts/combat/combat_player_actor.gd` owns the marker; `godot/scripts/combat/combat_screen.gd` invokes it only for an enemy cast with `bossTelegraph=true` targeting the player and clears it at battle start/end. `godot/scripts/combat/combat_tactical_lane.gd` shows the provided danger label and cast progress.
+- `godot/tests/unit/combat_view_model_test.gd` covers lethal metadata, progress/expiry, and ordinary enemy casts. `godot/tests/stagehand/r7v2_boss_telegraph_capture.json` reproduces a disposable canonical Boss fight and captures active, cleared, and result states.
+- Evidence: focused GdUnit 15/15; Node canonical event projection assertion passed; direct Godot parse checks passed for all five changed GDScript/test files; bounded headless smoke passed; official Godot 4.7.2 Stagehand 15/15; screenshot pixel validation 3/3. The broader `Verify-GodotLocal.ps1 -SkipVisual` run was blocked after import because Godot could not write `C:\Users\Admin\AppData\Roaming\Godot\editor_settings-4.7.tres`; it is not a PASS for this SHA.
+- Changed paths are limited to the three combat presentation scripts, the new telegraph script, the focused unit test, and the Stagehand scenario above. No backend gameplay, combat coefficients, authority, reward settlement, save schema, or production art changed.
 
 ## Changed paths across code slice
 

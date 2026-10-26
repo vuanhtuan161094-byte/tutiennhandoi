@@ -22,3 +22,15 @@ Candidate-flag-on Stagehand report: `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_
 A local path plus hash is an evidence record, not a URL or a remotely accessible file.
 
 Endgame report: `C:\Users\Admin\Documents\Codex\TND_R7V2_QA_BOSS_PREVIEW_20261026\artifacts\r7v2-endgame-boss-result-ui\report.json` (21 pass / 0 fail / 0 skipped). `pixel-validation.json` reports PASS for all three frames. These screenshot files are not included in the GitHub commit; their absolute paths resolve only on this machine.
+
+## Boss danger telegraph — source SHA `69a49c6b8add53f8e363717e312656c4ae07bf59`
+
+These are actual Godot 4.7.2 Stagehand captures at 390×844 from the disposable canonical realm-114 Boss QA route. They include existing player art with unresolved redistribution rights, so the images remain local-only and are not GitHub URLs.
+
+| Evidence | Absolute local path | Size/dimensions | SHA-256 | Classification |
+|---|---|---|---|---|
+| Boss danger telegraph active | `C:\Users\Admin\Documents\Codex\TND_R7V2_GAMEPLAY_20261026\artifacts\godot-tools\stagehand-r7v2-telegraph\screenshots\combat-boss-telegraph-active-390x844.png` | 66,943 B · 390×844 | `D0AA658A575F88E4C2E61E38732DEFD9A6681E5802C151447B5323C89F7DC424` | Genuine canonical runtime capture; local-only. |
+| Telegraph cleared at cast completion | `C:\Users\Admin\Documents\Codex\TND_R7V2_GAMEPLAY_20261026\artifacts\godot-tools\stagehand-r7v2-telegraph\screenshots\combat-boss-telegraph-cleared-390x844.png` | 60,109 B · 390×844 | `CF6657DB4A89ACC1CBF358F10C4C4B7DCEDAC0CCD6BBA9E6376A0B7CCF1857D7` | Genuine canonical runtime capture after marker expiry; local-only. |
+| Canonical endgame result | `C:\Users\Admin\Documents\Codex\TND_R7V2_GAMEPLAY_20261026\artifacts\godot-tools\stagehand-r7v2-telegraph\screenshots\combat-boss-telegraph-result-390x844.png` | 65,222 B · 390×844 | `9A6D3A823854298AF95C2BB9E1DAB7C72D50449332915D6E49C58A5A894D4BEB` | Genuine canonical runtime result capture; local-only. |
+
+Stagehand report: `C:\Users\Admin\Documents\Codex\TND_R7V2_GAMEPLAY_20261026\artifacts\godot-tools\stagehand-r7v2-telegraph\report.json` (15 pass / 0 fail / 0 skipped; Godot 4.7.2 stable). `pixel-validation.json` reports valid 390×844 images for all three frames. The report, images, disposable QA save, and test logs are not uploaded; the local paths above do not resolve from GitHub.

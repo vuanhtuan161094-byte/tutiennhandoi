@@ -53,6 +53,23 @@ $env:TUTIEN_R7V2_NGUKHI_ICON_CANDIDATE = '1'
 
 The save path is disposable and stays under `artifacts`; do not point it at a real profile. The captured loss is the observed canonical outcome, not an injected result.
 
+## Latest source gate — Boss danger telegraph
+
+**Candidate source SHA:** `69a49c6b8add53f8e363717e312656c4ae07bf59` · **tree:** `fce587e869992575a957f9608a9dab6e2fa9faaf`.
+
+| Gate | Result | Scope / note |
+|---|---|---|
+| Godot import | PASS | Official Godot 4.7.2 import in isolated checkout. |
+| Direct GDScript parse checks | PASS | All five changed GDScript/test scripts parsed. |
+| Focused GdUnit | PASS, 15/15 | Combat view-model and Boss telegraph behavior. Test run exited 0; Godot then emitted a sandbox logging warning because it could not open `user://logs/godot.log`. |
+| Canonical event projection assertion | PASS | Boss danger metadata and adjusted cast time reached the presentation event. |
+| Bounded headless runtime smoke | PASS | External bridge mode; no real save used. |
+| Actual headed Stagehand runtime | PASS, 15/15 | 390×844 disposable realm-114 Boss route; marker appears and expires at cast completion, then result appears. |
+| Screenshot pixel validation | PASS, 3/3 | Active, cleared, and result PNGs; hashes and local paths in [runtime evidence](RUNTIME_VISUAL_EVIDENCE_INDEX.md). |
+| `Verify-GodotLocal.ps1 -SkipVisual` | BLOCKED | Import completed. Editor parse could not write `C:\Users\Admin\AppData\Roaming\Godot\editor_settings-4.7.tres` under the current sandbox, so the broader verifier did not complete and is not a PASS for this SHA. |
+
+The runtime log had no `SCRIPT ERROR`; it retained the CA-store warning and the existing `main.tscn` invalid-UID text-path fallback. The screenshots contain existing player art with unclear redistribution rights, so they stay local. This slice changes presentation only: no gameplay authority, coefficients, rewards, or save schema.
+
 ## Handoff
 
-**Boss art and opt-in Ngự Khí icon candidate slices, endgame capture, and result-panel safe area are verified and published; R7 V2 remains active.** Next: R2-ASSET, then R3-ENDGAME and R4-VISUAL. Owner approval remains open for visual direction, baked-aura treatment, legal/source use of WIP/11 clips, and Auto semantics if no authoritative control exists. The external reference video pages remain indexed but were not watched frame-by-frame in this milestone. Core Balance and auxiliary-system work remain inactive.
+R7 V2 remains active. Continue with R2-ASSET, then R3-ENDGAME and R4-VISUAL. R5 has one verified Boss telegraph slice; the complete eight-Dao/Auto/combat-feedback work remains open. Warm Snow footage was sampled at 30:51–31:07 and AFK Journey at 15:15–15:18; the short samples do not prove attack-cycle or audio timing. Owner approval remains open for visual direction, baked-aura treatment, lawful use of WIP/11 clips, and Auto semantics if no authoritative control exists. Core Balance and auxiliary-system work remain inactive.

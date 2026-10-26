@@ -11,6 +11,15 @@
 **Remote R7 V2 code/art commits:** `4f6712726c5f20de766df6999447cbd9c9b71618`, `6c581878e839a707d1943db4868d0b85a57375db`, `0f3e0d12f45249afc8388196f6b2d7e5dde0414b`, `3df9eba5a0966b73c3b20c53c90fa2e39488410e`, `7d4ed24971c08fddd67575da316a3450adcc6bf1`; docs-only follow-ups `bbf2565fec54aa841292c194390f6a748e90e0b1` and this report refresh.
 **State:** active production work; art is a candidate, not owner-approved/locked.
 
+## Latest verified source slice — Boss danger telegraph
+
+- Source commit `69a49c6b8add53f8e363717e312656c4ae07bf59` (tree `fce587e869992575a957f9608a9dab6e2fa9faaf`, parent `4e7b3c12ec435445924227ce2d0716f5c26825f3`) adds an event-timed target marker for canonical Boss casts and a severity label/progress lane. It consumes the backend's adjusted cast time and Boss danger metadata; ordinary enemy casts are not marked.
+- **Before / after:** the source baseline showed enemy cast name/progress in the tactical lane but no danger marker anchored to the player target. The new runtime shows the severity ring at the player, advances it across the canonical cast interval, and clears it at completion. This changes player feedback only; hit resolution and outcome were not retuned. The before state is established from the source diff; this milestone did not capture a baseline screenshot.
+- Focused GdUnit passed 15/15; the event projection assertion, GDScript parse checks, bounded headless runtime smoke, and actual Godot 4.7.2 Stagehand capture passed. Stagehand completed 15/15 and screenshot pixel validation passed 3/3. See [gates](GATES_AND_HANDOFF.md) and [runtime evidence](RUNTIME_VISUAL_EVIDENCE_INDEX.md).
+- This is a narrow **R5 partial**. It changes presentation only; no combat coefficients, authority, rewards, or save schema changed. The eight-Dao combat slice and the full production gate remain open.
+- A separate `Verify-GodotLocal.ps1 -SkipVisual` run imported the project but was blocked when Godot could not write the user's roaming editor settings. This source SHA is therefore not reported as passing that full verifier.
+- The latest remote `main` head was `69a49c6b8add53f8e363717e312656c4ae07bf59` when this record was prepared.
+
 ## Milestone
 
 - Added original U Minh Xà Boss artwork, a 1254×1254 RGBA PNG, mapped only to canonical `serpent` Boss encounters behind the QA candidate flag.
@@ -31,7 +40,7 @@
 
 ## What this does not claim
 
-No new skeletal animation, audio, ultimate VFX, Android/device QA, full player progression loop, seven other Dao visual kits, or production art approval. Both Boss illustrations are static PNG candidates; the new Vô Diện image has no layered paint file. Ngự Khí icon art is an opt-in candidate, not a replacement for missing character or weapon artwork. Reference video pages and timestamps are indexed; the clips were not watched frame-by-frame in this milestone.
+No authored skeletal character animation, audio, ultimate VFX, Android/device QA, full player progression loop, seven other Dao visual kits, or production art approval. Both Boss illustrations are static PNG candidates; the new Vô Diện image has no layered paint file. Ngự Khí icon art is an opt-in candidate, not a replacement for missing character or weapon artwork. Short gameplay segments from Warm Snow (30:51–31:07) and AFK Journey (15:15–15:18) were visually inspected; the brief samples do not establish full attack timing or audio behavior. Other reference entries remain listing/screenshot evidence only.
 
 ## Evidence and current playability
 
