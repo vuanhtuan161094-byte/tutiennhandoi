@@ -3,8 +3,43 @@ Run: python qa-browser.py. Browser file:// and localhost are blocked by the sand
 set_content is used. This tests actual HTML/CSS/JS behavior but not physical file launch.
 """
 from pathlib import Path
-from playwright.sync_api import sync_playwright
-import json, traceback, sys
+import json, os, shutil, sys
+
+try:
+    from playwright.sync_api import sync_playwright
+except ImportError:
+    print("BLOCKED: Playwright not installed. Run: python -m pip install playwright")
+    print("Then run: python -m playwright install chromium")
+    sys.exit(2)
+
+def chromium_launch_options():
+    # Offline test: about:blank + set_content, never an unknown browser URL.
+    explicit = os.getenv("HOG_CHROMIUM_PATH", "").strip().strip('"')
+    if explicit:
+        if not Path(explicit).is_file():
+            raise RuntimeError("HOG_CHROMIUM_PATH does not point to a browser executable")
+        candidate = explicit
+    else:
+        candidate = next((found for cmd in
+                          ("chromium", "chromium-browser", "google-chrome", "msedge", "chrome")
+                          if (found := shutil.which(cmd))), None)
+        if not candidate and os.name == 'nt':
+            roots = [os.getenv('PROGRAMFILES'), os.getenv('PROGRAMFILES(X86)'), os.getenv('LOCALAPPDATA')]
+            choices = [
+                ('Google', 'Chrome', 'Application', 'chrome.exe'),
+                ('Microsoft', 'Edge', 'Application', 'msedge.exe'),
+                ('Chromium', 'Application', 'chrome.exe'),
+            ]
+            candidate = next((str(p) for root in roots if root
+                              for parts in choices
+                              if (p := Path(root).joinpath(*parts)).is_file()), None)
+    options = {'headless': True, 'args': ['--disable-dev-shm-usage']}
+    if os.name != 'nt' and hasattr(os, 'geteuid') and os.geteuid() == 0:
+        options['args'].append('--no-sandbox')
+    if candidate:
+        options['executable_path'] = candidate
+    return options
+
 folder=Path(__file__).parent
 html=(folder/'Play-Heoofgaia-HG07.html').read_text(encoding='utf-8')
 checks=[];errors=[]
@@ -15,7 +50,13 @@ def check(name,expr):
     except Exception as e:
         print('FAIL',name,str(e));checks.append((name,False))
 with sync_playwright() as p:
-    browser=p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox','--disable-dev-shm-usage'])
+    try:
+        browser=p.chromium.launch(**chromium_launch_options())
+    except Exception as exc:
+        print('BLOCKED: Chromium could not start:', str(exc)[:500])
+        print('Install locally with: python -m playwright install chromium')
+        print('Or set HOG_CHROMIUM_PATH to an installed Chrome/Edge executable.')
+        sys.exit(2)
     def launch(viewport,store=None):
         page=browser.new_page(viewport=viewport,device_scale_factor=1)
         page.on('pageerror',lambda e:errors.append(str(e)))
