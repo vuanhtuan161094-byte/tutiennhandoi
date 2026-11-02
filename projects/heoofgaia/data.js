@@ -73,3 +73,4 @@ const C={version:2,keys,races,resource,units,buildings,spells,source};
 root.HOG_CATALOG=C;if(typeof module==='object'&&module.exports)module.exports=C;
 })(typeof globalThis!=='undefined'?globalThis:this);
 
+

@@ -191,3 +191,4 @@ setInterval(save,10000);window.addEventListener('pagehide',save);
 window.HOG_APP_DEBUG={getState:()=>state,render,save,resetForTests:()=>{state=E.make('human',Date.now());selected='5,6';render()}};
 })();
 
+

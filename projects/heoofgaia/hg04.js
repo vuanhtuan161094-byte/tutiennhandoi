@@ -124,3 +124,4 @@ Object.assign(E,{SAVE_KEY:'heoofgaia_hg_only_v04',PREV_SAVE_KEY:'heoofgaia_hg_on
 root.HOG_HG04={HERO_SPELLS,ITEMS,QUESTS};
 })(typeof globalThis!=='undefined'?globalThis:this);
 
+

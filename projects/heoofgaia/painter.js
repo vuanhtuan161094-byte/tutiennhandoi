@@ -176,3 +176,4 @@ function drawBattle(canvas,E,s){if(!canvas||!s.battle)return;const c=canvas.getC
 root.HOG_PAINTER={drawWorld,drawCity,drawBattle,mapHit,mapCamera,panMap,zoomMap,miniHit,miniBounds,cityHit,CITY_SITES};
 })(typeof globalThis!=='undefined'?globalThis:this);
 
+

@@ -71,3 +71,4 @@ Object.assign(E,{V,SAVE_KEY:KEY,PREV_SAVE_KEY:'heoofgaia_hg_only_v05',ensure06:e
 root.HOG_HG06={version:V,saveKey:KEY};
 })(typeof globalThis!=='undefined'?globalThis:this);
 
+

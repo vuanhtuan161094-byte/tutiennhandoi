@@ -227,3 +227,4 @@ const API={V,SAVE_KEY,PREV_SAVE_KEY,C,make,valid,clone,upgradeSaveV02,fmt,rate,l
 root.HOG_ENGINE=API;if(typeof module==='object'&&module.exports)module.exports=API;
 })(typeof globalThis!=='undefined'?globalThis:this);
 
+
