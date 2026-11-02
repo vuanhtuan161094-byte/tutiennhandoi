@@ -1,0 +1,16 @@
+# Standalone Hẻoofgaia GitHub + Windows E: handoff — 2026-11-02
+
+**Owner instruction:** Make an independent project, not a subfolder in Tu Tiên Nhàn Rỗi. New intended PRIVATE repository: `vuanhtuan161094-byte/Heoofgaia`. New Windows project folder: `E:\Heoofgaia`. Do not modify or merge the old Tu Tiên project's `main`.
+
+## Current source
+This document lives on branch `feature/heoofgaia-hg07-20261102`. The source is **this branch's** `projects/heoofgaia/` directory: `index.html`, `data.js`, `engine.js`, `hg04.js`–`hg07.js`, `app.js`, `painter.js`, CSS, `build_offline.py`, `qa-engine.cjs`, `qa-browser.py`, `Play-Heoofgaia-HG07.html`, 2009 research, master plan and roadmap. Read live HEAD before copying; old known checkpoint was `b32737422ca866f08de8d94021b397eb22c8f017`. The assistant separately created a downloadable `Heoofgaia-Standalone-GitHub-E-Setup.zip` with updated Windows QA and one-click setup if it is accessible to the Codex session.
+
+## Execute in an authorized Codex session on user's own Windows machine
+1. Verify the E: drive exists. Create `E:\Heoofgaia` and copy ONLY the HG subtree as standalone root. Never overwrite an existing conflicting file; preserve all previous saves and old Git history. Do not copy unrelated Tu Tiên files.
+2. Use Git for Windows and GitHub CLI. Initialize the new folder as a new Git repo with `main`, commit audited source, and run `gh repo create vuanhtuan161094-byte/Heoofgaia --private --source E:\Heoofgaia --remote origin --push`. `gh auth login` may require browser-based user authorization. Do not ask for tokens/passwords, log secrets, or force push. If `gh` unavailable, try user-scope `winget install --id GitHub.cli --exact --scope user`, then resume.
+3. Verify new repo URL, privacy, remote, branch and commit SHA. Do not claim completion unless the repo is real and source can be fetched. Do not alter old repo `main`.
+4. Run `node qa-engine.cjs`, `python build_offline.py`, `python qa-browser.py` using headless Chrome/Edge/Playwright; Linux-only `/usr/bin/chromium` in older QA script must be adapted for Windows. Baseline previously had 37/37 Node and 31/31 Chromium but these are HISTORICAL, not new Windows proof. If browser blocked, record BLOCKED, then continue independent gameplay code.
+5. Read and implement `CODEX_MASTER_EXECUTION_PLAN_20261102.md`: HG08 full 40 troop unlock/prerequisites and hero XP; HG09 tactical combat; HG10 economy/multi-city/world; HG11 2.5D UI/asset quality; HG12 release/save/performance; optional HG13 server/guild/PvP. **Heroes of Gaia / Castle of Heroes / 英雄之城 only**. Source-verify mechanics and document every uncertain approximation; preserve HG02–HG07 save imports. Research original 2009 historical visuals and record asset provenance. Use original assets for release only with appropriate rights and otherwise recreate high-fidelity replacements.
+6. Commit/push tested vertical slices to the NEW repo, recording exact SHA, PASS/FAIL/BLOCKED, real browser screenshots and next task in new `CURRENT_HG_CHECKPOINT.md`. Work continuously within each active Codex session, without repeatedly asking the owner for routine choices.
+
+**This document is a handoff; it does not itself create a new repo, copy files to E: or start an asynchronous Codex session.**
