@@ -58,3 +58,11 @@ Use `KIEM_TRA_GAME.cmd` after integration. The assistant's connected GitHub view
 - Existing Tử Mị candidate: technically generated/loaded; 1-pivot shoulder sweep lacks elbow/wrist/finger gesture; Wan comparison was not run.
 - Eight-Dao backend is closed, while complete eight-Dao production combat art/action coverage is not established.
 - This document records ownership and execution order, **not** a newly generated asset, a newly run Godot QA, a user visual approval, or a closure claim.
+
+
+## ART-01 technical pilot update — 2026-11-10
+
+- **IMPLEMENTED AS CANDIDATE:** [Ngự Khí Cast VFX](../../../godot/art/candidate_r7v2/visual_production/art01_ngukhi_vfx/README.md), with presentation-only `ngukhi_cast_vfx.gd`, `ngukhi_cast_stage.gd` and a stand-alone `ngukhi_cast_stage.tscn` that instantiates the existing Tử Mị rig.
+- A separate conversation artifact provides a **Python-rendered storyboard GIF** from older ten-frame concept art; it is **not the current Tử Mị V3 image** and **not an actual Godot runtime capture**.
+- **STATIC CODE ONLY:** local Godot 4.7.2 executable unavailable in this tool environment; import, parse, Stagehand, UI motion review and user art approval are still pending.
+- **NEXT:** validate the isolated preview on exact Godot HEAD, refine true multi-joint hand-seal and the asset's pixel-opacity/alpha, then wire VFX to authoritative cast/hit cues without touching combat outcomes.
