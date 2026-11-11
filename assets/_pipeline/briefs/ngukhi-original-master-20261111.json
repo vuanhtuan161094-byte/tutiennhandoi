@@ -10,7 +10,7 @@
     "height": 1086
   },
   "transparentBackground": true,
-  "safeArea": "Edited 1448x1086 cutout sheet, 12 individually extracted RGBA source layers, shared coordinate bounds per manifest; source 362x362 Cast tiles remain storyboard only.",
+  "safeArea": "V2 is an arm-free body at source 1448x1086 with separately normalized shoulder/elbow/wrist layers and five nonlooping Cast phases; output portrait 390x844; Godot QA + user identity approval pending.",
   "promptIntent": "Edit the precise user-provided Ngự Khí master, NOT a regenerated approximation. Remove dangling forearm cloth, add elegant black fishnet stockings, preserve exact face, hair, body, bodice, skirt, jewelry, golden heels. Produce clean transparent layered source for nonlooping jointed Cast and separate treasure VFX.",
   "acceptance": [
     "Identity retains the exact original face, body proportions, hairstyle and ornamentation",
@@ -24,7 +24,9 @@
   ],
   "candidateRefs": [
     "conversation-delivery:TND_ART01_NguKhi_Rig_Candidate_v01.zip#layers_rgba/master_fullbody.png",
-    "conversation-delivery:TND_ART01_NguKhi_Rig_Candidate_v01.zip#asset_manifest.json"
+    "conversation-delivery:TND_ART01_NguKhi_Rig_Candidate_v01.zip#asset_manifest.json",
+    "conversation-delivery:TND_ART01A_V2_NguKhi_RealRig_20261111.zip#godot_drop_in/art/candidate_r7v2/visual_production/art01a_v2_ngukhi_rig/",
+    "conversation-delivery:TND_ART01A_V2_NguKhi_RealRig_20261111.zip#preview/ART01A_V2_RIG_DARK_390x844.gif"
   ],
   "selectedCandidateRef": null,
   "productionPath": null,
