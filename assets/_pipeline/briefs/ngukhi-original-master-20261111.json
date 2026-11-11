@@ -1,0 +1,32 @@
+{
+  "schema": "tutien-asset-brief.v2",
+  "id": "ngukhi-original-master-20261111",
+  "targetScreen": "Godot Character + Combat 390x844 portrait",
+  "role": "character",
+  "status": "draft",
+  "styleFamily": "premium-adult-xianxia-exact-ngukhi-original-identity",
+  "dimensions": {
+    "width": 362,
+    "height": 362
+  },
+  "transparentBackground": true,
+  "safeArea": "Single locked full-body heroine; stable bottom-center foot pivot; allow separate artifact and VFX layers outside body frame",
+  "promptIntent": "Edit the precise user-provided Ngự Khí master, NOT a regenerated approximation. Remove dangling forearm cloth, add elegant black fishnet stockings, preserve exact face, hair, body, bodice, skirt, jewelry, golden heels. Produce clean transparent layered source for nonlooping jointed Cast and separate treasure VFX.",
+  "acceptance": [
+    "Identity retains the exact original face, body proportions, hairstyle and ornamentation",
+    "Both long loose hanging arm/sleeve fabrics removed, shoulder jewelry preserved",
+    "Black fishnet stockings follow anatomical perspective; preserve gold heels",
+    "Edited master and animation layers truly transparent RGBA, no baked matte",
+    "Separate arm elbow wrist hand-seal layers, 3 treasures, trails and impact VFX",
+    "Stable canvas/foot pivot and consistent person across all original 12 pose references",
+    "Nonloop Cast and real 390x844 Godot playback with event-synced hit cues",
+    "Final asset and animation receive explicit user visual approval"
+  ],
+  "candidateRefs": [],
+  "selectedCandidateRef": null,
+  "productionPath": null,
+  "approvedByUser": false,
+  "approvalNote": null,
+  "runtimeProofSha": null,
+  "runtimeProofRunId": null
+}
