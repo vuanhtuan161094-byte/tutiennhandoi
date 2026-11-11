@@ -53,3 +53,24 @@ Non-looping Cast: anticipation → real jointed hand seal → command → 3 arti
 Only character visuals, combat sprite animation and presentation VFX are in scope. No edits to canonical JS combat, damage, cooldowns, RNG, state/save, economy or Dao balance. Do not touch existing `godot/art/approved/**` assets during this source-intake step.
 
 **As of this record:** original image audit and review-only storyboard separation completed; sleeves removal, fishnet artwork, alpha-matting, jointed Cast, 3-actor VFX integration and real Godot 4.7.2 runtime QA remain **OPEN**. This record is not a claim of generated edited art or technical closure.
+
+
+## 7. ART-01 v0.1 candidate — actual image processing, 2026-11-11
+
+**Visual candidate delivered in conversation, NOT yet committed as game binary:** \`TND_ART01_NguKhi_Rig_Candidate_v01.zip\` (6,110,596 bytes). Based on the edited user-reference-guided Ngự Khí asset sheet, **not** a pixel-identical retouch of the original face. The user's strict face/identity requirement remains an approval blocker.
+
+Actual source asset: 1448x1086 RGBA. Measured alpha includes transparent pixels; programmatically grouped 12 foreground clusters (threshold alpha>40, 2-pixel expansion, suppress alpha<10) and exported separate RGBA PNGs. Candidate layers:
+
+| Type | Files |
+| --- | --- |
+| Character | \`master_fullbody.png\` |
+| Arms | \`arm_upper_screen_left.png\`, \`arm_forearm_screen_left.png\`, \`arm_upper_screen_right.png\`, \`arm_forearm_screen_right.png\` |
+| Hand seals | \`hands_seal_prayer.png\`, \`hands_seal_interlace.png\` |
+| Hair | \`hair_back.png\`, \`hair_fringe.png\` |
+| Three treasures | \`treasure_sword.png\`, \`treasure_mirror.png\`, \`treasure_ring.png\` |
+
+The delivered ZIP also contains source-local coordinates/part hashes/approximate pivot guide, RGBA master rendered on dark and light backgrounds, a QA contact sheet and a separate-three-treasure motion test GIF. The GIF is Pillow-rendered, **NOT** a Godot screenshot, full-body Cast, or combat event test. The source master visually removes draping forearm cloth and adds black fishnet stockings; exact identity equivalence has **NOT** been established.
+
+**Blocking technical work:** Original arms are baked into the full-body render; they have not been surgically removed/healed, and the isolated arm/hand parts are not joined to a multi-joint skeleton. Face/ornament identity drift vs strict original still needs visual comparison; rigorous alpha fringes at animation scale and finger-pose deformation remain unverified. No actual 390x844 Godot 4.7.2 QA has run. No production paths, \`godot/art/approved/**\`, gameplay/SaveService/JS backend were touched.
+
+**Next technical gate:** reconstruct an arm-free torso/hair backplate and align the separated upper arm→forearm→wrist/hand seal pieces, then export one non-looping Cast and run the actual Godot import + 390x844 runtime review. Until then candidate status ONLY; not \`approved\`, \`integrated\` or \`locked\`. The binary source ZIP must be supplied to any other workspace because this repository currently contains only its metadata, not the large candidate PNG files.
