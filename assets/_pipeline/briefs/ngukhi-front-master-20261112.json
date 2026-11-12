@@ -1,0 +1,34 @@
+{
+  "schema": "tutien-asset-brief.v2",
+  "id": "ngukhi-front-master-20261112",
+  "targetScreen": "Godot 4.7.2 Character/Combat 390x844 portrait",
+  "role": "character",
+  "status": "approved",
+  "styleFamily": "adult-premium-xianxia-purple-gold-front-master",
+  "dimensions": {
+    "width": 1086,
+    "height": 1448
+  },
+  "transparentBackground": true,
+  "safeArea": "Original approved front-facing full-body 1086x1448 RGBA candidate. Clean alpha matte, preserve static master pixels/face, establish stable anchor and source-to-display scale before any frame authoring. No animation included.",
+  "promptIntent": "Exact image user explicitly approved on 2026-11-12. Do not replace or reinterpret her face, long dark hair, headpiece, costume, fishnet stockings, jewelry or gold heels without new approval. Only animate through controlled edited sequential frames with planted-foot anchors. Keep VFX separate.",
+  "acceptance": [
+    "Master is the exact user-approved front-facing heroine, SHA-256 recorded",
+    "Same face, torso costume, gold jewelry, heels and fishnet between animation frames",
+    "Transparent alpha matte manually cleaned at hair and translucent skirt boundaries",
+    "No baked VFX, separately controlled swords/mirror/ring and trails",
+    "Three-pose proof at identical high-resolution canvas and fixed camera (ready, actual weight-shift step, seal)",
+    "Natural foot planting with root/pivot tracking; no sliding or pose-to-pose shape teleport",
+    "GIF 390x844 light/dark visual QA before expanding to full Cast",
+    "Real Godot 4.7.2 import/playback evidence prior to integrated/locked"
+  ],
+  "candidateRefs": [
+    "conversation-image:ngự_khí_đạo_nữ_vương_tử_kim.png#sha256:082709eeab1d759fc2c2e0c3695a93afcb9185e345f989fe69f677430137ae65"
+  ],
+  "selectedCandidateRef": "conversation-image:ngự_khí_đạo_nữ_vương_tử_kim.png#sha256:082709eeab1d759fc2c2e0c3695a93afcb9185e345f989fe69f677430137ae65",
+  "productionPath": null,
+  "approvedByUser": true,
+  "approvalNote": "User message 2026-11-12: 'Okm đẹp lắm t ok. Tiếp theo làm j'. Approval applies to the newly generated STATIC front-facing full-body portrait only, NOT earlier rejected rigs/GIFs or any combat animation.",
+  "runtimeProofSha": null,
+  "runtimeProofRunId": null
+}

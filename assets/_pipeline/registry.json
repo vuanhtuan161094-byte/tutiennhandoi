@@ -19,6 +19,11 @@
       "id": "ngukhi-original-master-20261111",
       "briefPath": "assets/_pipeline/briefs/ngukhi-original-master-20261111.json",
       "status": "candidate"
+    },
+    {
+      "id": "ngukhi-front-master-20261112",
+      "briefPath": "assets/_pipeline/briefs/ngukhi-front-master-20261112.json",
+      "status": "approved"
     }
   ]
 }
